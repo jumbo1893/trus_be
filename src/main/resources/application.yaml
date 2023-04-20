@@ -1,0 +1,23 @@
+spring.datasource:
+  url: jdbc:postgresql://localhost:5432/trus
+  username: postgres
+  password: Heslo12!
+  driver-class-name: org.postgresql.Driver
+
+spring.jpa.database-platform: org.hibernate.dialect.PostgreSQLDialect
+spring.jpa.properties.hibernate.jdbc.lob.non_contextual_creation: true
+
+server:
+  port: 8080
+
+springdoc:
+  api-docs.path: /api-docs
+
+spring:
+  jpa:
+    open-in-view: true
+    hibernate:
+      ddl-auto: update
+  jackson:
+    mapper:
+      accept-case-insensitive-enums: true
