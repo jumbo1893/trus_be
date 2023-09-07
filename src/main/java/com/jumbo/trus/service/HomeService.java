@@ -802,7 +802,7 @@ public class HomeService {
         Calendar playerCalendar = Calendar.getInstance();
         playerCalendar.setTime(playerDTO.getBirthday());
         Calendar matchCalendar = Calendar.getInstance();
-        playerCalendar.setTime(matchDTO.getDate());
+        matchCalendar.setTime(matchDTO.getDate());
         return matchCalendar.get(Calendar.DAY_OF_MONTH) == playerCalendar.get(Calendar.DAY_OF_MONTH)
                 && matchCalendar.get(Calendar.MONTH) == playerCalendar.get(Calendar.MONTH);
     }
