@@ -1,6 +1,6 @@
 package com.jumbo.trus.mapper;
 
-import com.jumbo.trus.dto.MatchDTO;
+import com.jumbo.trus.dto.match.MatchDTO;
 import com.jumbo.trus.entity.MatchEntity;
 import com.jumbo.trus.entity.PlayerEntity;
 import org.mapstruct.Mapper;
@@ -10,12 +10,15 @@ import org.mapstruct.Mappings;
 import java.util.ArrayList;
 import java.util.List;
 
-@Mapper(componentModel = "spring", uses = {BeerMapper.class, BeerDetailedMapper.class, ReceivedFineDetailedMapper.class})
+@Mapper(componentModel = "spring", uses = {BeerMapper.class, BeerDetailedMapper.class, ReceivedFineDetailedMapper.class, GoalMapper.class})
 public abstract class MatchMapper {
 
     @Mappings({
             @Mapping(target = "season.id", source = "seasonId"),
-            //@Mapping(target = "playerList", expression = "java(getPlayerIds(source))"),
+            @Mapping(target = "playerList", ignore = true),
+            @Mapping(target = "beerList", ignore = true),
+            @Mapping(target = "fineList", ignore = true),
+            @Mapping(target = "goalList", ignore = true),
     })
     public abstract MatchEntity toEntity(MatchDTO source);
     @Mappings({

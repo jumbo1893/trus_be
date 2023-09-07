@@ -1,23 +1,32 @@
 package com.jumbo.trus.service;
 
-import com.jumbo.trus.dto.beer.BeerDetailedDTO;
-import com.jumbo.trus.dto.beer.BeerDetailedResponse;
-import com.jumbo.trus.dto.receivedFine.*;
+import com.jumbo.trus.dto.FineDTO;
+import com.jumbo.trus.dto.PlayerDTO;
+import com.jumbo.trus.dto.SeasonDTO;
+import com.jumbo.trus.dto.match.MatchDTO;
+import com.jumbo.trus.dto.receivedfine.*;
+import com.jumbo.trus.dto.receivedfine.multi.ReceivedFineListDTO;
+import com.jumbo.trus.dto.receivedfine.response.ReceivedFineResponse;
+import com.jumbo.trus.dto.receivedfine.response.get.detailed.ReceivedFineDetailedDTO;
+import com.jumbo.trus.dto.receivedfine.response.get.detailed.ReceivedFineDetailedResponse;
+import com.jumbo.trus.dto.receivedfine.response.get.setup.ReceivedFineSetupResponse;
 import com.jumbo.trus.entity.ReceivedFineEntity;
-import com.jumbo.trus.entity.filter.BeerFilter;
+import com.jumbo.trus.entity.filter.MatchFilter;
 import com.jumbo.trus.entity.filter.ReceivedFineFilter;
+import com.jumbo.trus.entity.filter.StatisticsFilter;
 import com.jumbo.trus.entity.repository.*;
-import com.jumbo.trus.entity.repository.specification.BeerSpecification;
 import com.jumbo.trus.entity.repository.specification.ReceivedFineSpecification;
+import com.jumbo.trus.entity.repository.specification.ReceivedFineStatsSpecification;
 import com.jumbo.trus.mapper.ReceivedFineDetailedMapper;
 import com.jumbo.trus.mapper.ReceivedFineMapper;
+import com.jumbo.trus.service.helper.PairSeasonMatch;
+import com.jumbo.trus.service.order.OrderReceivedFineDetailedDTOByFineAmount;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,6 +49,18 @@ public class ReceivedFineService {
 
     @Autowired
     private ReceivedFineDetailedMapper receivedFineDetailedMapper;
+
+    @Autowired
+    private MatchService matchService;
+
+    @Autowired
+    private SeasonService seasonService;
+
+    @Autowired
+    private PlayerService playerService;
+
+    @Autowired
+    private FineService fineService;
 
     public ReceivedFineDTO addFine(ReceivedFineDTO receivedFineDTO) {
         ReceivedFineEntity entity = receivedFineMapper.toEntity(receivedFineDTO);
@@ -70,32 +91,144 @@ public class ReceivedFineService {
         return receivedFineRepository.findAll(receivedFineSpecification, PageRequest.of(0, receivedFineFilter.getLimit())).stream().map(receivedFineMapper::toDTO).collect(Collectors.toList());
     }
 
-    public ReceivedFineDetailedResponse getAllDetailed(ReceivedFineFilter receivedFineFilter) {
+    public ReceivedFineDetailedResponse getAllDetailed(StatisticsFilter filter) {
         ReceivedFineDetailedResponse receivedFineDetailedResponse = new ReceivedFineDetailedResponse();
-        ReceivedFineSpecification receivedFineSpecification = new ReceivedFineSpecification(receivedFineFilter);
-        List<ReceivedFineDetailedDTO> fineList = receivedFineRepository.findAll(receivedFineSpecification, PageRequest.of(0, receivedFineFilter.getLimit())).stream().map(receivedFineDetailedMapper::toDTO).collect(Collectors.toList());
+        ReceivedFineStatsSpecification receivedFineSpecification = new ReceivedFineStatsSpecification(filter);
+        List<ReceivedFineDetailedDTO> fineList = receivedFineRepository.findAll(receivedFineSpecification, PageRequest.of(0, filter.getLimit())).stream().map(receivedFineDetailedMapper::toDTO).toList();
         Set<Long> matchSet = new HashSet<>();
         Set<Long> playerSet = new HashSet<>();
+        HashMap<Long, ReceivedFineDetailedDTO> matchMap = new HashMap<>();
+        HashMap<Long, ReceivedFineDetailedDTO> playerMap = new HashMap<>();
+        HashMap<Long, ReceivedFineDetailedDTO> fineMap = new HashMap<>();
         for (ReceivedFineDetailedDTO fine : fineList) {
-            receivedFineDetailedResponse.addFines(fine.getFineNumber());
-            receivedFineDetailedResponse.addFineAmount(fine.getFineNumber()*fine.getFine().getAmount());
+            int fineNumber = fine.getFineNumber();
+            int fineAmount = fine.getFineNumber()*fine.getFine().getAmount();
+            receivedFineDetailedResponse.addFines(fineNumber);
+            receivedFineDetailedResponse.addFineAmount(fineAmount);
             matchSet.add(fine.getMatch().getId());
             playerSet.add(fine.getPlayer().getId());
+            if (filter.getDetailed() != null && filter.getDetailed()) {
+                fine.setMatch(null);
+                fine.setPlayer(null);
+                if (!fineMap.containsKey(fine.getFine().getId())) {
+                    fine.addFineAmount(fine.returnFineAmount());
+                    fineMap.put(fine.getFine().getId(), fine);
+                }
+                else {
+                    ReceivedFineDetailedDTO oldFine = fineMap.get(fine.getFine().getId());
+                    oldFine.addFineNumber(fine.getFineNumber());
+                    oldFine.addFineAmount(fine.returnFineAmount());
+                    fineMap.put(fine.getFine().getId(), oldFine);
+                }
+            }
+            else if (filter.getMatchStatsOrPlayerStats() != null && !filter.getMatchStatsOrPlayerStats()) {
+                fine.setMatch(null);
+
+                if (!playerMap.containsKey(fine.getPlayer().getId())) {
+                    fine.addFineAmount(fine.returnFineAmount());
+                    playerMap.put(fine.getPlayer().getId(), fine);
+                }
+                else {
+                    ReceivedFineDetailedDTO oldFine = playerMap.get(fine.getPlayer().getId());
+                    oldFine.addFineNumber(fine.getFineNumber());
+                    oldFine.addFineAmount(fine.returnFineAmount());
+                    playerMap.put(fine.getPlayer().getId(), oldFine);
+                }
+                fine.setFine(null);
+            }
+            else if (filter.getMatchStatsOrPlayerStats() != null) {
+                fine.setPlayer(null);
+                if (!matchMap.containsKey(fine.getMatch().getId())) {
+                    fine.addFineAmount(fine.returnFineAmount());
+                    matchMap.put(fine.getMatch().getId(), fine);
+                }
+                else {
+                    ReceivedFineDetailedDTO oldFine = matchMap.get(fine.getMatch().getId());
+                    oldFine.addFineNumber(fine.getFineNumber());
+                    oldFine.addFineAmount(fine.returnFineAmount());
+                    matchMap.put(fine.getMatch().getId(), oldFine);
+                }
+                fine.setFine(null);
+            }
         }
-        receivedFineDetailedResponse.setFineList(fineList);
+        List<ReceivedFineDetailedDTO> returnFineList;
+        if (filter.getMatchStatsOrPlayerStats() != null && filter.getMatchStatsOrPlayerStats()) {
+            returnFineList = new ArrayList<>(matchMap.values().stream().toList());
+        }
+        else if (filter.getMatchStatsOrPlayerStats() != null) {
+            returnFineList = new ArrayList<>(playerMap.values().stream().toList());
+        }
+        else {
+            returnFineList = new ArrayList<>(fineList);
+        }
+        returnFineList.sort(new OrderReceivedFineDetailedDTOByFineAmount());
+        receivedFineDetailedResponse.setFineList(returnFineList);
         receivedFineDetailedResponse.setMatchesCount(matchSet.size());
         receivedFineDetailedResponse.setPlayersCount(playerSet.size());
         return receivedFineDetailedResponse;
     }
 
+    public ReceivedFineSetupResponse setupPlayers(ReceivedFineFilter receivedFineFilter) {
+
+        PairSeasonMatch pairSeasonMatch = matchService.returnSeasonAndMatchByFilter(receivedFineFilter);
+        SeasonDTO seasonDTO = pairSeasonMatch.getSeasonDTO();
+        MatchDTO matchDTO = pairSeasonMatch.getMatchDTO();
+        MatchFilter matchFilter = new MatchFilter();
+        matchFilter.setSeasonId(seasonDTO.getId());
+        List<MatchDTO> matchList =  matchService.getAll((matchFilter));
+
+        List<PlayerDTO> playersInMatch = new ArrayList<>();
+        List<PlayerDTO> otherPlayers = new ArrayList<>();
+
+        if(matchDTO != null) {
+            playersInMatch = matchService.getPlayerListByFilteredByFansByMatchId(matchDTO.getId(), false);
+            otherPlayers = playerService.getAllActive(true);
+            otherPlayers.removeAll(playersInMatch); // Odstraníme otherPlayers všechny hodnoty, které jsou v playersInMatch
+        }
+        return new ReceivedFineSetupResponse(matchDTO, seasonDTO, playersInMatch, otherPlayers, matchList);
+    }
+
+    public List<ReceivedFineDTO> getAllForSetup(Long playerId, Long matchId) {
+        if(playerId == null || matchId == null) {
+            throw new EntityNotFoundException();
+        }
+        List<ReceivedFineDTO> receivedFines = getAll(new ReceivedFineFilter(matchId, playerId));
+        List<Long> idList = getListOfFineIdsFromReceivedFines(receivedFines);
+        List<FineDTO> fineDTOS;
+        if(idList.isEmpty()) {
+            fineDTOS = fineService.getAll(1000);
+        }
+        else {
+            fineDTOS = fineService.getAllOtherFines(idList);
+        }
+        receivedFines.addAll(makeReceivedFineSetupListFromFineList(fineDTOS, playerId, matchId));
+        return receivedFines;
+    }
+
+    private List<Long> getListOfFineIdsFromReceivedFines(List<ReceivedFineDTO> receivedFines) {
+        List<Long> returnList = new ArrayList<>();
+        for (ReceivedFineDTO receivedFine : receivedFines) {
+            returnList.add(receivedFine.getFine().getId());
+        }
+        return returnList;
+    }
+
+    private List<ReceivedFineDTO> makeReceivedFineSetupListFromFineList(List<FineDTO> fineDTOS, Long playerId, Long matchId) {
+        List<ReceivedFineDTO> receivedFineDTOS = new ArrayList<>();
+        for (FineDTO fine : fineDTOS) {
+            receivedFineDTOS.add(new ReceivedFineDTO(0, fine, playerId, matchId));
+        }
+        return receivedFineDTOS;
+    }
+
     public void deleteFine(Long fineId) {
-        fineRepository.deleteById(fineId);
+        receivedFineRepository.deleteById(fineId);
     }
 
     private void mapPlayerMatchAndFine(ReceivedFineEntity receivedFine, ReceivedFineDTO receivedFineDTO) {
         receivedFine.setMatch(matchRepository.getReferenceById(receivedFineDTO.getMatchId()));
         receivedFine.setPlayer(playerRepository.getReferenceById(receivedFineDTO.getPlayerId()));
-        receivedFine.setFine(fineRepository.getReferenceById(receivedFineDTO.getFineId()));
+        receivedFine.setFine(fineRepository.getReferenceById(receivedFineDTO.getFine().getId()));
     }
 
     private void saveFineToRepository(ReceivedFineDTO receivedFineDTO) {
@@ -150,7 +283,7 @@ public class ReceivedFineService {
                 newReceivedFineDTO.setMatchId(receivedFineListDTO.getMatchId());
                 newReceivedFineDTO.setPlayerId(playerId);
                 newReceivedFineDTO.setFineNumber(receivedFineDTO.getFineNumber());
-                newReceivedFineDTO.setFineId(receivedFineDTO.getFineId());
+                newReceivedFineDTO.setFine(receivedFineDTO.getFine());
                 saveFineAndSetResponse(newReceivedFineDTO, receivedFineResponse, true);
             }
             receivedFineResponse.addEditedPlayer();
@@ -162,7 +295,7 @@ public class ReceivedFineService {
      * @return null pokud id neexistuje. Jinak se vrací objekt
      */
     private ReceivedFineDTO getReceivedFineDtoByPlayerAndMatchAndFine(ReceivedFineDTO receivedFineDTO) {
-        ReceivedFineFilter filter = new ReceivedFineFilter(receivedFineDTO.getMatchId(), receivedFineDTO.getPlayerId(), receivedFineDTO.getFineId());
+        ReceivedFineFilter filter = new ReceivedFineFilter(receivedFineDTO.getMatchId(), receivedFineDTO.getPlayerId(), receivedFineDTO.getFine().getId());
         ReceivedFineSpecification receivedFineSpecification = new ReceivedFineSpecification(filter);
         List<ReceivedFineDTO> filterList = receivedFineRepository.findAll(receivedFineSpecification, PageRequest.of(0, 1)).stream().map(receivedFineMapper::toDTO).collect(Collectors.toList());
         if (filterList.isEmpty()) {

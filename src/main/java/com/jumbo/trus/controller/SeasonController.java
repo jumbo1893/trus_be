@@ -1,13 +1,19 @@
 package com.jumbo.trus.controller;
 
+import com.jumbo.trus.controller.error.ErrorResponse;
 import com.jumbo.trus.dto.SeasonDTO;
+import com.jumbo.trus.entity.filter.SeasonFilter;
 import com.jumbo.trus.service.SeasonService;
+import com.jumbo.trus.service.exceptions.NonEditableEntityException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.webjars.NotFoundException;
 
 import java.util.List;
 
+@ControllerAdvice
 @RestController
 @RequestMapping("/season")
 public class SeasonController {
@@ -21,8 +27,8 @@ public class SeasonController {
     }
 
     @GetMapping("/get-all")
-    public List<SeasonDTO> getSeasons(@RequestParam(defaultValue = "1000")int limit) {
-        return seasonService.getAll(limit);
+    public List<SeasonDTO> getSeasons(SeasonFilter seasonFilter) {
+        return seasonService.getAll(seasonFilter);
     }
 
     @PutMapping("/{seasonId}")

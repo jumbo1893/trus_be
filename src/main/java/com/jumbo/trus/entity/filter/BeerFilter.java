@@ -3,26 +3,24 @@ package com.jumbo.trus.entity.filter;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
-public class BeerFilter {
+@NoArgsConstructor
+public class BeerFilter extends BaseSeasonFilter {
 
 
     private int beerNumber;
 
     private int liquorNumber;
 
-    private Long playerId;
-
-    private Long matchId;
-
-    private Long seasonId;
-
-    //defaultní hodnota
-    private int limit = 1000;
-
     public BeerFilter(Long matchId, Long playerId) {
-        this.playerId = playerId;
-        this.matchId = matchId;
+        super(playerId, matchId);
+    }
+
+    public BeerFilter(Long matchId) {
+        super(matchId);
     }
 }

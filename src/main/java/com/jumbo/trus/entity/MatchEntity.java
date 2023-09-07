@@ -1,5 +1,6 @@
 package com.jumbo.trus.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -35,4 +36,7 @@ public class MatchEntity {
 
     @OneToMany(mappedBy = "match")
     private List<ReceivedFineEntity> fineList;
+
+    @OneToMany(mappedBy = "match")
+    private List<GoalEntity> goalList;
 }

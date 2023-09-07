@@ -1,11 +1,9 @@
 package com.jumbo.trus.mapper;
 
 import com.jumbo.trus.dto.FineDTO;
-import com.jumbo.trus.dto.MatchDTO;
+import com.jumbo.trus.dto.match.MatchDTO;
 import com.jumbo.trus.dto.PlayerDTO;
-import com.jumbo.trus.dto.beer.BeerDetailedDTO;
-import com.jumbo.trus.dto.receivedFine.ReceivedFineDetailedDTO;
-import com.jumbo.trus.entity.BeerEntity;
+import com.jumbo.trus.dto.receivedfine.response.get.detailed.ReceivedFineDetailedDTO;
 import com.jumbo.trus.entity.MatchEntity;
 import com.jumbo.trus.entity.PlayerEntity;
 import com.jumbo.trus.entity.ReceivedFineEntity;

@@ -1,6 +1,6 @@
 package com.jumbo.trus.mapper;
 
-import com.jumbo.trus.dto.receivedFine.ReceivedFineDTO;
+import com.jumbo.trus.dto.receivedfine.ReceivedFineDTO;
 import com.jumbo.trus.entity.ReceivedFineEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -12,13 +12,13 @@ public abstract class ReceivedFineMapper {
     @Mappings({
             @Mapping(target = "player.id", source = "playerId"),
             @Mapping(target = "match.id", source = "matchId"),
-            @Mapping(target = "fine.id", source = "fineId"),
+            @Mapping(target = "fine", source = "fine"),
     })
     public abstract ReceivedFineEntity toEntity(ReceivedFineDTO source);
     @Mappings({
             @Mapping(target = "playerId", source = "player.id"),
             @Mapping(target = "matchId", source = "match.id"),
-            @Mapping(target = "fineId", source = "fine.id"),
+            @Mapping(target = "fine", source = "fine"),
     })
     public abstract ReceivedFineDTO toDTO(ReceivedFineEntity source);
 }

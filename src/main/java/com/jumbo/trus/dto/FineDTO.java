@@ -13,7 +13,6 @@ import java.util.List;
 @NoArgsConstructor
 public class FineDTO {
 
-    @JsonProperty("_id")
     private long id;
 
     private String name;

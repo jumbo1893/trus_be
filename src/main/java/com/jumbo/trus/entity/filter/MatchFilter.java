@@ -2,12 +2,14 @@ package com.jumbo.trus.entity.filter;
 
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 @Data
+@NoArgsConstructor
 public class MatchFilter {
 
 
@@ -23,4 +25,6 @@ public class MatchFilter {
 
     //defaultní hodnota
     private int limit = 1000;
+
+
 }

@@ -1,10 +1,15 @@
 package com.jumbo.trus.controller;
 
+import com.jumbo.trus.controller.error.ErrorResponse;
 import com.jumbo.trus.dto.FineDTO;
 import com.jumbo.trus.dto.SeasonDTO;
 import com.jumbo.trus.service.FineService;
 import com.jumbo.trus.service.SeasonService;
+import com.jumbo.trus.service.exceptions.NonEditableEntityException;
+import jakarta.servlet.ServletException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.webjars.NotFoundException;
 
@@ -35,5 +40,14 @@ public class FineController {
     @DeleteMapping("/{fineId}")
     public void deleteFine(@PathVariable Long fineId) throws NotFoundException {
         fineService.deleteFine(fineId);
+    }
+
+    @ExceptionHandler({NonEditableEntityException.class})
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+    public ResponseEntity<ErrorResponse> handleServletException(NonEditableEntityException e) {
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setMessage(e.getMessage());
+        errorResponse.setCode(e.getCode());
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(errorResponse);
     }
 }

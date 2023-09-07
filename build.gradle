@@ -16,7 +16,7 @@ configurations {
 }
 
 bootRun {
-	systemProperties = System.properties
+	systemProperties = System.properties as Map<String, ?>
 }
 
 compileJava {
@@ -31,10 +31,11 @@ repositories {
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter'
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'org.springframework.boot:spring-boot-starter:3.1.0'
+	implementation 'org.springframework.boot:spring-boot-starter-web:3.1.0'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa:3.0.4'
+	implementation 'org.springframework.boot:spring-boot-starter-validation:3.0.4'
+	implementation 'org.springframework.boot:spring-boot-starter-security:3.0.4'
 	implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.0.4'
 	implementation group: 'org.mapstruct', name: 'mapstruct', version: '1.5.3.Final'
 	implementation 'org.hibernate:hibernate-jpamodelgen:6.1.7.Final'
@@ -45,7 +46,7 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok:1.18.26'
 	annotationProcessor 'org.hibernate:hibernate-jpamodelgen:6.1.7.Final'
 	annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test:3.1.0'
 }
 
 tasks.named('test') {

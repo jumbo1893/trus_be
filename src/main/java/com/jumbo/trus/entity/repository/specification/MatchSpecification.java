@@ -1,5 +1,6 @@
 package com.jumbo.trus.entity.repository.specification;
 
+import com.jumbo.trus.config.Config;
 import com.jumbo.trus.entity.*;
 import com.jumbo.trus.entity.filter.MatchFilter;
 import jakarta.persistence.criteria.*;
@@ -27,8 +28,10 @@ public class MatchSpecification implements Specification<MatchEntity> {
         }
 
         if (filter.getSeasonId() != null) {
-            Join<SeasonEntity, MatchEntity> seasonJoin = root.join(MatchEntity_.SEASON);
-            predicates.add(criteriaBuilder.equal(seasonJoin.get(SeasonEntity_.ID), filter.getSeasonId()));
+            if (filter.getSeasonId() != Config.ALL_SEASON_ID) {
+                Join<SeasonEntity, MatchEntity> seasonJoin = root.join(MatchEntity_.SEASON);
+                predicates.add(criteriaBuilder.equal(seasonJoin.get(SeasonEntity_.ID), filter.getSeasonId()));
+            }
         }
 
         if (filter.getPlayerList() != null) {

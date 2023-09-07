@@ -1,6 +1,7 @@
 package com.jumbo.trus.dto.beer;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.jumbo.trus.dto.beer.multi.BeerNoMatchDTO;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,8 +12,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class BeerDTO {
 
-    @NotNull
-    @JsonProperty("_id")
     private long id;
 
     @NotNull

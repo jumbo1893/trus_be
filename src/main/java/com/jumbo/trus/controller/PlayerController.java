@@ -27,13 +27,13 @@ public class PlayerController {
     }
 
     @GetMapping("/get-players")
-    public List<PlayerDTO> getPlayers(@RequestParam(defaultValue = "1000") int limit) {
-        return playerService.getAllByFan(false, limit);
+    public List<PlayerDTO> getPlayers() {
+        return playerService.getAllByFan(false);
     }
 
     @GetMapping("/get-fans")
-    public List<PlayerDTO> getFans(@RequestParam(defaultValue = "1000") int limit) {
-        return playerService.getAllByFan(true, limit);
+    public List<PlayerDTO> getFans() {
+        return playerService.getAllByFan(true);
     }
 
     @GetMapping("/{playerId}")

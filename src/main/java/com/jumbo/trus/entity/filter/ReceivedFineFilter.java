@@ -2,27 +2,29 @@ package com.jumbo.trus.entity.filter;
 
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
-public class ReceivedFineFilter {
+@NoArgsConstructor
+public class ReceivedFineFilter extends BaseSeasonFilter {
 
 
     private int fineNumber;
 
-    private Long playerId;
-
-    private Long matchId;
-
     private Long fineId;
 
-    private Long seasonId;
 
     //defaultní hodnota
     private int limit = 1000;
 
     public ReceivedFineFilter(Long matchId, Long playerId, Long fineId) {
-        this.playerId = playerId;
-        this.matchId = matchId;
+        super(playerId, matchId);
         this.fineId = fineId;
+    }
+
+    public ReceivedFineFilter(Long matchId, Long playerId) {
+        super(playerId, matchId);
     }
 }

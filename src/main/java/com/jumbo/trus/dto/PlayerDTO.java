@@ -1,5 +1,6 @@
 package com.jumbo.trus.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.jumbo.trus.dto.beer.BeerDTO;
 import jakarta.persistence.OneToMany;
@@ -15,11 +16,11 @@ import java.util.List;
 @NoArgsConstructor
 public class PlayerDTO {
 
-    @JsonProperty("_id")
     private long id;
 
     private String name;
 
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
     private Date birthday;
 
     private boolean fan;

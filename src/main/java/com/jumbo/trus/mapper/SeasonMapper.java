@@ -9,6 +9,7 @@ import org.mapstruct.Mapping;
 public abstract class SeasonMapper {
 
     @Mapping(target = "matchList", ignore = true)
+    @Mapping(target = "editable", ignore = true)
     public abstract SeasonEntity toEntity(SeasonDTO source);
     public abstract SeasonDTO toDTO(SeasonEntity source);
 }

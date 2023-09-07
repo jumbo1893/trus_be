@@ -1,5 +1,6 @@
 package com.jumbo.trus.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 
@@ -19,6 +20,7 @@ public class PlayerEntity {
     @Column(nullable = false)
     private String name;
 
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
     @Column(nullable = false)
     private Date birthday;
 
@@ -36,4 +38,7 @@ public class PlayerEntity {
 
     @OneToMany(mappedBy = "player")
     private List<ReceivedFineEntity> fineList;
+
+    @OneToMany(mappedBy = "player")
+    private List<GoalEntity> goalList;
 }

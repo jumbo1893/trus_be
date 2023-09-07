@@ -1,12 +1,12 @@
 package com.jumbo.trus.controller;
 
-import com.jumbo.trus.dto.beer.BeerDetailedResponse;
-import com.jumbo.trus.dto.receivedFine.ReceivedFineDTO;
-import com.jumbo.trus.dto.receivedFine.ReceivedFineDetailedResponse;
-import com.jumbo.trus.dto.receivedFine.ReceivedFineListDTO;
-import com.jumbo.trus.dto.receivedFine.ReceivedFineResponse;
-import com.jumbo.trus.entity.filter.BeerFilter;
+import com.jumbo.trus.dto.receivedfine.ReceivedFineDTO;
+import com.jumbo.trus.dto.receivedfine.response.get.detailed.ReceivedFineDetailedResponse;
+import com.jumbo.trus.dto.receivedfine.multi.ReceivedFineListDTO;
+import com.jumbo.trus.dto.receivedfine.response.ReceivedFineResponse;
+import com.jumbo.trus.dto.receivedfine.response.get.setup.ReceivedFineSetupResponse;
 import com.jumbo.trus.entity.filter.ReceivedFineFilter;
+import com.jumbo.trus.entity.filter.StatisticsFilter;
 import com.jumbo.trus.service.ReceivedFineService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -37,8 +37,8 @@ public class ReceivedFineController {
     }
 
     @GetMapping("/get-all-detailed")
-    public ReceivedFineDetailedResponse getDetailedFines(ReceivedFineFilter fineFilter) {
-        return receivedFineService.getAllDetailed(fineFilter);
+    public ReceivedFineDetailedResponse getDetailedFines(StatisticsFilter filter) {
+        return receivedFineService.getAllDetailed(filter);
     }
 
     @PostMapping("/multiple-add")
@@ -49,5 +49,15 @@ public class ReceivedFineController {
     @DeleteMapping("/{fineId}")
     public void deleteMatch(@PathVariable Long fineId) throws NotFoundException {
         receivedFineService.deleteFine(fineId);
+    }
+
+    @GetMapping("/setup")
+    public ReceivedFineSetupResponse getReceivedFineSetup(ReceivedFineFilter receivedFineFilter) {
+        return receivedFineService.setupPlayers(receivedFineFilter);
+    }
+
+    @GetMapping("/player/setup")
+    public List<ReceivedFineDTO> getListOfReceivedFinesForPlayer(@RequestParam Long playerId, @RequestParam Long matchId) {
+        return receivedFineService.getAllForSetup(playerId, matchId);
     }
 }

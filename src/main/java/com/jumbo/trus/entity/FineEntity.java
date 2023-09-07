@@ -2,6 +2,7 @@ package com.jumbo.trus.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.util.Date;
 import java.util.List;
@@ -20,6 +21,9 @@ public class FineEntity {
 
     @Column(nullable = false)
     private int amount;
+
+    @ColumnDefault("true")
+    private boolean editable = true;
 
     @OneToMany(mappedBy = "fine")
     private List<ReceivedFineEntity> receivedFineList;
