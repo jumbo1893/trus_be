@@ -13,13 +13,9 @@ import com.jumbo.trus.dto.receivedfine.response.get.detailed.ReceivedFineDetaile
 import com.jumbo.trus.dto.receivedfine.response.get.detailed.ReceivedFineDetailedResponse;
 import com.jumbo.trus.entity.filter.BeerFilter;
 import com.jumbo.trus.entity.filter.MatchFilter;
-import com.jumbo.trus.entity.filter.SeasonFilter;
 import com.jumbo.trus.entity.filter.StatisticsFilter;
-import com.jumbo.trus.mapper.BeerDetailedMapper;
-import com.jumbo.trus.mapper.SeasonMapper;
 import com.jumbo.trus.service.fact.BeerFact;
 import com.jumbo.trus.service.fact.FineFact;
-import com.jumbo.trus.service.fact.RandomFact;
 import com.jumbo.trus.service.helper.AverageNumberTotalNumber;
 import com.jumbo.trus.service.order.OrderBeerByAttendance;
 import com.jumbo.trus.service.order.OrderBeerByBeerOrLiquorNumber;
@@ -29,8 +25,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-
-import static com.jumbo.trus.config.Config.OTHER_SEASON_ID;
 
 @Service
 public class HomeService {
@@ -42,9 +36,6 @@ public class HomeService {
     private SeasonService seasonService;
 
     @Autowired
-    private SeasonMapper seasonMapper;
-
-    @Autowired
     private BeerService beerService;
 
     @Autowired
@@ -53,8 +44,6 @@ public class HomeService {
     @Autowired
     private ReceivedFineService receivedFineService;
 
-    @Autowired
-    private BeerDetailedMapper beerDetailedMapper;
 
     public HomeSetup setup() {
         HomeSetup homeSetup = new HomeSetup();
