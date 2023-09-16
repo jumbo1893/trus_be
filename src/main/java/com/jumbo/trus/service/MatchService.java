@@ -77,6 +77,10 @@ public class MatchService {
         return matchRepository.findAll(matchSpecification, PageRequest.of(0, matchFilter.getLimit())).stream().map(matchMapper::toDTO).collect(Collectors.toList());
     }
 
+    public List<MatchDTO> getMatchesByDate(int limit){
+        return matchRepository.getMatchesOrderByDate(limit).stream().map(matchMapper::toDTO).collect(Collectors.toList());
+    }
+
     public List<PlayerDTO> getPlayerListByMatchId(Long matchId){
         MatchEntity matchEntity = matchRepository.findById(matchId).orElseThrow(() -> new EntityNotFoundException(String.valueOf(matchId)));
         return matchEntity.getPlayerList().stream().map(playerMapper::toDTO).toList();
@@ -144,7 +148,11 @@ public class MatchService {
     public MatchDTO getLatestMatchBySeasonId(long seasonId) {
         MatchEntity matchEntity;
         if (seasonId == ALL_SEASON_ID) {
-            matchEntity = matchRepository.getLastMatch();
+            List<MatchEntity> matchEntities = matchRepository.getMatchesOrderByDate(1);
+            if (matchEntities.isEmpty()) {
+                return null;
+            }
+            matchEntity = matchEntities.get(0);
         }
         else {
             matchEntity = matchRepository.getLastMatchBySeasonId(seasonId);

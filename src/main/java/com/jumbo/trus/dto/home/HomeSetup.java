@@ -1,6 +1,6 @@
-package com.jumbo.trus.dto;
+package com.jumbo.trus.dto.home;
 
-import com.jumbo.trus.dto.match.MatchDTO;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,5 +17,8 @@ public class HomeSetup {
     private String nextBirthday;
 
     private List<String> randomFacts;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Chart chart;
 
 }

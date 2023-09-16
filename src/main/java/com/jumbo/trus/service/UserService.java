@@ -11,11 +11,13 @@ import com.jumbo.trus.entity.repository.FineRepository;
 import com.jumbo.trus.entity.repository.UserRepository;
 import com.jumbo.trus.entity.repository.specification.MatchSpecification;
 import com.jumbo.trus.mapper.FineMapper;
+import com.jumbo.trus.service.exceptions.AuthException;
 import com.jumbo.trus.service.exceptions.DuplicateEmailException;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -80,7 +82,10 @@ public class UserService implements UserDetailsService {
         if(user.getName() != null) {
             userEntity.setName(user.getName());
         }
-        if(user.getPlayerId() != null) {
+        if(user.getPlayerId() == -1) {
+            userEntity.setPlayerId(null);
+        }
+        else if(user.getPlayerId() != null) {
             userEntity.setPlayerId(user.getPlayerId());
         }
         return returnUserWithoutSensitiveData(userRepository.save(userEntity));
@@ -92,6 +97,21 @@ public class UserService implements UserDetailsService {
         userEntity.setName(user.getName());
         userEntity.setPlayerId(user.getPlayerId());
         return returnUserWithoutSensitiveData(userRepository.save(userEntity));
+    }
+
+    public UserDTO getCurrentUser() {
+        try {
+            UserEntity user = (UserEntity) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            UserDTO model = new UserDTO();
+            model.setMail(user.getMail());
+            model.setId(user.getId());
+            model.setAdmin(user.isAdmin());
+            model.setPlayerId(user.getPlayerId());
+            model.setName(user.getName());
+            return model;
+        } catch (ClassCastException e) {
+            throw new AuthException("Uživatel je odhlášen", AuthException.NOT_LOGGED_IN);
+        }
     }
 
     private UserDTO returnUserWithoutSensitiveData(UserEntity entity) {
