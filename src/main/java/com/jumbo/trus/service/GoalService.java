@@ -64,6 +64,9 @@ public class GoalService {
     @Autowired
     private ReceivedFineService receivedFineService;
 
+    @Autowired
+    private NotificationService notificationService;
+
     public GoalDTO addGoal(GoalDTO goalDTO) {
         GoalEntity entity = goalMapper.toEntity(goalDTO);
         mapPlayerAndMatch(entity, goalDTO);
@@ -73,6 +76,8 @@ public class GoalService {
 
     @Transactional
     public GoalMultiAddResponse addMultipleGoal(GoalListDTO goalListDTO) {
+        StringBuilder newGoalNotification = new StringBuilder();
+        StringBuilder newAssistNotification = new StringBuilder();
         GoalMultiAddResponse goalMultiAddResponse = new GoalMultiAddResponse();
         goalMultiAddResponse.setMatch(matchRepository.getReferenceById(goalListDTO.getMatchId()).getName());
         for (GoalDTO goalDTO : goalListDTO.getGoalList()) {
@@ -85,15 +90,30 @@ public class GoalService {
                 goalMultiAddResponse.addAssists(assistDiff);
                 goalDTO.setId(oldGoal.getId());
                 goalMultiAddResponse.setMatch(saveGoalToRepository(goalDTO).getMatch().getName());
+                String playerName = playerRepository.getReferenceById(goalDTO.getPlayerId()).getName();
+                if (goalDiff != 0) {
+                    newGoalNotification.append(playerName).append(" vstřelil gólů: ").append(goalDTO.getGoalNumber()).append("\n");
+                }
+                if (assistDiff != 0) {
+                    newAssistNotification.append(playerName).append(" má přihrávek: ").append(goalDTO.getAssistNumber()).append("\n");
+                }
             } else if (isNeededToAddGoal(oldGoal, goalDTO)) {
                 goalMultiAddResponse.addGoals(goalDTO.getGoalNumber());
                 goalMultiAddResponse.addAssists(goalDTO.getAssistNumber());
                 goalMultiAddResponse.setMatch(saveGoalToRepository(goalDTO).getMatch().getName());
+                String playerName = playerRepository.getReferenceById(goalDTO.getPlayerId()).getName();
+                if (goalDTO.getGoalNumber() != 0) {
+                    newGoalNotification.append(playerName).append(" vstřelil gólů: ").append(goalDTO.getGoalNumber()).append("\n");
+                }
+                if (goalDTO.getAssistNumber() != 0) {
+                    newAssistNotification.append(playerName).append(" má přihrávek: ").append(goalDTO.getAssistNumber()).append("\n");
+                }
             }
         }
         if (goalListDTO.isRewriteToFines()) {
             rewriteFinesInDB(goalListDTO.getMatchId(), goalListDTO.getGoalList());
         }
+        notificationService.addNotification("Přidány góly/asistence v zápase " + goalMultiAddResponse.getMatch(), newGoalNotification+newAssistNotification.toString());
         return goalMultiAddResponse;
     }
 

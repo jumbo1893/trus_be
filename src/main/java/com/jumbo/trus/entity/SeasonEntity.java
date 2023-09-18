@@ -22,10 +22,11 @@ public class SeasonEntity {
     private String name;
 
 
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "Europe/Prague")
     @Column(nullable = false)
     private Date fromDate;
 
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "Europe/Prague")
     @Column(nullable = false)
     private Date toDate;
 

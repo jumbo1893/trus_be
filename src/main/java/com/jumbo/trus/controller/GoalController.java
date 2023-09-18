@@ -10,6 +10,7 @@ import com.jumbo.trus.entity.filter.GoalFilter;
 import com.jumbo.trus.entity.filter.StatisticsFilter;
 import com.jumbo.trus.service.GoalService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 import org.webjars.NotFoundException;
 
@@ -22,6 +23,7 @@ public class GoalController {
     @Autowired
     GoalService goalService;
 
+    @Secured("ROLE_ADMIN")
     @PostMapping("/add")
     public GoalDTO addGoal(@RequestBody GoalDTO goalDTO) {
         return goalService.addGoal(goalDTO);
@@ -42,11 +44,13 @@ public class GoalController {
         return goalService.getAllDetailed(filter);
     }
 
+    @Secured("ROLE_ADMIN")
     @PostMapping("/multiple-add")
     public GoalMultiAddResponse addMultipleGoal(@RequestBody GoalListDTO goalListDTO) {
         return goalService.addMultipleGoal(goalListDTO);
     }
 
+    @Secured("ROLE_ADMIN")
     @DeleteMapping("/{goalId}")
     public void deleteGoal(@PathVariable Long goalId) throws NotFoundException {
         goalService.deleteGoal(goalId);

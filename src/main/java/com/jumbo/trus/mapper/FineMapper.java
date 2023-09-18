@@ -11,6 +11,7 @@ import org.mapstruct.Mapping;
 public abstract class FineMapper {
 
     @Mapping(target = "receivedFineList", ignore = true)
+    @Mapping(target = "editable", ignore = true)
     public abstract FineEntity toEntity(FineDTO source);
     public abstract FineDTO toDTO(FineEntity source);
 }

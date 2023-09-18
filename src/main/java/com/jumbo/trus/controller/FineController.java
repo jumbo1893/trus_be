@@ -10,6 +10,7 @@ import jakarta.servlet.ServletException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 import org.webjars.NotFoundException;
 
@@ -22,6 +23,7 @@ public class FineController {
     @Autowired
     FineService fineService;
 
+    @Secured("ROLE_ADMIN")
     @PostMapping("/add")
     public FineDTO addFine(@RequestBody FineDTO fineDTO) {
         return fineService.addFine(fineDTO);
@@ -32,11 +34,13 @@ public class FineController {
         return fineService.getAll(limit);
     }
 
+    @Secured("ROLE_ADMIN")
     @PutMapping("/{fineId}")
     public FineDTO editFine(@PathVariable Long fineId, @RequestBody FineDTO fineDTO) throws NotFoundException {
         return fineService.editFine(fineId, fineDTO);
     }
 
+    @Secured("ROLE_ADMIN")
     @DeleteMapping("/{fineId}")
     public void deleteFine(@PathVariable Long fineId) throws NotFoundException {
         fineService.deleteFine(fineId);

@@ -20,7 +20,7 @@ public class PlayerDTO {
 
     private String name;
 
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "Europe/Prague")
     private Date birthday;
 
     private boolean fan;

@@ -38,6 +38,9 @@ public class UserService implements UserDetailsService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private NotificationService notificationService;
+
     public UserDTO create(UserDTO user) {
         try {
             UserEntity entity = new UserEntity();
@@ -50,6 +53,7 @@ public class UserService implements UserDetailsService {
             dto.setId(entity.getId());
             dto.setMail(entity.getMail());
             dto.setAdmin(entity.isAdmin());
+            notificationService.addAdminNotification("Zaregistrován nový uživatel", entity.getMail());
             return dto;
         } catch (DataIntegrityViolationException e) {
             throw new DuplicateEmailException();
@@ -81,9 +85,6 @@ public class UserService implements UserDetailsService {
         }
         if(user.getName() != null) {
             userEntity.setName(user.getName());
-        }
-        if(user.getPlayerId() == -1) {
-            userEntity.setPlayerId(null);
         }
         else if(user.getPlayerId() != null) {
             userEntity.setPlayerId(user.getPlayerId());

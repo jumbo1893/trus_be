@@ -4,6 +4,7 @@ import com.jumbo.trus.dto.PlayerDTO;
 import com.jumbo.trus.entity.PlayerEntity;
 import com.jumbo.trus.service.PlayerService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 import org.webjars.NotFoundException;
 
@@ -16,6 +17,7 @@ public class PlayerController {
     @Autowired
     PlayerService playerService;
 
+    @Secured("ROLE_ADMIN")
     @PostMapping("/add")
     public PlayerDTO addPlayer(@RequestBody PlayerDTO playerDTO) {
         return playerService.addPlayer(playerDTO);
@@ -41,11 +43,13 @@ public class PlayerController {
         return playerService.getPlayer(playerId);
     }
 
+    @Secured("ROLE_ADMIN")
     @PutMapping("/{playerId}")
     public PlayerDTO editPlayer(@PathVariable Long playerId, @RequestBody PlayerDTO playerDTO) throws NotFoundException {
         return playerService.editPlayer(playerId, playerDTO);
     }
 
+    @Secured("ROLE_ADMIN")
     @DeleteMapping("/{playerId}")
     public void deletePlayer(@PathVariable Long playerId) throws NotFoundException {
         playerService.deletePlayer(playerId);

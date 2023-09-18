@@ -4,7 +4,9 @@ import com.jumbo.trus.config.Config;
 import com.jumbo.trus.dto.PlayerDTO;
 import com.jumbo.trus.dto.SeasonDTO;
 import com.jumbo.trus.dto.match.MatchDTO;
+import com.jumbo.trus.dto.match.MatchHelper;
 import com.jumbo.trus.dto.match.response.SetupMatchResponse;
+import com.jumbo.trus.entity.FineEntity;
 import com.jumbo.trus.entity.SeasonEntity;
 import com.jumbo.trus.entity.filter.BaseSeasonFilter;
 import com.jumbo.trus.entity.filter.SeasonFilter;
@@ -64,11 +66,16 @@ public class MatchService {
     @Autowired
     private PlayerService playerService;
 
+    @Autowired
+    private NotificationService notificationService;
+
     public MatchDTO addMatch(MatchDTO matchDTO) {
         MatchEntity entity = matchMapper.toEntity(matchDTO);
         entity.setPlayerList(new ArrayList<>());
         mapPlayersAndSeasonToMatch(entity, matchDTO);
         MatchEntity savedEntity = matchRepository.save(entity);
+        MatchHelper matchHelper = new MatchHelper(matchDTO);
+        notificationService.addNotification("Přidán nový zápas", matchHelper.getMatchWithOpponentNameAndDate());
         return matchMapper.toDTO(savedEntity);
     }
 
@@ -77,8 +84,14 @@ public class MatchService {
         return matchRepository.findAll(matchSpecification, PageRequest.of(0, matchFilter.getLimit())).stream().map(matchMapper::toDTO).collect(Collectors.toList());
     }
 
-    public List<MatchDTO> getMatchesByDate(int limit){
-        return matchRepository.getMatchesOrderByDate(limit).stream().map(matchMapper::toDTO).collect(Collectors.toList());
+    public List<MatchDTO> getMatchesByDate(int limit, boolean desc){
+        String order;
+        if (desc) {
+            return matchRepository.getMatchesOrderByDateDesc(limit).stream().map(matchMapper::toDTO).collect(Collectors.toList());
+        }
+        else {
+            return matchRepository.getMatchesOrderByDateAsc(limit).stream().map(matchMapper::toDTO).collect(Collectors.toList());
+        }
     }
 
     public List<PlayerDTO> getPlayerListByMatchId(Long matchId){
@@ -106,6 +119,8 @@ public class MatchService {
         entity.setId(matchId);
         mapPlayersAndSeasonToMatch(entity, matchDTO);
         MatchEntity savedEntity = matchRepository.save(entity);
+        MatchHelper matchHelper = new MatchHelper(matchDTO);
+        notificationService.addNotification("Upraven zápas", matchHelper.getMatchWithOpponentNameAndDate());
         return matchMapper.toDTO(savedEntity);
     }
 
@@ -119,6 +134,9 @@ public class MatchService {
         receivedFineRepository.deleteByMatchId(matchId);
         goalRepository.deleteByMatchId(matchId);
         beerRepository.deleteByMatchId(matchId);
+        MatchEntity matchEntity = matchRepository.getReferenceById(matchId);
+        MatchHelper matchHelper = new MatchHelper(matchMapper.toDTO(matchEntity));
+        notificationService.addNotification("Smazán zápas", matchHelper.getMatchWithOpponentNameAndDate());
         matchRepository.deleteById(matchId);
     }
 
@@ -148,7 +166,7 @@ public class MatchService {
     public MatchDTO getLatestMatchBySeasonId(long seasonId) {
         MatchEntity matchEntity;
         if (seasonId == ALL_SEASON_ID) {
-            List<MatchEntity> matchEntities = matchRepository.getMatchesOrderByDate(1);
+            List<MatchEntity> matchEntities = matchRepository.getMatchesOrderByDateDesc(1);
             if (matchEntities.isEmpty()) {
                 return null;
             }

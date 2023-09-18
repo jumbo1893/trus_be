@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.Date;
 
 public class Config {
+    public static final String ADMIN_USER_NAME = "Admin";
     public static long AUTOMATIC_SEASON_ID = -2;
     public static String AUTOMATIC_SEASON_NAME = "Automaticky přiřadit sezonu";
     public static Date AUTOMATIC_SEASON_DATE = Date.from(Instant.EPOCH);
@@ -19,4 +20,5 @@ public class Config {
     public static long GOAL_FINE_ID = -1;
 
     public static long HATTRICK_FINE_ID = -2;
+
 }

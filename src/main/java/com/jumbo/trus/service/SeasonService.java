@@ -3,6 +3,7 @@ package com.jumbo.trus.service;
 import com.jumbo.trus.config.Config;
 import com.jumbo.trus.dto.SeasonDTO;
 import com.jumbo.trus.entity.MatchEntity;
+import com.jumbo.trus.entity.PlayerEntity;
 import com.jumbo.trus.entity.filter.SeasonFilter;
 import com.jumbo.trus.entity.repository.MatchRepository;
 import com.jumbo.trus.mapper.SeasonMapper;
@@ -34,10 +35,14 @@ public class SeasonService {
     @Autowired
     private SeasonMapper seasonMapper;
 
+    @Autowired
+    private NotificationService notificationService;
+
     public SeasonDTO addSeason(SeasonDTO seasonDTO) {
         validateSeason(seasonDTO.getFromDate(), seasonDTO.getFromDate(), null);
         SeasonEntity entity = seasonMapper.toEntity(seasonDTO);
         SeasonEntity savedEntity = seasonRepository.save(entity);
+        notificationService.addNotification("Přidána nová sezona", seasonDTO.getName() + " se začátkem " + seasonDTO.getFromDate() + " a koncem " + seasonDTO.getToDate());
         return seasonMapper.toDTO(savedEntity);
     }
 
@@ -89,6 +94,7 @@ public class SeasonService {
         SeasonEntity entity = seasonMapper.toEntity(seasonDTO);
         entity.setId(seasonId);
         SeasonEntity savedEntity = seasonRepository.save(entity);
+        notificationService.addNotification("Upravena sezona", seasonDTO.getName() + " se začátkem " + seasonDTO.getFromDate() + " a koncem " + seasonDTO.getToDate());
         return seasonMapper.toDTO(savedEntity);
     }
 
@@ -96,6 +102,8 @@ public class SeasonService {
     public void deleteSeason(Long seasonId) {
         seasonRepository.updateSeasonId(seasonId);
         matchRepository.updateSeasonId(seasonId);
+        SeasonEntity seasonEntity = seasonRepository.getReferenceById(seasonId);
+        notificationService.addNotification("Přidána nová sezona", seasonEntity.getName() + " se začátkem " + seasonEntity.getFromDate() + " a koncem " + seasonEntity.getToDate());
         seasonRepository.deleteById(seasonId);
     }
 

@@ -56,6 +56,9 @@ public class BeerService {
     @Autowired
     private BeerDetailedMapper beerDetailedMapper;
 
+    @Autowired
+    private NotificationService notificationService;
+
     public BeerDTO addBeer(BeerDTO beerDTO) {
         BeerEntity entity = beerMapper.toEntity(beerDTO);
         mapPlayerAndMatch(entity, beerDTO);
@@ -64,6 +67,8 @@ public class BeerService {
     }
 
     public BeerMultiAddResponse addMultipleBeer(BeerListDTO beerListDTO) {
+        StringBuilder newBeerNotification = new StringBuilder();
+        StringBuilder newLiquorNotification = new StringBuilder();
         BeerMultiAddResponse beerMultiAddResponse = new BeerMultiAddResponse();
         beerMultiAddResponse.setMatch(matchRepository.getReferenceById(beerListDTO.getMatchId()).getName());
         for (BeerNoMatchDTO beerNoMatchDTO : beerListDTO.getBeerList()) {
@@ -72,12 +77,27 @@ public class BeerService {
             if (oldBeer != null && (beerDTO.getBeerNumber() != oldBeer.getBeerNumber() || beerDTO.getLiquorNumber() != oldBeer.getLiquorNumber())) {
                 beerMultiAddResponse.addBeersLiquorsAndPlayer(beerDTO.getBeerNumber() - oldBeer.getBeerNumber(), beerDTO.getLiquorNumber() - oldBeer.getLiquorNumber(), false);
                 beerDTO.setId(oldBeer.getId());
-                saveBeerToRepository(beerDTO).getMatch().getName();
+                saveBeerToRepository(beerDTO);
+                String playerName = playerRepository.getReferenceById(beerNoMatchDTO.getPlayerId()).getName() + " vypil ";
+                if (beerDTO.getBeerNumber() != oldBeer.getBeerNumber()) {
+                    newBeerNotification.append(playerName).append("piv: ").append(beerDTO.getBeerNumber()).append("\n");
+                }
+                if (beerDTO.getLiquorNumber() != oldBeer.getLiquorNumber()) {
+                    newLiquorNotification.append(playerName).append("panáků: ").append(beerDTO.getLiquorNumber()).append("\n");
+                }
             } else if (oldBeer == null && (beerDTO.getBeerNumber() != 0 || beerDTO.getLiquorNumber() != 0)) {
                 beerMultiAddResponse.addBeersLiquorsAndPlayer(beerDTO.getBeerNumber(), beerDTO.getLiquorNumber(), true);
-                saveBeerToRepository(beerDTO).getMatch().getName();
+                saveBeerToRepository(beerDTO);
+                String playerName = playerRepository.getReferenceById(beerNoMatchDTO.getPlayerId()).getName() + " vypil ";
+                if (beerDTO.getBeerNumber() != 0) {
+                    newBeerNotification.append(playerName).append("piv: ").append(beerDTO.getBeerNumber()).append("\n");
+                }
+                if (beerDTO.getLiquorNumber() != 0) {
+                    newLiquorNotification.append(playerName).append("panáků: ").append(beerDTO.getLiquorNumber()).append("\n");
+                }
             }
         }
+        notificationService.addNotification("Přidáno pivka v zápase " + beerMultiAddResponse.getMatch(), newBeerNotification+newLiquorNotification.toString());
         return beerMultiAddResponse;
     }
 

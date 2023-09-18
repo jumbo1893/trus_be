@@ -9,6 +9,7 @@ import com.jumbo.trus.entity.filter.ReceivedFineFilter;
 import com.jumbo.trus.entity.filter.StatisticsFilter;
 import com.jumbo.trus.service.ReceivedFineService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 import org.webjars.NotFoundException;
 
@@ -21,11 +22,13 @@ public class ReceivedFineController {
     @Autowired
     ReceivedFineService receivedFineService;
 
+    @Secured("ROLE_ADMIN")
     @PostMapping("/add")
     public ReceivedFineDTO addFine(@RequestBody ReceivedFineDTO receivedFineDTO) {
         return receivedFineService.addFine(receivedFineDTO);
     }
 
+    @Secured("ROLE_ADMIN")
     @PostMapping("/player-add")
     public ReceivedFineResponse addFinesToPlayer(@RequestBody ReceivedFineListDTO receivedFineListDTO) {
         return receivedFineService.addFineToPlayer(receivedFineListDTO);
@@ -41,11 +44,13 @@ public class ReceivedFineController {
         return receivedFineService.getAllDetailed(filter);
     }
 
+    @Secured("ROLE_ADMIN")
     @PostMapping("/multiple-add")
     public ReceivedFineResponse addMultipleFine(@RequestBody ReceivedFineListDTO receivedFineListDTO) {
         return receivedFineService.addMultipleFines(receivedFineListDTO);
     }
 
+    @Secured("ROLE_ADMIN")
     @DeleteMapping("/{fineId}")
     public void deleteMatch(@PathVariable Long fineId) throws NotFoundException {
         receivedFineService.deleteFine(fineId);

@@ -73,7 +73,8 @@ public class HomeService {
             }
         }
         List<Coordinate> coordinates = new ArrayList<>();
-        List<MatchDTO> matches = matchService.getMatchesByDate(5);
+        List<MatchDTO> matches = matchService.getMatchesByDate(5, true);
+        Collections.reverse(matches);
         int beerMaximum = 0;
         int fineMaximum = 0;
         for (MatchDTO match : matches) {

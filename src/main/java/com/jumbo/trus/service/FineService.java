@@ -28,9 +28,13 @@ public class FineService {
     @Autowired
     private FineMapper fineMapper;
 
+    @Autowired
+    private NotificationService notificationService;
+
     public FineDTO addFine(FineDTO fineDTO) {
         FineEntity entity = fineMapper.toEntity(fineDTO);
         FineEntity savedEntity = fineRepository.save(entity);
+        notificationService.addNotification("Přidána pokuta " + fineDTO.getName(), "ve výši " + fineDTO.getAmount() + " Kč");
         return fineMapper.toDTO(savedEntity);
     }
 
@@ -60,6 +64,7 @@ public class FineService {
         FineEntity entity = fineMapper.toEntity(fineDTO);
         entity.setId(fineId);
         FineEntity savedEntity = fineRepository.save(entity);
+        notificationService.addNotification("Upravena pokuta " + fineDTO.getName(), "ve výši " + fineDTO.getAmount() + " Kč");
         return fineMapper.toDTO(savedEntity);
     }
 
@@ -69,6 +74,8 @@ public class FineService {
             throw new NonEditableEntityException("Tuto pokutu nelze smazat");
         }
         else {
+            FineEntity fineEntity = fineRepository.getReferenceById(fineId);
+            notificationService.addNotification("Smazána pokuta " + fineEntity.getName(), "ve výši " + fineEntity.getAmount() + " Kč");
             receivedFineRepository.deleteByFineId(fineId);
             fineRepository.deleteById(fineId);
         }

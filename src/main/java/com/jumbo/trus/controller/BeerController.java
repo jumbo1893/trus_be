@@ -9,6 +9,7 @@ import com.jumbo.trus.entity.filter.BeerFilter;
 import com.jumbo.trus.entity.filter.StatisticsFilter;
 import com.jumbo.trus.service.BeerService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import org.webjars.NotFoundException;
@@ -26,6 +27,7 @@ public class BeerController {
     @Autowired
     BeerService beerService;
 
+    @Secured("ROLE_ADMIN")
     @PostMapping("/add")
     public BeerDTO addBeer(@RequestBody BeerDTO beerDTO) {
         return beerService.addBeer(beerDTO);
@@ -52,11 +54,13 @@ public class BeerController {
         return beerService.getAllDetailed(filter);
     }
 
+    @Secured("ROLE_ADMIN")
     @PostMapping("/multiple-add")
     public BeerMultiAddResponse addMultipleBeer(@RequestBody BeerListDTO beerListDTO) {
         return beerService.addMultipleBeer(beerListDTO);
     }
 
+    @Secured("ROLE_ADMIN")
     @DeleteMapping("/{beerId}")
     public void deleteMatch(@PathVariable Long beerId) throws NotFoundException {
         beerService.deleteBeer(beerId);

@@ -1,6 +1,8 @@
 package com.jumbo.trus.service;
 
 import com.jumbo.trus.dto.PlayerDTO;
+import com.jumbo.trus.dto.match.MatchHelper;
+import com.jumbo.trus.entity.MatchEntity;
 import com.jumbo.trus.entity.repository.BeerRepository;
 import com.jumbo.trus.entity.repository.GoalRepository;
 import com.jumbo.trus.entity.repository.ReceivedFineRepository;
@@ -38,9 +40,13 @@ public class PlayerService {
     @Autowired
     private GoalRepository goalRepository;
 
+    @Autowired
+    private NotificationService notificationService;
+
     public PlayerDTO addPlayer(PlayerDTO playerDTO) {
         PlayerEntity entity = playerMapper.toEntity(playerDTO);
         PlayerEntity savedEntity = playerRepository.save(entity);
+        notificationService.addNotification("Přidán " + (playerDTO.isFan() ? "fanoušek" : "hráč"), playerDTO.getName() + ", s narozeninami " + playerDTO.getBirthday());
         return playerMapper.toDTO(savedEntity);
     }
 
@@ -77,8 +83,8 @@ public class PlayerService {
         }
         PlayerEntity entity = playerMapper.toEntity(playerDTO);
         entity.setId(playerId);
-        System.out.println(entity);
         PlayerEntity savedEntity = playerRepository.save(entity);
+        notificationService.addNotification("Upraven " + (playerDTO.isFan() ? "fanoušek" : "hráč"), playerDTO.getName() + ", s narozeninami " + playerDTO.getBirthday());
         return playerMapper.toDTO(savedEntity);
     }
 
@@ -88,6 +94,8 @@ public class PlayerService {
         receivedFineRepository.deleteByPlayerId(playerId);
         goalRepository.deleteByPlayerId(playerId);
         beerRepository.deleteByPlayerId(playerId);
+        PlayerEntity playerEntity = playerRepository.getReferenceById(playerId);
+        notificationService.addNotification("Upraven " + (playerEntity.isFan() ? "fanoušek" : "hráč"), playerEntity.getName() + ", s narozeninami " + playerEntity.getBirthday());
         playerRepository.deleteById(playerId);
     }
 

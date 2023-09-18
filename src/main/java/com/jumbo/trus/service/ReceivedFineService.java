@@ -62,6 +62,9 @@ public class ReceivedFineService {
     @Autowired
     private FineService fineService;
 
+    @Autowired
+    private NotificationService notificationService;
+
     public ReceivedFineDTO addFine(ReceivedFineDTO receivedFineDTO) {
         ReceivedFineEntity entity = receivedFineMapper.toEntity(receivedFineDTO);
         mapPlayerMatchAndFine(entity, receivedFineDTO);
@@ -70,19 +73,22 @@ public class ReceivedFineService {
     }
 
     public ReceivedFineResponse addFineToPlayer(ReceivedFineListDTO receivedFineListDTO) {
+        StringBuilder notificationText = new StringBuilder();
         ReceivedFineResponse receivedFineResponse = new ReceivedFineResponse(matchRepository.getReferenceById(receivedFineListDTO.getMatchId()).getName());
         receivedFineResponse.setPlayer(playerRepository.getReferenceById(receivedFineListDTO.getPlayerId()).getName());
         for (ReceivedFineDTO receivedFineDTO : receivedFineListDTO.getFineList()) {
             receivedFineDTO.setMatchId(receivedFineListDTO.getMatchId());
             receivedFineDTO.setPlayerId(receivedFineListDTO.getPlayerId());
-            saveFineAndSetResponse(receivedFineDTO, receivedFineResponse, false);
+            notificationText.append(saveFineAndSetResponse(receivedFineDTO, receivedFineResponse, false));
         }
+        notificationService.addNotification("V zápase " + receivedFineResponse.getMatch() + " byly přidány pokuty hráči " + receivedFineResponse.getPlayer(), notificationText.toString());
         return receivedFineResponse;
     }
 
     public ReceivedFineResponse addMultipleFines(ReceivedFineListDTO receivedFineListDTO) {
         ReceivedFineResponse receivedFineResponse = new ReceivedFineResponse(matchRepository.getReferenceById(receivedFineListDTO.getMatchId()).getName());
-        iterateMultiListOfReceivedFines(receivedFineListDTO, receivedFineResponse);
+        String notificationText = iterateMultiListOfReceivedFines(receivedFineListDTO, receivedFineResponse);
+        notificationService.addNotification("V zápase " + receivedFineResponse.getMatch(), notificationText);
         return receivedFineResponse;
     }
 
@@ -247,7 +253,8 @@ public class ReceivedFineService {
      * @param multi                        true, pokud se jedná o multipokutu
      *                                     Pokud je počet pokut vyšší než 0, tak metoda zjistí, zda má přidat pokutu již k uložené pokutě v db (dle id) či založit novou. Následně přičte počet pokut k response
      */
-    private void saveFineAndSetResponse(ReceivedFineDTO receivedFineDTO, ReceivedFineResponse receivedFineResponse, boolean multi) {
+    private String saveFineAndSetResponse(ReceivedFineDTO receivedFineDTO, ReceivedFineResponse receivedFineResponse, boolean multi) {
+        String notificationResponse = "";
         ReceivedFineDTO oldFine = getReceivedFineDtoByPlayerAndMatchAndFine(receivedFineDTO);
         if (multi && receivedFineDTO.getFineNumber() != 0) {
             receivedFineResponse.addFine(receivedFineDTO.getFineNumber());
@@ -255,11 +262,14 @@ public class ReceivedFineService {
                 receivedFineDTO.addFinesToFineNumber(oldFine.getFineNumber());
             }
             chooseIfRewriteDBOrCreateNewRow(receivedFineDTO, oldFine);
+            notificationResponse = receivedFineDTO.getFine().getName() + ": " + receivedFineDTO.getFineNumber() + "\n";
 
         } else if (!multi && isNecessaryToRewriteDB(receivedFineDTO, oldFine)) {
             receivedFineResponse.addFine(receivedFineDTO.getFineNumber());
             chooseIfRewriteDBOrCreateNewRow(receivedFineDTO, oldFine);
+            notificationResponse = receivedFineDTO.getFine().getName() + ": " + receivedFineDTO.getFineNumber() + "\n";
         }
+        return notificationResponse;
     }
 
     private void chooseIfRewriteDBOrCreateNewRow(ReceivedFineDTO receivedFineDTO, ReceivedFineDTO oldFine) {
@@ -275,8 +285,12 @@ public class ReceivedFineService {
      * @param receivedFineResponse instance objektu response, který pak vracíme
      *                                     metoda projde všechny hráče, kteří přišli v requestu a zároveň všechny pokuty, uloží je a obohatí response o výsledek
      */
-    private void iterateMultiListOfReceivedFines(ReceivedFineListDTO receivedFineListDTO, ReceivedFineResponse
+    private String iterateMultiListOfReceivedFines(ReceivedFineListDTO receivedFineListDTO, ReceivedFineResponse
             receivedFineResponse) {
+        StringBuilder notificationPlayer = new StringBuilder();
+        StringBuilder notificationFine = new StringBuilder();
+        boolean allFinesWroteToNotification = false;
+        notificationPlayer.append("Byly navýšeny pokuty hráčům ");
         for (Long playerId : receivedFineListDTO.getPlayerIdList()) {
             for (ReceivedFineDTO receivedFineDTO : receivedFineListDTO.getFineList()) {
                 ReceivedFineDTO newReceivedFineDTO = new ReceivedFineDTO();
@@ -284,10 +298,18 @@ public class ReceivedFineService {
                 newReceivedFineDTO.setPlayerId(playerId);
                 newReceivedFineDTO.setFineNumber(receivedFineDTO.getFineNumber());
                 newReceivedFineDTO.setFine(receivedFineDTO.getFine());
-                saveFineAndSetResponse(newReceivedFineDTO, receivedFineResponse, true);
+                if (!allFinesWroteToNotification) {
+                    notificationFine.append(saveFineAndSetResponse(newReceivedFineDTO, receivedFineResponse, true));
+                }
             }
+            allFinesWroteToNotification = true;
+            notificationPlayer.append(playerRepository.getReferenceById(playerId).getName()).append(", ");
             receivedFineResponse.addEditedPlayer();
         }
+        int lastChar = notificationPlayer.length() - 1;
+        notificationPlayer.deleteCharAt(lastChar);
+        notificationPlayer.append(" o:");
+        return notificationPlayer+"\n"+notificationFine;
     }
 
     /**

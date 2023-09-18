@@ -1,6 +1,7 @@
 package com.jumbo.trus.entity.repository;
 
 import com.jumbo.trus.entity.BeerEntity;
+import com.jumbo.trus.entity.SeasonEntity;
 import com.jumbo.trus.entity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -14,6 +15,8 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
     Optional<UserEntity> findByMail(String userName);
+
+
 
 }
 
