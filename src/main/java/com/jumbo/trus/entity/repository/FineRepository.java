@@ -14,6 +14,9 @@ public interface FineRepository extends JpaRepository<FineEntity, Long> {
     @Query(value = "SELECT * from fine ORDER BY name ASC LIMIT :limit ", nativeQuery = true)
     List<FineEntity> getAll(@Param("limit") int limit);
 
-    @Query(value = "SELECT * from fine WHERE id NOT IN :fineIds ORDER BY name ASC" , nativeQuery = true)
+    @Query(value = "SELECT * from fine WHERE inactive = false OR inactive IS NULL ORDER BY name ASC LIMIT :limit ", nativeQuery = true)
+    List<FineEntity> getAllActive(@Param("limit") int limit);
+
+    @Query(value = "SELECT * from fine WHERE id NOT IN :fineIds AND (inactive = false OR inactive IS NULL) ORDER BY name ASC" , nativeQuery = true)
     List<FineEntity> getAllOtherFines(@Param("fineIds") Collection<Long> fineIds);
 }

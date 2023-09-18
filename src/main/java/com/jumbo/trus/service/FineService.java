@@ -39,7 +39,7 @@ public class FineService {
     }
 
     public List<FineDTO> getAll(int limit){
-        List<FineEntity> fineEntities = fineRepository.getAll(limit);
+        List<FineEntity> fineEntities = fineRepository.getAllActive(limit);
         List<FineDTO> result = new ArrayList<>();
         for(FineEntity e : fineEntities){
             result.add(fineMapper.toDTO(e));
@@ -47,25 +47,53 @@ public class FineService {
         return result;
     }
 
+    @Transactional
     public FineDTO editFine(Long fineId, FineDTO fineDTO) throws NotFoundException {
         if (!fineRepository.existsById(fineId)) {
             throw new NotFoundException("Pokuta s id " + fineId + " nenalezena v db");
         }
-        if(fineId == Config.GOAL_FINE_ID || fineId == Config.HATTRICK_FINE_ID) {
-            FineEntity fineEntity = fineRepository.findById(fineId).orElseThrow(() -> new NotFoundException("Pokuta nenalezena v db"));
-            fineEntity.setAmount(fineDTO.getAmount());
-            if (fineId == Config.GOAL_FINE_ID) {
-                fineEntity.setName("Gól");
+        if (fineDTO.isInactive()) {
+            if(fineId == Config.GOAL_FINE_ID || fineId == Config.HATTRICK_FINE_ID) {
+                FineEntity nonEditableEntity = fineRepository.findById(fineId).orElseThrow(() -> new NotFoundException("Pokuta nenalezena v db"));
+                FineEntity fineEntity = new FineEntity();
+                fineEntity.setEditable(false);
+                fineEntity.setInactive(true);
+                fineEntity.setName(nonEditableEntity.getName());
+                fineEntity.setAmount(nonEditableEntity.getAmount());
+                FineEntity savedEntity = fineRepository.save(fineEntity);
+                receivedFineRepository.updateByFineId(fineId, savedEntity.getId());
+                fineDTO.setInactive(false);
+                return editNonEditableFines(fineId, fineDTO);
             }
-            fineRepository.save(fineEntity);
-            return fineMapper.toDTO(fineEntity);
+            FineEntity inactiveEntity = fineRepository.findById(fineId).orElseThrow(() -> new NotFoundException("Pokuta nenalezena v db"));
+            inactiveEntity.setInactive(true);
+            fineRepository.save(inactiveEntity);
+            FineEntity entity = fineMapper.toEntity(fineDTO);
+            entity.setId(null);
+            entity.setInactive(false);
+            notificationService.addNotification("Upravena pokuta " + fineDTO.getName(), "ve výši " + fineDTO.getAmount() + " Kč");
+            FineEntity savedEntity = fineRepository.save(entity);
+            return fineMapper.toDTO(savedEntity);
         }
-
+        if(fineId == Config.GOAL_FINE_ID || fineId == Config.HATTRICK_FINE_ID) {
+            return editNonEditableFines(fineId, fineDTO);
+        }
         FineEntity entity = fineMapper.toEntity(fineDTO);
         entity.setId(fineId);
         FineEntity savedEntity = fineRepository.save(entity);
         notificationService.addNotification("Upravena pokuta " + fineDTO.getName(), "ve výši " + fineDTO.getAmount() + " Kč");
         return fineMapper.toDTO(savedEntity);
+    }
+
+    private FineDTO editNonEditableFines(Long fineId, FineDTO fineDTO) {
+        FineEntity fineEntity = fineRepository.findById(fineId).orElseThrow(() -> new NotFoundException("Pokuta nenalezena v db"));
+        fineEntity.setAmount(fineDTO.getAmount());
+        if (fineId == Config.GOAL_FINE_ID) {
+            fineEntity.setName("Gól");
+        }
+        fineRepository.save(fineEntity);
+        notificationService.addNotification("Upravena pokuta " + fineDTO.getName(), "ve výši " + fineDTO.getAmount() + " Kč");
+        return fineMapper.toDTO(fineEntity);
     }
 
     @Transactional

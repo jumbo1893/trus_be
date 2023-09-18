@@ -19,4 +19,6 @@ public class FineDTO {
 
     private int amount;
 
+    private boolean inactive;
+
 }

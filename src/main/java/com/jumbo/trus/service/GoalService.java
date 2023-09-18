@@ -235,7 +235,7 @@ public class GoalService {
     }
 
     private void addGoalFine(int number, long playerId, long matchId) {
-        FineDTO goalFine = new FineDTO(Config.GOAL_FINE_ID, "", 0);
+        FineDTO goalFine = new FineDTO(Config.GOAL_FINE_ID, "", 0, false);
         ReceivedFineDTO receivedFine = new ReceivedFineDTO(number, goalFine, playerId, matchId);
         receivedFineService.addFine(receivedFine);
     }
@@ -250,7 +250,7 @@ public class GoalService {
     }
 
     private void addHattrickFine(int number, long playerId, long matchId) {
-        FineDTO hattrickFine = new FineDTO(Config.HATTRICK_FINE_ID, "", 0);
+        FineDTO hattrickFine = new FineDTO(Config.HATTRICK_FINE_ID, "", 0, false);
         ReceivedFineDTO receivedFine = new ReceivedFineDTO(number, hattrickFine, playerId, matchId);
         receivedFineService.addFine(receivedFine);
     }

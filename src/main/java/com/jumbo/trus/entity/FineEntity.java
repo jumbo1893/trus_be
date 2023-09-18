@@ -25,6 +25,9 @@ public class FineEntity {
     @ColumnDefault("true")
     private boolean editable = true;
 
+    @ColumnDefault("false")
+    private boolean inactive = false;
+
     @OneToMany(mappedBy = "fine")
     private List<ReceivedFineEntity> receivedFineList;
 }
