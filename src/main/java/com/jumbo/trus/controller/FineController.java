@@ -2,11 +2,8 @@ package com.jumbo.trus.controller;
 
 import com.jumbo.trus.controller.error.ErrorResponse;
 import com.jumbo.trus.dto.FineDTO;
-import com.jumbo.trus.dto.SeasonDTO;
 import com.jumbo.trus.service.FineService;
-import com.jumbo.trus.service.SeasonService;
 import com.jumbo.trus.service.exceptions.NonEditableEntityException;
-import jakarta.servlet.ServletException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

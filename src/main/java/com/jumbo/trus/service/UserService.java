@@ -1,19 +1,10 @@
 package com.jumbo.trus.service;
 
-import com.jumbo.trus.dto.FineDTO;
 import com.jumbo.trus.dto.UserDTO;
-import com.jumbo.trus.dto.match.MatchDTO;
-import com.jumbo.trus.entity.FineEntity;
-import com.jumbo.trus.entity.MatchEntity;
 import com.jumbo.trus.entity.UserEntity;
-import com.jumbo.trus.entity.filter.MatchFilter;
-import com.jumbo.trus.entity.repository.FineRepository;
 import com.jumbo.trus.entity.repository.UserRepository;
-import com.jumbo.trus.entity.repository.specification.MatchSpecification;
-import com.jumbo.trus.mapper.FineMapper;
 import com.jumbo.trus.service.exceptions.AuthException;
 import com.jumbo.trus.service.exceptions.DuplicateEmailException;
-import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
@@ -27,7 +18,6 @@ import org.webjars.NotFoundException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class UserService implements UserDetailsService {

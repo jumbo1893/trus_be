@@ -1,6 +1,5 @@
 package com.jumbo.trus.controller;
 
-import com.jumbo.trus.dto.beer.response.get.BeerDetailedResponse;
 import com.jumbo.trus.dto.goal.GoalDTO;
 import com.jumbo.trus.dto.goal.multi.GoalListDTO;
 import com.jumbo.trus.dto.goal.response.GoalMultiAddResponse;

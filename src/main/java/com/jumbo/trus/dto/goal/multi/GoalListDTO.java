@@ -16,7 +16,6 @@ public class GoalListDTO {
     @NotNull
     private Long matchId;
 
-    @NotNull
     private boolean rewriteToFines;
 
     @NotNull

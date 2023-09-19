@@ -1,7 +1,6 @@
 package com.jumbo.trus.dto.receivedfine;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.jumbo.trus.dto.FineDTO;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;

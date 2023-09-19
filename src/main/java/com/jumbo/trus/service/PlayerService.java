@@ -1,8 +1,6 @@
 package com.jumbo.trus.service;
 
 import com.jumbo.trus.dto.PlayerDTO;
-import com.jumbo.trus.dto.match.MatchHelper;
-import com.jumbo.trus.entity.MatchEntity;
 import com.jumbo.trus.entity.repository.BeerRepository;
 import com.jumbo.trus.entity.repository.GoalRepository;
 import com.jumbo.trus.entity.repository.ReceivedFineRepository;
@@ -12,15 +10,11 @@ import com.jumbo.trus.entity.repository.PlayerRepository;
 import com.jumbo.trus.service.helper.BirthdayCalculator;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.webjars.NotFoundException;
 
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class PlayerService {

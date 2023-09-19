@@ -12,16 +12,12 @@ import java.util.List;
 @NoArgsConstructor
 public class BeerDetailedResponse {
 
-    @NotNull
     private int playersCount = 0;
 
-    @NotNull
     private int matchesCount = 0;
 
-    @NotNull
     private int totalBeers = 0;
 
-    @NotNull
     private int totalLiquors = 0;
 
     @NotNull

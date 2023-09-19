@@ -2,8 +2,6 @@ package com.jumbo.trus.controller.advice;
 
 import com.jumbo.trus.controller.error.ErrorResponse;
 import com.jumbo.trus.service.exceptions.AuthException;
-import com.jumbo.trus.service.exceptions.DuplicateEmailException;
-import jakarta.servlet.ServletException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;

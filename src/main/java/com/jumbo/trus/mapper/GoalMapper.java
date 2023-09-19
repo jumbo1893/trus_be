@@ -1,8 +1,6 @@
 package com.jumbo.trus.mapper;
 
-import com.jumbo.trus.dto.beer.BeerDTO;
 import com.jumbo.trus.dto.goal.GoalDTO;
-import com.jumbo.trus.entity.BeerEntity;
 import com.jumbo.trus.entity.GoalEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

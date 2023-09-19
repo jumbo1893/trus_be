@@ -3,7 +3,6 @@ package com.jumbo.trus.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.util.List;
 
 @Entity(name = "goal")
 @Data

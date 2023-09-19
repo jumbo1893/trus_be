@@ -319,7 +319,7 @@ public class ReceivedFineService {
     private ReceivedFineDTO getReceivedFineDtoByPlayerAndMatchAndFine(ReceivedFineDTO receivedFineDTO) {
         ReceivedFineFilter filter = new ReceivedFineFilter(receivedFineDTO.getMatchId(), receivedFineDTO.getPlayerId(), receivedFineDTO.getFine().getId());
         ReceivedFineSpecification receivedFineSpecification = new ReceivedFineSpecification(filter);
-        List<ReceivedFineDTO> filterList = receivedFineRepository.findAll(receivedFineSpecification, PageRequest.of(0, 1)).stream().map(receivedFineMapper::toDTO).collect(Collectors.toList());
+        List<ReceivedFineDTO> filterList = receivedFineRepository.findAll(receivedFineSpecification, PageRequest.of(0, 1)).stream().map(receivedFineMapper::toDTO).toList();
         if (filterList.isEmpty()) {
             return null;
         }

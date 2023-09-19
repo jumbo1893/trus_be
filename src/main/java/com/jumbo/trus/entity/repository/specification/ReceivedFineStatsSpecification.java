@@ -4,6 +4,7 @@ import com.jumbo.trus.config.Config;
 import com.jumbo.trus.entity.*;
 import com.jumbo.trus.entity.filter.StatisticsFilter;
 import jakarta.persistence.criteria.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -16,7 +17,7 @@ public class ReceivedFineStatsSpecification implements Specification<ReceivedFin
     private final StatisticsFilter filter;
 
     @Override
-    public Predicate toPredicate(Root<ReceivedFineEntity> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
+    public Predicate toPredicate(@NotNull Root<ReceivedFineEntity> root, @NotNull CriteriaQuery<?> query, @NotNull CriteriaBuilder criteriaBuilder) {
         List<Predicate> predicates = new ArrayList<>();
 
 

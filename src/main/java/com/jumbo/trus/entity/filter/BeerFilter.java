@@ -1,7 +1,6 @@
 package com.jumbo.trus.entity.filter;
 
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;

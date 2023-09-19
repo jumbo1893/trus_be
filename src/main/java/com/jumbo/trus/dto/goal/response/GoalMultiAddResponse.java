@@ -10,10 +10,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class GoalMultiAddResponse {
 
-    @NotNull
     private int totalGoalsAdded = 0;
 
-    @NotNull
     private int totalAssistAdded = 0;
 
     @NotNull

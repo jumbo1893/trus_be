@@ -3,6 +3,7 @@ package com.jumbo.trus.entity.repository.specification;
 import com.jumbo.trus.entity.*;
 import com.jumbo.trus.entity.filter.ReceivedFineFilter;
 import jakarta.persistence.criteria.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -15,7 +16,7 @@ public class ReceivedFineSpecification implements Specification<ReceivedFineEnti
     private final ReceivedFineFilter filter;
 
     @Override
-    public Predicate toPredicate(Root<ReceivedFineEntity> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
+    public Predicate toPredicate(@NotNull Root<ReceivedFineEntity> root, @NotNull CriteriaQuery<?> query, @NotNull CriteriaBuilder criteriaBuilder) {
         List<Predicate> predicates = new ArrayList<>();
 
         if (filter.getMatchId() != null) {

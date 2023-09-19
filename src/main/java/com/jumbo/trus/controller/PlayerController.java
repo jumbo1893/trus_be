@@ -1,7 +1,6 @@
 package com.jumbo.trus.controller;
 
 import com.jumbo.trus.dto.PlayerDTO;
-import com.jumbo.trus.entity.PlayerEntity;
 import com.jumbo.trus.service.PlayerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;

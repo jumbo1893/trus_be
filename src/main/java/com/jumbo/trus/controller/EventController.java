@@ -4,7 +4,6 @@ import com.jumbo.trus.dto.EventDTO;
 import com.jumbo.trus.service.emitter.EmitterService;
 import com.jumbo.trus.service.emitter.NotificationService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;

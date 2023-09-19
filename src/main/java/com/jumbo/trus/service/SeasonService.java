@@ -2,8 +2,6 @@ package com.jumbo.trus.service;
 
 import com.jumbo.trus.config.Config;
 import com.jumbo.trus.dto.SeasonDTO;
-import com.jumbo.trus.entity.MatchEntity;
-import com.jumbo.trus.entity.PlayerEntity;
 import com.jumbo.trus.entity.filter.SeasonFilter;
 import com.jumbo.trus.entity.repository.MatchRepository;
 import com.jumbo.trus.mapper.SeasonMapper;

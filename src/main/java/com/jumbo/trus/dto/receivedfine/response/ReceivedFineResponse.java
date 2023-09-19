@@ -14,7 +14,6 @@ public class ReceivedFineResponse {
 
     private String player;
 
-    @NotNull
     private int totalFinesAdded = 0;
 
     @NotNull
@@ -28,7 +27,7 @@ public class ReceivedFineResponse {
         totalFinesAdded+=number;
     }
 
-    public ReceivedFineResponse(String match) {
+    public ReceivedFineResponse(@NotNull String match) {
         this.match = match;
     }
 

@@ -1,9 +1,7 @@
 package com.jumbo.trus.mapper;
 
 import com.jumbo.trus.dto.FineDTO;
-import com.jumbo.trus.dto.SeasonDTO;
 import com.jumbo.trus.entity.FineEntity;
-import com.jumbo.trus.entity.SeasonEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

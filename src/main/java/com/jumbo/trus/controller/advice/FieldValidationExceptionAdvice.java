@@ -1,8 +1,6 @@
 package com.jumbo.trus.controller.advice;
 
-import com.jumbo.trus.controller.error.ErrorResponse;
 import com.jumbo.trus.controller.error.FieldValidationResponse;
-import com.jumbo.trus.service.exceptions.AuthException;
 import com.jumbo.trus.service.exceptions.FieldValidationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

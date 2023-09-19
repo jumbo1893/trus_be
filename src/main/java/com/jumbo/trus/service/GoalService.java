@@ -11,7 +11,6 @@ import com.jumbo.trus.dto.goal.response.get.GoalDetailedResponse;
 import com.jumbo.trus.dto.goal.response.get.GoalSetupResponse;
 import com.jumbo.trus.dto.receivedfine.ReceivedFineDTO;
 import com.jumbo.trus.entity.GoalEntity;
-import com.jumbo.trus.entity.ReceivedFineEntity;
 import com.jumbo.trus.entity.filter.GoalFilter;
 import com.jumbo.trus.entity.filter.StatisticsFilter;
 import com.jumbo.trus.entity.repository.*;

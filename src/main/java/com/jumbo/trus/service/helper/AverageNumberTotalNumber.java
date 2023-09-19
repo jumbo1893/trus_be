@@ -1,8 +1,6 @@
 package com.jumbo.trus.service.helper;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
 public class AverageNumberTotalNumber {

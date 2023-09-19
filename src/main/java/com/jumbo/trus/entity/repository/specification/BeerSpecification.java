@@ -2,10 +2,9 @@ package com.jumbo.trus.entity.repository.specification;
 
 import com.jumbo.trus.config.Config;
 import com.jumbo.trus.entity.*;
-import com.jumbo.trus.entity.filter.BaseSeasonFilter;
 import com.jumbo.trus.entity.filter.BeerFilter;
-import com.jumbo.trus.entity.filter.MatchFilter;
 import jakarta.persistence.criteria.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -18,7 +17,7 @@ public class BeerSpecification implements Specification<BeerEntity> {
     private final BeerFilter filter;
 
     @Override
-    public Predicate toPredicate(Root<BeerEntity> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
+    public Predicate toPredicate(@NotNull Root<BeerEntity> root, @NotNull CriteriaQuery<?> query, @NotNull CriteriaBuilder criteriaBuilder) {
         List<Predicate> predicates = new ArrayList<>();
 
 

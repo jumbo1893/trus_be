@@ -1,10 +1,7 @@
 package com.jumbo.trus.controller;
 
 import com.jumbo.trus.controller.error.ErrorResponse;
-import com.jumbo.trus.dto.match.MatchDTO;
-import com.jumbo.trus.entity.filter.MatchFilter;
 import com.jumbo.trus.service.exceptions.AuthException;
-import org.apache.catalina.User;
 import org.springframework.http.HttpStatus;
 import com.jumbo.trus.dto.UserDTO;
 import com.jumbo.trus.entity.UserEntity;
@@ -15,7 +12,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.webjars.NotFoundException;

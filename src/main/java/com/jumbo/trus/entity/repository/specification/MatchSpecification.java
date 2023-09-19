@@ -4,6 +4,7 @@ import com.jumbo.trus.config.Config;
 import com.jumbo.trus.entity.*;
 import com.jumbo.trus.entity.filter.MatchFilter;
 import jakarta.persistence.criteria.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -16,7 +17,7 @@ public class MatchSpecification implements Specification<MatchEntity> {
     private final MatchFilter filter;
 
     @Override
-    public Predicate toPredicate(Root<MatchEntity> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
+    public Predicate toPredicate(@NotNull Root<MatchEntity> root, @NotNull CriteriaQuery<?> query, @NotNull CriteriaBuilder criteriaBuilder) {
         List<Predicate> predicates = new ArrayList<>();
 
         if (filter.getName() != null) {

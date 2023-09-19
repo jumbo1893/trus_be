@@ -11,7 +11,7 @@ public class NonEditableEntityException extends RuntimeException {
 
     private String message;
 
-    private String code = NOT_EDITABLE;
+    private final String code = NOT_EDITABLE;
 
     public static final String NOT_EDITABLE = "non_editable";
 

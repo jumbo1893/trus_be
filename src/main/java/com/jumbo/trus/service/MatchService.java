@@ -1,13 +1,10 @@
 package com.jumbo.trus.service;
 
-import com.jumbo.trus.config.Config;
 import com.jumbo.trus.dto.PlayerDTO;
 import com.jumbo.trus.dto.SeasonDTO;
 import com.jumbo.trus.dto.match.MatchDTO;
 import com.jumbo.trus.dto.match.MatchHelper;
 import com.jumbo.trus.dto.match.response.SetupMatchResponse;
-import com.jumbo.trus.entity.FineEntity;
-import com.jumbo.trus.entity.SeasonEntity;
 import com.jumbo.trus.entity.filter.BaseSeasonFilter;
 import com.jumbo.trus.entity.filter.SeasonFilter;
 import com.jumbo.trus.entity.repository.*;
@@ -26,7 +23,6 @@ import org.springframework.stereotype.Service;
 import org.webjars.NotFoundException;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -85,7 +81,6 @@ public class MatchService {
     }
 
     public List<MatchDTO> getMatchesByDate(int limit, boolean desc){
-        String order;
         if (desc) {
             return matchRepository.getMatchesOrderByDateDesc(limit).stream().map(matchMapper::toDTO).collect(Collectors.toList());
         }
@@ -122,10 +117,6 @@ public class MatchService {
         MatchHelper matchHelper = new MatchHelper(matchDTO);
         notificationService.addNotification("Upraven zápas", matchHelper.getMatchWithOpponentNameAndDate());
         return matchMapper.toDTO(savedEntity);
-    }
-
-    public void updateSeasonId(Long seasonId) {
-        matchRepository.updateSeasonId(seasonId);
     }
 
     @Transactional

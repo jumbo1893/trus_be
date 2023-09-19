@@ -1,6 +1,5 @@
 package com.jumbo.trus.dto.receivedfine.response.get.setup;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.jumbo.trus.dto.FineDTO;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -19,9 +18,4 @@ public class ReceivedFineSetupForPlayerResponse {
 
     @NotNull
     private FineDTO fine;
-
-    public ReceivedFineSetupForPlayerResponse(int fineNumber, @NotNull FineDTO fine) {
-        this.fineNumber = fineNumber;
-        this.fine = fine;
-    }
 }

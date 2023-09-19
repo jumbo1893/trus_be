@@ -1,7 +1,6 @@
 package com.jumbo.trus.dto.match;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -17,7 +16,6 @@ import java.util.List;
 @NoArgsConstructor
 public class MatchDTO {
 
-    @NotNull
     private long id;
 
     @NotBlank

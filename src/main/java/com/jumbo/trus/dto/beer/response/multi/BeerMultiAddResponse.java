@@ -10,16 +10,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class BeerMultiAddResponse {
 
-    @NotNull
     private int editedPlayersCount = 0;
 
-    @NotNull
     private int addedPlayersCount = 0;
 
-    @NotNull
     private int totalBeersAdded = 0;
 
-    @NotNull
     private int totalLiquorsAdded = 0;
 
     @NotNull

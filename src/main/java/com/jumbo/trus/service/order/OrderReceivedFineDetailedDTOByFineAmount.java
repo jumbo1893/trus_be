@@ -1,6 +1,5 @@
 package com.jumbo.trus.service.order;
 
-import com.jumbo.trus.dto.beer.response.get.BeerDetailedDTO;
 import com.jumbo.trus.dto.receivedfine.response.get.detailed.ReceivedFineDetailedDTO;
 
 import java.util.Comparator;

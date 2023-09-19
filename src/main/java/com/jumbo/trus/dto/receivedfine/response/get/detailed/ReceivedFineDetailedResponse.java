@@ -1,6 +1,5 @@
 package com.jumbo.trus.dto.receivedfine.response.get.detailed;
 
-import com.jumbo.trus.dto.receivedfine.response.get.IResponseMaker;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -13,16 +12,12 @@ import java.util.List;
 @NoArgsConstructor
 public class ReceivedFineDetailedResponse {
 
-    @NotNull
     private int playersCount = 0;
 
-    @NotNull
     private int matchesCount = 0;
 
-    @NotNull
     private int finesNumber = 0;
 
-    @NotNull
     private int finesAmount = 0;
 
     @NotNull

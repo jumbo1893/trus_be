@@ -2,7 +2,6 @@ package com.jumbo.trus.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
-import org.hibernate.validator.constraints.Length;
 
 import jakarta.persistence.*;
 import java.util.Date;
