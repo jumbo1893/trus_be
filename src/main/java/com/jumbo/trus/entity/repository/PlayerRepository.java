@@ -10,13 +10,13 @@ import java.util.List;
 
 public interface PlayerRepository extends JpaRepository<PlayerEntity, Long> {
 
-    @Query(value = "SELECT * from player WHERE fan=:#{#fan}", nativeQuery = true)
+    @Query(value = "SELECT * from player WHERE fan=:#{#fan} ORDER BY name ASC", nativeQuery = true)
     List<PlayerEntity> getAllByFan(@Param("fan") boolean fan);
 
-    @Query(value = "SELECT * from player WHERE active=:#{#active} AND fan = false", nativeQuery = true)
+    @Query(value = "SELECT * from player WHERE active=:#{#active} AND fan = false ORDER BY name ASC", nativeQuery = true)
     List<PlayerEntity> getAllByActive(@Param("active") boolean active);
 
-    @Query(value = "SELECT * from player LIMIT :limit", nativeQuery = true)
+    @Query(value = "SELECT * from player LIMIT :limit ORDER BY name ASC", nativeQuery = true)
     List<PlayerEntity> getAll(@Param("limit") int limit);
 
     @Query(value = "SELECT *,\n" +
