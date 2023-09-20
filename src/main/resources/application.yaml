@@ -22,3 +22,5 @@ spring:
   jackson:
     mapper:
       accept-case-insensitive-enums: true
+notifications:
+  enabled: ${NOTIFICATIONS_ENABLED:true}

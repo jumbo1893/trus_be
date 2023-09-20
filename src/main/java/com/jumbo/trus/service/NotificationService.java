@@ -7,6 +7,7 @@ import com.jumbo.trus.entity.repository.*;
 import com.jumbo.trus.mapper.NotificationMapper;
 import com.jumbo.trus.service.exceptions.AuthException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -26,6 +27,9 @@ public class NotificationService {
     @Autowired
     private NotificationMapper notificationMapper;
 
+    @Value("${notifications.enabled}")
+    private boolean isNotificationsEnabled;
+
 
     public List<NotificationDTO> getAll(int limit, int page){
         Sort sort = Sort.by(Sort.Direction.DESC, "id");
@@ -33,6 +37,9 @@ public class NotificationService {
     }
 
     public void addNotification(String title, String text) {
+        if (!isNotificationsEnabled) {
+            return;
+        }
         NotificationEntity notificationEntity = new NotificationEntity();
         notificationEntity.setDate(new Date());
         notificationEntity.setUserName(getCurrentUser().getName());
@@ -42,6 +49,9 @@ public class NotificationService {
     }
 
     public void addAdminNotification(String title, String text) {
+        if (!isNotificationsEnabled) {
+            return;
+        }
         NotificationEntity notificationEntity = new NotificationEntity();
         notificationEntity.setDate(new Date());
         notificationEntity.setUserName(Config.ADMIN_USER_NAME);
