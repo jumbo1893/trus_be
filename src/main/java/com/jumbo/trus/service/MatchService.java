@@ -15,6 +15,7 @@ import com.jumbo.trus.entity.PlayerEntity;
 import com.jumbo.trus.entity.repository.specification.MatchSpecification;
 import com.jumbo.trus.mapper.PlayerMapper;
 import com.jumbo.trus.service.helper.PairSeasonMatch;
+import com.jumbo.trus.service.order.OrderPlayerByName;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,7 +92,9 @@ public class MatchService {
 
     public List<PlayerDTO> getPlayerListByMatchId(Long matchId){
         MatchEntity matchEntity = matchRepository.findById(matchId).orElseThrow(() -> new EntityNotFoundException(String.valueOf(matchId)));
-        return matchEntity.getPlayerList().stream().map(playerMapper::toDTO).toList();
+        List<PlayerDTO> players = new ArrayList<>(matchEntity.getPlayerList().stream().map(playerMapper::toDTO).toList());
+        players.sort(new OrderPlayerByName());
+        return players;
     }
 
     public List<PlayerDTO> getPlayerListByFilteredByFansByMatchId(Long matchId, boolean fan){
@@ -103,6 +106,7 @@ public class MatchService {
                 players.add(playerDTO);
             }
         }
+        players.sort(new OrderPlayerByName());
         return players;
     }
 
