@@ -301,6 +301,9 @@ public class ReceivedFineService {
                 if (!allFinesWroteToNotification) {
                     notificationFine.append(saveFineAndSetResponse(newReceivedFineDTO, receivedFineResponse, true));
                 }
+                else {
+                    saveFineAndSetResponse(newReceivedFineDTO, receivedFineResponse, true);
+                }
             }
             allFinesWroteToNotification = true;
             notificationPlayer.append(playerRepository.getReferenceById(playerId).getName()).append(", ");

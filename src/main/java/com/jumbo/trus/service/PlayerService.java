@@ -11,7 +11,6 @@ import com.jumbo.trus.service.helper.BirthdayCalculator;
 import com.jumbo.trus.service.order.OrderPlayerByName;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.OrderComparator;
 import org.springframework.stereotype.Service;
 import org.webjars.NotFoundException;
 
