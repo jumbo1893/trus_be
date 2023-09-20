@@ -8,8 +8,10 @@ import com.jumbo.trus.mapper.PlayerMapper;
 import com.jumbo.trus.entity.PlayerEntity;
 import com.jumbo.trus.entity.repository.PlayerRepository;
 import com.jumbo.trus.service.helper.BirthdayCalculator;
+import com.jumbo.trus.service.order.OrderPlayerByName;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.OrderComparator;
 import org.springframework.stereotype.Service;
 import org.webjars.NotFoundException;
 
@@ -50,6 +52,7 @@ public class PlayerService {
         for(PlayerEntity e : playerEntities){
             result.add(playerMapper.toDTO(e));
         }
+        result.sort(new OrderPlayerByName());
         return result;
     }
 
@@ -59,6 +62,7 @@ public class PlayerService {
         for(PlayerEntity e : playerEntities){
             result.add(playerMapper.toDTO(e));
         }
+        result.sort(new OrderPlayerByName());
         return result;
     }
 
@@ -68,6 +72,7 @@ public class PlayerService {
         for(PlayerEntity e : playerEntities){
             result.add(playerMapper.toDTO(e));
         }
+        result.sort(new OrderPlayerByName());
         return result;
     }
 
