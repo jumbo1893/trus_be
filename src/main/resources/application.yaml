@@ -1,9 +1,3 @@
-spring.datasource:
-  url: jdbc:postgresql://localhost:5432/trus
-  username: postgres
-  password: Heslo12!
-  driver-class-name: org.postgresql.Driver
-
 spring.jpa.database-platform: org.hibernate.dialect.PostgreSQLDialect
 spring.jpa.properties.hibernate.jdbc.lob.non_contextual_creation: true
 spring.jpa.defer-datasource-initialization: true
@@ -16,6 +10,8 @@ springdoc:
   api-docs.path: /api-docs
 
 spring:
+  profiles:
+    active: prod
   sql:
     init:
       mode: always
