@@ -15,7 +15,10 @@ jar {
 	}
 }
 
-tasks.named('bootJar') {     launchScript() }
+configurations {
+	// configuration that holds jars to include in the jar
+	extraLibs
+}
 
 group = 'com.jumbo'
 version = '0.0.1-SNAPSHOT'
