@@ -5,19 +5,7 @@ plugins {
 }
 
 jar {
-	manifest {
-		attributes(
-				'Main-Class': 'com.jumbo.trus.TrusApplication'
-		)
-	}
-	from {
-		configurations.extraLibs.collect { it.isDirectory() ? it : zipTree(it) }
-	}
-}
-
-configurations {
-	// configuration that holds jars to include in the jar
-	extraLibs
+	enabled = false
 }
 
 group = 'com.jumbo'
