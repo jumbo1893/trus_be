@@ -84,6 +84,16 @@ public class SeasonService {
         return getOtherSeason();
     }
 
+    public SeasonDTO getSeasonByDate(Date inputDate) {
+        List<SeasonDTO> seasonList = getAll(new SeasonFilter());
+        for (SeasonDTO season : seasonList) {
+            if (!season.getFromDate().after(inputDate) && !season.getToDate().before(inputDate)) {
+                return season;
+            }
+        }
+        return getOtherSeason();
+    }
+
     public SeasonDTO editSeason(Long seasonId, SeasonDTO seasonDTO) throws NotFoundException {
         if (!seasonRepository.existsById(seasonId)) {
             throw new NotFoundException("Sezona s id " + seasonId + " nenalezena v db");

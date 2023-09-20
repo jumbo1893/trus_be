@@ -200,7 +200,7 @@ public class MatchService {
         List<PlayerEntity> people = playerRepository.findAllById(matchDTO.getPlayerIdList());
         match.getPlayerList().addAll(people);
         if(matchDTO.getSeasonId() == AUTOMATIC_SEASON_ID) {
-            long newSeasonId = seasonService.getCurrentSeason().getId();
+            long newSeasonId = seasonService.getSeasonByDate(matchDTO.getDate()).getId();
             matchDTO.setSeasonId(newSeasonId);
         }
         match.setSeason(seasonRepository.getReferenceById(matchDTO.getSeasonId()));

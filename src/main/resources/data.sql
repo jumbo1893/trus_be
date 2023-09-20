@@ -2,7 +2,7 @@
 
 -- Vložení hardcodované sezony Ostatní, pokud neexistuje
 INSERT INTO season (id, from_date, name, to_date, editable)
-SELECT -2, '1970-01-01', 'Ostatní', '1970-12-31', false
+SELECT -1, '1970-01-01', 'Ostatní', '1970-12-31', false
 WHERE NOT EXISTS (SELECT 1 FROM season WHERE id = -2);
 
 -- Vložení hardcodované pokuty Gól, pokud neexistuje
