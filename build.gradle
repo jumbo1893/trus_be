@@ -10,7 +10,12 @@ jar {
 				'Main-Class': 'com.jumbo.trus.TrusApplication'
 		)
 	}
+	from {
+		configurations.extraLibs.collect { it.isDirectory() ? it : zipTree(it) }
+	}
 }
+
+tasks.named('bootJar') {     launchScript() }
 
 group = 'com.jumbo'
 version = '0.0.1-SNAPSHOT'
