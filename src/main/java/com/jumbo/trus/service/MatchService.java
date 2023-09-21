@@ -15,6 +15,7 @@ import com.jumbo.trus.entity.PlayerEntity;
 import com.jumbo.trus.entity.repository.specification.MatchSpecification;
 import com.jumbo.trus.mapper.PlayerMapper;
 import com.jumbo.trus.service.helper.PairSeasonMatch;
+import com.jumbo.trus.service.order.OrderMatchByDate;
 import com.jumbo.trus.service.order.OrderPlayerByName;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -78,7 +79,9 @@ public class MatchService {
 
     public List<MatchDTO> getAll(MatchFilter matchFilter){
         MatchSpecification matchSpecification = new MatchSpecification(matchFilter);
-        return matchRepository.findAll(matchSpecification, PageRequest.of(0, matchFilter.getLimit())).stream().map(matchMapper::toDTO).collect(Collectors.toList());
+        List<MatchDTO> matchDTOList = new ArrayList<>(matchRepository.findAll(matchSpecification, PageRequest.of(0, matchFilter.getLimit())).stream().map(matchMapper::toDTO).toList());
+        matchDTOList.sort(new OrderMatchByDate());
+        return matchDTOList;
     }
 
     public List<MatchDTO> getMatchesByDate(int limit, boolean desc){
