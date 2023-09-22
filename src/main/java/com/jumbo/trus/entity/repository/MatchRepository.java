@@ -10,6 +10,8 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
+import static com.jumbo.trus.config.Config.OTHER_SEASON_ID;
+
 public interface MatchRepository extends PagingAndSortingRepository<MatchEntity, Long>, JpaRepository<MatchEntity, Long>, JpaSpecificationExecutor<MatchEntity> {
 
     @Query(value = "SELECT * from match LIMIT :limit", nativeQuery = true)
@@ -30,6 +32,6 @@ public interface MatchRepository extends PagingAndSortingRepository<MatchEntity,
     void deleteByPlayersInMatchByMatchId(@Param("matchId") long matchId);
 
     @Modifying
-    @Query(value = "Update match SET season_id=-2 WHERE season_id=:#{#seasonId}", nativeQuery = true)
+    @Query(value = "Update match SET season_id=" + OTHER_SEASON_ID + " WHERE season_id=:#{#seasonId}", nativeQuery = true)
     void updateSeasonId(@Param("seasonId") long seasonId);
 }

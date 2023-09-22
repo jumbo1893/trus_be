@@ -110,7 +110,6 @@ public class SeasonService {
 
     @Transactional
     public void deleteSeason(Long seasonId) {
-        seasonRepository.updateSeasonId(seasonId);
         matchRepository.updateSeasonId(seasonId);
         SeasonEntity seasonEntity = seasonRepository.getReferenceById(seasonId);
         notificationService.addNotification("Přidána nová sezona", seasonEntity.getName() + " se začátkem " + seasonEntity.getFromDate() + " a koncem " + seasonEntity.getToDate());

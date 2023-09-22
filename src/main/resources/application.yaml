@@ -11,7 +11,7 @@ springdoc:
 
 spring:
   profiles:
-    active: prod
+    active: ${env:dev}
   sql:
     init:
       mode: always
