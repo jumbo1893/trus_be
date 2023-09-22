@@ -9,6 +9,7 @@ import com.jumbo.trus.entity.SeasonEntity;
 import com.jumbo.trus.entity.repository.SeasonRepository;
 import com.jumbo.trus.service.exceptions.FieldValidationException;
 import com.jumbo.trus.service.helper.ValidationField;
+import com.jumbo.trus.service.order.OrderSeasonByDate;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,6 +51,7 @@ public class SeasonService {
         for(SeasonEntity e : seasonEntities){
             result.add(seasonMapper.toDTO(e));
         }
+        result.sort(new OrderSeasonByDate());
         if (seasonFilter.isAllSeason()) {
             result.add(0, getAllSeason());
         }
