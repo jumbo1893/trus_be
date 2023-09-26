@@ -1,4 +1,4 @@
-package com.jumbo.trus.service.helper;
+package com.jumbo.trus.service.fact;
 
 import com.jumbo.trus.config.Config;
 import com.jumbo.trus.dto.PlayerDTO;
@@ -14,8 +14,7 @@ import com.jumbo.trus.entity.filter.BeerFilter;
 import com.jumbo.trus.entity.filter.MatchFilter;
 import com.jumbo.trus.entity.filter.StatisticsFilter;
 import com.jumbo.trus.service.*;
-import com.jumbo.trus.service.fact.BeerFact;
-import com.jumbo.trus.service.fact.FineFact;
+import com.jumbo.trus.service.helper.AverageNumberTotalNumber;
 import com.jumbo.trus.service.order.OrderBeerByAttendance;
 import com.jumbo.trus.service.order.OrderBeerByBeerOrLiquorNumber;
 import com.jumbo.trus.service.order.OrderReceivedFineDetailedDTOByFineAmount;
@@ -51,69 +50,65 @@ public class RandomFact {
         StatisticsFilter allSeasonPlayerFilter = new StatisticsFilter(null, null, Config.ALL_SEASON_ID, false);
         StatisticsFilter allSeasonMatchFilter = new StatisticsFilter(null, null, Config.ALL_SEASON_ID, true);
         StatisticsFilter currentSeasonMatchFilter = new StatisticsFilter(null, null, currentSeason.getId(), true);
-        StatisticsFilter currentSeasonPlayerFilter = new StatisticsFilter(null, null, currentSeason.getId(), false);
-        BeerFact beerFact = new BeerFact(beerService.getAllDetailed(allSeasonMatchFilter), beerService.getAllDetailed(currentSeasonMatchFilter),
-                beerService.getAllDetailed(allSeasonPlayerFilter), beerService.getAllDetailed(currentSeasonPlayerFilter));
-        FineFact fineFact = new FineFact(receivedFineService.getAllDetailed(allSeasonMatchFilter), receivedFineService.getAllDetailed(currentSeasonMatchFilter),
-                receivedFineService.getAllDetailed(allSeasonPlayerFilter), receivedFineService.getAllDetailed(currentSeasonPlayerFilter));
-        List<String> returnList = new ArrayList<>(returnBeerFacts(beerFact));
-        returnList.addAll(returnFineFacts(fineFact));
+        List<String> returnList = new ArrayList<>(returnBeerFacts(allSeasonPlayerFilter, allSeasonMatchFilter, currentSeasonMatchFilter));
+        returnList.addAll(returnFineFacts(allSeasonPlayerFilter, allSeasonMatchFilter, currentSeasonMatchFilter));
         return returnList;
     }
 
 
-    public List<String> returnBeerFacts(BeerFact beerFact) {
+    public List<String> returnBeerFacts(StatisticsFilter allSeasonPlayerFilter, StatisticsFilter allSeasonMatchFilter, StatisticsFilter currentSeasonMatchFilter) {
+        SeasonDTO currentSeason = seasonService.getCurrentSeason();
         List<String> beerFacts = new ArrayList<>();
-        beerFacts.add(getPlayerWithMostBeers(beerFact.getAllBeerDetailedResponseForPlayer())); //1
-        beerFacts.add(getMatchWithMostBeers(beerFact.getAllBeerDetailedResponseForMatch())); //2
-        beerFacts.add(getNumberOfBeersInCurrentSeason(beerFact.getCurrentSeasonBeerDetailedResponseForMatch()));//3
-        beerFacts.add(getMatchWithMostBeersInCurrentSeason(beerFact.getCurrentSeasonBeerDetailedResponseForMatch()));//4
-        beerFacts.add(getSeasonWithMostBeers(beerFact.getAllBeerDetailedResponseForMatch()));//5
-        beerFacts.add(getAverageNumberOfBeersInMatchForPlayersAndFans(beerFact.getAllBeerDetailedResponseForPlayer()));//6
-        beerFacts.add(getAverageNumberOfBeersInMatchForPlayers(beerFact.getAllBeerDetailedResponseForPlayer()));//7
-        beerFacts.add(getAverageNumberOfBeersInMatchForFans(beerFact.getAllBeerDetailedResponseForPlayer()));//8
-        beerFacts.add(getAverageNumberOfBeersInMatch(beerFact.getAllBeerDetailedResponseForPlayer()));//9
-        beerFacts.add(getMatchWithHighestAverageBeers(beerFact.getAllBeerDetailedResponseForMatch()));//10
-        beerFacts.add(getMatchWithLowestAverageBeers(beerFact.getAllBeerDetailedResponseForMatch()));//11
-        beerFacts.add(getHighestAttendanceInMatch(beerFact.getAllBeerDetailedResponseForMatch()));//12
-        beerFacts.add(getLowestAttendanceInMatch(beerFact.getAllBeerDetailedResponseForMatch()));//13
+        beerFacts.add(getPlayerWithMostBeers(beerService.getAllDetailed(allSeasonPlayerFilter))); //1
+        beerFacts.add(getMatchWithMostBeers(beerService.getAllDetailed(allSeasonMatchFilter))); //2
+        beerFacts.add(getNumberOfBeersInCurrentSeason(beerService.getAllDetailed(currentSeasonMatchFilter)));//3
+        beerFacts.add(getMatchWithMostBeersInCurrentSeason(beerService.getAllDetailed(currentSeasonMatchFilter)));//4
+        beerFacts.add(getSeasonWithMostBeers(beerService.getAllDetailed(allSeasonMatchFilter)));//5
+        beerFacts.add(getAverageNumberOfBeersInMatchForPlayersAndFans(beerService.getAllDetailed(allSeasonMatchFilter)));//6
+        beerFacts.add(getAverageNumberOfBeersInMatchForPlayers(beerService.getAllDetailed(allSeasonPlayerFilter)));//7
+        beerFacts.add(getAverageNumberOfBeersInMatchForFans(beerService.getAllDetailed(allSeasonPlayerFilter)));//8
+        beerFacts.add(getAverageNumberOfBeersInMatch(beerService.getAllDetailed(allSeasonPlayerFilter)));//9
+        beerFacts.add(getMatchWithHighestAverageBeers(beerService.getAllDetailed(allSeasonMatchFilter)));//10
+        beerFacts.add(getMatchWithLowestAverageBeers(beerService.getAllDetailed(allSeasonMatchFilter)));//11
+        beerFacts.add(getHighestAttendanceInMatch(beerService.getAllDetailed(allSeasonMatchFilter)));//12
+        beerFacts.add(getLowestAttendanceInMatch(beerService.getAllDetailed(allSeasonMatchFilter)));//13
         ////panáky
-        beerFacts.add(getPlayerWithMostLiquors(beerFact.getAllBeerDetailedResponseForPlayer())); //14
-        beerFacts.add(getMatchWithMostLiquors(beerFact.getAllBeerDetailedResponseForMatch())); //15
-        beerFacts.add(getNumberOfLiquorsInCurrentSeason(beerFact.getCurrentSeasonBeerDetailedResponseForMatch()));//16
-        beerFacts.add(getMatchWithMostLiquorsInCurrentSeason(beerFact.getCurrentSeasonBeerDetailedResponseForMatch()));//17
-        beerFacts.add(getSeasonWithMostLiquors(beerFact.getAllBeerDetailedResponseForMatch()));//18
-        beerFacts.add(getAverageNumberOfLiquorsInMatchForPlayersAndFans(beerFact.getAllBeerDetailedResponseForPlayer()));//19
-        beerFacts.add(getAverageNumberOfLiquorsInMatchForPlayers(beerFact.getAllBeerDetailedResponseForPlayer()));//20
-        beerFacts.add(getAverageNumberOfLiquorsInMatchForFans(beerFact.getAllBeerDetailedResponseForPlayer()));//21
-        beerFacts.add(getAverageNumberOfLiquorsInMatch(beerFact.getAllBeerDetailedResponseForPlayer()));//22
-        beerFacts.add(getMatchWithHighestAverageLiquors(beerFact.getAllBeerDetailedResponseForMatch()));//23
-        beerFacts.add(getMatchWithLowestAverageLiquors(beerFact.getAllBeerDetailedResponseForMatch()));//24
+        beerFacts.add(getPlayerWithMostLiquors(beerService.getAllDetailed(allSeasonPlayerFilter))); //14
+        beerFacts.add(getMatchWithMostLiquors(beerService.getAllDetailed(allSeasonMatchFilter))); //15
+        beerFacts.add(getNumberOfLiquorsInCurrentSeason(beerService.getAllDetailed(currentSeasonMatchFilter)));//16
+        beerFacts.add(getMatchWithMostLiquorsInCurrentSeason(beerService.getAllDetailed(currentSeasonMatchFilter)));//17
+        beerFacts.add(getSeasonWithMostLiquors(beerService.getAllDetailed(allSeasonMatchFilter)));//18
+        beerFacts.add(getAverageNumberOfLiquorsInMatchForPlayersAndFans(beerService.getAllDetailed(allSeasonMatchFilter)));//19
+        beerFacts.add(getAverageNumberOfLiquorsInMatchForPlayers(beerService.getAllDetailed(allSeasonPlayerFilter)));//20
+        beerFacts.add(getAverageNumberOfLiquorsInMatchForFans(beerService.getAllDetailed(allSeasonPlayerFilter)));//21
+        beerFacts.add(getAverageNumberOfLiquorsInMatch(beerService.getAllDetailed(allSeasonPlayerFilter)));//22
+        beerFacts.add(getMatchWithHighestAverageLiquors(beerService.getAllDetailed(allSeasonMatchFilter)));//23
+        beerFacts.add(getMatchWithLowestAverageLiquors(beerService.getAllDetailed(allSeasonMatchFilter)));//24
         //pivo
-        beerFacts.add(getAverageNumberOfBeersInHomeAndAwayMatch(beerFact.getAllBeerDetailedResponseForMatch()));//25
+        beerFacts.add(getAverageNumberOfBeersInHomeAndAwayMatch(beerService.getAllDetailed(allSeasonMatchFilter)));//25
         //panák
-        beerFacts.add(getAverageNumberOfLiquorsInHomeAndAwayMatch(beerFact.getAllBeerDetailedResponseForMatch()));//26
+        beerFacts.add(getAverageNumberOfLiquorsInHomeAndAwayMatch(beerService.getAllDetailed(allSeasonMatchFilter)));//26
         //narozky
         beerFacts.add(getMatchWithBirthday());//27
         return beerFacts;
     }
 
-    public List<String> returnFineFacts(FineFact fineFact) {
+    public List<String> returnFineFacts(StatisticsFilter allSeasonPlayerFilter, StatisticsFilter allSeasonMatchFilter, StatisticsFilter currentSeasonMatchFilter) {
         List<String> fineFacts = new ArrayList<>();
-        fineFacts.add(getPlayerWithMostFines(fineFact.getAllFineDetailedResponseForPlayer())); //1
-        fineFacts.add(getMatchWithMostFines(fineFact.getAllFineDetailedResponseForMatch())); //2
-        fineFacts.add(getPlayerWithMostFinesAmount(fineFact.getAllFineDetailedResponseForPlayer())); //3
-        fineFacts.add(getMatchWithMostFinesAmount(fineFact.getAllFineDetailedResponseForMatch())); //4
-        fineFacts.add(getNumberOfFinesInCurrentSeason(fineFact.getCurrentSeasonFineDetailedResponseForMatch()));//5
-        fineFacts.add(getNumberOfFinesAmountInCurrentSeason(fineFact.getCurrentSeasonFineDetailedResponseForMatch()));//6
-        fineFacts.add(getMatchWithMostFinesInCurrentSeason(fineFact.getCurrentSeasonFineDetailedResponseForMatch()));//7
-        fineFacts.add(getMatchWithMostFinesAmountInCurrentSeason(fineFact.getCurrentSeasonFineDetailedResponseForMatch()));//8
-        fineFacts.add(getSeasonWithMostFines(fineFact.getAllFineDetailedResponseForMatch()));//9
-        fineFacts.add(getSeasonWithMostFinesAmount(fineFact.getAllFineDetailedResponseForMatch()));//10
-        fineFacts.add(getAverageNumberOfFinesInMatchForPlayers(fineFact.getAllFineDetailedResponseForPlayer()));//11
-        fineFacts.add(getAverageNumberOfFinesAmountInMatchForPlayers(fineFact.getAllFineDetailedResponseForPlayer()));//12
-        fineFacts.add(getAverageNumberOfFinesInMatch(fineFact.getAllFineDetailedResponseForPlayer()));//13
-        fineFacts.add(getAverageNumberOfFinesAmountInMatch(fineFact.getAllFineDetailedResponseForPlayer()));//14
+        fineFacts.add(getPlayerWithMostFines(receivedFineService.getAllDetailed(allSeasonPlayerFilter))); //1
+        fineFacts.add(getMatchWithMostFines(receivedFineService.getAllDetailed(allSeasonMatchFilter))); //2
+        fineFacts.add(getPlayerWithMostFinesAmount(receivedFineService.getAllDetailed(allSeasonPlayerFilter))); //3
+        fineFacts.add(getMatchWithMostFinesAmount(receivedFineService.getAllDetailed(allSeasonMatchFilter))); //4
+        fineFacts.add(getNumberOfFinesInCurrentSeason(receivedFineService.getAllDetailed(currentSeasonMatchFilter)));//5
+        fineFacts.add(getNumberOfFinesAmountInCurrentSeason(receivedFineService.getAllDetailed(currentSeasonMatchFilter)));//6
+        fineFacts.add(getMatchWithMostFinesInCurrentSeason(receivedFineService.getAllDetailed(currentSeasonMatchFilter)));//7
+        fineFacts.add(getMatchWithMostFinesAmountInCurrentSeason(receivedFineService.getAllDetailed(currentSeasonMatchFilter)));//8
+        fineFacts.add(getSeasonWithMostFines(receivedFineService.getAllDetailed(allSeasonMatchFilter)));//9
+        fineFacts.add(getSeasonWithMostFinesAmount(receivedFineService.getAllDetailed(allSeasonMatchFilter)));//10
+        fineFacts.add(getAverageNumberOfFinesInMatchForPlayers(receivedFineService.getAllDetailed(allSeasonPlayerFilter)));//11
+        fineFacts.add(getAverageNumberOfFinesAmountInMatchForPlayers(receivedFineService.getAllDetailed(allSeasonPlayerFilter)));//12
+        fineFacts.add(getAverageNumberOfFinesInMatch(receivedFineService.getAllDetailed(allSeasonPlayerFilter)));//13
+        fineFacts.add(getAverageNumberOfFinesAmountInMatch(receivedFineService.getAllDetailed(allSeasonPlayerFilter)));//14
         return fineFacts;
     }
 
@@ -182,19 +177,19 @@ public class RandomFact {
         return "Nejvíce piv se vypilo v sezoně " + season.getName() + ", kdy se v " + seasonBeerDetail.getMatchesCount() + " zápasech vypilo " + seasonBeerDetail.getTotalBeers() + " piv.";
     }
 
-    private String getAverageNumberOfBeersInMatchForPlayersAndFans(BeerDetailedResponse getAllBeerDetailedResponseForPlayer) {
-        float averageNumber = (float) getAllBeerDetailedResponseForPlayer.getTotalBeers() /getAllBeerDetailedResponseForPlayer.getMatchesCount()/getAllBeerDetailedResponseForPlayer.getPlayersCount();
-        return "Za celou historii průměrně každý hráč a fanoušek Trusu, který byl po zápase v hospodě, vypil " + averageNumber + " piv za zápas";
+    private String getAverageNumberOfBeersInMatchForPlayersAndFans(BeerDetailedResponse getAllBeerDetailedResponseForMatch) {
+        float averageNumber = returnAverageBeerNumber(true, getAllBeerDetailedResponseForMatch).getAverage();
+        return "Průměrně si každý hráč či fanoušek dá po zápase " + averageNumber + " piv";
     }
 
     private String getAverageNumberOfBeersInMatchForPlayers(BeerDetailedResponse getAllBeerDetailedResponseForPlayer) {
-        float averageNumber = returnNumberOfBeersForFansOrPlayers(false, true, getAllBeerDetailedResponseForPlayer).getAverage() /getAllBeerDetailedResponseForPlayer.getMatchesCount();
-        return "Za celou historii průměrně každý hráč Trusu, který byl po zápase v hospodě, vypil " + averageNumber + " piv za zápas";
+        float averageNumber = (float) returnNumberOfBeersForFansOrPlayers(false, true, getAllBeerDetailedResponseForPlayer).getTotalNumber1() /getAllBeerDetailedResponseForPlayer.getMatchesCount();
+        return "Průměrně po každém zápase hráči Trusu vypijí " + averageNumber + " piv";
     }
 
     private String getAverageNumberOfBeersInMatchForFans(BeerDetailedResponse getAllBeerDetailedResponseForPlayer) {
-        float averageNumber = returnNumberOfBeersForFansOrPlayers(true, true, getAllBeerDetailedResponseForPlayer).getAverage() /getAllBeerDetailedResponseForPlayer.getMatchesCount();
-        return "Za celou historii průměrně každý fanoušek Trusu, který byl po zápase v hospodě, vypil " + averageNumber + " piv za zápas";
+        float averageNumber = (float) returnNumberOfBeersForFansOrPlayers(true, true, getAllBeerDetailedResponseForPlayer).getTotalNumber1() /getAllBeerDetailedResponseForPlayer.getMatchesCount();
+        return "Průměrně po každém zápase fanoušci Trusu vypijí " + averageNumber + " piv";
     }
 
     private String getAverageNumberOfBeersInMatch(BeerDetailedResponse getAllBeerDetailedResponseForPlayer) {
@@ -481,18 +476,18 @@ public class RandomFact {
     }
 
     private String getAverageNumberOfLiquorsInMatchForPlayersAndFans(BeerDetailedResponse getAllBeerDetailedResponseForPlayer) {
-        float averageNumber = (float) getAllBeerDetailedResponseForPlayer.getTotalLiquors() /getAllBeerDetailedResponseForPlayer.getMatchesCount()/getAllBeerDetailedResponseForPlayer.getPlayersCount();
-        return "Za celou historii průměrně každý hráč a fanoušek Trusu, který byl přítomen u třetího poločasu, vypil " + averageNumber + " panáků za zápas";
+        float averageNumber = returnAverageBeerNumber(false, getAllBeerDetailedResponseForPlayer).getAverage();
+        return "Průměrně si každý hráč či fanoušek dá po zápase " + averageNumber + " panáků";
     }
 
     private String getAverageNumberOfLiquorsInMatchForPlayers(BeerDetailedResponse getAllBeerDetailedResponseForPlayer) {
-        float averageNumber = returnNumberOfBeersForFansOrPlayers(false, false, getAllBeerDetailedResponseForPlayer).getAverage() /getAllBeerDetailedResponseForPlayer.getMatchesCount();
-        return "Za celou historii průměrně každý hráč Trusu, který byl po zápase v hospodě, vypil " + averageNumber + " panáků za zápas";
+        float averageNumber = (float) returnNumberOfBeersForFansOrPlayers(false, false, getAllBeerDetailedResponseForPlayer).getTotalNumber1() /getAllBeerDetailedResponseForPlayer.getMatchesCount();
+        return "Průměrně po každém zápase hráči Trusu vypijí " + averageNumber + " panáků";
     }
 
     private String getAverageNumberOfLiquorsInMatchForFans(BeerDetailedResponse getAllBeerDetailedResponseForPlayer) {
-        float averageNumber = returnNumberOfBeersForFansOrPlayers(true, false, getAllBeerDetailedResponseForPlayer).getAverage() /getAllBeerDetailedResponseForPlayer.getMatchesCount();
-        return "Za celou historii průměrně každý fanoušek Trusu, který byl po zápase v hospodě, vypil " + averageNumber + " panáků za zápas";
+        float averageNumber = (float) returnNumberOfBeersForFansOrPlayers(true, false, getAllBeerDetailedResponseForPlayer).getTotalNumber1() /getAllBeerDetailedResponseForPlayer.getMatchesCount();
+        return "Průměrně po každém zápase fanoušci Trusu vypijí " + averageNumber + " panáků";
     }
 
     private String getAverageNumberOfLiquorsInMatch(BeerDetailedResponse getAllBeerDetailedResponseForPlayer) {
@@ -527,7 +522,7 @@ public class RandomFact {
         int beerNumber = 0;
         for (BeerDetailedDTO beer : beerList) {
             AverageNumberTotalNumber averageNumberTotalNumber = new AverageNumberTotalNumber(beer.getLiquorNumber(), beer.getMatch().getPlayerIdList().size());
-            if (averageNumberTotalNumber.getAverage() < lowestAverage.getAverage() || matchDTO == null) {
+            if ((averageNumberTotalNumber.getAverage() < lowestAverage.getAverage() || matchDTO == null) && beer.getLiquorNumber() != 0) {
                 lowestAverage = averageNumberTotalNumber;
                 matchDTO = beer.getMatch();
                 beerNumber = beer.getBeerNumber();
@@ -756,6 +751,7 @@ public class RandomFact {
         List<BeerDetailedDTO> beerList = getAllBeerDetailedResponseForPlayer.getBeerList();
         int beerNumber = 0;
         int fanNumber = 0;
+        int playerNumber = 0;
         for (BeerDetailedDTO beerDetailedDTO : beerList) {
             if (fan && beerDetailedDTO.getPlayer().isFan()) {
                 if (beer) {
@@ -772,10 +768,25 @@ public class RandomFact {
                 else {
                     beerNumber += beerDetailedDTO.getLiquorNumber();
                 }
-                fanNumber ++;
+                playerNumber ++;
             }
         }
-        return new AverageNumberTotalNumber(beerNumber, fanNumber);
+        if (fan) {
+            return new AverageNumberTotalNumber(beerNumber, fanNumber);
+        }
+        return new AverageNumberTotalNumber(beerNumber, playerNumber);
+    }
+
+    private AverageNumberTotalNumber returnAverageBeerNumber(boolean beer, BeerDetailedResponse getAllBeerDetailedResponseForMatch) {
+        List<BeerDetailedDTO> beerList = getAllBeerDetailedResponseForMatch.getBeerList();
+        int playerNumber = 0;
+        for (BeerDetailedDTO beerDetailedDTO : beerList) {
+            playerNumber+=beerDetailedDTO.getMatch().getPlayerIdList().size();
+        }
+        if (beer) {
+            return new AverageNumberTotalNumber(getAllBeerDetailedResponseForMatch.getTotalBeers(), playerNumber);
+        }
+        return new AverageNumberTotalNumber(getAllBeerDetailedResponseForMatch.getTotalLiquors(), playerNumber);
     }
 
     private boolean isSameDate(PlayerDTO playerDTO, MatchDTO matchDTO) {
