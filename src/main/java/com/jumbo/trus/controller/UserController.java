@@ -47,9 +47,15 @@ public class UserController {
         return model;
     }
 
-    @DeleteMapping("/{userId}")
-    public void deleteUser(@PathVariable Long userId) throws NotFoundException {
-        userService.deleteUser(userId);
+    @DeleteMapping("/delete")
+    public void deleteUser(HttpServletRequest req) throws NotFoundException, ServletException {
+        try {
+            UserEntity user = (UserEntity) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            userService.deleteUser(user.getId());
+            req.logout();
+        } catch (ClassCastException e) {
+            throw new AuthException("Uživatel je odhlášen", AuthException.NOT_LOGGED_IN);
+        }
     }
 
     @DeleteMapping({"/auth",})
