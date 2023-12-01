@@ -6,6 +6,8 @@ import com.jumbo.trus.dto.beer.response.get.BeerDetailedDTO;
 import com.jumbo.trus.entity.BeerEntity;
 import com.jumbo.trus.entity.MatchEntity;
 import com.jumbo.trus.entity.PlayerEntity;
+import com.jumbo.trus.mapper.pkfl.PkflIndividualStatsMapper;
+import com.jumbo.trus.mapper.pkfl.PkflMatchMapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
@@ -13,7 +15,7 @@ import org.mapstruct.Mappings;
 import java.util.ArrayList;
 import java.util.List;
 
-@Mapper(componentModel = "spring", uses = PlayerMapper.class)
+@Mapper(componentModel = "spring", uses = {MatchMapper.class, PlayerMapper.class, PkflIndividualStatsMapper.class, PkflMatchMapper.class})
 public abstract class BeerDetailedMapper {
 
     @Mappings({

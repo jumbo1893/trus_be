@@ -26,6 +26,8 @@ public class ApplicationSecurityConfiguration {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
+                .requiresChannel(channel ->
+                        channel.anyRequest().requiresSecure())
                 .authorizeHttpRequests().anyRequest().permitAll().and()
                 .csrf().disable()
                 .exceptionHandling(c -> c.authenticationEntryPoint(new CustomHttpStatusEntryPoint(HttpStatus.UNAUTHORIZED, "{\"message\":\"Nelze pokracovat, nejste prihlaseny!\",\"code\":\""+ AuthException.NOT_LOGGED_IN +"\"}")))

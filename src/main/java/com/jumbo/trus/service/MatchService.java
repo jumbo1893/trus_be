@@ -17,6 +17,7 @@ import com.jumbo.trus.mapper.PlayerMapper;
 import com.jumbo.trus.service.helper.PairSeasonMatch;
 import com.jumbo.trus.service.order.OrderMatchByDate;
 import com.jumbo.trus.service.order.OrderPlayerByName;
+import com.jumbo.trus.service.pkfl.PkflMatchService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,18 +66,34 @@ public class MatchService {
     private PlayerService playerService;
 
     @Autowired
+    private PkflMatchService pkflMatchService;
+
+    @Autowired
     private NotificationService notificationService;
 
+    /**
+     * @param matchDTO Zápas, který přijde z FE
+     * @return Zápas, který byl uložen do DB, s id
+     */
     public MatchDTO addMatch(MatchDTO matchDTO) {
+
         MatchEntity entity = matchMapper.toEntity(matchDTO);
         entity.setPlayerList(new ArrayList<>());
         mapPlayersAndSeasonToMatch(entity, matchDTO);
+        if (matchDTO.getPkflMatch() == null) {
+            entity.setPkflMatch(null);
+        }
         MatchEntity savedEntity = matchRepository.save(entity);
+        System.out.println(savedEntity.getPkflMatch() == null);
         MatchHelper matchHelper = new MatchHelper(matchDTO);
         notificationService.addNotification("Přidán nový zápas", matchHelper.getMatchWithOpponentNameAndDate());
         return matchMapper.toDTO(savedEntity);
     }
 
+    /**
+     * @param matchFilter filtr, podle kterého chceme filtrovat seznam zápasů
+     * @return seznam zápasů z DB, které projdou filtrovacími kritérii
+     */
     public List<MatchDTO> getAll(MatchFilter matchFilter){
         MatchSpecification matchSpecification = new MatchSpecification(matchFilter);
         List<MatchDTO> matchDTOList = new ArrayList<>(matchRepository.findAll(matchSpecification, PageRequest.of(0, matchFilter.getLimit())).stream().map(matchMapper::toDTO).toList());
@@ -84,6 +101,12 @@ public class MatchService {
         return matchDTOList;
     }
 
+
+    /**
+     * @param limit limit počtu zápasů
+     * @param desc true = sestupně, false = vzestupně
+     * @return seznam všech zápasů z DB
+     */
     public List<MatchDTO> getMatchesByDate(int limit, boolean desc){
         if (desc) {
             return matchRepository.getMatchesOrderByDateDesc(limit).stream().map(matchMapper::toDTO).collect(Collectors.toList());
@@ -93,6 +116,10 @@ public class MatchService {
         }
     }
 
+    /**
+     * @param matchId zápas, z kterého chceme playerList
+     * @return seznam všech hráčů a fanoušků z konkrétního zápasu
+     */
     public List<PlayerDTO> getPlayerListByMatchId(Long matchId){
         MatchEntity matchEntity = matchRepository.findById(matchId).orElseThrow(() -> new EntityNotFoundException(String.valueOf(matchId)));
         List<PlayerDTO> players = new ArrayList<>(matchEntity.getPlayerList().stream().map(playerMapper::toDTO).toList());
@@ -100,6 +127,11 @@ public class MatchService {
         return players;
     }
 
+    /**
+     * @param matchId zápas, z kterého chceme playerList
+     * @param fan true = pouze fanoušci, false = pouze hráči
+     * @return seznam všech hráčů či fanoušků z konkrétního zápasu
+     */
     public List<PlayerDTO> getPlayerListByFilteredByFansByMatchId(Long matchId, boolean fan){
         MatchEntity matchEntity = matchRepository.findById(matchId).orElseThrow(() -> new EntityNotFoundException(String.valueOf(matchId)));
         List<PlayerDTO> playerDTOS = matchEntity.getPlayerList().stream().map(playerMapper::toDTO).toList();
@@ -113,6 +145,12 @@ public class MatchService {
         return players;
     }
 
+    /**
+     * @param matchId id zápasu, který chceme editovat
+     * @param matchDTO nový zápas, kterým nahradíme původní
+     * @return nový zápas, který byl uložen do DB
+     * @throws NotFoundException zápas nenalezen
+     */
     public MatchDTO editMatch(Long matchId, MatchDTO matchDTO) throws NotFoundException {
         if (!matchRepository.existsById(matchId)) {
             throw new NotFoundException("Zápas s id " + matchId + " nenalezen v db");
@@ -120,12 +158,18 @@ public class MatchService {
         MatchEntity entity = matchMapper.toEntity(matchDTO);
         entity.setId(matchId);
         mapPlayersAndSeasonToMatch(entity, matchDTO);
+        if (matchDTO.getPkflMatch() == null) {
+            entity.setPkflMatch(null);
+        }
         MatchEntity savedEntity = matchRepository.save(entity);
         MatchHelper matchHelper = new MatchHelper(matchDTO);
         notificationService.addNotification("Upraven zápas", matchHelper.getMatchWithOpponentNameAndDate());
         return matchMapper.toDTO(savedEntity);
     }
 
+    /**
+     * @param matchId id zápasu, který chceme smazat
+     */
     @Transactional
     public void deleteMatch(Long matchId) {
         matchRepository.deleteByPlayersInMatchByMatchId(matchId);
@@ -138,6 +182,10 @@ public class MatchService {
         matchRepository.deleteById(matchId);
     }
 
+    /**
+     * @param matchId id zápasu, na který chceme sestavit setup response. Může být null, pak přijde setup response pro nový zápas
+     * @return setup pro pole na FE
+     */
     public SetupMatchResponse setupMatch(Long matchId) {
         SetupMatchResponse response = new SetupMatchResponse();
         if (matchId != null) {
@@ -145,6 +193,7 @@ public class MatchService {
             if (matchEntity != null) {
                 response.setMatch(matchMapper.toDTO(matchEntity));
                 response.setPrimarySeason(seasonService.getSeason(matchEntity.getSeason().getId()));
+                response.setPkflMatch(pkflMatchService.getPkflMatchByDate(matchEntity.getDate()));
             }
         }
         else {
@@ -156,11 +205,19 @@ public class MatchService {
         return response;
     }
 
+    /**
+     * @param matchId Id zápasu
+     * @return zápas nalezený v DB
+     */
     public MatchDTO getMatch(long matchId) {
         MatchEntity matchEntity = matchRepository.findById(matchId).orElseThrow(() -> new EntityNotFoundException(String.valueOf(matchId)));
         return matchMapper.toDTO(matchEntity);
     }
 
+    /**
+     * @param seasonId Id sezony, ze které chceme zápas
+     * @return poslední zápas v dané sezoně podle vstupu
+     */
     public MatchDTO getLatestMatchBySeasonId(long seasonId) {
         MatchEntity matchEntity;
         if (seasonId == ALL_SEASON_ID) {
@@ -179,6 +236,10 @@ public class MatchService {
         return null;
     }
 
+    /**
+     * @param filter filtr, podle kterého chceme získat zápas.
+     * @return sezona a zápas podle filtru. Pokud je zápas prázdný, vrátí se poslední zápas z dané sezony. Pokud je i sezona prázdná, vrátí se poslední zápas z aktuální sezony
+     */
     public PairSeasonMatch returnSeasonAndMatchByFilter(BaseSeasonFilter filter) {
         MatchDTO matchDTO;
         SeasonDTO seasonDTO;
@@ -202,6 +263,10 @@ public class MatchService {
         return new PairSeasonMatch(seasonDTO, matchDTO);
     }
 
+    /**
+     * @param match entita, do které chceme namapovat přepravku
+     * @param matchDTO přepravka, kterou chceme namapovat do entity. Přepravdka obsahuje sezonu a hráče, které mapujeme
+     */
     private void mapPlayersAndSeasonToMatch(MatchEntity match, MatchDTO matchDTO){
         match.setPlayerList(new ArrayList<>());
         List<PlayerEntity> people = playerRepository.findAllById(matchDTO.getPlayerIdList());

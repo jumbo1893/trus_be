@@ -23,6 +23,9 @@ public interface MatchRepository extends PagingAndSortingRepository<MatchEntity,
     @Query(value = "SELECT * from match ORDER BY DATE ASC LIMIT :limit", nativeQuery = true)
     List<MatchEntity> getMatchesOrderByDateAsc(@Param("limit") int limit);
 
+    @Query(value = "SELECT * from match WHERE pkfl_match_id=:#{#pkflMatchId}", nativeQuery = true)
+    List<MatchEntity> findAllByPkflMatchId(@Param("pkflMatchId") long pkflMatchId);
+
     @Query(value = "SELECT * from match WHERE season_id=:#{#season} ORDER BY DATE DESC LIMIT 1", nativeQuery = true)
     MatchEntity getLastMatchBySeasonId(@Param("season") long seasonId);
 

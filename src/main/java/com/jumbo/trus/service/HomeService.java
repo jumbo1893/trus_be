@@ -10,6 +10,7 @@ import com.jumbo.trus.dto.match.MatchDTO;
 import com.jumbo.trus.dto.receivedfine.response.get.detailed.ReceivedFineDetailedResponse;
 import com.jumbo.trus.entity.filter.StatisticsFilter;
 import com.jumbo.trus.service.fact.RandomFact;
+import com.jumbo.trus.service.pkfl.PkflMatchService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -36,12 +37,17 @@ public class HomeService {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private PkflMatchService pkflMatchService;
+
 
     public HomeSetup setup(Long playerId) {
         HomeSetup homeSetup = new HomeSetup();
         homeSetup.setNextBirthday(getUpcomingBirthday());
         homeSetup.setRandomFacts(randomFact.getRandomFacts());
         homeSetup.setChart(setupChartCoordinates(playerId));
+        homeSetup.setNextAndLastPkflMatch(pkflMatchService.getNextAndLastMatchInPkfl());
+
         return homeSetup;
     }
 

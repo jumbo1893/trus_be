@@ -8,7 +8,13 @@ spring.jpa.database-platform: org.hibernate.dialect.PostgreSQLDialect
 spring.jpa.properties.hibernate.jdbc.lob.non_contextual_creation: true
 
 server:
-  port: 8080
+  ssl:
+    key-store: file:C:\Users\matej\Desktop\trusi_appka\server\trus\springboot.p12
+    key-store-password: password
+    key-store-type: pkcs12
+    key-alias: springboot
+    key-password: password
+  port: 8443
 
 spring-doc:
   api-docs.path: /api-docs

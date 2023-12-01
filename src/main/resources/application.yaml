@@ -24,3 +24,5 @@ spring:
       accept-case-insensitive-enums: true
 notifications:
   enabled: ${NOTIFICATIONS_ENABLED:true}
+pkfl:
+  trus: ${TEAM_URL:https://pkfl.cz/tym/s1128}

@@ -3,6 +3,7 @@ package com.jumbo.trus.dto.match.response;
 import com.jumbo.trus.dto.PlayerDTO;
 import com.jumbo.trus.dto.SeasonDTO;
 import com.jumbo.trus.dto.match.MatchDTO;
+import com.jumbo.trus.dto.pkfl.PkflMatchDTO;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -28,5 +29,7 @@ public class SetupMatchResponse {
 
     @NotNull
     private SeasonDTO primarySeason;
+
+    private PkflMatchDTO pkflMatch;
 
 }

@@ -1,6 +1,7 @@
 package com.jumbo.trus.dto.match;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.jumbo.trus.dto.pkfl.PkflMatchDTO;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -32,4 +33,6 @@ public class MatchDTO {
     private Date date;
 
     private boolean home;
+
+    private PkflMatchDTO pkflMatch;
 }
