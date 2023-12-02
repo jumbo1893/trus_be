@@ -1,7 +1,9 @@
 package com.jumbo.trus.controller;
 
+import com.jumbo.trus.dto.helper.StringAndString;
 import com.jumbo.trus.dto.pkfl.PkflMatchDTO;
 import com.jumbo.trus.dto.pkfl.PkflMatchDetail;
+import com.jumbo.trus.dto.pkfl.PkflPlayerDTO;
 import com.jumbo.trus.dto.pkfl.stats.PkflAllIndividualStats;
 import com.jumbo.trus.service.pkfl.PkflMatchService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +36,16 @@ public class PkflController {
     @GetMapping("/player-stats")
     public List<PkflAllIndividualStats> getPlayerStats(@RequestParam boolean currentSeason) {
         return pkflService.getPlayerStats(currentSeason);
+    }
+
+    @GetMapping("/player-facts")
+    public List<StringAndString> getPlayerFacts(@RequestParam long playerId) {
+        return pkflService.getFactsForPlayer(playerId);
+    }
+
+    @GetMapping("/player/get-all")
+    public List<PkflPlayerDTO> getPlayers() {
+        return pkflService.getPlayers();
     }
 
 }

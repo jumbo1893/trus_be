@@ -1,5 +1,6 @@
 package com.jumbo.trus.service.pkfl;
 
+import com.jumbo.trus.dto.helper.StringAndString;
 import com.jumbo.trus.dto.pkfl.*;
 import com.jumbo.trus.dto.pkfl.stats.PkflAllIndividualStats;
 import com.jumbo.trus.dto.pkfl.stats.PkflCardComment;
@@ -7,11 +8,13 @@ import com.jumbo.trus.entity.MatchEntity;
 import com.jumbo.trus.entity.pkfl.*;
 import com.jumbo.trus.entity.repository.*;
 import com.jumbo.trus.mapper.pkfl.*;
+import com.jumbo.trus.service.pkfl.fact.PkflPlayerFact;
 import com.jumbo.trus.service.pkfl.task.RetrieveMatchDetail;
 import com.jumbo.trus.service.pkfl.task.RetrieveMatches;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -63,6 +66,10 @@ public class PkflMatchService {
 
     @Autowired
     PkflOpponentMapper pkflOpponentMapper;
+
+    public List<PkflPlayerDTO> getPlayers() {
+        return pkflPlayerRepository.findAll(Sort.by(Sort.Direction.ASC, PkflPlayerEntity_.NAME)).stream().map(pkflPlayerMapper::toDTO).toList();
+    }
 
     public List<PkflMatchDTO> getNextAndLastMatchInPkfl() {
         List<PkflMatchDTO> matches = new ArrayList<>();
@@ -177,6 +184,10 @@ public class PkflMatchService {
         return seasonIdList;
     }
 
+    public List<StringAndString> getFactsForPlayer(long playerId) {
+        PkflPlayerFact playerFact = new PkflPlayerFact(pkflIndividualStatsRepository, pkflMatchMapper, pkflRefereeMapper, playerId);
+        return playerFact.getStatsForPlayer();
+    }
 
     private List<PkflMatchDTO> getAllMatches() {
         updateAllMatchesIfNeeded();

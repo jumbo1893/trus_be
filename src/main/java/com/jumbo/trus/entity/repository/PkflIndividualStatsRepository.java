@@ -19,6 +19,21 @@ public interface PkflIndividualStatsRepository extends JpaRepository<PkflIndivid
     @Query("SELECT match.id FROM pkfl_individual_stats i WHERE i.player.id = :playerId")
     List<Long> findAllMatchesByPlayerId(@Param("playerId") long playerId);
 
+    @Query(value = "SELECT * FROM pkfl_individual_stats i WHERE i.goals = (SELECT MAX(subI.goals) FROM pkfl_individual_stats subI WHERE subI.player_id = :playerId) AND i.player_id = :playerId", nativeQuery = true)
+    List<PkflIndividualStatsEntity> findAllWithHighestGoals(@Param("playerId") long playerId);
+
+    @Query("SELECT AVG(CASE WHEN " + PkflIndividualStatsEntity_.BEST_PLAYER + " THEN 1 ELSE 0 END) as total, i.match.referee.name as text FROM pkfl_individual_stats i WHERE i.player.id = :playerId GROUP BY i.match.referee.name HAVING COUNT(i.match.referee.name) > 3 ORDER BY total DESC LIMIT 3")
+    List<Object[]> findMostAverageBestPlayersPerReferee(@Param("playerId") long playerId);
+
+    @Query("SELECT AVG(CASE WHEN " + PkflIndividualStatsEntity_.BEST_PLAYER + " THEN 1 ELSE 0 END) as total, i.match.referee.name as text FROM pkfl_individual_stats i WHERE i.player.id = :playerId GROUP BY i.match.referee.name HAVING COUNT(i.match.referee.name) > 3 ORDER BY total ASC LIMIT 3")
+    List<Object[]> findLeastAverageBestPlayersPerReferee(@Param("playerId") long playerId);
+
+    @Query("SELECT AVG(" + PkflIndividualStatsEntity_.GOALS + ") as total, i.match.stadium.name as text FROM pkfl_individual_stats i WHERE i.player.id = :playerId GROUP BY i.match.stadium.name HAVING COUNT(i.match.stadium.name) > 3 ORDER BY total DESC LIMIT 3")
+    List<Object[]> findMostAverageGoalsPerStadium(@Param("playerId") long playerId);
+
+    @Query("SELECT AVG(" + PkflIndividualStatsEntity_.GOALS + ") as total, i.match.opponent.name as text FROM pkfl_individual_stats i WHERE i.player.id = :playerId GROUP BY i.match.opponent.name HAVING COUNT(i.match.opponent.name) > 1 ORDER BY total DESC LIMIT 3")
+    List<Object[]> findMostAverageGoalsPerOpponent(@Param("playerId") long playerId);
+
     @Query("SELECT SUM("+PkflIndividualStatsEntity_.GOALS+") as total FROM pkfl_individual_stats i WHERE i.player.id = :playerId")
     int getGoalsSum(@Param("playerId") long playerId);
 
