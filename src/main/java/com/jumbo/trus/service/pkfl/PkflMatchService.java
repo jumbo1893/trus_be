@@ -84,6 +84,12 @@ public class PkflMatchService {
         updateAllMatchesIfNeeded();
         List<PkflAllIndividualStats> returnPlayerList = new ArrayList<>();
         List<PkflPlayerDTO> players = pkflPlayerRepository.findAll().stream().map(pkflPlayerMapper::toDTO).toList();
+        List<Long> matchIds = new ArrayList<>();
+        List<PkflSeasonDTO> pkflSeasonList = new ArrayList<>();
+        if (currentSeason) {
+            pkflSeasonList = pkflSeasonService.getCurrentSeasons();
+            matchIds = getMatchIdsFromSeasonIds(pkflSeasonList);
+        }
         for (PkflPlayerDTO player : players) {
             if (!currentSeason) {
                 int numberOfMatches = pkflIndividualStatsRepository.getCount(player.getId());
@@ -106,8 +112,6 @@ public class PkflMatchService {
                     returnPlayerList.add(pkflAllIndividualStats);
                 }
             } else {
-                List<PkflSeasonDTO> pkflSeasonList = pkflSeasonService.getCurrentSeasons();
-                List<Long> matchIds = getMatchIdsFromSeasonIds(pkflSeasonList);
                 int numberOfMatches = pkflIndividualStatsRepository.getCount(player.getId(), matchIds);
                 if (numberOfMatches > 0) {
                     PkflAllIndividualStats pkflAllIndividualStats = new PkflAllIndividualStats();
@@ -128,7 +132,6 @@ public class PkflMatchService {
                     returnPlayerList.add(pkflAllIndividualStats);
                 }
             }
-
         }
         return returnPlayerList;
     }
@@ -196,8 +199,9 @@ public class PkflMatchService {
 
     private void updateAllMatchesIfNeeded() {
         Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.YEAR, 2020);
+        calendar.set(2020, Calendar.JANUARY, 1);
         if (!pkflMatchRepository.existsMatchOlderThenDate(calendar.getTime())) {
+            System.out.println(calendar);
             List<PkflSeasonDTO> pkflSeasonList = pkflSeasonService.getAllSeasons();
             getMatchesWithPossibleUpdateNeeded(pkflSeasonList);
         }
