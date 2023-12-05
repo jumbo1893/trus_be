@@ -20,7 +20,6 @@ import com.jumbo.trus.entity.repository.specification.ReceivedFineStatsSpecifica
 import com.jumbo.trus.mapper.ReceivedFineDetailedMapper;
 import com.jumbo.trus.mapper.ReceivedFineMapper;
 import com.jumbo.trus.service.helper.PairSeasonMatch;
-import com.jumbo.trus.service.order.OrderPlayerByName;
 import com.jumbo.trus.service.order.OrderReceivedFineDetailedDTOByFineAmount;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -109,7 +108,7 @@ public class ReceivedFineService {
         HashMap<Long, ReceivedFineDetailedDTO> fineMap = new HashMap<>();
         for (ReceivedFineDetailedDTO fine : fineList) {
             int fineNumber = fine.getFineNumber();
-            int fineAmount = fine.getFineNumber()*fine.getFine().getAmount();
+            int fineAmount = fine.returnFineAmount();
             receivedFineDetailedResponse.addFines(fineNumber);
             receivedFineDetailedResponse.addFineAmount(fineAmount);
             matchSet.add(fine.getMatch().getId());
@@ -118,7 +117,6 @@ public class ReceivedFineService {
                 fine.setMatch(null);
                 fine.setPlayer(null);
                 if (!fineMap.containsKey(fine.getFine().getId())) {
-                    fine.addFineAmount(fine.returnFineAmount());
                     fineMap.put(fine.getFine().getId(), fine);
                 }
                 else {
@@ -130,9 +128,7 @@ public class ReceivedFineService {
             }
             else if (filter.getMatchStatsOrPlayerStats() != null && !filter.getMatchStatsOrPlayerStats()) {
                 fine.setMatch(null);
-
                 if (!playerMap.containsKey(fine.getPlayer().getId())) {
-                    fine.addFineAmount(fine.returnFineAmount());
                     playerMap.put(fine.getPlayer().getId(), fine);
                 }
                 else {
@@ -146,7 +142,6 @@ public class ReceivedFineService {
             else if (filter.getMatchStatsOrPlayerStats() != null) {
                 fine.setPlayer(null);
                 if (!matchMap.containsKey(fine.getMatch().getId())) {
-                    fine.addFineAmount(fine.returnFineAmount());
                     matchMap.put(fine.getMatch().getId(), fine);
                 }
                 else {
