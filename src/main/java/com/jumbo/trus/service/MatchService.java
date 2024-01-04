@@ -238,7 +238,7 @@ public class MatchService {
 
     /**
      * @param filter filtr, podle kterého chceme získat zápas.
-     * @return sezona a zápas podle filtru. Pokud je zápas prázdný, vrátí se poslední zápas z dané sezony. Pokud je i sezona prázdná, vrátí se poslední zápas z aktuální sezony
+     * @return sezona a zápas podle filtru. Pokud je zápas prázdný, vrátí se poslední zápas z dané sezony. Pokud je i sezona prázdná, vrátí se poslední zápas z aktuální sezony. Pokud aktuální sezona nemá zápas, vrátí se poslední hraný zápas
      */
     public PairSeasonMatch returnSeasonAndMatchByFilter(BaseSeasonFilter filter) {
         MatchDTO matchDTO;
@@ -255,6 +255,10 @@ public class MatchService {
         } else if (filter.getSeasonId() != null) {
             matchDTO = getLatestMatchBySeasonId(filter.getSeasonId());
             seasonDTO = seasonService.getSeason(filter.getSeasonId());
+            if (matchDTO == null) {
+                matchDTO = getLatestMatchBySeasonId(ALL_SEASON_ID);
+                seasonDTO = seasonService.getSeason(matchDTO.getSeasonId());
+            }
         }
         else {
             seasonDTO = seasonService.getCurrentSeason();
