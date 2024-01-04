@@ -263,6 +263,10 @@ public class MatchService {
         else {
             seasonDTO = seasonService.getCurrentSeason();
             matchDTO = getLatestMatchBySeasonId(seasonDTO.getId());
+            if (matchDTO == null) {
+                matchDTO = getLatestMatchBySeasonId(ALL_SEASON_ID);
+                seasonDTO = seasonService.getSeason(matchDTO.getSeasonId());
+            }
         }
         return new PairSeasonMatch(seasonDTO, matchDTO);
     }
