@@ -66,6 +66,11 @@ public class GoalService {
     @Autowired
     private NotificationService notificationService;
 
+    /**
+     * metoda napamuje hráče a zápas z přepravky ke gólu a uloží ho do DB
+     * @param goalDTO Gól, který přijde z FE
+     * @return Gól z DB
+     */
     public GoalDTO addGoal(GoalDTO goalDTO) {
         GoalEntity entity = goalMapper.toEntity(goalDTO);
         mapPlayerAndMatch(entity, goalDTO);
@@ -73,6 +78,11 @@ public class GoalService {
         return goalMapper.toDTO(savedEntity);
     }
 
+    /**
+     * Projde seznam gólů u hráčů a v případě změny zapíše změny do db. Počet změn následně vypíše
+     * @param goalListDTO List ve formě přepravky GoalListDTO, který přijde z FE. Obsahuje jak změněné počty gólů u hráčů u konkrétního zápasu, tak může obsahovat i nezměněné počty
+     * @return GoalMultiAddResponse - vypsaný počet změn v DB
+     */
     @Transactional
     public GoalMultiAddResponse addMultipleGoal(GoalListDTO goalListDTO) {
         StringBuilder newGoalNotification = new StringBuilder();

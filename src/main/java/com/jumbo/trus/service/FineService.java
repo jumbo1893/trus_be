@@ -31,6 +31,11 @@ public class FineService {
     @Autowired
     private NotificationService notificationService;
 
+    /**
+     * metoda uloží pokutu do db a založí notifikaci
+     * @param fineDTO Pokuta z FE
+     * @return Pokuta z DB
+     */
     public FineDTO addFine(FineDTO fineDTO) {
         FineEntity entity = fineMapper.toEntity(fineDTO);
         FineEntity savedEntity = fineRepository.save(entity);
@@ -38,6 +43,11 @@ public class FineService {
         return fineMapper.toDTO(savedEntity);
     }
 
+    /**
+     *
+     * @param limit limit počtu výsledků
+     * @return všechny pokuty omezené limitem
+     */
     public List<FineDTO> getAll(int limit){
         List<FineEntity> fineEntities = fineRepository.getAllActive(limit);
         List<FineDTO> result = new ArrayList<>();
@@ -47,6 +57,15 @@ public class FineService {
         return result;
     }
 
+    /**
+     * metoda upraví všechny pokuty. Pokud přijde parametr inactive,
+     * tak se založí nová pokuta, která přepíše zbylé pokuty s původní částkou.
+     * Pokud inactive=false, tak se pokuty přepíšou i s původní cenou
+     * @param fineId id pokuty, kterou chceme změnit
+     * @param fineDTO nové hodnoty pokuty
+     * @return Pokutu nově uloženou v db
+     * @throws NotFoundException pokud není pokuta dle id nalezena
+     */
     @Transactional
     public FineDTO editFine(Long fineId, FineDTO fineDTO) throws NotFoundException {
         if (!fineRepository.existsById(fineId)) {
@@ -85,6 +104,12 @@ public class FineService {
         return fineMapper.toDTO(savedEntity);
     }
 
+    /**
+     * metoda přepisuje needitovatelné pokuty, tedy pokuta gól a hattrick, jejichž id je již jinde v kódu.
+     * @param fineId id pokuty, kterou chceme změnit
+     * @param fineDTO nové hodnoty pokuty
+     * @return Pokutu nově uloženou v db
+     */
     private FineDTO editNonEditableFines(Long fineId, FineDTO fineDTO) {
         FineEntity fineEntity = fineRepository.findById(fineId).orElseThrow(() -> new NotFoundException("Pokuta nenalezena v db"));
         fineEntity.setAmount(fineDTO.getAmount());
@@ -109,6 +134,11 @@ public class FineService {
         }
     }
 
+    /**
+     *
+     * @param otherFines id pokut
+     * @return vrátí všechny ostatní pokuty krom těchto pokut, pokud nejsou neaktivní
+     */
     public List<FineDTO> getAllOtherFines (List<Long> otherFines){
         return fineRepository.getAllOtherFines(otherFines).stream().map(fineMapper::toDTO).collect(Collectors.toList());
 

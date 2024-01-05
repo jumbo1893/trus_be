@@ -59,6 +59,11 @@ public class BeerService {
     @Autowired
     private NotificationService notificationService;
 
+    /**
+     * metoda napamuje hráče a zápas z přepravky k pivu a uloží ho do DB
+     * @param beerDTO Pivo, který přijde z FE
+     * @return Pivo z DB
+     */
     public BeerDTO addBeer(BeerDTO beerDTO) {
         BeerEntity entity = beerMapper.toEntity(beerDTO);
         mapPlayerAndMatch(entity, beerDTO);
@@ -66,6 +71,11 @@ public class BeerService {
         return beerMapper.toDTO(savedEntity);
     }
 
+    /**
+     * Projde seznam piv u hráčů a v případě změny zapíše změny do db. Počet změn následně vypíše
+     * @param beerListDTO List ve formě přepravky BeerListDTO, který přijde z FE. Obsahuje jak změněné počty piv u hráčů u konkrétního zápasu, tak může obsahovat i nezměněné počty
+     * @return BeerMultiAddResponse - vypsaný počet změn v DB
+     */
     public BeerMultiAddResponse addMultipleBeer(BeerListDTO beerListDTO) {
         StringBuilder newBeerNotification = new StringBuilder();
         StringBuilder newLiquorNotification = new StringBuilder();
@@ -101,11 +111,22 @@ public class BeerService {
         return beerMultiAddResponse;
     }
 
+    /**
+     *
+     * @param beerFilter filter, podle kterého se vrací počet záznamů
+     * @return záznamy na základě filtru v parametru
+     */
     public List<BeerDTO> getAll(BeerFilter beerFilter) {
         BeerSpecification beerSpecification = new BeerSpecification(beerFilter);
         return beerRepository.findAll(beerSpecification, PageRequest.of(0, beerFilter.getLimit())).stream().map(beerMapper::toDTO).collect(Collectors.toList());
     }
 
+    /**
+     * metoda prohledá záznamy v DB
+     * @param filter filter, podle kterého se vrací počet záznamů. Pomocí parametru matchStatsOrPlayerStats se určřuje, zda chceme statistiky z pohledu zápasu (true) či hráče (false)
+     *               detailed se nepoužívá
+     * @return Vrací rozšířený seznam vypitých piv z db dle filtru
+     */
     public BeerDetailedResponse getAllDetailed(StatisticsFilter filter) {
         BeerDetailedResponse beerDetailedResponse = new BeerDetailedResponse();
         BeerStatsSpecification beerSpecification = new BeerStatsSpecification(filter);
@@ -161,6 +182,11 @@ public class BeerService {
         return beerDetailedResponse;
     }
 
+    /**
+     * Metoda vrátí setup piv, který se použije v objektu. Jedná se o počet rozpitých piv v daném zápase pro dané hráče dle filtru
+     * @param beerFilter filter, podle kterého se vrací počet záznamů
+     * @return BeerSetupResponse, kde lze najít počet piv a kořalek pro zápas a jedntlivé hráče
+     */
     public BeerSetupResponse setupBeers(BeerFilter beerFilter) {
         PairSeasonMatch pairSeasonMatch = matchService.returnSeasonAndMatchByFilter(beerFilter);
         SeasonDTO seasonDTO = pairSeasonMatch.getSeasonDTO();
