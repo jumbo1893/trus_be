@@ -11,6 +11,7 @@ import com.jumbo.trus.mapper.pkfl.*;
 import com.jumbo.trus.service.pkfl.fact.PkflPlayerFact;
 import com.jumbo.trus.service.pkfl.task.RetrieveMatchDetail;
 import com.jumbo.trus.service.pkfl.task.RetrieveMatches;
+import com.jumbo.trus.service.pkfl.task.RetrieveTable;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,6 +25,9 @@ public class PkflMatchService {
 
     @Value("${pkfl.trus}")
     private String trusUrl;
+
+    @Value("${pkfl.table}")
+    private String tableUrl;
 
     @Autowired
     private PkflSeasonService pkflSeasonService;
@@ -66,6 +70,22 @@ public class PkflMatchService {
 
     @Autowired
     PkflOpponentMapper pkflOpponentMapper;
+
+    public List<PkflTableTeamDTO> getTableTeams() {
+        RetrieveTable retrieveTable = new RetrieveTable();
+        List<PkflTableTeamDTO> pkflTableTeamDTOS = retrieveTable.getTableTeams(tableUrl);
+        for (PkflTableTeamDTO team : pkflTableTeamDTOS) {
+            PkflOpponentEntity opponent = pkflOpponentRepository.getOpponentByName(team.getOpponent().getName());
+            if (opponent != null) {
+                team.setOpponent(pkflOpponentMapper.toDTO(opponent));
+                List<PkflMatchEntity> matches = pkflMatchRepository.findAlreadyPlayedByOpponentId(team.getOpponent().getId());
+                if (!matches.isEmpty()) {
+                    team.setPkflMatchId(matches.get(0).getId());
+                }
+            }
+        }
+        return pkflTableTeamDTOS;
+    }
 
     public List<PkflPlayerDTO> getPlayers() {
         return pkflPlayerRepository.findAll(Sort.by(Sort.Direction.ASC, PkflPlayerEntity_.NAME)).stream().map(pkflPlayerMapper::toDTO).toList();

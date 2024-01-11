@@ -4,6 +4,7 @@ import com.jumbo.trus.dto.helper.StringAndString;
 import com.jumbo.trus.dto.pkfl.PkflMatchDTO;
 import com.jumbo.trus.dto.pkfl.PkflMatchDetail;
 import com.jumbo.trus.dto.pkfl.PkflPlayerDTO;
+import com.jumbo.trus.dto.pkfl.PkflTableTeamDTO;
 import com.jumbo.trus.dto.pkfl.stats.PkflAllIndividualStats;
 import com.jumbo.trus.service.pkfl.PkflMatchService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,11 @@ public class PkflController {
     @GetMapping("/fixtures")
     public List<PkflMatchDTO> getPkflFixtures() {
         return pkflService.getPkflFixtures();
+    }
+
+    @GetMapping("/table")
+    public List<PkflTableTeamDTO> getPkflTable() {
+        return pkflService.getTableTeams();
     }
 
     @GetMapping("/detail/{pkflMatchId}")

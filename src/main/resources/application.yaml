@@ -26,3 +26,4 @@ notifications:
   enabled: ${NOTIFICATIONS_ENABLED:true}
 pkfl:
   trus: ${TEAM_URL:https://pkfl.cz/tym/s1128}
+  table: ${TABLE_URL:https://pkfl.cz/liga/s177/s2vse/s34?t=prubez}

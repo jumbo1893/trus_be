@@ -126,10 +126,21 @@ public class GoalService {
         return goalMultiAddResponse;
     }
 
+    /**
+     *
+     * @param oldGoal gol z DB
+     * @param goalDTO gól z FE
+     * @return Vrátí zda je nutné přidat gól do db (je nesmysl tam dávat že někdo dal 0 gólů to je automatika)
+     */
     private boolean isNeededToAddGoal(GoalDTO oldGoal, GoalDTO goalDTO) {
         return oldGoal == null && (goalDTO.getGoalNumber() != 0 || goalDTO.getAssistNumber() != 0);
     }
-
+    /**
+     *
+     * @param oldGoal gol z DB
+     * @param goalDTO gól z FE
+     * @return Vrátí rozdíl u gólu
+     */
     private int checkGoalDiff(GoalDTO oldGoal, GoalDTO goalDTO) {
         if (oldGoal == null) {
             return 0;
@@ -137,6 +148,12 @@ public class GoalService {
         return goalDTO.getGoalNumber()-oldGoal.getGoalNumber();
     }
 
+    /**
+     *
+     * @param oldGoal asistence z DB
+     * @param goalDTO asistence z FE
+     * @return Vrátí rozdíl u asistence
+     */
     private int checkAssistDiff(GoalDTO oldGoal, GoalDTO goalDTO) {
         if (oldGoal == null) {
             return 0;
@@ -148,7 +165,12 @@ public class GoalService {
         GoalSpecification goalSpecification = new GoalSpecification(goalFilter);
         return goalRepository.findAll(goalSpecification, PageRequest.of(0, goalFilter.getLimit())).stream().map(goalMapper::toDTO).collect(Collectors.toList());
     }
-
+    /**
+     * metoda prohledá záznamy v DB
+     * @param filter filter, podle kterého se vrací počet záznamů. Pomocí parametru matchStatsOrPlayerStats se určuje, zda chceme statistiky z pohledu zápasu (true) či hráče (false)
+     *               detailed se nepoužívá
+     * @return Vrací rozšířený seznam vstřelenách gólů z db dle filtru
+     */
     public GoalDetailedResponse getAllDetailed(StatisticsFilter filter) {
         GoalDetailedResponse goalDetailedResponse = new GoalDetailedResponse();
         GoalStatsSpecification goalSpecification = new GoalStatsSpecification(filter);
@@ -204,6 +226,11 @@ public class GoalService {
         return goalDetailedResponse;
     }
 
+    /**
+     * Metoda vrátí setup gólů, který se použije v objektu. Jedná se o počet vstřelených gólů a asistencídaném zápase pro dané hráče dle filtru
+     * @param goalFilter filter, podle kterého se vrací počet záznamů
+     * @return List<GoalSetupResponse>, kde lze najít počet gólů a asistencí pro zápas a jednotlivé hráče
+     */
     public List<GoalSetupResponse> getGoalSetup(GoalFilter goalFilter) {
         GoalSpecification goalSpecification = new GoalSpecification(goalFilter);
         if (goalFilter.getMatchId() == null) {
@@ -229,6 +256,11 @@ public class GoalService {
         return goalRepository.save(entity);
     }
 
+    /**
+     * metoda vezme góly a dle toho přidá pokuty za góly a hattricky hráčům
+     * @param matchId id zápasu
+     * @param goalList seznam gólů
+     */
     @Transactional
     private void rewriteFinesInDB(Long matchId, List<GoalDTO> goalList) {
         receivedFineRepository.deleteGoalAndHattrickFinesFromMatch(matchId, Config.GOAL_FINE_ID, Config.HATTRICK_FINE_ID);
@@ -243,12 +275,24 @@ public class GoalService {
 
     }
 
+    /**
+     * metoda přidá pokutu za gól
+     * @param number počet gólů
+     * @param playerId id hráče
+     * @param matchId id zápasu
+     */
     private void addGoalFine(int number, long playerId, long matchId) {
         FineDTO goalFine = new FineDTO(Config.GOAL_FINE_ID, "", 0, false);
         ReceivedFineDTO receivedFine = new ReceivedFineDTO(number, goalFine, playerId, matchId);
         receivedFineService.addFine(receivedFine);
     }
 
+    /**
+     * metoda vyhodnotí, kteří hráči mají dostat pokutu (ostatní, než ten, co dal hattrick) a provolá metzodu na přidání pokut
+     * @param numberOfHattricks počet hattricků
+     * @param hattrickPlayerId id hráče, který dal hattrick
+     * @param matchId id zápasu
+     */
     private void setAndAddHattrickFines(long matchId, int numberOfHattricks, long hattrickPlayerId) {
         List<Long> playerIds = playerService.convertPlayerListToPlayerIdList(playerService.getAllActive(true));
         for (Long playerId : playerIds) {
@@ -257,7 +301,12 @@ public class GoalService {
             }
         }
     }
-
+    /**
+     * metoda přidá pokutu za hattrick
+     * @param number počet hattricků
+     * @param playerId id hráče,
+     * @param matchId id zápasu
+     */
     private void addHattrickFine(int number, long playerId, long matchId) {
         FineDTO hattrickFine = new FineDTO(Config.HATTRICK_FINE_ID, "", 0, false);
         ReceivedFineDTO receivedFine = new ReceivedFineDTO(number, hattrickFine, playerId, matchId);
