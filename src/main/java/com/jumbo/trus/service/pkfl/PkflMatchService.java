@@ -1,5 +1,6 @@
 package com.jumbo.trus.service.pkfl;
 
+import com.jumbo.trus.dto.UpdateDTO;
 import com.jumbo.trus.dto.helper.StringAndString;
 import com.jumbo.trus.dto.pkfl.*;
 import com.jumbo.trus.dto.pkfl.stats.PkflAllIndividualStats;
@@ -7,6 +8,7 @@ import com.jumbo.trus.dto.pkfl.stats.PkflCardComment;
 import com.jumbo.trus.entity.MatchEntity;
 import com.jumbo.trus.entity.pkfl.*;
 import com.jumbo.trus.entity.repository.*;
+import com.jumbo.trus.mapper.UpdateMapper;
 import com.jumbo.trus.mapper.pkfl.*;
 import com.jumbo.trus.service.pkfl.fact.PkflPlayerFact;
 import com.jumbo.trus.service.pkfl.task.RetrieveMatchDetail;
@@ -18,10 +20,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.time.ZonedDateTime;
 import java.util.*;
 
 @Service
 public class PkflMatchService {
+
+    private final static String PKFL_MATCHES = "PKFL_MATCHES";
 
     @Value("${pkfl.trus}")
     private String trusUrl;
@@ -54,6 +59,9 @@ public class PkflMatchService {
     private MatchRepository matchRepository;
 
     @Autowired
+    private UpdateRepository updateRepository;
+
+    @Autowired
     PkflMatchMapper pkflMatchMapper;
 
     @Autowired
@@ -70,6 +78,9 @@ public class PkflMatchService {
 
     @Autowired
     PkflOpponentMapper pkflOpponentMapper;
+
+    @Autowired
+    UpdateMapper updateMapper;
 
     public List<PkflTableTeamDTO> getTableTeams() {
         RetrieveTable retrieveTable = new RetrieveTable();
@@ -91,10 +102,12 @@ public class PkflMatchService {
         return pkflPlayerRepository.findAll(Sort.by(Sort.Direction.ASC, PkflPlayerEntity_.NAME)).stream().map(pkflPlayerMapper::toDTO).toList();
     }
 
-    public List<PkflMatchDTO> getNextAndLastMatchInPkfl() {
+    public List<PkflMatchDTO> getNextAndLastMatchInPkfl(Boolean updateMatches) {
         List<PkflMatchDTO> matches = new ArrayList<>();
-        List<PkflSeasonDTO> pkflSeasonList = pkflSeasonService.getCurrentSeasons();
-        getMatchesWithPossibleUpdateNeeded(pkflSeasonList);
+        if (isRequiredToUpdateMatches(updateMatches)) {
+            List<PkflSeasonDTO> pkflSeasonList = pkflSeasonService.getCurrentSeasons();
+            getMatchesWithPossibleUpdateNeeded(pkflSeasonList);
+        }
         matches.add(getNextMatchFromRepository());
         matches.add(getLastMatchFromRepository());
         return matches;
@@ -227,9 +240,11 @@ public class PkflMatchService {
         }
     }
 
-    public List<PkflMatchDTO> getPkflFixtures() {
-        List<PkflSeasonDTO> pkflSeasonList = pkflSeasonService.getCurrentSeasons();
-        getMatchesWithPossibleUpdateNeeded(pkflSeasonList);
+    public List<PkflMatchDTO> getPkflFixtures(Boolean updateMatches) {
+        if (isRequiredToUpdateMatches(updateMatches)) {
+            List<PkflSeasonDTO> pkflSeasonList = pkflSeasonService.getCurrentSeasons();
+            getMatchesWithPossibleUpdateNeeded(pkflSeasonList);
+        }
         return pkflMatchRepository.getNonPlayedMatchesOrderByDate().stream().map(pkflMatchMapper::toDTO).toList();
     }
 
@@ -346,7 +361,6 @@ public class PkflMatchService {
         if (match == null) {
             return null;
         }
-        System.out.println(match.getMatchList().size());
         return pkflMatchMapper.toDTO(match);
     }
 
@@ -355,7 +369,6 @@ public class PkflMatchService {
         if (match == null) {
             return null;
         }
-        System.out.println(match.getMatchList().size());
         return pkflMatchMapper.toDTO(match);
     }
 
@@ -501,5 +514,32 @@ public class PkflMatchService {
         return pkflIndividualStatsMapper.toDTO(pkflIndividualStatsRepository.getPlayerByPlayerId(player.getId()));
     }
 
+    private boolean isRequiredToUpdateMatches(Boolean updateMatches) {
+        return isNeededToUpdateMatches() || (updateMatches != null && updateMatches);
+    }
+
+    private boolean isNeededToUpdateMatches() {
+        UpdateDTO updateDTO = updateMapper.toDTO(updateRepository.getDateByName(PKFL_MATCHES));
+        if (updateDTO == null) {
+            UpdateDTO newUpdate = new UpdateDTO();
+            Date date = new Date();
+            newUpdate.setDate(date);
+            newUpdate.setName(PKFL_MATCHES);
+            updateRepository.save(updateMapper.toEntity(newUpdate));
+            return true;
+        } else if (isDateOlderThanDay(updateDTO.getDate())) {
+            Date date = new Date();
+            updateDTO.setDate(date);
+            updateRepository.save(updateMapper.toEntity(updateDTO));
+            return true;
+        }
+        return false;
+    }
+
+    private boolean isDateOlderThanDay(Date date) {
+        ZonedDateTime now = ZonedDateTime.now();
+        ZonedDateTime yesterday = now.plusDays(-1);
+        return date.toInstant().isBefore(yesterday.toInstant());
+    }
 
 }

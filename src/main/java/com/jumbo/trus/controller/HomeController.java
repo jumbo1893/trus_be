@@ -13,8 +13,8 @@ public class HomeController {
     HomeService homeService;
 
     @GetMapping("/setup")
-    public HomeSetup getHomeSetup(@RequestParam(required = false) Long playerId) {
-        return homeService.setup(playerId);
+    public HomeSetup getHomeSetup(@RequestParam(required = false) Long playerId, @RequestParam(required = false) Boolean updateNeeded) {
+        return homeService.setup(playerId, updateNeeded);
     }
 
 }

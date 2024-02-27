@@ -20,13 +20,13 @@ public class PkflController {
     PkflMatchService pkflService;
 
     @GetMapping("/next-and-last-match")
-    public List<PkflMatchDTO> getNextAndLastMatch() {
-        return pkflService.getNextAndLastMatchInPkfl();
+    public List<PkflMatchDTO> getNextAndLastMatch(@RequestParam(required = false) Boolean updateNeeded) {
+        return pkflService.getNextAndLastMatchInPkfl(updateNeeded);
     }
 
     @GetMapping("/fixtures")
-    public List<PkflMatchDTO> getPkflFixtures() {
-        return pkflService.getPkflFixtures();
+    public List<PkflMatchDTO> getPkflFixtures(@RequestParam(required = false) Boolean updateNeeded) {
+        return pkflService.getPkflFixtures(updateNeeded);
     }
 
     @GetMapping("/table")

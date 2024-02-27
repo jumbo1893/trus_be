@@ -41,12 +41,12 @@ public class HomeService {
     private PkflMatchService pkflMatchService;
 
 
-    public HomeSetup setup(Long playerId) {
+    public HomeSetup setup(Long playerId, Boolean pkflMatchesUpdateNeeded) {
         HomeSetup homeSetup = new HomeSetup();
         homeSetup.setNextBirthday(getUpcomingBirthday());
         homeSetup.setRandomFacts(randomFact.getRandomFacts());
         homeSetup.setChart(setupChartCoordinates(playerId));
-        homeSetup.setNextAndLastPkflMatch(pkflMatchService.getNextAndLastMatchInPkfl());
+        homeSetup.setNextAndLastPkflMatch(pkflMatchService.getNextAndLastMatchInPkfl(pkflMatchesUpdateNeeded));
 
         return homeSetup;
     }
