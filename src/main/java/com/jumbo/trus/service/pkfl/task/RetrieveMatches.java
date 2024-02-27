@@ -12,6 +12,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 public class RetrieveMatches {
 
@@ -99,6 +100,7 @@ public class RetrieveMatches {
     private Date convertStringToDate(String date, String time) {
         String dateTimeString = date + " " + time;
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        dateFormat.setTimeZone(TimeZone.getTimeZone("Europe/Prague"));
         Date returnDate = new Date();
         try {
             returnDate = dateFormat.parse(dateTimeString);
