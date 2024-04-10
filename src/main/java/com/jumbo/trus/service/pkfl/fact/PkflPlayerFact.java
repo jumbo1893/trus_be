@@ -70,7 +70,7 @@ public class PkflPlayerFact {
         else {
             StringBuilder text = new StringBuilder("Rozhodčí:\n");
             for (DoubleAndString intReferee : resultList) {
-                text.append(intReferee.getText()).append(" průměrně udělil hvězdu utkání v ").append(intReferee.getTotal()).append(" zápasech \n");
+                text.append(intReferee.getText()).append(" průměrně udělil hvězdu utkání v ").append(intReferee.getTotalRounded(2)).append(" zápasech \n");
             }
             doubleString.setText(String.valueOf(text));
 
@@ -89,7 +89,7 @@ public class PkflPlayerFact {
         else {
             StringBuilder text = new StringBuilder("Rozhodčí:\n");
             for (DoubleAndString intReferee : resultList) {
-                text.append(intReferee.getText()).append(" průměrně udělil hvězdu utkání v ").append(intReferee.getTotal()).append(" zápasech \n");
+                text.append(intReferee.getText()).append(" průměrně udělil hvězdu utkání v ").append(intReferee.getTotalRounded(2)).append(" zápasech \n");
             }
             doubleString.setText(String.valueOf(text));
 
@@ -102,13 +102,13 @@ public class PkflPlayerFact {
         List<Object[]> result = pkflIndividualStatsRepository.findMostAverageGoalsPerStadium(playerId);
         List<DoubleAndString> resultList = objectToDoubleAndString(result);
         doubleString.setTitle("Nejlíp se střílí na stadionu: ");
-        if (resultList.isEmpty() || resultList.get(0).getTotal() == 0) {
+        if (resultList.isEmpty() || resultList.get(0). getTotal()== 0) {
             doubleString.setText("Hráč ještě nedal gól, nebo nehrál na žádném stadionu aspoň 3x!");
         }
         else {
             StringBuilder text = new StringBuilder("Stadion:\n");
             for (DoubleAndString doubleAndString : resultList) {
-                text.append("Na hřišti ").append(doubleAndString.getText()).append(" vstřelil hráč průměrně ").append(doubleAndString.getTotal()).append(" gólů na zápas\n");
+                text.append("Na hřišti ").append(doubleAndString.getText()).append(" vstřelil hráč průměrně ").append(doubleAndString.getTotalRounded(2)).append(" gólů na zápas\n");
             }
             doubleString.setText(String.valueOf(text));
 
@@ -128,7 +128,7 @@ public class PkflPlayerFact {
             StringBuilder text = new StringBuilder("Soupeř:\n");
             for (DoubleAndString doubleAndString : resultList) {
                 if(doubleAndString.getTotal() > 0) {
-                    text.append("Proti ").append(doubleAndString.getText()).append(" vstřelil hráč průměrně ").append(doubleAndString.getTotal()).append(" gólů na zápas\n");
+                    text.append("Proti ").append(doubleAndString.getText()).append(" vstřelil hráč průměrně ").append(doubleAndString.getTotalRounded(2)).append(" gólů na zápas\n");
                 }
             }
             doubleString.setText(String.valueOf(text));
