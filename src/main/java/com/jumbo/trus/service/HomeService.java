@@ -9,6 +9,7 @@ import com.jumbo.trus.dto.beer.response.get.BeerDetailedResponse;
 import com.jumbo.trus.dto.match.MatchDTO;
 import com.jumbo.trus.dto.receivedfine.response.get.detailed.ReceivedFineDetailedResponse;
 import com.jumbo.trus.entity.filter.StatisticsFilter;
+import com.jumbo.trus.service.beer.BeerService;
 import com.jumbo.trus.service.fact.RandomFact;
 import com.jumbo.trus.service.pkfl.PkflMatchService;
 import org.springframework.beans.factory.annotation.Autowired;

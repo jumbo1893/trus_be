@@ -5,9 +5,11 @@ import com.jumbo.trus.dto.beer.multi.BeerListDTO;
 import com.jumbo.trus.dto.beer.response.get.BeerDetailedResponse;
 import com.jumbo.trus.dto.beer.response.get.BeerSetupResponse;
 import com.jumbo.trus.dto.beer.response.multi.BeerMultiAddResponse;
+import com.jumbo.trus.dto.stats.StatsDTO;
 import com.jumbo.trus.entity.filter.BeerFilter;
 import com.jumbo.trus.entity.filter.StatisticsFilter;
-import com.jumbo.trus.service.BeerService;
+import com.jumbo.trus.service.beer.BeerService;
+import com.jumbo.trus.service.beer.BeerStatsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +28,9 @@ public class BeerController {
 
     @Autowired
     BeerService beerService;
+
+    @Autowired
+    BeerStatsService beerStatsService;
 
     @Secured("ROLE_ADMIN")
     @PostMapping("/add")
@@ -71,22 +76,8 @@ public class BeerController {
         return beerService.setupBeers(beerFilter);
     }
 
-    /*@GetMapping("/listen")
-    public SseEmitter getEvents() {
-        SseEmitter emitter = new SseEmitter();
-        emitters.add(emitter);
-        emitter.onCompletion(() -> emitters.remove(emitter));
-        return emitter;
+    @GetMapping("/stats")
+    public List<StatsDTO> getBeerStats(StatisticsFilter filter) {
+        return beerStatsService.getBeerStatistics(filter);
     }
-
-    @PostMapping("/notify")
-    public void postMessage(String message) {
-        for (SseEmitter emitter : emitters) {
-            try {
-                emitter.send(message + "ahoj ");
-            } catch (Exception e) {
-                emitter.completeWithError(e);
-            }
-        }
-    }*/
 }

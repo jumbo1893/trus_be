@@ -22,4 +22,19 @@ public class PlayerDTO {
     private boolean fan;
 
     private boolean active;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        PlayerDTO playerDTO = (PlayerDTO) o;
+
+        return id == playerDTO.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return (int) (id ^ (id >>> 32));
+    }
 }

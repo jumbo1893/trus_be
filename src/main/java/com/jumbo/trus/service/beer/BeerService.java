@@ -1,4 +1,4 @@
-package com.jumbo.trus.service;
+package com.jumbo.trus.service.beer;
 
 import com.jumbo.trus.dto.PlayerDTO;
 import com.jumbo.trus.dto.SeasonDTO;
@@ -22,6 +22,9 @@ import com.jumbo.trus.entity.repository.BeerRepository;
 import com.jumbo.trus.entity.repository.MatchRepository;
 import com.jumbo.trus.entity.repository.PlayerRepository;
 import com.jumbo.trus.entity.repository.specification.BeerSpecification;
+import com.jumbo.trus.service.MatchService;
+import com.jumbo.trus.service.NotificationService;
+import com.jumbo.trus.service.PlayerService;
 import com.jumbo.trus.service.helper.PairSeasonMatch;
 import com.jumbo.trus.service.order.OrderBeerByBeerAndLiquorNumberThenName;
 import com.jumbo.trus.service.order.OrderBeerDetailedDTOByBeerAndLiquorNumber;

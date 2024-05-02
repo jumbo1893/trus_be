@@ -70,7 +70,7 @@ public class PkflPlayerFact {
         else {
             StringBuilder text = new StringBuilder("Rozhodčí:\n");
             for (DoubleAndString intReferee : resultList) {
-                text.append(intReferee.getText()).append(" průměrně udělil hvězdu utkání v ").append(intReferee.getTotalRounded(2)).append(" zápasech \n");
+                text.append(intReferee.getText()).append(" průměrně udělil hvězdu utkání v ").append(intReferee.getTotalRoundedInString(2)).append(" zápasech \n");
             }
             doubleString.setText(String.valueOf(text));
 
@@ -89,7 +89,7 @@ public class PkflPlayerFact {
         else {
             StringBuilder text = new StringBuilder("Rozhodčí:\n");
             for (DoubleAndString intReferee : resultList) {
-                text.append(intReferee.getText()).append(" průměrně udělil hvězdu utkání v ").append(intReferee.getTotalRounded(2)).append(" zápasech \n");
+                text.append(intReferee.getText()).append(" průměrně udělil hvězdu utkání v ").append(intReferee.getTotalRoundedInString(2)).append(" zápasech \n");
             }
             doubleString.setText(String.valueOf(text));
 
@@ -108,7 +108,7 @@ public class PkflPlayerFact {
         else {
             StringBuilder text = new StringBuilder("Stadion:\n");
             for (DoubleAndString doubleAndString : resultList) {
-                text.append("Na hřišti ").append(doubleAndString.getText()).append(" vstřelil hráč průměrně ").append(doubleAndString.getTotalRounded(2)).append(" gólů na zápas\n");
+                text.append("Na hřišti ").append(doubleAndString.getText()).append(" vstřelil hráč průměrně ").append(doubleAndString.getTotalRoundedInString(2)).append(" gólů na zápas\n");
             }
             doubleString.setText(String.valueOf(text));
 
@@ -128,7 +128,7 @@ public class PkflPlayerFact {
             StringBuilder text = new StringBuilder("Soupeř:\n");
             for (DoubleAndString doubleAndString : resultList) {
                 if(doubleAndString.getTotal() > 0) {
-                    text.append("Proti ").append(doubleAndString.getText()).append(" vstřelil hráč průměrně ").append(doubleAndString.getTotalRounded(2)).append(" gólů na zápas\n");
+                    text.append("Proti ").append(doubleAndString.getText()).append(" vstřelil hráč průměrně ").append(doubleAndString.getTotalRoundedInString(2)).append(" gólů na zápas\n");
                 }
             }
             doubleString.setText(String.valueOf(text));

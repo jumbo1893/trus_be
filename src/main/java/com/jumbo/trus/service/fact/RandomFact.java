@@ -14,6 +14,7 @@ import com.jumbo.trus.entity.filter.BeerFilter;
 import com.jumbo.trus.entity.filter.MatchFilter;
 import com.jumbo.trus.entity.filter.StatisticsFilter;
 import com.jumbo.trus.service.*;
+import com.jumbo.trus.service.beer.BeerService;
 import com.jumbo.trus.service.helper.AverageNumberTotalNumber;
 import com.jumbo.trus.service.order.OrderBeerByAttendance;
 import com.jumbo.trus.service.order.OrderBeerByBeerOrLiquorNumber;

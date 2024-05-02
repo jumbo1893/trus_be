@@ -1,11 +1,9 @@
 package com.jumbo.trus.service.pkfl.fact.helper;
 
+import com.jumbo.trus.service.helper.NumberRounder;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 @Data
 @AllArgsConstructor
@@ -16,9 +14,13 @@ public class DoubleAndString {
     private String text;
 
     public double getTotalRounded(int places) {
-        BigDecimal bd = BigDecimal.valueOf(total);
-        bd = bd.setScale(places, RoundingMode.HALF_UP);
-        return bd.doubleValue();
+        NumberRounder numberRounder = new NumberRounder();
+        return numberRounder.roundDouble(places, total);
+    }
+
+    public String getTotalRoundedInString(int places) {
+        NumberRounder numberRounder = new NumberRounder();
+        return numberRounder.roundDoubleToString(places, total);
     }
 
 
