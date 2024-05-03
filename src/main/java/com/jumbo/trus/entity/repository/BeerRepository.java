@@ -53,7 +53,10 @@ public interface BeerRepository extends PagingAndSortingRepository<BeerEntity, L
                         WHERE m.season_id=:#{#seasonId}
                     GROUP BY player_id
                 ) max_beer ON b.player_id = max_beer.player_id AND b.beer_number = max_beer.max_beer_number
-                WHERE beer_number > 0
+                INNER JOIN match m ON match_id=m.id
+                WHERE m.season_id=:#{#seasonId}
+                AND
+                AND beer_number > 0
             ) ranked_beer
             WHERE rn = 1
             ORDER BY beer_number DESC;
@@ -89,7 +92,9 @@ public interface BeerRepository extends PagingAndSortingRepository<BeerEntity, L
                         WHERE m.season_id=:#{#seasonId}
                     GROUP BY player_id
                 ) max_liquor ON b.player_id = max_liquor.player_id AND b.liquor_number = max_liquor.max_liquor_number
-                WHERE liquor_number > 0
+                INNER JOIN match m ON match_id=m.id
+                WHERE m.season_id=:#{#seasonId}
+                AND liquor_number > 0
             ) ranked_liquor
             WHERE rn = 1
             ORDER BY liquor_number DESC;
@@ -235,6 +240,78 @@ public interface BeerRepository extends PagingAndSortingRepository<BeerEntity, L
                         ORDER BY avgBeerPerMatch DESC;
             """, nativeQuery = true)
     List<AverageBeer> getGoalLiquorRatio(@Param("seasonId") long seasonId);
+
+    @Query(value = """
+            SELECT b.player_id as playerId, SUM(b.beer_number) AS totalBeerNumber, g.assist_count as matchCount,
+                               CAST(SUM(b.beer_number) AS FLOAT) / g.assist_count AS avgBeerPerMatch
+                        FROM beer b
+                        JOIN (
+                            SELECT player_id, SUM(assist_number) AS assist_count
+                            FROM goal g
+                            GROUP BY player_id
+                        ) g ON b.player_id = g.player_id
+            			    WHERE g.assist_count > 0
+                        GROUP BY b.player_id, g.assist_count
+                        HAVING SUM(b.beer_number) > 0
+                        ORDER BY avgBeerPerMatch DESC;
+            """, nativeQuery = true)
+    List<AverageBeer> getAssistBeerRatio();
+
+    @Query(value = """
+            SELECT b.player_id as playerId, SUM(b.beer_number) AS totalBeerNumber, g.assist_count as matchCount,
+                               CAST(SUM(b.beer_number) AS FLOAT) / g.assist_count AS avgBeerPerMatch
+                        FROM beer b
+                        JOIN (
+                            SELECT player_id, SUM(assist_number) AS assist_count
+                            FROM goal g
+                            INNER JOIN match m ON match_id=m.id
+                                WHERE m.season_id=:#{#seasonId}
+                            GROUP BY player_id
+                        ) g ON b.player_id = g.player_id
+                        INNER JOIN match m ON match_id=m.id
+                            WHERE m.season_id=:#{#seasonId}
+            			    AND g.assist_count > 0
+                        GROUP BY b.player_id, g.assist_count
+                        HAVING SUM(b.beer_number) > 0
+                        ORDER BY avgBeerPerMatch DESC;
+            """, nativeQuery = true)
+    List<AverageBeer> getAssistBeerRatio(@Param("seasonId") long seasonId);
+
+    @Query(value = """
+            SELECT b.player_id as playerId, SUM(b.liquor_number) AS totalBeerNumber, g.assist_count as matchCount,
+                               CAST(SUM(b.liquor_number) AS FLOAT) / g.assist_count AS avgBeerPerMatch
+                        FROM beer b
+                        JOIN (
+                            SELECT player_id, SUM(assist_number) AS assist_count
+                            FROM goal g
+                            GROUP BY player_id
+                        ) g ON b.player_id = g.player_id
+            			    WHERE g.assist_count > 0
+                        GROUP BY b.player_id, g.assist_count
+                        HAVING SUM(b.liquor_number) > 0
+                        ORDER BY avgBeerPerMatch DESC;
+            """, nativeQuery = true)
+    List<AverageBeer> getAssistLiquorRatio();
+
+    @Query(value = """
+            SELECT b.player_id as playerId, SUM(b.liquor_number) AS totalBeerNumber, g.assist_count as matchCount,
+                               CAST(SUM(b.liquor_number) AS FLOAT) / g.assist_count AS avgBeerPerMatch
+                        FROM beer b
+                        JOIN (
+                            SELECT player_id, SUM(assist_number) AS assist_count
+                            FROM goal g
+                            INNER JOIN match m ON match_id=m.id
+                                WHERE m.season_id=:#{#seasonId}
+                            GROUP BY player_id
+                        ) g ON b.player_id = g.player_id
+                        INNER JOIN match m ON match_id=m.id
+                            WHERE m.season_id=:#{#seasonId}
+            			    AND g.assist_count > 0
+                        GROUP BY b.player_id, g.assist_count
+                        HAVING SUM(b.liquor_number) > 0
+                        ORDER BY avgBeerPerMatch DESC;
+            """, nativeQuery = true)
+    List<AverageBeer> getAssistLiquorRatio(@Param("seasonId") long seasonId);
 
 
 }

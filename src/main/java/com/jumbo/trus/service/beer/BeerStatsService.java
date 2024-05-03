@@ -1,6 +1,5 @@
 package com.jumbo.trus.service.beer;
 
-import com.jumbo.trus.dto.PlayerDTO;
 import com.jumbo.trus.dto.beer.response.get.BeerDetailedDTO;
 import com.jumbo.trus.dto.match.MatchHelper;
 import com.jumbo.trus.dto.stats.PlayerStatsDTO;
@@ -8,18 +7,11 @@ import com.jumbo.trus.dto.stats.StatsDTO;
 import com.jumbo.trus.entity.BeerEntity;
 import com.jumbo.trus.entity.filter.StatisticsFilter;
 import com.jumbo.trus.entity.repository.BeerRepository;
-import com.jumbo.trus.entity.repository.MatchRepository;
-import com.jumbo.trus.entity.repository.PlayerRepository;
-import com.jumbo.trus.entity.repository.specification.BeerStatsSpecification;
 import com.jumbo.trus.mapper.BeerDetailedMapper;
-import com.jumbo.trus.mapper.BeerMapper;
-import com.jumbo.trus.service.MatchService;
-import com.jumbo.trus.service.NotificationService;
 import com.jumbo.trus.service.PlayerService;
 import com.jumbo.trus.service.beer.helper.AverageBeer;
 import com.jumbo.trus.service.helper.NumberRounder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -30,44 +22,19 @@ import static com.jumbo.trus.config.Config.ALL_SEASON_ID;
 public class BeerStatsService {
 
     @Autowired
-    private MatchRepository matchRepository;
-
-    @Autowired
-    private PlayerRepository playerRepository;
-
-    @Autowired
     private BeerRepository beerRepository;
-
-    @Autowired
-    private MatchService matchService;
 
     @Autowired
     private PlayerService playerService;
 
-    @Autowired
-    private BeerMapper beerMapper;
 
     @Autowired
     private BeerDetailedMapper beerDetailedMapper;
 
-    @Autowired
-    private NotificationService notificationService;
-
-    private List<BeerDetailedDTO> beerList = new ArrayList<>();
 
     private Long seasonId;
 
-    private void setDetailedBeerList(StatisticsFilter filter) {
-        BeerStatsSpecification beerSpecification = new BeerStatsSpecification(filter);
-        beerList = beerRepository.findAll(beerSpecification, PageRequest.of(0, filter.getLimit())).stream().map(beerDetailedMapper::toDTO).toList();
-    }
-
-    private boolean isPlayerInBeerDetail(BeerDetailedDTO beer, PlayerDTO player) {
-        return beer.getPlayer().equals(player);
-    }
-
     public List<StatsDTO> getBeerStatistics(StatisticsFilter filter) {
-        setDetailedBeerList(filter);
         seasonId = filter.getSeasonId();
         List<StatsDTO> statsDTOList = new ArrayList<>();
         statsDTOList.add(getMaxNumber(true));
@@ -76,6 +43,8 @@ public class BeerStatsService {
         statsDTOList.add(getAverageNumber(false));
         statsDTOList.add(getAverageNumberByGoal(true));
         statsDTOList.add(getAverageNumberByGoal(false));
+        statsDTOList.add(getAverageNumberByAssist(true));
+        statsDTOList.add(getAverageNumberByAssist(false));
         return statsDTOList;
     }
 
@@ -103,6 +72,11 @@ public class BeerStatsService {
     private StatsDTO getAverageNumberByGoal(boolean forBeer) {
         List<AverageBeer> averageBeerList = isForAllSeasons() ? (forBeer ? beerRepository.getGoalBeerRatio() : beerRepository.getGoalLiquorRatio()) : forBeer ? beerRepository.getGoalBeerRatio(seasonId) : beerRepository.getGoalLiquorRatio(seasonId);
         return averageNumberHelper(averageBeerList, forBeer ? "Počet piv na gól" : "Počet panáků na gól", forBeer ?" piv na 1 gól " : " panáků na 1 gól ");
+    }
+
+    private StatsDTO getAverageNumberByAssist(boolean forBeer) {
+        List<AverageBeer> averageBeerList = isForAllSeasons() ? (forBeer ? beerRepository.getAssistBeerRatio() : beerRepository.getAssistLiquorRatio()) : forBeer ? beerRepository.getAssistBeerRatio(seasonId) : beerRepository.getAssistLiquorRatio(seasonId);
+        return averageNumberHelper(averageBeerList, forBeer ? "Počet piv na asistenci" : "Počet panáků na asistenci", forBeer ?" piv na 1 asistenci " : " panáků na 1 asistenci ");
     }
 
     private StatsDTO averageNumberHelper(List<AverageBeer> averageBeerList, String dropDownText, String subtitleText) {
