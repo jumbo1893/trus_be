@@ -55,7 +55,6 @@ public interface BeerRepository extends PagingAndSortingRepository<BeerEntity, L
                 ) max_beer ON b.player_id = max_beer.player_id AND b.beer_number = max_beer.max_beer_number
                 INNER JOIN match m ON match_id=m.id
                 WHERE m.season_id=:#{#seasonId}
-                AND
                 AND beer_number > 0
             ) ranked_beer
             WHERE rn = 1
