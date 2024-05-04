@@ -1,7 +1,7 @@
 package com.jumbo.trus.controller;
 
 import com.jumbo.trus.dto.home.HomeSetup;
-import com.jumbo.trus.service.HomeService;
+import com.jumbo.trus.service.home.HomeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

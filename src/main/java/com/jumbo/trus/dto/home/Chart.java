@@ -1,5 +1,6 @@
 package com.jumbo.trus.dto.home;
 
+import com.jumbo.trus.dto.PlayerDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,6 +21,8 @@ public class Chart {
     private List<Integer> fineLabels;
 
     private List<Coordinate> coordinates;
+
+    private PlayerDTO player;
 
 
 

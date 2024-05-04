@@ -86,6 +86,19 @@ public class SeasonService {
         return getOtherSeason();
     }
 
+    public SeasonDTO getCurrentSeason(boolean includeOtherSeason) {
+        List<SeasonDTO> seasonList = getAll(new SeasonFilter());
+        for (SeasonDTO season : seasonList) {
+            if (!season.getFromDate().after(new Date()) && !season.getToDate().before(new Date())) {
+                return season;
+            }
+        }
+        if (includeOtherSeason) {
+            return getOtherSeason();
+        }
+        return getAllSeason();
+    }
+
     public SeasonDTO getSeasonByDate(Date inputDate) {
         List<SeasonDTO> seasonList = getAll(new SeasonFilter());
         for (SeasonDTO season : seasonList) {
