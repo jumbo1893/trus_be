@@ -2,6 +2,7 @@ package com.jumbo.trus.entity.repository;
 
 import com.jumbo.trus.entity.BeerEntity;
 import com.jumbo.trus.service.beer.helper.AverageBeer;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
@@ -111,9 +112,9 @@ public interface BeerRepository extends PagingAndSortingRepository<BeerEntity, L
             ) mp ON b.player_id = mp.player_id
             GROUP BY b.player_id, mp.match_count
             HAVING SUM(b.beer_number) > 0
-            ORDER BY avgBeerPerMatch DESC;
+            ORDER BY ?#{#sort}
             """, nativeQuery = true)
-    List<AverageBeer> getAverageBeer();
+    List<AverageBeer> getAverageBeer(Sort sort);
 
     @Query(value = """
             SELECT b.player_id as playerId, SUM(b.beer_number) AS totalBeerNumber, mp.match_count as matchCount,
@@ -130,9 +131,9 @@ public interface BeerRepository extends PagingAndSortingRepository<BeerEntity, L
                 WHERE m.season_id=:#{#seasonId}
             GROUP BY b.player_id, mp.match_count
             HAVING SUM(b.beer_number) > 0
-            ORDER BY avgBeerPerMatch DESC;
+            ORDER BY ?#{#sort}
             """, nativeQuery = true)
-    List<AverageBeer> getAverageBeer(@Param("seasonId") long seasonId);
+    List<AverageBeer> getAverageBeer(@Param("seasonId") long seasonId, Sort sort);
 
     @Query(value = """
             SELECT b.player_id as playerId, SUM(b.liquor_number) AS totalBeerNumber, mp.match_count as matchCount,
@@ -145,9 +146,9 @@ public interface BeerRepository extends PagingAndSortingRepository<BeerEntity, L
             ) mp ON b.player_id = mp.player_id
             GROUP BY b.player_id, mp.match_count
             HAVING SUM(b.liquor_number) > 0
-            ORDER BY avgBeerPerMatch DESC;
+            ORDER BY ?#{#sort}
             """, nativeQuery = true)
-    List<AverageBeer> getAverageLiquor();
+    List<AverageBeer> getAverageLiquor(Sort sort);
 
     @Query(value = """
             SELECT b.player_id as playerId, SUM(b.liquor_number) AS totalBeerNumber, mp.match_count as matchCount,
@@ -164,9 +165,9 @@ public interface BeerRepository extends PagingAndSortingRepository<BeerEntity, L
                 WHERE m.season_id=:#{#seasonId}
             GROUP BY b.player_id, mp.match_count
             HAVING SUM(b.liquor_number) > 0
-            ORDER BY avgBeerPerMatch DESC;
+            ORDER BY ?#{#sort}
             """, nativeQuery = true)
-    List<AverageBeer> getAverageLiquor(@Param("seasonId") long seasonId);
+    List<AverageBeer> getAverageLiquor(@Param("seasonId") long seasonId, Sort sort);
 
     @Query(value = """
             SELECT b.player_id as playerId, SUM(b.beer_number) AS totalBeerNumber, g.goal_count as matchCount,

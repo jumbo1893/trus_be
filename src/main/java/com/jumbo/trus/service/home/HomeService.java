@@ -27,7 +27,7 @@ public class HomeService {
         homeSetup.setNextBirthday(getUpcomingBirthday());
         homeSetup.setRandomFacts(randomFact.getRandomFacts());
         homeSetup.setChart(chartMaker.setupChartCoordinatesForUser(playerId));
-        homeSetup.setSurroundingCharts(chartMaker.setupChartCoordinatesForSurroundingPlayers(playerId));
+        homeSetup.setCharts(chartMaker.setupChartsCoordinates(playerId));
         homeSetup.setNextAndLastPkflMatch(pkflMatchService.getNextAndLastMatchInPkfl(pkflMatchesUpdateNeeded));
 
         return homeSetup;

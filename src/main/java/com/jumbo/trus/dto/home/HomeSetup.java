@@ -25,6 +25,6 @@ public class HomeSetup {
     private Chart chart;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private List<Chart> surroundingCharts;
+    private List<Chart> charts;
 
 }

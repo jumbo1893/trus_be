@@ -1,5 +1,5 @@
 spring.datasource:
-  url: jdbc:postgresql://localhost:5432/trus_test
+  url: jdbc:postgresql://localhost:5432/trus_test_new
   username: postgres
   password: Heslo12!
   driver-class-name: org.postgresql.Driver

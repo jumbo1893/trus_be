@@ -14,6 +14,7 @@ import com.jumbo.trus.service.PlayerService;
 import com.jumbo.trus.service.beer.helper.AverageBeer;
 import com.jumbo.trus.service.helper.NumberRounder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -70,13 +71,13 @@ public class BeerStatsService {
         return beerEntityList.stream().map(beerDetailedMapper::toDTO).toList();
     }
 
-    public List<BeerDTO> findPlayersWithMaximumBeers(boolean forBeer, Long seasonId) {
-        List<BeerEntity> beerEntityList = isForAllSeasons(seasonId) ? (forBeer ? beerRepository.getMaxBeer() : beerRepository.getMaxLiquor()) : (forBeer ? beerRepository.getMaxBeer(seasonId) : beerRepository.getMaxLiquor(seasonId));
-        return beerEntityList.stream().map(beerMapper::toDTO).toList();
+    public List<AverageBeer> getAverageNumberList(boolean forBeer, Long seasonId, String orderBy) {
+        Sort sort = Sort.by(Sort.Direction.DESC, orderBy);
+        return isForAllSeasons(seasonId) ? (forBeer ? beerRepository.getAverageBeer(sort) : beerRepository.getAverageLiquor(sort))
+                : forBeer ? beerRepository.getAverageBeer(seasonId, sort) : beerRepository.getAverageLiquor(seasonId, sort);
     }
-
     private StatsDTO getAverageNumber(boolean forBeer, Long seasonId) {
-        List<AverageBeer> averageBeerList = isForAllSeasons(seasonId) ? (forBeer ? beerRepository.getAverageBeer() : beerRepository.getAverageLiquor()) : forBeer ? beerRepository.getAverageBeer(seasonId) : beerRepository.getAverageLiquor(seasonId);
+        List<AverageBeer> averageBeerList = getAverageNumberList(forBeer, seasonId, "avgBeerPerMatch");
         return averageNumberHelper(averageBeerList, forBeer ? "Průměrný počet piv" : "Průměrný počet panáků", forBeer ?" piv na zápas " : " panáků na zápas ");
     }
 

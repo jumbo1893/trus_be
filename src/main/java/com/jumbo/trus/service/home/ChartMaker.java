@@ -2,7 +2,6 @@ package com.jumbo.trus.service.home;
 
 import com.jumbo.trus.config.Config;
 import com.jumbo.trus.dto.UserDTO;
-import com.jumbo.trus.dto.beer.BeerDTO;
 import com.jumbo.trus.dto.beer.response.get.BeerDetailedResponse;
 import com.jumbo.trus.dto.home.Chart;
 import com.jumbo.trus.dto.home.Coordinate;
@@ -12,6 +11,7 @@ import com.jumbo.trus.entity.filter.StatisticsFilter;
 import com.jumbo.trus.service.*;
 import com.jumbo.trus.service.beer.BeerService;
 import com.jumbo.trus.service.beer.BeerStatsService;
+import com.jumbo.trus.service.beer.helper.AverageBeer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -45,17 +45,17 @@ public class ChartMaker {
 
 
     public Chart setupChartCoordinatesForUser(Long playerId) {
-        Long finalPlayerId = getPlayerId(playerId);
+        final Long finalPlayerId = getPlayerId(playerId);
         if (finalPlayerId == null) {
             return null;
         }
         List<MatchDTO> matches = matchService.getMatchesByDate(5, true);
         Collections.reverse(matches);
-        return getPlayerChart(getPlayerId(playerId), matches);
+        return getPlayerChart(finalPlayerId, matches, finalPlayerId);
     }
 
-    public List<Chart> setupChartCoordinatesForSurroundingPlayers(Long playerId) {
-        Long finalPlayerId = getPlayerId(playerId);
+    public List<Chart> setupChartsCoordinates(Long playerId) {
+        final Long finalPlayerId = getPlayerId(playerId);
         if (finalPlayerId == null) {
             return null;
         }
@@ -64,7 +64,7 @@ public class ChartMaker {
         List<MatchDTO> matches = matchService.getMatchesByDate(5, true);
         Collections.reverse(matches);
         for (Long surroundingPlayerId : surroundingPlayerIds) {
-            surroundingPlayerCharts.add(getPlayerChart(surroundingPlayerId, matches));
+            surroundingPlayerCharts.add(getPlayerChart(surroundingPlayerId, matches, finalPlayerId));
         }
         return surroundingPlayerCharts;
     }
@@ -74,8 +74,7 @@ public class ChartMaker {
         if (playerId != null) {
             userDTO = new UserDTO();
             userDTO.setPlayerId(playerId);
-        }
-        else {
+        } else {
             userDTO = userService.getCurrentUser();
             if (userDTO.getPlayerId() == null) {
                 return null;
@@ -84,7 +83,7 @@ public class ChartMaker {
         return userDTO.getPlayerId();
     }
 
-    private Chart getPlayerChart(Long playerId, List<MatchDTO> matches) {
+    private Chart getPlayerChart(Long playerId, List<MatchDTO> matches, Long originalPlayerId) {
         List<Coordinate> coordinates = new ArrayList<>();
         int beerMaximum = 0;
         int fineMaximum = 0;
@@ -110,72 +109,67 @@ public class ChartMaker {
         }
         beerMaximum = roundNumber(beerMaximum, 5, 10);
         fineMaximum = roundNumber(fineMaximum, 100, 100);
-        return new Chart(fineMaximum, beerMaximum, getBeerChartLabels(beerMaximum), getFineChartLabels(fineMaximum), coordinates, playerService.getPlayer(playerId));
+        return new Chart(fineMaximum, beerMaximum, getBeerChartLabels(beerMaximum), getFineChartLabels(fineMaximum), coordinates, playerService.getPlayer(playerId), playerId.equals(originalPlayerId));
     }
 
     private List<Long> findSurroundingPlayers(Long playerId) {
-        List<BeerDTO> maxBeerList = beerStatsService.findPlayersWithMaximumBeers(true, seasonService.getCurrentSeason(false).getId());
-        if (maxBeerList.size() < 5) {
-            maxBeerList = beerStatsService.findPlayersWithMaximumBeers(true, Config.ALL_SEASON_ID);
+        List<AverageBeer> sumBeerList = beerStatsService.getAverageNumberList(true, seasonService.getCurrentSeason(false).getId(), "totalBeerNumber");
+        if (sumBeerList.size() < 5) {
+            sumBeerList = beerStatsService.getAverageNumberList(true, Config.ALL_SEASON_ID, "totalBeerNumber");
         }
-        if (maxBeerList.size() < 5) {
-            return getPlayerIdsFromBeerList(maxBeerList, playerId);
+        if (sumBeerList.size() < 5) {
+            return getPlayerIdsFromBeerList(sumBeerList);
         }
-        System.out.println(getSurroundingBeersFromBeerList(maxBeerList, playerId).size());
-        return getPlayerIdsFromBeerList(getSurroundingBeersFromBeerList(maxBeerList, playerId), playerId);
+        return getPlayerIdsFromBeerList(getSurroundingBeersFromBeerList(sumBeerList, playerId));
     }
 
-    private List<Long> getPlayerIdsFromBeerList(List<BeerDTO> beerList, Long originalPlayerId) {
+    private List<Long> getPlayerIdsFromBeerList(List<AverageBeer> beerList) {
         List<Long> playerIds = new ArrayList<>();
-        for (BeerDTO beerDTO : beerList) {
-            if (!originalPlayerId.equals(beerDTO.getPlayerId())) {
-                playerIds.add(beerDTO.getPlayerId());
-            }
+        for (AverageBeer beer : beerList) {
+            playerIds.add(beer.getPlayerId());
         }
         return playerIds;
     }
 
-    private List<BeerDTO> getSurroundingBeersFromBeerList(List<BeerDTO> beerList, Long originalPlayerId) {
-        List<BeerDTO> beerDTOList = new ArrayList<>();
-        int originalIndex = 0;
-        for (BeerDTO beerDTO : beerList) {
-            if (originalPlayerId.equals(beerDTO.getPlayerId())) {
-                originalIndex = beerList.indexOf(beerDTO);
+    private List<AverageBeer> getSurroundingBeersFromBeerList(List<AverageBeer> beerList, Long originalPlayerId) {
+        List<AverageBeer> surroundingBeerList = new ArrayList<>();
+        int originalIndex = -1;
+        for (AverageBeer beer : beerList) {
+            if (originalPlayerId.equals(beer.getPlayerId())) {
+                originalIndex = beerList.indexOf(beer);
                 break;
             }
         }
         if (originalIndex <= 2) {
             for (int i = 0; i < 5; i++) {
-                beerDTOList.add(beerList.get(i));
+                surroundingBeerList.add(beerList.get(i));
             }
-            return beerDTOList;
-        }
-        else if (originalIndex >= beerList.size()-3) {
-            for (int i = beerList.size()-1; i > beerList.size()-6; i--) {
-                beerDTOList.add(beerList.get(i));
+            return surroundingBeerList;
+        } else if (originalIndex >= beerList.size() - 3) {
+            for (int i = beerList.size() - 1; i > beerList.size() - 6; i--) {
+                surroundingBeerList.add(beerList.get(i));
             }
-            return beerDTOList;
+            return surroundingBeerList;
         }
-        for (int i = originalIndex-2; i <= originalIndex+2; i++) {
-            beerDTOList.add(beerList.get(i));
+        for (int i = originalIndex - 2; i <= originalIndex + 2; i++) {
+            surroundingBeerList.add(beerList.get(i));
         }
-        return beerDTOList;
+        return surroundingBeerList;
     }
 
     private String getMatchInitials(MatchDTO matchDTO) {
         String nameWithoutSpaces = matchDTO.getName().replaceAll(" ", "").toUpperCase();
         if (nameWithoutSpaces.length() >= 3) {
-            return nameWithoutSpaces.substring(0,3);
-        }
-        else if (nameWithoutSpaces.length() == 2) {
+            return nameWithoutSpaces.substring(0, 3);
+        } else if (nameWithoutSpaces.length() == 2) {
             return nameWithoutSpaces.substring(0, 2);
         }
-       return nameWithoutSpaces.substring(0,1);
+        return nameWithoutSpaces.substring(0, 1);
     }
 
     private List<Integer> getBeerChartLabels(int maximum) {
         List<Integer> labels = new ArrayList<>();
-        for (int i = 0; i < maximum; i+=5) {
+        for (int i = 0; i < maximum; i += 5) {
             labels.add(i);
         }
         return labels;
@@ -194,13 +188,13 @@ public class ChartMaker {
 
     private List<Integer> calculateFineLabels(int number, int multiple) {
         List<Integer> labels = new ArrayList<>();
-        if (number/100 <= 4) {
+        if (number / 100 <= 4) {
             for (int i = 0; i < number; i += 100) {
-                labels.add(i*multiple);
+                labels.add(i * multiple);
             }
             return labels;
         }
-        return calculateFineLabels(roundNumberUp(number/2, 100), multiple*2);
+        return calculateFineLabels(roundNumberUp(number / 2, 100), multiple * 2);
     }
 
     private int roundNumberUp(int number, int divisor) {

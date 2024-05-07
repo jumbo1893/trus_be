@@ -24,6 +24,8 @@ public class Chart {
 
     private PlayerDTO player;
 
+    private boolean mainPlayer;
+
 
 
 
