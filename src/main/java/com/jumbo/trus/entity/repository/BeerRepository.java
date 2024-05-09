@@ -170,6 +170,40 @@ public interface BeerRepository extends PagingAndSortingRepository<BeerEntity, L
     List<AverageBeer> getAverageLiquor(@Param("seasonId") long seasonId, Sort sort);
 
     @Query(value = """
+            SELECT b.player_id as playerId, (SUM(b.beer_number)+SUM(b.liquor_number)) AS totalBeerNumber, mp.match_count as matchCount,
+                   CAST((SUM(b.beer_number)+SUM(b.liquor_number)) AS FLOAT) / mp.match_count AS avgBeerPerMatch
+            FROM beer b
+            JOIN (
+                SELECT player_id, COUNT(*) AS match_count
+                FROM match_players mp
+                INNER JOIN match m ON match_id=m.id
+                WHERE m.season_id=:#{#seasonId}
+                GROUP BY player_id
+            ) mp ON b.player_id = mp.player_id
+            INNER JOIN match m ON match_id=m.id
+                WHERE m.season_id=:#{#seasonId}
+            GROUP BY b.player_id, mp.match_count
+            HAVING SUM(b.beer_number) > 0 OR SUM(b.liquor_number) > 0
+            ORDER BY totalBeerNumber DESC
+            """, nativeQuery = true)
+    List<AverageBeer> getAverageBeerAndLiquorSum(@Param("seasonId") long seasonId);
+
+    @Query(value = """
+            SELECT b.player_id as playerId, (SUM(b.beer_number)+SUM(b.liquor_number)) AS totalBeerNumber, mp.match_count as matchCount,
+                   CAST((SUM(b.beer_number)+SUM(b.liquor_number)) AS FLOAT) / mp.match_count AS avgBeerPerMatch
+            FROM beer b
+            JOIN (
+                SELECT player_id, COUNT(*) AS match_count
+                FROM match_players mp
+                GROUP BY player_id
+            ) mp ON b.player_id = mp.player_id
+            GROUP BY b.player_id, mp.match_count
+            HAVING SUM(b.beer_number) > 0 OR SUM(b.liquor_number) > 0
+            ORDER BY totalBeerNumber DESC
+            """, nativeQuery = true)
+    List<AverageBeer> getAverageBeerAndLiquorSum();
+
+    @Query(value = """
             SELECT b.player_id as playerId, SUM(b.beer_number) AS totalBeerNumber, g.goal_count as matchCount,
                                CAST(SUM(b.beer_number) AS FLOAT) / g.goal_count AS avgBeerPerMatch
                         FROM beer b

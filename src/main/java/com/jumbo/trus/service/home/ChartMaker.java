@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ChartMaker {
@@ -56,10 +57,13 @@ public class ChartMaker {
 
     public List<Chart> setupChartsCoordinates(Long playerId) {
         final Long finalPlayerId = getPlayerId(playerId);
+        List<Long> surroundingPlayerIds;
         if (finalPlayerId == null) {
-            return null;
+            surroundingPlayerIds = findBestPlayers();
         }
-        List<Long> surroundingPlayerIds = findSurroundingPlayers(finalPlayerId);
+        else {
+            surroundingPlayerIds = findSurroundingPlayers(finalPlayerId);
+        }
         List<Chart> surroundingPlayerCharts = new ArrayList<>();
         List<MatchDTO> matches = matchService.getMatchesByDate(5, true);
         Collections.reverse(matches);
@@ -113,14 +117,25 @@ public class ChartMaker {
     }
 
     private List<Long> findSurroundingPlayers(Long playerId) {
-        List<AverageBeer> sumBeerList = beerStatsService.getAverageNumberList(true, seasonService.getCurrentSeason(false).getId(), "totalBeerNumber");
+        List<AverageBeer> sumBeerList = beerStatsService.getAverageBeerAndLiquorListOrderByTotalBeer(seasonService.getCurrentSeason(false).getId());
         if (sumBeerList.size() < 5) {
-            sumBeerList = beerStatsService.getAverageNumberList(true, Config.ALL_SEASON_ID, "totalBeerNumber");
+            sumBeerList = beerStatsService.getAverageBeerAndLiquorListOrderByTotalBeer(seasonService.getCurrentSeason(false).getId());
         }
         if (sumBeerList.size() < 5) {
             return getPlayerIdsFromBeerList(sumBeerList);
         }
         return getPlayerIdsFromBeerList(getSurroundingBeersFromBeerList(sumBeerList, playerId));
+    }
+
+    private List<Long> findBestPlayers() {
+        List<AverageBeer> sumBeerList = beerStatsService.getAverageBeerAndLiquorListOrderByTotalBeer(seasonService.getCurrentSeason(false).getId());
+        if (sumBeerList.size() < 5) {
+            sumBeerList = beerStatsService.getAverageBeerAndLiquorListOrderByTotalBeer(seasonService.getCurrentSeason(false).getId());
+        }
+        if (sumBeerList.size() < 5) {
+            return getPlayerIdsFromBeerList(sumBeerList);
+        }
+        return getPlayerIdsFromBeerList(sumBeerList.stream().limit(5).collect(Collectors.toList()));
     }
 
     private List<Long> getPlayerIdsFromBeerList(List<AverageBeer> beerList) {

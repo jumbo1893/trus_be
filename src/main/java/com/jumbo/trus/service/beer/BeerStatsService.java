@@ -1,6 +1,5 @@
 package com.jumbo.trus.service.beer;
 
-import com.jumbo.trus.dto.beer.BeerDTO;
 import com.jumbo.trus.dto.beer.response.get.BeerDetailedDTO;
 import com.jumbo.trus.dto.match.MatchHelper;
 import com.jumbo.trus.dto.stats.PlayerStatsDTO;
@@ -76,6 +75,11 @@ public class BeerStatsService {
         return isForAllSeasons(seasonId) ? (forBeer ? beerRepository.getAverageBeer(sort) : beerRepository.getAverageLiquor(sort))
                 : forBeer ? beerRepository.getAverageBeer(seasonId, sort) : beerRepository.getAverageLiquor(seasonId, sort);
     }
+
+    public List<AverageBeer> getAverageBeerAndLiquorListOrderByTotalBeer(Long seasonId) {
+        return isForAllSeasons(seasonId) ? beerRepository.getAverageBeerAndLiquorSum() : beerRepository.getAverageBeerAndLiquorSum(seasonId);
+    }
+
     private StatsDTO getAverageNumber(boolean forBeer, Long seasonId) {
         List<AverageBeer> averageBeerList = getAverageNumberList(forBeer, seasonId, "avgBeerPerMatch");
         return averageNumberHelper(averageBeerList, forBeer ? "Průměrný počet piv" : "Průměrný počet panáků", forBeer ?" piv na zápas " : " panáků na zápas ");
