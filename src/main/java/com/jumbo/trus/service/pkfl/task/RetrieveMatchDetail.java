@@ -79,7 +79,7 @@ public class RetrieveMatchDetail {
         PkflIndividualStatsDTO pkflMatchPlayer = null;
         try {
             PkflPlayerDTO pkflPlayerDTO = new PkflPlayerDTO();
-            pkflPlayerDTO.setName(playerRow.selectFirst("a").text().trim());
+            pkflPlayerDTO.setName(getPlayerName(playerRow));
             int goals = getNumberOfImagesByAlt(playerRow, "Gól");
             int ownGoals = getNumberOfImagesByAlt(playerRow, "Vlastní gól");
             int goalkeepingMinutes = getNumberOfGoalkeepingMinutes(playerRow);
