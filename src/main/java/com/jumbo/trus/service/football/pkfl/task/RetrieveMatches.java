@@ -1,4 +1,4 @@
-package com.jumbo.trus.service.pkfl.task;
+package com.jumbo.trus.service.football.pkfl.task;
 
 import com.jumbo.trus.dto.pkfl.*;
 import com.jumbo.trus.service.task.SSLHelper;
@@ -41,8 +41,8 @@ public class RetrieveMatches {
         PkflMatchDTO pkflMatch = null;
         try {
             String BASE_URL = "https://pkfl.cz";
-            String date = tds.get(0).text().trim();
-            String time = tds.get(1).text().trim();
+            String date = tds.get(0).text().trim().replaceAll("\\p{L}", "");
+            String time = tds.get(1).text().trim().replaceAll("\\p{L}", "");
             String homeTeam = tds.get(4).text().trim();
             String awayTeam = tds.get(5).text().trim();
             int round = Integer.parseInt(tds.get(2).text().trim());
@@ -98,7 +98,7 @@ public class RetrieveMatches {
     }
 
     private Date convertStringToDate(String date, String time) {
-        String dateTimeString = date + " " + time;
+        String dateTimeString = date + " " + time;//zbavíme se času
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         dateFormat.setTimeZone(TimeZone.getTimeZone("Europe/Prague"));
         Date returnDate = new Date();
