@@ -12,7 +12,7 @@ import com.jumbo.trus.mapper.UpdateMapper;
 import com.jumbo.trus.mapper.pkfl.*;
 import com.jumbo.trus.service.pkfl.fact.PkflPlayerFact;
 import com.jumbo.trus.service.pkfl.task.RetrieveMatchDetail;
-import com.jumbo.trus.service.pkfl.task.RetrieveMatches;
+import com.jumbo.trus.service.football.pkfl.task.RetrieveMatches;
 import com.jumbo.trus.service.pkfl.task.RetrieveTable;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
