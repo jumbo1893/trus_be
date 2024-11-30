@@ -5,3 +5,8 @@ spring:
     password: ${PROD_DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
     name: trus-app
+
+    logging:
+      level:
+        root: "warn"
+        com.jumbo.trus: "debug"
