@@ -41,7 +41,12 @@ public class RetrievePkflTable {
             String winRatio = tds.get(3).text().trim();
             String score = tds.get(4).text().trim();
             String penalty = tds.get(5).text().trim();
-            int points = Integer.parseInt((tds.get(6).text().trim()));
+            int points = 0;
+            try {
+                points = Integer.parseInt((tds.get(6).text().trim()));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             pkflTeam = new PkflTableTeamDTO(new PkflOpponentDTO(-1, longName), rank, matches, getRatio(winRatio, WinDrawLose.WIN), getRatio(winRatio, WinDrawLose.DRAW), getRatio(winRatio, WinDrawLose.LOSE),
                     getScore(score, true), getScore(score, false), penalty, points, null);
         } catch (Exception e) {
