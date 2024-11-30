@@ -17,7 +17,7 @@ import com.jumbo.trus.mapper.PlayerMapper;
 import com.jumbo.trus.service.helper.PairSeasonMatch;
 import com.jumbo.trus.service.order.OrderMatchByDate;
 import com.jumbo.trus.service.order.OrderPlayerByName;
-import com.jumbo.trus.service.pkfl.PkflMatchService;
+import com.jumbo.trus.service.football.pkfl.PkflMatchService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;

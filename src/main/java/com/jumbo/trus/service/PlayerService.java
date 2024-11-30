@@ -10,7 +10,7 @@ import com.jumbo.trus.entity.repository.PlayerRepository;
 import com.jumbo.trus.service.helper.BirthdayCalculator;
 import com.jumbo.trus.service.order.OrderPlayerByName;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.webjars.NotFoundException;
 
@@ -18,25 +18,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class PlayerService {
 
-    @Autowired
-    private PlayerRepository playerRepository;
-
-    @Autowired
-    private PlayerMapper playerMapper;
-
-    @Autowired
-    private BeerRepository beerRepository;
-
-    @Autowired
-    private ReceivedFineRepository receivedFineRepository;
-
-    @Autowired
-    private GoalRepository goalRepository;
-
-    @Autowired
-    private NotificationService notificationService;
+    private final PlayerRepository playerRepository;
+    private final PlayerMapper playerMapper;
+    private final BeerRepository beerRepository;
+    private final ReceivedFineRepository receivedFineRepository;
+    private final GoalRepository goalRepository;
+    private final NotificationService notificationService;
 
     public PlayerDTO addPlayer(PlayerDTO playerDTO) {
         PlayerEntity entity = playerMapper.toEntity(playerDTO);

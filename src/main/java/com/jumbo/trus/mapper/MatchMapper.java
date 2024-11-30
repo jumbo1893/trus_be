@@ -3,6 +3,7 @@ package com.jumbo.trus.mapper;
 import com.jumbo.trus.dto.match.MatchDTO;
 import com.jumbo.trus.entity.MatchEntity;
 import com.jumbo.trus.entity.PlayerEntity;
+import com.jumbo.trus.mapper.football.FootballMatchMapper;
 import com.jumbo.trus.mapper.pkfl.PkflMatchMapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -11,7 +12,7 @@ import org.mapstruct.Mappings;
 import java.util.ArrayList;
 import java.util.List;
 
-@Mapper(componentModel = "spring", uses = {BeerMapper.class, BeerDetailedMapper.class, ReceivedFineDetailedMapper.class, GoalMapper.class, PkflMatchMapper.class})
+@Mapper(componentModel = "spring", uses = {BeerMapper.class, BeerDetailedMapper.class, ReceivedFineDetailedMapper.class, GoalMapper.class, PkflMatchMapper.class, FootballMatchMapper.class})
 public abstract class MatchMapper {
 
     @Mappings({

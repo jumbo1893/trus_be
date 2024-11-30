@@ -6,7 +6,7 @@ import com.jumbo.trus.dto.pkfl.PkflMatchDetail;
 import com.jumbo.trus.dto.pkfl.PkflPlayerDTO;
 import com.jumbo.trus.dto.pkfl.PkflTableTeamDTO;
 import com.jumbo.trus.dto.pkfl.stats.PkflAllIndividualStats;
-import com.jumbo.trus.service.pkfl.PkflMatchService;
+import com.jumbo.trus.service.football.pkfl.PkflMatchService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

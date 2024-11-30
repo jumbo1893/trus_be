@@ -19,7 +19,7 @@ import com.jumbo.trus.entity.repository.specification.GoalStatsSpecification;
 import com.jumbo.trus.mapper.*;
 import com.jumbo.trus.service.order.OrderGoalDetailedDTOByGoalNumber;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.webjars.NotFoundException;
@@ -28,42 +28,19 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class GoalService {
 
-    @Autowired
     private MatchRepository matchRepository;
-
-    @Autowired
     private PlayerRepository playerRepository;
-
-    @Autowired
     private ReceivedFineRepository receivedFineRepository;
-
-    @Autowired
     private GoalRepository goalRepository;
-
-    @Autowired
-    private FineRepository fineRepository;
-
-    @Autowired
     private GoalMapper goalMapper;
-
-    @Autowired
     private GoalDetailedMapper goalDetailedMapper;
-
-    @Autowired
     private GoalSetupMapper goalSetupMapper;
-
-    @Autowired
     private MatchService matchService;
-
-    @Autowired
     private PlayerService playerService;
-
-    @Autowired
     private ReceivedFineService receivedFineService;
-
-    @Autowired
     private NotificationService notificationService;
 
     /**

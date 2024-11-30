@@ -9,7 +9,7 @@ spring.jpa.properties.hibernate.jdbc.lob.non_contextual_creation: true
 
 server:
   ssl:
-    key-store: file:C:\Users\matej\Desktop\trusi_appka\server\trus\springboot.p12
+    key-store: file:C:\Users\matej\Desktop\program\trusi_appka\server\trus\springboot.p12
     key-store-password: password
     key-store-type: pkcs12
     key-alias: springboot
@@ -27,3 +27,8 @@ spring:
   jackson:
     mapper:
       accept-case-insensitive-enums: true
+
+logging:
+  level:
+    root: "warn"
+    com.jumbo.trus: "debug"

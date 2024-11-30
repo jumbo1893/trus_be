@@ -2,7 +2,7 @@ package com.jumbo.trus.controller;
 
 import com.jumbo.trus.controller.error.ErrorResponse;
 import com.jumbo.trus.dto.FineDTO;
-import com.jumbo.trus.service.FineService;
+import com.jumbo.trus.service.fine.FineService;
 import com.jumbo.trus.service.exceptions.NonEditableEntityException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

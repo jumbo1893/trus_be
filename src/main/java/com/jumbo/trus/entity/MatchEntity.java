@@ -1,5 +1,6 @@
 package com.jumbo.trus.entity;
 
+import com.jumbo.trus.entity.football.FootballMatchEntity;
 import com.jumbo.trus.entity.pkfl.PkflMatchEntity;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -42,4 +43,7 @@ public class MatchEntity {
 
     @ManyToOne
     private PkflMatchEntity pkflMatch;
+
+    @ManyToOne
+    private FootballMatchEntity footballMatch;
 }

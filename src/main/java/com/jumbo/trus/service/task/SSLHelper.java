@@ -10,11 +10,16 @@ import javax.net.ssl.X509TrustManager;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
+import java.util.Map;
 
 public class SSLHelper {
 
     static public Connection getConnection(String url){
         return Jsoup.connect(url).ignoreHttpErrors(true).sslSocketFactory(SSLHelper.socketFactory());
+    }
+
+    static public Connection getConnection(String url, Map<String, String> cookies){
+        return Jsoup.connect(url).cookies(cookies).ignoreHttpErrors(true).sslSocketFactory(SSLHelper.socketFactory());
     }
 
     static private SSLSocketFactory socketFactory() {

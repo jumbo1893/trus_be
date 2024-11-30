@@ -19,6 +19,7 @@ import com.jumbo.trus.entity.repository.specification.ReceivedFineSpecification;
 import com.jumbo.trus.entity.repository.specification.ReceivedFineStatsSpecification;
 import com.jumbo.trus.mapper.ReceivedFineDetailedMapper;
 import com.jumbo.trus.mapper.ReceivedFineMapper;
+import com.jumbo.trus.service.fine.FineService;
 import com.jumbo.trus.service.helper.PairSeasonMatch;
 import com.jumbo.trus.service.order.OrderReceivedFineDetailedDTOByFineAmount;
 import jakarta.persistence.EntityNotFoundException;
@@ -201,7 +202,7 @@ public class ReceivedFineService {
             fineDTOS = fineService.getAll(1000);
         }
         else {
-            fineDTOS = fineService.getAllOtherFines(idList);
+            fineDTOS = fineService.getFinesExcluding(idList);
         }
         receivedFines.addAll(makeReceivedFineSetupListFromFineList(fineDTOS, playerId, matchId));
         return receivedFines;

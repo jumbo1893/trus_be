@@ -7,6 +7,7 @@ import com.jumbo.trus.dto.receivedfine.response.get.detailed.ReceivedFineDetaile
 import com.jumbo.trus.entity.MatchEntity;
 import com.jumbo.trus.entity.PlayerEntity;
 import com.jumbo.trus.entity.ReceivedFineEntity;
+import com.jumbo.trus.mapper.football.FootballMatchMapper;
 import com.jumbo.trus.mapper.pkfl.PkflIndividualStatsMapper;
 import com.jumbo.trus.mapper.pkfl.PkflMatchMapper;
 import org.mapstruct.Mapper;
@@ -16,7 +17,7 @@ import org.mapstruct.Mappings;
 import java.util.ArrayList;
 import java.util.List;
 
-@Mapper(componentModel = "spring", uses = {MatchMapper.class, PkflMatchMapper.class, PkflIndividualStatsMapper.class})
+@Mapper(componentModel = "spring", uses = {MatchMapper.class, PkflMatchMapper.class, PkflIndividualStatsMapper.class, FootballMatchMapper.class})
 public abstract class ReceivedFineDetailedMapper {
 
     @Mappings({
