@@ -13,8 +13,12 @@ public class HeaderManager {
         this.request = request;
     }
 
-    public String getCustomHeader() {
-        return request.getHeader("X-Custom-Header");
+    public Long getTeamIdHeader() {
+        String teamId = request.getHeader("team-id");
+        if (teamId == null) {
+            return null;
+        }
+        return Long.parseLong(teamId);
     }
 
     public String getAnotherHeader() {

@@ -2,14 +2,17 @@ package com.jumbo.trus.service.football.match;
 
 import com.jumbo.trus.dto.football.FootballMatchDTO;
 import com.jumbo.trus.dto.football.FootballMatchPlayerDTO;
+import com.jumbo.trus.dto.football.detail.BestScorer;
+import com.jumbo.trus.entity.football.detail.BestScorerView;
+import com.jumbo.trus.entity.repository.football.BestScorerViewRepository;
 import com.jumbo.trus.entity.repository.football.FootballMatchPlayerRepository;
+import com.jumbo.trus.mapper.football.BestScorerViewMapper;
 import com.jumbo.trus.mapper.football.FootballMatchPlayerMapper;
 import com.jumbo.trus.service.football.player.FootballPlayerService;
 import com.jumbo.trus.service.football.pkfl.task.helper.FootballMatchDetailTaskHelper;
 import com.jumbo.trus.service.football.pkfl.task.helper.PlayerMatchStatsHelper;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import com.jumbo.trus.dto.football.TeamDTO;
 
@@ -20,12 +23,14 @@ import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class PlayerProcessor {
 
     private final FootballMatchPlayerRepository footballMatchPlayerRepository;
     private final FootballMatchPlayerMapper footballMatchPlayerMapper;
     private final FootballPlayerService footballPlayerService;
-    private final Logger logger = LoggerFactory.getLogger(PlayerProcessor.class);
+    private final BestScorerViewRepository bestScorerViewRepository;
+    private final BestScorerViewMapper bestScorerViewMapper;
 
 
     public List<FootballMatchPlayerDTO> processPlayers(FootballMatchDetailTaskHelper detail, Long matchId, FootballMatchDTO footballMatchDTO) {
@@ -33,6 +38,13 @@ public class PlayerProcessor {
         players.addAll(getListOfFootballers(detail.getHomeTeamPlayers(), matchId, footballMatchDTO.getHomeTeam()));
         players.addAll(getListOfFootballers(detail.getAwayTeamPlayers(), matchId, footballMatchDTO.getAwayTeam()));
         return savePlayerList(matchId, players);
+    }
+
+    public BestScorer findBestScorerByTeamIdAndLeagueId(long teamId, long leagueId) {
+        bestScorerViewRepository.findBestScorerByTeamAndLeague(teamId, leagueId);
+        Optional<BestScorerView> bestScorer = bestScorerViewRepository.findBestScorerByTeamAndLeague(teamId, leagueId);
+        return bestScorer.map(bestScorerViewMapper::toDTO)
+                .orElse(null);
     }
 
     private List<FootballMatchPlayerDTO> savePlayerList(Long matchId, List<FootballMatchPlayerDTO> playerList) {
@@ -57,7 +69,7 @@ public class PlayerProcessor {
         if (newPlayerList == null || newPlayerList.isEmpty()) {
             return;
         }
-        //logger.debug("smazáno přebytečných hráčů: {} ", footballMatchPlayerRepository.deleteByMatchIdAndMatchPlayerIdNotIn(matchId, convertToIdList(newPlayerList)));
+        log.debug("smazáno přebytečných hráčů: {} ", footballMatchPlayerRepository.deleteByMatchIdAndMatchPlayerIdNotIn(matchId, convertToIdList(newPlayerList)));
     }
 
     private List<Long> convertToIdList(List<FootballMatchPlayerDTO> newPlayerList) {

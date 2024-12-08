@@ -1,6 +1,7 @@
 package com.jumbo.trus.service.football.pkfl.task;
 
 import com.jumbo.trus.dto.pkfl.*;
+import com.jumbo.trus.service.football.helper.WinDrawLose;
 import com.jumbo.trus.service.task.SSLHelper;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -95,9 +96,5 @@ public class RetrievePkflTable {
         catch (Exception e) {
             return 0;
         }
-    }
-
-    enum WinDrawLose {
-        WIN, DRAW, LOSE
     }
 }

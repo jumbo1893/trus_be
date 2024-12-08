@@ -1,5 +1,6 @@
 package com.jumbo.trus.dto.football;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,9 +20,14 @@ public class TeamDTO {
 
     private Long currentLeagueId;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<@Positive Long> tableTeamIdList;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<FootballPlayerDTO> footballPlayerList;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private TableTeamDTO currentTableTeam;
 
     private String uri;
 

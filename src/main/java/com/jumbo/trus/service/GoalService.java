@@ -31,17 +31,17 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class GoalService {
 
-    private MatchRepository matchRepository;
-    private PlayerRepository playerRepository;
-    private ReceivedFineRepository receivedFineRepository;
-    private GoalRepository goalRepository;
-    private GoalMapper goalMapper;
-    private GoalDetailedMapper goalDetailedMapper;
-    private GoalSetupMapper goalSetupMapper;
-    private MatchService matchService;
-    private PlayerService playerService;
-    private ReceivedFineService receivedFineService;
-    private NotificationService notificationService;
+    private final MatchRepository matchRepository;
+    private final PlayerRepository playerRepository;
+    private final ReceivedFineRepository receivedFineRepository;
+    private final GoalRepository goalRepository;
+    private final GoalMapper goalMapper;
+    private final GoalDetailedMapper goalDetailedMapper;
+    private final GoalSetupMapper goalSetupMapper;
+    private final MatchService matchService;
+    private final PlayerService playerService;
+    private final ReceivedFineService receivedFineService;
+    private final NotificationService notificationService;
 
     /**
      * metoda napamuje hráče a zápas z přepravky ke gólu a uloží ho do DB

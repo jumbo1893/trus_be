@@ -1,6 +1,8 @@
 package com.jumbo.trus.service.football.match;
 
 import com.jumbo.trus.dto.football.*;
+import com.jumbo.trus.dto.football.detail.FootballMatchDetail;
+import com.jumbo.trus.service.HeaderManager;
 import com.jumbo.trus.service.UpdateService;
 import com.jumbo.trus.service.football.league.LeagueService;
 import com.jumbo.trus.service.football.team.TeamService;
@@ -30,10 +32,36 @@ public class FootballMatchService {
     private final TeamService teamService;
     private final UpdateService updateService;
     private final RetrievePkflMatchesByLeague retrievePkflMatches;
+    private final FootballMatchDetailProcessor footballMatchDetailProcessor;
+    private final HeaderManager headerManager;
 
     public List<FootballMatchDTO> getAllMatches() {
-        logger.debug("Fetching all football matches...");
         return footballMatchProcessor.getAllMatches();
+    }
+
+    public List<FootballMatchDTO> getNextAndLastFootballMatch(Long teamId) {
+        List<FootballMatchDTO> matches = new ArrayList<>();
+        if (teamId != null) {
+            FootballMatchDTO nextMatch = footballMatchProcessor.getNextMatch(teamId);
+            enhanceTeamsInFootballMatchWithTableMatch(nextMatch);
+            FootballMatchDTO lastMatch = footballMatchProcessor.getLastMatch(teamId);
+            enhanceTeamsInFootballMatchWithTableMatch(lastMatch);
+            matches.add(nextMatch);
+            matches.add(lastMatch);
+        }
+        return matches;
+    }
+
+    public List<FootballMatchDTO> getNextMatches(Long teamId) {
+        return footballMatchProcessor.getNextMatches(teamId);
+    }
+
+    public FootballMatchDetail getFootballMatchDetail(Long matchId) {
+        FootballMatchDetail footballMatchDetail = new FootballMatchDetail();
+        FootballMatchDTO footballMatchDTO = footballMatchProcessor.getMatchById(matchId);
+        enhanceTeamsInFootballMatchWithTableMatch(footballMatchDTO);
+        footballMatchDetail.setFootballMatchDTO(footballMatchDTO);
+        return footballMatchDetailProcessor.enhanceFootballMatchDetail(footballMatchDetail);
     }
 
     public void updatePkflMatches() {
@@ -48,37 +76,28 @@ public class FootballMatchService {
         }
     }
 
+    private void enhanceTeamsInFootballMatchWithTableMatch(FootballMatchDTO footballMatchDTO) {
+        teamService.enhanceTeamWithFootballTeam(footballMatchDTO.getAwayTeam());
+        teamService.enhanceTeamWithFootballTeam(footballMatchDTO.getHomeTeam());
+    }
+
     private void processMatches(List<FootballMatchTaskHelper> matches, LeagueDTO league) {
         logger.debug("celkem procházím {} zápasů z ligy {}, rok {}, id {}", matches.size(), league.getName(), league.getYear(), league.getId());
-
-        int fullyProcessedMatches = 0;
-        int partiallyProcessedMatches = 0;
-        int unprocessedMatches = 0;
-        List<Long> processedMatchIds = new ArrayList<>();
+        MatchResultCounter matchResultCounter = new MatchResultCounter();
         for (FootballMatchTaskHelper match : matches) {
             Pair<TeamDTO, TeamDTO> teams = getHomeAndAwayTeam(match.getHomeTeamUri(), match.getAwayTeamUri());
             if (teams.getFirst() != null || teams.getSecond() != null) {
-                Pair<MatchProcessingResult, Long> result = processSingleMatch(match, teams, processedMatchIds);
-                MatchProcessingResult processType = result.getFirst();
-                processedMatchIds.add(result.getSecond());
-                switch (processType) {
-                    case FULLY_PROCESSED -> fullyProcessedMatches++;
-                    case PARTIALLY_PROCESSED -> partiallyProcessedMatches++;
-                    case UNPROCESSED -> unprocessedMatches++;
-                }
-            }
-            int totalMatchesProcessed = fullyProcessedMatches + partiallyProcessedMatches + unprocessedMatches;
-            if (totalMatchesProcessed > 0 && totalMatchesProcessed % 10 == 0) {
-                logger.debug("Počet zpracovaných zápasů: {}", totalMatchesProcessed);
+                matchResultCounter.addCounts(processSingleMatch(match, teams));
             }
         }
-        cleanUpUnprocessedMatches(league, processedMatchIds);
-        logger.debug("počet plně zpracovaných zápasů: {}\n počet částečně zpracovaných zápasů: {}\n, počet nezpracovaných zápasů: {}", fullyProcessedMatches, partiallyProcessedMatches, unprocessedMatches);
+        cleanUpUnprocessedMatches(league, matchResultCounter.getProcessedMatchIds());
+        logger.debug("počet plně zpracovaných zápasů: {}\n počet částečně zpracovaných zápasů: {}\n, počet nezpracovaných zápasů: {}",
+                matchResultCounter.getFullyProcessedMatches(), matchResultCounter.getPartiallyProcessedMatches(), matchResultCounter.getUnprocessedMatches());
     }
 
-    private Pair<MatchProcessingResult, Long> processSingleMatch(FootballMatchTaskHelper match, Pair<TeamDTO, TeamDTO> teams, List<Long> processedMatchIds) {
+    private Pair<MatchProcessingResult, Long> processSingleMatch(FootballMatchTaskHelper match, Pair<TeamDTO, TeamDTO> teams) {
         FootballMatchDTO footballMatchDTO = new FootballMatchDTO(match, teams.getFirst(), teams.getSecond());
-        FootballMatchDTO repositoryMatch = getFootballMatchFromRepository(teams.getFirst().getId(), match.getRound(), match.getLeagueId());
+        FootballMatchDTO repositoryMatch = getFootballMatchFromRepository(teams.getFirst().getId(), match.getRound(), match.getLeague().getId());
         return footballMatchProcessor.processMatch(repositoryMatch, footballMatchDTO); // Return the process type (0, 1, or other)
     }
 

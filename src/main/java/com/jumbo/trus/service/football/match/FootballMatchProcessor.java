@@ -33,6 +33,30 @@ public class FootballMatchProcessor {
                 .toList();
     }
 
+    public FootballMatchDTO getMatchById(Long id) {
+        return footballMatchMapper.toDTO(footballMatchRepository.findById(id).orElseThrow());
+    }
+
+    public FootballMatchDTO getNextMatch(long teamId) {
+        return footballMatchMapper.toDTO(footballMatchRepository.findNextMatch(teamId));
+    }
+
+    public FootballMatchDTO getLastMatch(long teamId) {
+        return footballMatchMapper.toDTO(footballMatchRepository.findLastMatch(teamId));
+    }
+
+    public List<FootballMatchDTO> getNextMatches(long teamId) {
+        return footballMatchRepository.findNonPlayedNextMatches(teamId).stream()
+                .map(footballMatchMapper::toDTO)
+                .toList();
+    }
+
+    public List<FootballMatchDTO> findMutualMatches(long teamId1, long teamId2) {
+        return footballMatchRepository.findAlreadyPlayedMatchesOfTwoTeams(teamId1, teamId2).stream()
+                .map(footballMatchMapper::toDTO)
+                .toList();
+    }
+
     /**
      * @param footballMatchDTO zápas načtený z webu
      * @param repositoryMatch zápas z db, pokud existuje, jinak null

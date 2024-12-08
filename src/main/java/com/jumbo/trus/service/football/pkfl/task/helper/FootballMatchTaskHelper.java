@@ -1,6 +1,7 @@
 package com.jumbo.trus.service.football.pkfl.task.helper;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.jumbo.trus.dto.football.LeagueDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -23,7 +24,7 @@ public class FootballMatchTaskHelper {
 
     private Integer round;
 
-    private Long leagueId;
+    private LeagueDTO league;
 
     private String referee;
 

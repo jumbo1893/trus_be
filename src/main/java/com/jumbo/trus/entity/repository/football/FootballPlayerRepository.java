@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface FootballPlayerRepository extends JpaRepository<FootballPlayerEntity, Long> {
 
@@ -41,4 +42,11 @@ public interface FootballPlayerRepository extends JpaRepository<FootballPlayerEn
     @Modifying
     @Query(value = "INSERT INTO public.team_players (team_id, football_player_id) VALUES (:teamId, :playerId)", nativeQuery = true)
     void saveNewTeamPlayer(@Param("teamId") Long teamId, @Param("playerId") Long playerId);
+
+    @Query(value = "SELECT COALESCE(AVG(fp.birth_year), 0) " +
+            "FROM football_player fp " +
+            "JOIN team_players tp ON fp.id = tp.football_player_id " +
+            "WHERE tp.team_id = :teamId",
+            nativeQuery = true)
+    Optional<Double> findAverageBirthYearByTeam(@Param("teamId") Long teamId);
 }

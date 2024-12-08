@@ -33,11 +33,11 @@ public class TableTeamDTO {
 
     private int points;
 
-    private Long teamId;
+    private TeamDTO team;
 
-    private Long leagueId;
+    private LeagueDTO league;
 
-    public TableTeamDTO(int rank, int matches, int wins, int draws, int losses, int goalsScored, int goalsReceived, String penalty, int points, Long leagueId) {
+    public TableTeamDTO(int rank, int matches, int wins, int draws, int losses, int goalsScored, int goalsReceived, String penalty, int points, LeagueDTO league) {
         this.rank = rank;
         this.matches = matches;
         this.wins = wins;
@@ -47,7 +47,7 @@ public class TableTeamDTO {
         this.goalsReceived = goalsReceived;
         this.penalty = penalty;
         this.points = points;
-        this.leagueId = leagueId;
+        this.league = league;
     }
 
     @Override

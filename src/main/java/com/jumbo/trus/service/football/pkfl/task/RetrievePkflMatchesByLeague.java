@@ -55,7 +55,7 @@ public class RetrievePkflMatchesByLeague {
             Integer awayGoalNumber = getScore(result, false);
             boolean alreadyPlayed = isAlreadyPlayed(homeGoalNumber, awayGoalNumber);
             String urlResult = BASE_URL + tds.get(5).select("a[href]").attr("href");
-            pkflMatch = new FootballMatchTaskHelper(convertStringToDate(date, leagueDTO), homeTeamUri, awayTeamUri, round, leagueDTO.getId(), referee, stadium, homeGoalNumber, awayGoalNumber, urlResult, alreadyPlayed);
+            pkflMatch = new FootballMatchTaskHelper(convertStringToDate(date, leagueDTO), homeTeamUri, awayTeamUri, round, leagueDTO, referee, stadium, homeGoalNumber, awayGoalNumber, urlResult, alreadyPlayed);
         } catch (Exception e) {
             e.printStackTrace();
         }

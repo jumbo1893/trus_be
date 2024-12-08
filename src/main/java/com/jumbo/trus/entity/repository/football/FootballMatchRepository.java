@@ -17,7 +17,19 @@ public interface FootballMatchRepository extends JpaRepository<FootballMatchEnti
     @Transactional
     @Modifying
     @Query("DELETE FROM football_match f " +
-            "WHERE f.leagueId = :leagueId AND f.id NOT IN :ids")
+            "WHERE f.league.id = :leagueId AND f.id NOT IN :ids")
     int deleteByLeagueIdAndMatchIdNotIn(@Param("leagueId") Long leagueId,
                                              @Param("ids") List<Long> ids);
+
+    @Query(value = "SELECT * FROM football_match WHERE date > CURRENT_TIMESTAMP AND (home_team_id = :teamId OR away_team_id = :teamId) ORDER BY DATE ASC LIMIT 1", nativeQuery = true)
+    FootballMatchEntity findNextMatch(@Param("teamId") Long teamId);
+
+    @Query(value = "SELECT * FROM football_match WHERE date < CURRENT_TIMESTAMP AND (home_team_id = :teamId OR away_team_id = :teamId) ORDER BY DATE DESC LIMIT 1", nativeQuery = true)
+    FootballMatchEntity findLastMatch(@Param("teamId") Long teamId);
+
+    @Query(value = "SELECT * FROM football_match WHERE date > CURRENT_TIMESTAMP AND (home_team_id = :teamId OR away_team_id = :teamId) AND already_played = false ORDER BY DATE ASC", nativeQuery = true)
+    List<FootballMatchEntity> findNonPlayedNextMatches(@Param("teamId") Long teamId);
+
+    @Query(value = "SELECT * FROM football_match WHERE already_played = true AND ((home_team_id = :teamId1 AND away_team_id = :teamId2) OR (home_team_id = :teamId2 AND away_team_id = :teamId1)) ORDER BY DATE DESC", nativeQuery = true)
+    List<FootballMatchEntity> findAlreadyPlayedMatchesOfTwoTeams(@Param("teamId1") Long teamId1, @Param("teamId2") Long teamId2);
 }

@@ -36,4 +36,7 @@ public class LeagueEntity {
 
     private boolean currentLeague;
 
+    @OneToMany(mappedBy = "league")
+    private List<FootballMatchEntity> matchList;
+
 }

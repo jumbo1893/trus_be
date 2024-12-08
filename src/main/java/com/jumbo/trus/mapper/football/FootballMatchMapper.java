@@ -14,7 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.ArrayList;
 import java.util.List;
 
-@Mapper(componentModel = "spring", uses = {MatchMapper.class, FootballMatchPlayerMapper.class, TeamMapper.class})
+@Mapper(componentModel = "spring", uses = {MatchMapper.class, FootballMatchPlayerMapper.class, TeamMapper.class, LeagueMapper.class})
 public abstract class FootballMatchMapper {
 
     @Autowired
@@ -31,6 +31,7 @@ public abstract class FootballMatchMapper {
             @Mapping(target = "matchIdList", expression = "java(getMatchIds(source))"),
             @Mapping(target = "homePlayerList", expression = "java(getHomePlayerList(source))"),
             @Mapping(target = "awayPlayerList", expression = "java(getAwayPlayerList(source))"),
+            @Mapping(target = "playerList", ignore = true),
     })
     public abstract FootballMatchDTO toDTO(FootballMatchEntity source);
 

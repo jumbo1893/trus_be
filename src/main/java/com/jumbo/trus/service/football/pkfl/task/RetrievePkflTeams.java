@@ -4,6 +4,7 @@ import com.jumbo.trus.dto.football.LeagueDTO;
 import com.jumbo.trus.dto.football.TableTeamDTO;
 import com.jumbo.trus.dto.football.TeamDTO;
 import com.jumbo.trus.service.football.helper.TeamTableTeam;
+import com.jumbo.trus.service.football.helper.WinDrawLose;
 import com.jumbo.trus.service.task.SSLHelper;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -72,7 +73,7 @@ public class RetrievePkflTeams {
             }
 
             tableTeamDTO = new TableTeamDTO(rank, matches, getRatio(winRatio, WinDrawLose.WIN), getRatio(winRatio, WinDrawLose.DRAW), getRatio(winRatio, WinDrawLose.LOSE),
-                    getScore(score, true), getScore(score, false), penalty, points, leagueDTO.getId());
+                    getScore(score, true), getScore(score, false), penalty, points, leagueDTO);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -119,9 +120,5 @@ public class RetrievePkflTeams {
         catch (Exception e) {
             return 0;
         }
-    }
-
-    enum WinDrawLose {
-        WIN, DRAW, LOSE
     }
 }

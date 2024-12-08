@@ -17,7 +17,7 @@ public abstract class TeamMapper {
             @Mapping(target = "leagueList", ignore = true),
             @Mapping(target = "homeMatchList", ignore = true),
             @Mapping(target = "awayMatchList", ignore = true),
-            @Mapping(target = "footballMatchPlayers", ignore = true)
+            @Mapping(target = "footballMatchPlayers", ignore = true),
     })
     public abstract TeamEntity toEntity(TeamDTO source);
 
@@ -25,6 +25,7 @@ public abstract class TeamMapper {
             @Mapping(target = "currentLeagueId", source = "currentLeague.id"),
             @Mapping(target = "footballPlayerList", ignore = true),
             @Mapping(target = "tableTeamIdList", ignore = true),
+            @Mapping(target = "currentTableTeam", ignore = true)
     })
     public abstract TeamDTO toDTO(TeamEntity source);
 }

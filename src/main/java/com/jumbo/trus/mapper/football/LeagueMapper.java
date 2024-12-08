@@ -6,12 +6,13 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {FootballMatchMapper.class})
 public abstract class LeagueMapper {
 
     @Mappings({
             @Mapping(target = "teamList", ignore = true),
             @Mapping(target = "tableTeamList", ignore = true),
+            @Mapping(target = "matchList", ignore = true),
     })
     public abstract LeagueEntity toEntity(LeagueDTO source);
 

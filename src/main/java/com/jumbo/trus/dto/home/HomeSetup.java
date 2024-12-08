@@ -1,6 +1,7 @@
 package com.jumbo.trus.dto.home;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.jumbo.trus.dto.football.FootballMatchDTO;
 import com.jumbo.trus.dto.pkfl.PkflMatchDTO;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -19,7 +20,11 @@ public class HomeSetup {
 
     private List<String> randomFacts;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<PkflMatchDTO> nextAndLastPkflMatch;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private List<FootballMatchDTO> nextAndLastFootballMatch;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Chart chart;

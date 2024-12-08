@@ -28,7 +28,8 @@ public class FootballMatchEntity {
 
     private Integer round;
 
-    private Long leagueId;
+    @ManyToOne
+    private LeagueEntity league;
 
     private String stadium;
 

@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -46,6 +47,13 @@ public class FootballPlayerService {
             return footballPlayerMapper.toDTO(footballPlayerRepository.findByUri(playerUri));
         }
         return playerUpdateHelper.saveNewPlayer(retrievePkflPlayer.getPlayer(playerUri, null));
+    }
+
+    public Integer getAverageBirthYearOfTeam(long teamId) {
+        Optional<Double> averageBirthYear = footballPlayerRepository.findAverageBirthYearByTeam(teamId);
+        return averageBirthYear
+                .map(Double::intValue)
+                .orElse(null);
     }
 
     private List<TeamDTO> loadTeams() {

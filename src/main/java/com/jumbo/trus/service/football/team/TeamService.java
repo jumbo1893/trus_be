@@ -1,21 +1,20 @@
 package com.jumbo.trus.service.football.team;
 
+import com.jumbo.trus.dto.football.TableTeamDTO;
 import com.jumbo.trus.dto.football.TeamDTO;
 import com.jumbo.trus.entity.repository.football.TeamRepository;
 import com.jumbo.trus.mapper.football.TeamMapper;
 import com.jumbo.trus.service.football.helper.TeamTableTeam;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TeamService {
-
-    private final Logger logger = LoggerFactory.getLogger(TeamService.class);
 
     private final TeamRepository teamRepository;
     private final TeamMapper teamMapper;
@@ -25,6 +24,11 @@ public class TeamService {
     public List<TeamDTO> getAllTeams() {
         return teamRepository.findAll().stream().map(teamMapper::toDTO).toList();
     }
+
+    public List<TableTeamDTO> getTable(Long teamId) {
+        return teamProcessor.getTableTeamsByTeamId(teamId);
+    }
+
 
     public List<TeamDTO> getAllTeamsFromCurrentSeason() {
         return teamRepository.findTeamsFromCurrentSeason().stream().map(teamMapper::toDTO).toList();
@@ -36,13 +40,17 @@ public class TeamService {
                 : null;
     }
 
+    public void enhanceTeamWithFootballTeam(TeamDTO teamDTO) {
+        teamProcessor.enhanceTeamWithTableTeam(teamDTO);
+    }
+
     public void updateTeams() {
-        logger.debug("updatuji týmy z PKFL");
+        log.debug("updatuji týmy z PKFL");
         List<TeamTableTeam> teamTableTeams = teamRetriever.retrieveTeams(teamRetriever.isUpdateNeeded());
         TeamUpdateResult teamUpdateResult = processTeams(teamTableTeams);
-        logger.debug("update týmů dokončen, celkem se prolezlo týmů: {}", teamTableTeams.size());
-        logger.debug("počet aktualizovaných týmů: {}", teamUpdateResult.getUpdatedTeams());
-        logger.debug("počet aktualizovaných tabulkovaných týmů: {}", teamUpdateResult.getUpdatedTableTeams());
+        log.debug("update týmů dokončen, celkem se prolezlo týmů: {}", teamTableTeams.size());
+        log.debug("počet aktualizovaných týmů: {}", teamUpdateResult.getUpdatedTeams());
+        log.debug("počet aktualizovaných tabulkovaných týmů: {}", teamUpdateResult.getUpdatedTableTeams());
     }
 
     private TeamUpdateResult processTeams(List<TeamTableTeam> teamTableTeams) {

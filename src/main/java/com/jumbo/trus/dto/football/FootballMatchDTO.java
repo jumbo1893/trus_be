@@ -1,6 +1,7 @@
 package com.jumbo.trus.dto.football;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.jumbo.trus.service.football.pkfl.task.helper.FootballMatchTaskHelper;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -31,7 +32,7 @@ public class FootballMatchDTO {
 
     private int round;
 
-    private Long leagueId;
+    private LeagueDTO league;
 
     private String stadium;
 
@@ -47,7 +48,7 @@ public class FootballMatchDTO {
 
     private boolean alreadyPlayed;
 
-    @NotNull
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<FootballMatchPlayerDTO> playerList;
 
     @NotNull
@@ -63,7 +64,7 @@ public class FootballMatchDTO {
         this.awayTeam = awayTeam;
         this.date = footballMatchTaskHelper.getDate();
         this.round = footballMatchTaskHelper.getRound();
-        this.leagueId = footballMatchTaskHelper.getLeagueId();
+        this.league = footballMatchTaskHelper.getLeague();
         this.stadium = footballMatchTaskHelper.getStadium();
         this.referee = footballMatchTaskHelper.getReferee();
         this.homeGoalNumber = footballMatchTaskHelper.getHomeGoalNumber();
@@ -81,7 +82,7 @@ public class FootballMatchDTO {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         FootballMatchDTO that = (FootballMatchDTO) o;
-        return round == that.round && areDatesEqual(date, that.date) && Objects.equals(homeTeam.getId(), that.homeTeam.getId()) && Objects.equals(awayTeam.getId(), that.awayTeam.getId()) && Objects.equals(leagueId, that.leagueId) && Objects.equals(stadium, that.stadium) && Objects.equals(referee, that.referee) && Objects.equals(homeGoalNumber, that.homeGoalNumber) && Objects.equals(awayGoalNumber, that.awayGoalNumber) && Objects.equals(urlResult, that.urlResult);
+        return round == that.round && areDatesEqual(date, that.date) && Objects.equals(homeTeam.getId(), that.homeTeam.getId()) && Objects.equals(awayTeam.getId(), that.awayTeam.getId()) && Objects.equals(league.getId(), that.league.getId()) && Objects.equals(stadium, that.stadium) && Objects.equals(referee, that.referee) && Objects.equals(homeGoalNumber, that.homeGoalNumber) && Objects.equals(awayGoalNumber, that.awayGoalNumber) && Objects.equals(urlResult, that.urlResult);
     }
 
     private boolean areDatesEqual(Date date1, Date date2) {
@@ -91,6 +92,6 @@ public class FootballMatchDTO {
 
     @Override
     public int hashCode() {
-        return Objects.hash(date, homeTeam, awayTeam, round, leagueId, stadium, referee, homeGoalNumber, awayGoalNumber, urlResult);
+        return Objects.hash(date, homeTeam, awayTeam, round, league, stadium, referee, homeGoalNumber, awayGoalNumber, urlResult);
     }
 }
