@@ -10,6 +10,7 @@ import com.jumbo.trus.dto.football.stats.FootballAllIndividualStats;
 import com.jumbo.trus.dto.helper.StringAndString;
 import com.jumbo.trus.service.auth.AppTeamService;
 import com.jumbo.trus.service.football.match.FootballMatchService;
+import com.jumbo.trus.service.football.pkfl.job.PkflScheduledJob;
 import com.jumbo.trus.service.football.player.FootballPlayerService;
 import com.jumbo.trus.service.football.stats.FootballPlayerFact;
 import com.jumbo.trus.service.football.stats.FootballPlayerStatsService;
@@ -30,6 +31,7 @@ public class FootballController {
     private final FootballPlayerFact footballPlayerFact;
     private final FootballPlayerService footballPlayerService;
     private final AppTeamService appTeamService;
+    private final PkflScheduledJob pkflScheduledJob;
 
     @RoleRequired("READER")
     @GetMapping("/next-and-last-match")
@@ -79,5 +81,28 @@ public class FootballController {
     public List<FootballPlayerDTO> getPlayers() {
         return footballPlayerService.getAllPlayersByCurrentTeam(appTeamService.getCurrentAppTeamOrThrow());
     }
+
+    @PostMapping("/league")
+    public void updateLeagues() {
+        pkflScheduledJob.runPkflLeagueJob();
+    }
+
+    @PostMapping("/team")
+    public void updateTeams() {
+        pkflScheduledJob.runPkflTeamJob();
+    }
+
+
+    @PostMapping("/player")
+    public void updatePlayers() {
+        pkflScheduledJob.runPkflPlayerJob();
+    }
+
+
+    @PostMapping("/match")
+    public void updateMatches() {
+        pkflScheduledJob.runPkflMatchJob();
+    }
+
 
 }

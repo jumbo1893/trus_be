@@ -6,7 +6,6 @@ import com.jumbo.trus.service.football.player.FootballPlayerService;
 import com.jumbo.trus.service.football.team.TeamService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -41,8 +40,8 @@ public class PkflScheduledJob {
         footballMatchService.updatePkflMatches();
     }
 
-    @Scheduled(cron = "0 0 1,13 * * MON-FRI")  // každý pracovní den ve 01:00 a 13:00
-    @Scheduled(cron = "0 0 0,3,6,9,12,15,18,21 * * SAT,SUN")     // každý víkend každou celou hodinu
+    /*@Scheduled(cron = "0 0 1,13 * * MON-FRI")  // každý pracovní den ve 01:00 a 13:00
+    @Scheduled(cron = "0 0 * * * SAT,SUN")     // každý víkend každou celou hodinu
     public void runFullPkflJob() {
         log.debug("Spuštění plánovaného PKFL jobu");
         runPkflLeagueJob();             // 1. Leagues
@@ -50,5 +49,5 @@ public class PkflScheduledJob {
         runPkflPlayerJob();         // 3. Players
         runPkflMatchJob();      // 4. Matches
         log.debug("PKFL job dokončen");
-    }
+    }*/
 }

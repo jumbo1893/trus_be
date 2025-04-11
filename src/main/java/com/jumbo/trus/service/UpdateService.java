@@ -30,6 +30,9 @@ public class UpdateService {
     }
 
     public void saveNewUpdate(String name) {
+        if (getUpdateByName(name) != null) {
+            return;
+        }
         UpdateDTO updateDTO = new UpdateDTO();
         updateDTO.setName(name);
         updateDTO.setDate(new Date());
