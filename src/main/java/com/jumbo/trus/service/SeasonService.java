@@ -2,6 +2,7 @@ package com.jumbo.trus.service;
 
 import com.jumbo.trus.config.Config;
 import com.jumbo.trus.dto.SeasonDTO;
+import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.filter.SeasonFilter;
 import com.jumbo.trus.entity.repository.MatchRepository;
 import com.jumbo.trus.mapper.SeasonMapper;
@@ -12,7 +13,7 @@ import com.jumbo.trus.service.helper.ValidationField;
 import com.jumbo.trus.service.order.OrderSeasonByDate;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.webjars.NotFoundException;
 
@@ -23,30 +24,25 @@ import java.util.List;
 import static com.jumbo.trus.config.Config.*;
 
 @Service
+@RequiredArgsConstructor
 public class SeasonService {
 
-    @Autowired
-    private SeasonRepository seasonRepository;
+    private final SeasonRepository seasonRepository;
+    private final MatchRepository matchRepository;
+    private final SeasonMapper seasonMapper;
+    private final NotificationService notificationService;
 
-    @Autowired
-    private MatchRepository matchRepository;
-
-    @Autowired
-    private SeasonMapper seasonMapper;
-
-    @Autowired
-    private NotificationService notificationService;
-
-    public SeasonDTO addSeason(SeasonDTO seasonDTO) {
-        validateSeason(seasonDTO.getFromDate(), seasonDTO.getFromDate(), null);
+    public SeasonDTO addSeason(SeasonDTO seasonDTO, AppTeamEntity appTeam) {
+        validateSeason(seasonDTO.getFromDate(), seasonDTO.getFromDate(), null, appTeam);
         SeasonEntity entity = seasonMapper.toEntity(seasonDTO);
+        entity.setAppTeam(appTeam);
         SeasonEntity savedEntity = seasonRepository.save(entity);
         notificationService.addNotification("Přidána nová sezona", seasonDTO.getName() + " se začátkem " + seasonDTO.getFromDate() + " a koncem " + seasonDTO.getToDate());
         return seasonMapper.toDTO(savedEntity);
     }
 
     public List<SeasonDTO> getAll(SeasonFilter seasonFilter){
-        List<SeasonEntity> seasonEntities = seasonRepository.getAllWithoutNonEditable(seasonFilter.getLimit());
+        List<SeasonEntity> seasonEntities = seasonRepository.getAllWithoutNonEditable(seasonFilter.getLimit(), seasonFilter.getAppTeam().getId());
         List<SeasonDTO> result = new ArrayList<>();
         for(SeasonEntity e : seasonEntities){
             result.add(seasonMapper.toDTO(e));
@@ -76,22 +72,10 @@ public class SeasonService {
         return seasonMapper.toDTO(seasonEntity);
     }
 
-    public SeasonDTO getCurrentSeason() {
-        List<SeasonDTO> seasonList = getAll(new SeasonFilter());
-        for (SeasonDTO season : seasonList) {
-            if (!season.getFromDate().after(new Date()) && !season.getToDate().before(new Date())) {
-                return season;
-            }
-        }
-        return getOtherSeason();
-    }
-
-    public SeasonDTO getCurrentSeason(boolean includeOtherSeason) {
-        List<SeasonDTO> seasonList = getAll(new SeasonFilter());
-        for (SeasonDTO season : seasonList) {
-            if (!season.getFromDate().after(new Date()) && !season.getToDate().before(new Date())) {
-                return season;
-            }
+    public SeasonDTO getCurrentSeason(boolean includeOtherSeason, AppTeamEntity appTeam) {
+        SeasonDTO seasonDTO = getSeasonByDate(new Date(), appTeam);
+        if (seasonDTO != null) {
+            return seasonDTO;
         }
         if (includeOtherSeason) {
             return getOtherSeason();
@@ -99,21 +83,31 @@ public class SeasonService {
         return getAllSeason();
     }
 
-    public SeasonDTO getSeasonByDate(Date inputDate) {
-        List<SeasonDTO> seasonList = getAll(new SeasonFilter());
+    public SeasonDTO getSeasonByDateOrOther(Date inputDate, AppTeamEntity appTeam) {
+        SeasonDTO seasonDTO = getSeasonByDate(inputDate, appTeam);
+        if (seasonDTO != null) {
+            return seasonDTO;
+        }
+        return getOtherSeason();
+    }
+
+    private SeasonDTO getSeasonByDate(Date inputDate, AppTeamEntity appTeam) {
+        SeasonFilter seasonFilter = new SeasonFilter();
+        seasonFilter.setAppTeam(appTeam);
+        List<SeasonDTO> seasonList = getAll(seasonFilter);
         for (SeasonDTO season : seasonList) {
             if (!season.getFromDate().after(inputDate) && !season.getToDate().before(inputDate)) {
                 return season;
             }
         }
-        return getOtherSeason();
+        return null;
     }
 
-    public SeasonDTO editSeason(Long seasonId, SeasonDTO seasonDTO) throws NotFoundException {
+    public SeasonDTO editSeason(Long seasonId, SeasonDTO seasonDTO, AppTeamEntity appTeam) throws NotFoundException {
         if (!seasonRepository.existsById(seasonId)) {
             throw new NotFoundException("Sezona s id " + seasonId + " nenalezena v db");
         }
-        validateSeason(seasonDTO.getFromDate(), seasonDTO.getFromDate(), seasonDTO);
+        validateSeason(seasonDTO.getFromDate(), seasonDTO.getFromDate(), seasonDTO, appTeam);
         SeasonEntity entity = seasonMapper.toEntity(seasonDTO);
         entity.setId(seasonId);
         SeasonEntity savedEntity = seasonRepository.save(entity);
@@ -129,8 +123,10 @@ public class SeasonService {
         seasonRepository.deleteById(seasonId);
     }
 
-    private void validateSeason(Date fromDate, Date toDate, SeasonDTO currentSeason) {
-        List<SeasonDTO> seasons = getAll(new SeasonFilter(false, false, false));
+    private void validateSeason(Date fromDate, Date toDate, SeasonDTO currentSeason, AppTeamEntity appTeam) {
+        SeasonFilter seasonFilter = new SeasonFilter(false, false, false);
+        seasonFilter.setAppTeam(appTeam);
+        List<SeasonDTO> seasons = getAll(seasonFilter);
         for (SeasonDTO season : seasons) {
             if (currentSeason != null && currentSeason.getId() != season.getId()) {
                 if (isSeasonCollision(season, fromDate, toDate)) {

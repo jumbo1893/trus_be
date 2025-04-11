@@ -3,8 +3,9 @@ package com.jumbo.trus.service.football.match;
 import com.jumbo.trus.dto.football.FootballMatchDTO;
 import com.jumbo.trus.dto.football.FootballMatchPlayerDTO;
 import com.jumbo.trus.dto.football.detail.BestScorer;
-import com.jumbo.trus.entity.football.detail.BestScorerView;
-import com.jumbo.trus.entity.repository.football.BestScorerViewRepository;
+import com.jumbo.trus.entity.football.FootballMatchPlayerEntity;
+import com.jumbo.trus.entity.football.view.BestScorerEntity;
+import com.jumbo.trus.entity.repository.view.BestScorerViewRepository;
 import com.jumbo.trus.entity.repository.football.FootballMatchPlayerRepository;
 import com.jumbo.trus.mapper.football.BestScorerViewMapper;
 import com.jumbo.trus.mapper.football.FootballMatchPlayerMapper;
@@ -32,7 +33,6 @@ public class PlayerProcessor {
     private final BestScorerViewRepository bestScorerViewRepository;
     private final BestScorerViewMapper bestScorerViewMapper;
 
-
     public List<FootballMatchPlayerDTO> processPlayers(FootballMatchDetailTaskHelper detail, Long matchId, FootballMatchDTO footballMatchDTO) {
         List<FootballMatchPlayerDTO> players = new ArrayList<>();
         players.addAll(getListOfFootballers(detail.getHomeTeamPlayers(), matchId, footballMatchDTO.getHomeTeam()));
@@ -42,23 +42,27 @@ public class PlayerProcessor {
 
     public BestScorer findBestScorerByTeamIdAndLeagueId(long teamId, long leagueId) {
         bestScorerViewRepository.findBestScorerByTeamAndLeague(teamId, leagueId);
-        Optional<BestScorerView> bestScorer = bestScorerViewRepository.findBestScorerByTeamAndLeague(teamId, leagueId);
+        Optional<BestScorerEntity> bestScorer = bestScorerViewRepository.findBestScorerByTeamAndLeague(teamId, leagueId);
         return bestScorer.map(bestScorerViewMapper::toDTO)
                 .orElse(null);
+    }
+
+    public List<FootballMatchPlayerEntity> convertPlayerListDtoToEntity(List<FootballMatchPlayerDTO> playerList) {
+        return playerList.stream().map(footballMatchPlayerMapper::toEntity).toList();
     }
 
     private List<FootballMatchPlayerDTO> savePlayerList(Long matchId, List<FootballMatchPlayerDTO> playerList) {
         List<FootballMatchPlayerDTO> newPlayerList = new ArrayList<>();
         for (FootballMatchPlayerDTO player : playerList) {
             Optional<Long> playerId = footballMatchPlayerRepository.findFirstIdByTeamAndMatchAndPlayer(
-                player.getTeam().getId(), player.getMatchId(), player.getPlayer().getId()
+                    player.getTeam().getId(), player.getMatchId(), player.getPlayer().getId()
             );
             playerId.ifPresentOrElse(
-                id -> {
-                    player.setId(id);
-                    newPlayerList.add(savePlayerToRepository(player));
-                },
-                () -> newPlayerList.add(savePlayerToRepository(player))
+                    id -> {
+                        player.setId(id);
+                        newPlayerList.add(savePlayerToRepository(player));
+                    },
+                    () -> newPlayerList.add(savePlayerToRepository(player))
             );
         }
         cleanAllPlayerNotBelongingToMatch(matchId, newPlayerList);
@@ -82,7 +86,6 @@ public class PlayerProcessor {
     }
 
 
-
     private FootballMatchPlayerDTO savePlayerToRepository(FootballMatchPlayerDTO player) {
         return footballMatchPlayerMapper.toDTO(footballMatchPlayerRepository.save(footballMatchPlayerMapper.toEntity(player)));
     }
@@ -91,10 +94,10 @@ public class PlayerProcessor {
         List<FootballMatchPlayerDTO> footballers = new ArrayList<>();
         for (PlayerMatchStatsHelper playerHelper : playerHelpers) {
             FootballMatchPlayerDTO footballMatchPlayerDTO = new FootballMatchPlayerDTO(
-                playerHelper,
-                footballPlayerService.getFootballerByUri(playerHelper.getPlayerUri()),
-                team,
-                matchId
+                    playerHelper,
+                    footballPlayerService.getFootballerByUri(playerHelper.getPlayerUri()),
+                    team,
+                    matchId
             );
             footballers.add(footballMatchPlayerDTO);
         }

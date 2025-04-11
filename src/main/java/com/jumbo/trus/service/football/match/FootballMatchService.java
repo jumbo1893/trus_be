@@ -2,7 +2,7 @@ package com.jumbo.trus.service.football.match;
 
 import com.jumbo.trus.dto.football.*;
 import com.jumbo.trus.dto.football.detail.FootballMatchDetail;
-import com.jumbo.trus.service.HeaderManager;
+import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.service.UpdateService;
 import com.jumbo.trus.service.football.league.LeagueService;
 import com.jumbo.trus.service.football.team.TeamService;
@@ -16,6 +16,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -33,35 +35,48 @@ public class FootballMatchService {
     private final UpdateService updateService;
     private final RetrievePkflMatchesByLeague retrievePkflMatches;
     private final FootballMatchDetailProcessor footballMatchDetailProcessor;
-    private final HeaderManager headerManager;
 
     public List<FootballMatchDTO> getAllMatches() {
         return footballMatchProcessor.getAllMatches();
     }
 
-    public List<FootballMatchDTO> getNextAndLastFootballMatch(Long teamId) {
-        List<FootballMatchDTO> matches = new ArrayList<>();
+    public List<FootballMatchDetail> getNextAndLastFootballMatchDetail(AppTeamEntity appTeamEntity) {
+        Long teamId = appTeamEntity.getTeam().getId();
+        List<FootballMatchDetail> matches = new ArrayList<>();
         if (teamId != null) {
             FootballMatchDTO nextMatch = footballMatchProcessor.getNextMatch(teamId);
-            enhanceTeamsInFootballMatchWithTableMatch(nextMatch);
+            FootballMatchDetail nextFootballMatchDetail = getFootballMatchDetail(nextMatch.getId(), appTeamEntity, false);
             FootballMatchDTO lastMatch = footballMatchProcessor.getLastMatch(teamId);
-            enhanceTeamsInFootballMatchWithTableMatch(lastMatch);
-            matches.add(nextMatch);
-            matches.add(lastMatch);
+            FootballMatchDetail lastFootballMatchDetail = getFootballMatchDetail(lastMatch.getId(), appTeamEntity, false);
+            matches.add(nextFootballMatchDetail);
+            matches.add(lastFootballMatchDetail);
         }
         return matches;
     }
 
-    public List<FootballMatchDTO> getNextMatches(Long teamId) {
+    public List<FootballMatchDTO> getNextMatches(AppTeamEntity appTeam) {
+        Long teamId = appTeam.getTeam().getId();
         return footballMatchProcessor.getNextMatches(teamId);
     }
 
-    public FootballMatchDetail getFootballMatchDetail(Long matchId) {
+    public FootballMatchDetail getFootballMatchDetail(Long matchId, AppTeamEntity appTeam, boolean includeMutualMatches) {
         FootballMatchDetail footballMatchDetail = new FootballMatchDetail();
         FootballMatchDTO footballMatchDTO = footballMatchProcessor.getMatchById(matchId);
         enhanceTeamsInFootballMatchWithTableMatch(footballMatchDTO);
-        footballMatchDetail.setFootballMatchDTO(footballMatchDTO);
-        return footballMatchDetailProcessor.enhanceFootballMatchDetail(footballMatchDetail);
+        footballMatchDetail.setFootballMatch(footballMatchDTO);
+        return footballMatchDetailProcessor.enhanceFootballMatchDetail(footballMatchDetail, appTeam, includeMutualMatches);
+    }
+
+    public FootballMatchDTO getFootballMatchByDate(Date date, AppTeamEntity appTeam) {
+        Long teamId = appTeam.getTeam().getId();
+        Calendar endCalendar = Calendar.getInstance();
+        endCalendar.setTime(date);
+        endCalendar.add(Calendar.DATE, 1);
+        return footballMatchProcessor.findFootballMatchByDate(teamId, date, endCalendar.getTime());
+    }
+
+    public FootballMatchDTO getFootballMatchById(Long id) {
+        return footballMatchProcessor.getMatchById(id);
     }
 
     public void updatePkflMatches() {
@@ -77,8 +92,10 @@ public class FootballMatchService {
     }
 
     private void enhanceTeamsInFootballMatchWithTableMatch(FootballMatchDTO footballMatchDTO) {
-        teamService.enhanceTeamWithFootballTeam(footballMatchDTO.getAwayTeam());
-        teamService.enhanceTeamWithFootballTeam(footballMatchDTO.getHomeTeam());
+        if (footballMatchDTO != null) {
+            teamService.enhanceTeamWithFootballTeam(footballMatchDTO.getAwayTeam());
+            teamService.enhanceTeamWithFootballTeam(footballMatchDTO.getHomeTeam());
+        }
     }
 
     private void processMatches(List<FootballMatchTaskHelper> matches, LeagueDTO league) {

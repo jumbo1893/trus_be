@@ -16,9 +16,15 @@ public interface FootballPlayerRepository extends JpaRepository<FootballPlayerEn
 
     FootballPlayerEntity findByUri(String uri);
 
+    @Query("SELECT p FROM football_player p JOIN p.teamList t WHERE t.id = :teamId ORDER BY p.name")
+    List<FootballPlayerEntity> findAllByTeamId(@Param("teamId") Long teamId);
+
+    @Query(value = "SELECT * FROM football_player WHERE id IN (SELECT player_id FROM football_match_player WHERE team_id = :teamId) ORDER BY name", nativeQuery = true)
+    List<FootballPlayerEntity> findAllByTeamIdWithInactive(@Param("teamId") Long teamId);
+
     @Modifying
     @Transactional
-    @Query(value = "UPDATE football_player SET name = :name, birthYear = :birthYear, email = :email, phoneNumber = :phoneNumber WHERE id = :id", nativeQuery = true)
+    @Query(value = "UPDATE football_player SET name = :name, birthYear = :birthYear, email = :email, phoneNumber = :phoneNumber WHERE id = :id")
     int updatePlayerFields(@Param("id") Long id,
                          @Param("name") String name,
                          @Param("birthYear") int birthYear,
@@ -35,7 +41,7 @@ public interface FootballPlayerRepository extends JpaRepository<FootballPlayerEn
 
     @Modifying
     @Transactional
-    @Query(value = "DELETE FROM team_players WHERE team_id = :teamId AND player_id = :playerId", nativeQuery = true)
+    @Query(value = "DELETE FROM team_players WHERE team_id = :teamId AND football_player_id = :playerId", nativeQuery = true)
     void deleteTeamPlayers(@Param("teamId") Long teamId, @Param("playerId") Long playerId);
 
     @Transactional

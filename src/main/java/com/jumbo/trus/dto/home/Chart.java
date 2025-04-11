@@ -1,6 +1,6 @@
 package com.jumbo.trus.dto.home;
 
-import com.jumbo.trus.dto.PlayerDTO;
+import com.jumbo.trus.dto.player.PlayerDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

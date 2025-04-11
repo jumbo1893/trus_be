@@ -1,14 +1,18 @@
 package com.jumbo.trus.controller;
 
+import com.jumbo.trus.config.security.RoleRequired;
 import com.jumbo.trus.dto.football.FootballMatchDTO;
+import com.jumbo.trus.dto.football.FootballPlayerDTO;
 import com.jumbo.trus.dto.football.TableTeamDTO;
 import com.jumbo.trus.dto.football.detail.FootballMatchDetail;
+import com.jumbo.trus.dto.football.detail.FootballTableTeamDetail;
+import com.jumbo.trus.dto.football.stats.FootballAllIndividualStats;
 import com.jumbo.trus.dto.helper.StringAndString;
-import com.jumbo.trus.dto.pkfl.PkflPlayerDTO;
-import com.jumbo.trus.dto.pkfl.stats.PkflAllIndividualStats;
-import com.jumbo.trus.service.HeaderManager;
+import com.jumbo.trus.service.auth.AppTeamService;
 import com.jumbo.trus.service.football.match.FootballMatchService;
-import com.jumbo.trus.service.football.pkfl.PkflMatchService;
+import com.jumbo.trus.service.football.player.FootballPlayerService;
+import com.jumbo.trus.service.football.stats.FootballPlayerFact;
+import com.jumbo.trus.service.football.stats.FootballPlayerStatsService;
 import com.jumbo.trus.service.football.team.TeamService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -20,44 +24,60 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FootballController {
 
-    private final PkflMatchService pkflService;
     private final FootballMatchService footballMatchService;
-    private final HeaderManager headerManager;
     private final TeamService teamService;
+    private final FootballPlayerStatsService footballPlayerStatsService;
+    private final FootballPlayerFact footballPlayerFact;
+    private final FootballPlayerService footballPlayerService;
+    private final AppTeamService appTeamService;
 
+    @RoleRequired("READER")
     @GetMapping("/next-and-last-match")
-    public List<FootballMatchDTO> getNextAndLastMatch() {
-        return footballMatchService.getNextAndLastFootballMatch(headerManager.getTeamIdHeader());
+    public List<FootballMatchDetail> getNextAndLastMatch() {
+        return footballMatchService.getNextAndLastFootballMatchDetail(appTeamService.getCurrentAppTeamOrThrow());
     }
 
+    @RoleRequired("READER")
     @GetMapping("/fixtures")
     public List<FootballMatchDTO> getTeamFixtures() {
-        return footballMatchService.getNextMatches(headerManager.getTeamIdHeader());
+        return footballMatchService.getNextMatches(appTeamService.getCurrentAppTeamOrThrow());
     }
 
+    @RoleRequired("READER")
     @GetMapping("/table")
     public List<TableTeamDTO> getTable() {
-        return teamService.getTable(headerManager.getTeamIdHeader());
+        Long teamId = appTeamService.getCurrentAppTeamOrThrow().getTeam().getId();
+        return teamService.getTable(teamId);
     }
 
-    @GetMapping("/detail/{pkflMatchId}")
-    public FootballMatchDetail getFootballMatchDetail(@PathVariable Long pkflMatchId) {
-        return footballMatchService.getFootballMatchDetail(pkflMatchId);
+    @RoleRequired("READER")
+    @GetMapping("/detail/{footballMatchId}")
+    public FootballMatchDetail getFootballMatchDetail(@PathVariable Long footballMatchId) {
+        return footballMatchService.getFootballMatchDetail(footballMatchId, appTeamService.getCurrentAppTeamOrThrow(), true);
     }
 
+    @RoleRequired("READER")
+    @GetMapping("/team-detail/{tableTeamId}")
+    public FootballTableTeamDetail getFootballTeamDetail(@PathVariable Long tableTeamId) {
+        return teamService.getFootballTeamDetail(tableTeamId, appTeamService.getCurrentAppTeamOrThrow());
+    }
+
+    @RoleRequired("READER")
     @GetMapping("/player-stats")
-    public List<PkflAllIndividualStats> getPlayerStats(@RequestParam boolean currentSeason) {
-        return pkflService.getPlayerStats(currentSeason);
+    public List<FootballAllIndividualStats> getPlayerStats(@RequestParam boolean currentSeason) {
+        return footballPlayerStatsService.getPlayerStatsForTeam(currentSeason, appTeamService.getCurrentAppTeamOrThrow());
     }
 
+    @RoleRequired("READER")
     @GetMapping("/player-facts")
     public List<StringAndString> getPlayerFacts(@RequestParam long playerId) {
-        return pkflService.getFactsForPlayer(playerId);
+        return footballPlayerFact.getFactsForPlayer(playerId, appTeamService.getCurrentAppTeamOrThrow());
     }
 
+    @RoleRequired("NONE")
     @GetMapping("/player/get-all")
-    public List<PkflPlayerDTO> getPlayers() {
-        return pkflService.getPlayers();
+    public List<FootballPlayerDTO> getPlayers() {
+        return footballPlayerService.getAllPlayersByCurrentTeam(appTeamService.getCurrentAppTeamOrThrow());
     }
 
 }

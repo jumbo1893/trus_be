@@ -9,9 +9,9 @@ import java.util.List;
 
 public interface SeasonRepository extends JpaRepository<SeasonEntity, Long> {
 
-    @Query(value = "SELECT * from season LIMIT :limit", nativeQuery = true)
-    List<SeasonEntity> getAll(@Param("limit") int limit);
+    @Query(value = "SELECT * from season WHERE app_team_id=:#{#appTeamId} LIMIT :limit", nativeQuery = true)
+    List<SeasonEntity> getAll(@Param("limit") int limit, @Param("appTeamId") Long appTeamId);
 
-    @Query(value = "SELECT * from season where editable = true LIMIT :limit", nativeQuery = true)
-    List<SeasonEntity> getAllWithoutNonEditable(@Param("limit") int limit);
+    @Query(value = "SELECT * from season where editable = true AND app_team_id=:#{#appTeamId} LIMIT :limit", nativeQuery = true)
+    List<SeasonEntity> getAllWithoutNonEditable(@Param("limit") int limit, @Param("appTeamId") Long appTeamId);
 }

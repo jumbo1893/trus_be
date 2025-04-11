@@ -20,6 +20,10 @@ public class MatchSpecification implements Specification<MatchEntity> {
     public Predicate toPredicate(@NotNull Root<MatchEntity> root, @NotNull CriteriaQuery<?> query, @NotNull CriteriaBuilder criteriaBuilder) {
         List<Predicate> predicates = new ArrayList<>();
 
+        if (filter.getAppTeam() != null) {
+            predicates.add(criteriaBuilder.equal(root.get(MatchEntity_.APP_TEAM), filter.getAppTeam()));
+        }
+
         if (filter.getName() != null) {
             predicates.add(criteriaBuilder.equal(root.get(MatchEntity_.NAME), filter.getName()));
         }
@@ -35,11 +39,9 @@ public class MatchSpecification implements Specification<MatchEntity> {
             }
         }
 
-        if (filter.getPlayerList() != null) {
-            for (Long playerId : filter.getPlayerList()) {
-                Join<PlayerEntity, MatchEntity> playerJoin = root.join(MatchEntity_.PLAYER_LIST);
-                predicates.add(playerJoin.get(PlayerEntity_.ID).in(playerId));
-            }
+        if (filter.getPlayerList() != null && !filter.getPlayerList().isEmpty()) {
+            Join<MatchEntity, PlayerEntity> playerJoin = root.join(MatchEntity_.PLAYER_LIST);
+            predicates.add(playerJoin.get(PlayerEntity_.ID).in(filter.getPlayerList()));
         }
 
         return criteriaBuilder.and(predicates.toArray(new Predicate[0]));

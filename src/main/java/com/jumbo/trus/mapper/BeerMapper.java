@@ -12,6 +12,7 @@ public abstract class BeerMapper {
     @Mappings({
             @Mapping(target = "player.id", source = "playerId"),
             @Mapping(target = "match.id", source = "matchId"),
+            @Mapping(target = "appTeam", ignore = true),
     })
     public abstract BeerEntity toEntity(BeerDTO source);
     @Mappings({

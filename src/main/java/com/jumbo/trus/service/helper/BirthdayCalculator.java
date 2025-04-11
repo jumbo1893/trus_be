@@ -1,6 +1,6 @@
 package com.jumbo.trus.service.helper;
 
-import com.jumbo.trus.dto.PlayerDTO;
+import com.jumbo.trus.dto.player.PlayerDTO;
 
 import java.time.Instant;
 import java.time.LocalDate;

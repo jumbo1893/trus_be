@@ -11,12 +11,16 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ControllerAdvice
 public class AuthExceptionAdvice {
 
-    @ExceptionHandler({AuthException.class})
-    @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public ResponseEntity<ErrorResponse> handleAuthException(AuthException e) {
-        ErrorResponse errorResponse = new ErrorResponse(e.getMessage(), e.getCode());
-        errorResponse.setMessage(e.getMessage());
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+    @ExceptionHandler(AuthException.class)
+    public ResponseEntity<ErrorResponse> handleAuthException(AuthException ex) {
+        HttpStatus status = switch (ex.getCode()) {
+            case AuthException.NOT_LOGGED_IN -> HttpStatus.UNAUTHORIZED;
+            case AuthException.MISSING_TEAM_ID, AuthException.INSUFFICIENT_RIGHTS -> HttpStatus.FORBIDDEN;
+            default -> HttpStatus.BAD_REQUEST;
+        };
+
+        ErrorResponse errorResponse = new ErrorResponse(ex.getMessage(), ex.getCode());
+        return ResponseEntity.status(status).body(errorResponse);
     }
 
 }

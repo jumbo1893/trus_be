@@ -1,10 +1,12 @@
 package com.jumbo.trus.service.fine;
 
 import com.jumbo.trus.dto.FineDTO;
+import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.repository.ReceivedFineRepository;
 import com.jumbo.trus.mapper.FineMapper;
 import com.jumbo.trus.entity.FineEntity;
 import com.jumbo.trus.entity.repository.FineRepository;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -29,8 +31,9 @@ public class FineService {
      * @param fineDTO Pokuta z FE
      * @return Pokuta z DB
      */
-    public FineDTO addFine(FineDTO fineDTO) {
+    public FineDTO addFine(FineDTO fineDTO, AppTeamEntity appTeam) {
         FineEntity entity = fineMapper.toEntity(fineDTO);
+        entity.setAppTeam(appTeam);
         FineEntity savedEntity = fineRepository.save(entity);
         fineNotificationService.notifyFineAdded(fineDTO.getName(), fineDTO.getAmount());
         return fineMapper.toDTO(savedEntity);
@@ -41,10 +44,22 @@ public class FineService {
      * @param limit limit počtu výsledků
      * @return všechny pokuty omezené limitem
      */
-    public List<FineDTO> getAll(int limit){
-        return fineRepository.getAllActive(limit).stream()
+    public List<FineDTO> getAll(int limit, long appTeamId){
+        return fineRepository.getAllActive(limit, appTeamId).stream()
                 .map(fineMapper::toDTO)
                 .collect(Collectors.toList());
+    }
+
+    public FineDTO getFine(long fineId) {
+        return fineMapper.toDTO(getFineEntity(fineId));
+    }
+
+    public FineDTO getFineByName(String name, long appTeamId) {
+        return fineMapper.toDTO(fineRepository.findByNameAndAppTeamId(name, appTeamId).orElseThrow(() -> new EntityNotFoundException(String.valueOf(name))));
+    }
+
+    public FineEntity getFineEntity(long fineId) {
+        return fineRepository.findById(fineId).orElseThrow(() -> new EntityNotFoundException(String.valueOf(fineId)));
     }
 
     /**
@@ -84,8 +99,8 @@ public class FineService {
      * @param excludedFineIds id pokut
      * @return vrátí všechny ostatní pokuty krom těchto pokut, pokud nejsou neaktivní
      */
-    public List<FineDTO> getFinesExcluding(List<Long> excludedFineIds){
-        return fineRepository.getAllOtherFines(excludedFineIds).stream().map(fineMapper::toDTO).collect(Collectors.toList());
+    public List<FineDTO> getFinesExcluding(List<Long> excludedFineIds, long appTeamId){
+        return fineRepository.getAllOtherFines(excludedFineIds, appTeamId).stream().map(fineMapper::toDTO).collect(Collectors.toList());
 
     }
 

@@ -1,6 +1,7 @@
 package com.jumbo.trus.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.jumbo.trus.entity.auth.AppTeamEntity;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.ColumnDefault;
@@ -34,4 +35,7 @@ public class SeasonEntity {
 
     @OneToMany(mappedBy = "season")
     private List<MatchEntity> matchList;
+
+    @ManyToOne
+    private AppTeamEntity appTeam;
 }

@@ -1,7 +1,7 @@
 package com.jumbo.trus.mapper;
 
 import com.jumbo.trus.dto.match.MatchDTO;
-import com.jumbo.trus.dto.PlayerDTO;
+import com.jumbo.trus.dto.player.PlayerDTO;
 import com.jumbo.trus.dto.beer.response.get.BeerDetailedDTO;
 import com.jumbo.trus.entity.BeerEntity;
 import com.jumbo.trus.entity.MatchEntity;
@@ -22,6 +22,7 @@ public abstract class BeerDetailedMapper {
     @Mappings({
             @Mapping(target = "player.id", source = "player"),
             @Mapping(target = "match.id", source = "match"),
+            @Mapping(target = "appTeam", ignore = true),
     })
     public abstract BeerEntity toEntity(BeerDetailedDTO source);
 

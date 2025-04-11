@@ -1,7 +1,7 @@
 package com.jumbo.trus.service.fact;
 
 import com.jumbo.trus.config.Config;
-import com.jumbo.trus.dto.PlayerDTO;
+import com.jumbo.trus.dto.player.PlayerDTO;
 import com.jumbo.trus.dto.SeasonDTO;
 import com.jumbo.trus.dto.beer.BeerDTO;
 import com.jumbo.trus.dto.beer.response.get.BeerDetailedDTO;
@@ -10,16 +10,19 @@ import com.jumbo.trus.dto.match.MatchDTO;
 import com.jumbo.trus.dto.match.MatchHelper;
 import com.jumbo.trus.dto.receivedfine.response.get.detailed.ReceivedFineDetailedDTO;
 import com.jumbo.trus.dto.receivedfine.response.get.detailed.ReceivedFineDetailedResponse;
+import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.filter.BeerFilter;
 import com.jumbo.trus.entity.filter.MatchFilter;
 import com.jumbo.trus.entity.filter.StatisticsFilter;
 import com.jumbo.trus.service.*;
 import com.jumbo.trus.service.beer.BeerService;
+import com.jumbo.trus.service.receivedFine.ReceivedFineService;
 import com.jumbo.trus.service.helper.AverageNumberTotalNumber;
 import com.jumbo.trus.service.order.OrderBeerByAttendance;
 import com.jumbo.trus.service.order.OrderBeerByBeerOrLiquorNumber;
 import com.jumbo.trus.service.order.OrderReceivedFineDetailedDTOByFineAmount;
 import com.jumbo.trus.service.order.OrderReceivedFineDetailedDTOByFineNumber;
+import com.jumbo.trus.service.player.PlayerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -46,11 +49,11 @@ public class RandomFact {
     @Autowired
     private ReceivedFineService receivedFineService;
 
-    public List<String> getRandomFacts() {
-        SeasonDTO currentSeason = seasonService.getCurrentSeason();
-        StatisticsFilter allSeasonPlayerFilter = new StatisticsFilter(null, null, Config.ALL_SEASON_ID, false);
-        StatisticsFilter allSeasonMatchFilter = new StatisticsFilter(null, null, Config.ALL_SEASON_ID, true);
-        StatisticsFilter currentSeasonMatchFilter = new StatisticsFilter(null, null, currentSeason.getId(), true);
+    public List<String> getRandomFacts(AppTeamEntity appTeam) {
+        SeasonDTO currentSeason = seasonService.getCurrentSeason(true, appTeam);
+        StatisticsFilter allSeasonPlayerFilter = new StatisticsFilter(null, null, Config.ALL_SEASON_ID, false, appTeam);
+        StatisticsFilter allSeasonMatchFilter = new StatisticsFilter(null, null, Config.ALL_SEASON_ID, true, appTeam);
+        StatisticsFilter currentSeasonMatchFilter = new StatisticsFilter(null, null, currentSeason.getId(), true, appTeam);
         List<String> returnList = new ArrayList<>(returnBeerFacts(allSeasonPlayerFilter, allSeasonMatchFilter, currentSeasonMatchFilter));
         returnList.addAll(returnFineFacts(allSeasonPlayerFilter, allSeasonMatchFilter, currentSeasonMatchFilter));
         return returnList;
@@ -58,12 +61,12 @@ public class RandomFact {
 
 
     public List<String> returnBeerFacts(StatisticsFilter allSeasonPlayerFilter, StatisticsFilter allSeasonMatchFilter, StatisticsFilter currentSeasonMatchFilter) {
-        SeasonDTO currentSeason = seasonService.getCurrentSeason();
+        SeasonDTO currentSeason = seasonService.getCurrentSeason(true, allSeasonPlayerFilter.getAppTeam());
         List<String> beerFacts = new ArrayList<>();
         beerFacts.add(getPlayerWithMostBeers(beerService.getAllDetailed(allSeasonPlayerFilter))); //1
         beerFacts.add(getMatchWithMostBeers(beerService.getAllDetailed(allSeasonMatchFilter))); //2
-        beerFacts.add(getNumberOfBeersInCurrentSeason(beerService.getAllDetailed(currentSeasonMatchFilter)));//3
-        beerFacts.add(getMatchWithMostBeersInCurrentSeason(beerService.getAllDetailed(currentSeasonMatchFilter)));//4
+        beerFacts.add(getNumberOfBeersInCurrentSeason(beerService.getAllDetailed(currentSeasonMatchFilter), currentSeasonMatchFilter.getAppTeam()));//3
+        beerFacts.add(getMatchWithMostBeersInCurrentSeason(beerService.getAllDetailed(currentSeasonMatchFilter), currentSeasonMatchFilter.getAppTeam()));//4
         beerFacts.add(getSeasonWithMostBeers(beerService.getAllDetailed(allSeasonMatchFilter)));//5
         beerFacts.add(getAverageNumberOfBeersInMatchForPlayersAndFans(beerService.getAllDetailed(allSeasonMatchFilter)));//6
         beerFacts.add(getAverageNumberOfBeersInMatchForPlayers(beerService.getAllDetailed(allSeasonPlayerFilter)));//7
@@ -76,8 +79,8 @@ public class RandomFact {
         ////panáky
         beerFacts.add(getPlayerWithMostLiquors(beerService.getAllDetailed(allSeasonPlayerFilter))); //14
         beerFacts.add(getMatchWithMostLiquors(beerService.getAllDetailed(allSeasonMatchFilter))); //15
-        beerFacts.add(getNumberOfLiquorsInCurrentSeason(beerService.getAllDetailed(currentSeasonMatchFilter)));//16
-        beerFacts.add(getMatchWithMostLiquorsInCurrentSeason(beerService.getAllDetailed(currentSeasonMatchFilter)));//17
+        beerFacts.add(getNumberOfLiquorsInCurrentSeason(beerService.getAllDetailed(currentSeasonMatchFilter), currentSeasonMatchFilter.getAppTeam()));//16
+        beerFacts.add(getMatchWithMostLiquorsInCurrentSeason(beerService.getAllDetailed(currentSeasonMatchFilter), currentSeasonMatchFilter.getAppTeam()));//17
         beerFacts.add(getSeasonWithMostLiquors(beerService.getAllDetailed(allSeasonMatchFilter)));//18
         beerFacts.add(getAverageNumberOfLiquorsInMatchForPlayersAndFans(beerService.getAllDetailed(allSeasonMatchFilter)));//19
         beerFacts.add(getAverageNumberOfLiquorsInMatchForPlayers(beerService.getAllDetailed(allSeasonPlayerFilter)));//20
@@ -90,7 +93,7 @@ public class RandomFact {
         //panák
         beerFacts.add(getAverageNumberOfLiquorsInHomeAndAwayMatch(beerService.getAllDetailed(allSeasonMatchFilter)));//26
         //narozky
-        beerFacts.add(getMatchWithBirthday());//27
+        beerFacts.add(getMatchWithBirthday(allSeasonMatchFilter.getAppTeam()));//27
         return beerFacts;
     }
 
@@ -100,10 +103,10 @@ public class RandomFact {
         fineFacts.add(getMatchWithMostFines(receivedFineService.getAllDetailed(allSeasonMatchFilter))); //2
         fineFacts.add(getPlayerWithMostFinesAmount(receivedFineService.getAllDetailed(allSeasonPlayerFilter))); //3
         fineFacts.add(getMatchWithMostFinesAmount(receivedFineService.getAllDetailed(allSeasonMatchFilter))); //4
-        fineFacts.add(getNumberOfFinesInCurrentSeason(receivedFineService.getAllDetailed(currentSeasonMatchFilter)));//5
-        fineFacts.add(getNumberOfFinesAmountInCurrentSeason(receivedFineService.getAllDetailed(currentSeasonMatchFilter)));//6
-        fineFacts.add(getMatchWithMostFinesInCurrentSeason(receivedFineService.getAllDetailed(currentSeasonMatchFilter)));//7
-        fineFacts.add(getMatchWithMostFinesAmountInCurrentSeason(receivedFineService.getAllDetailed(currentSeasonMatchFilter)));//8
+        fineFacts.add(getNumberOfFinesInCurrentSeason(receivedFineService.getAllDetailed(currentSeasonMatchFilter), currentSeasonMatchFilter.getAppTeam()));//5
+        fineFacts.add(getNumberOfFinesAmountInCurrentSeason(receivedFineService.getAllDetailed(currentSeasonMatchFilter), currentSeasonMatchFilter.getAppTeam()));//6
+        fineFacts.add(getMatchWithMostFinesInCurrentSeason(receivedFineService.getAllDetailed(currentSeasonMatchFilter), currentSeasonMatchFilter.getAppTeam()));//7
+        fineFacts.add(getMatchWithMostFinesAmountInCurrentSeason(receivedFineService.getAllDetailed(currentSeasonMatchFilter), currentSeasonMatchFilter.getAppTeam()));//8
         fineFacts.add(getSeasonWithMostFines(receivedFineService.getAllDetailed(allSeasonMatchFilter)));//9
         fineFacts.add(getSeasonWithMostFinesAmount(receivedFineService.getAllDetailed(allSeasonMatchFilter)));//10
         fineFacts.add(getAverageNumberOfFinesInMatchForPlayers(receivedFineService.getAllDetailed(allSeasonPlayerFilter)));//11
@@ -137,19 +140,19 @@ public class RandomFact {
         return "Nejvíce piv za historii bylo vypito v zápase " + matchHelper.getMatchWithOpponentNameAndDate() + ", kde padlo " + beer.getBeerNumber() + " piv.";
     }
 
-    private String getNumberOfBeersInCurrentSeason(BeerDetailedResponse currentSeasonBeerDetailedResponseForMatch) {
-        return "V aktuální sezoně " + seasonService.getCurrentSeason().getName() + " se vypilo celkem " + currentSeasonBeerDetailedResponseForMatch.getTotalBeers() + " piv.";
+    private String getNumberOfBeersInCurrentSeason(BeerDetailedResponse currentSeasonBeerDetailedResponseForMatch, AppTeamEntity appTeam) {
+        return "V aktuální sezoně " + seasonService.getCurrentSeason(true, appTeam).getName() + " se vypilo celkem " + currentSeasonBeerDetailedResponseForMatch.getTotalBeers() + " piv.";
     }
 
-    private String getMatchWithMostBeersInCurrentSeason(BeerDetailedResponse currentSeasonBeerDetailedResponseForMatch) {
+    private String getMatchWithMostBeersInCurrentSeason(BeerDetailedResponse currentSeasonBeerDetailedResponseForMatch, AppTeamEntity appTeam) {
         List<BeerDetailedDTO> beerList = currentSeasonBeerDetailedResponseForMatch.getBeerList();
         beerList.sort(new OrderBeerByBeerOrLiquorNumber(true));
         if (beerList.isEmpty()) {
-            return "Nelze najít zápas s nejvíce pivy v této sezoně " + seasonService.getCurrentSeason().getName() + ", protože si zatím nikdo žádný nedal!";
+            return "Nelze najít zápas s nejvíce pivy v této sezoně " + seasonService.getCurrentSeason(true, appTeam).getName() + ", protože si zatím nikdo žádný nedal!";
         }
         BeerDetailedDTO beer = beerList.get(0);
         MatchHelper matchHelper = new MatchHelper(beer.getMatch());
-        return "Nejvíce piv v aktuální sezoně " + seasonService.getCurrentSeason().getName() + " bylo vypito v zápase " + matchHelper.getMatchWithOpponentNameAndDate() + ", kde padlo " + beer.getBeerNumber() + " piv.";
+        return "Nejvíce piv v aktuální sezoně " + seasonService.getCurrentSeason(true, appTeam).getName() + " bylo vypito v zápase " + matchHelper.getMatchWithOpponentNameAndDate() + ", kde padlo " + beer.getBeerNumber() + " piv.";
     }
 
     private String getSeasonWithMostBeers(BeerDetailedResponse allBeerDetailedResponseForMatch) {
@@ -314,11 +317,13 @@ public class RandomFact {
         return response + "Není načase změnit domácí hospodu?";
     }
 
-    private String getMatchWithBirthday() {
+    private String getMatchWithBirthday(AppTeamEntity appTeam) {
         List<MatchDTO> matchesWithBirthday = new ArrayList<>();
         List<PlayerDTO> playersWithBirthday = new ArrayList<>();
-        for (MatchDTO match : matchService.getAll(new MatchFilter())) {
-            for (PlayerDTO player : playerService.getAll(1000)) {
+        MatchFilter matchFilter = new MatchFilter();
+        matchFilter.setAppTeam(appTeam);
+        for (MatchDTO match : matchService.getAll(matchFilter)) {
+            for (PlayerDTO player : playerService.getAll(appTeam.getId())) {
                 if (isSameDate(player, match)) {
                     matchesWithBirthday.add(match);
                     playersWithBirthday.add(player);
@@ -358,7 +363,9 @@ public class RandomFact {
             else if (returnMatches.size() == 1) {
                 MatchHelper matchHelper = new MatchHelper(returnMatches.get(0));
                 PlayerDTO playerDTO = returnPlayers.get(0);
-                List<BeerDTO> beerDTOS = beerService.getAll(new BeerFilter(returnMatches.get(0).getId(), playerDTO.getId()));
+                BeerFilter beerFilter = new BeerFilter(returnMatches.get(0).getId(), playerDTO.getId());
+                beerFilter.setAppTeam(appTeam);
+                List<BeerDTO> beerDTOS = beerService.getAll(beerFilter);
                 BeerDTO beerDTO;
                 if (!beerDTOS.isEmpty()) {
                     beerDTO = beerDTOS.get(0);
@@ -381,7 +388,9 @@ public class RandomFact {
                         new StringBuilder("Velká společenská událost v podobě oslavy narozek se konala na zápasech ");
                 for (int i = 0; i < returnMatches.size(); i++) {
                     PlayerDTO playerDTO = returnPlayers.get(i);
-                    List<BeerDTO> beerDTOS = beerService.getAll(new BeerFilter(returnMatches.get(i).getId(), playerDTO.getId()));
+                    BeerFilter beerFilter = new BeerFilter(returnMatches.get(i).getId(), playerDTO.getId());
+                    beerFilter.setAppTeam(appTeam);
+                    List<BeerDTO> beerDTOS = beerService.getAll(beerFilter);
                     BeerDTO beerDTO;
                     if (!beerDTOS.isEmpty()) {
                         beerDTO = beerDTOS.get(0);
@@ -430,23 +439,23 @@ public class RandomFact {
         return "Nejvíce panáků za historii padlo v zápase " + matchHelper.getMatchWithOpponentNameAndDate() + " s celkovým počtem " + beer.getLiquorNumber() + " frťanů. Copak to asi bylo za oslavu?";
     }
 
-    private String getNumberOfLiquorsInCurrentSeason(BeerDetailedResponse currentSeasonBeerDetailedResponseForMatch) {
+    private String getNumberOfLiquorsInCurrentSeason(BeerDetailedResponse currentSeasonBeerDetailedResponseForMatch, AppTeamEntity appTeam) {
         if (currentSeasonBeerDetailedResponseForMatch.getTotalLiquors() == 0) {
-            return "Zatím se hledá odvážlivec, co by si dal v aktuální sezoně " + seasonService.getCurrentSeason().getName() + " alespoň jednoho panáka na zápase Trusu." +
+            return "Zatím se hledá odvážlivec, co by si dal v aktuální sezoně " + seasonService.getCurrentSeason(true, appTeam).getName() + " alespoň jednoho panáka na zápase Trusu." +
                     " Výherce čeká věčná sláva zvěčněná přímo v této zajímavosti do té doby, než si někdo dá panáky 2";
         }
-        return "V aktuální sezoně " + seasonService.getCurrentSeason().getName() + " se vypilo celkem " + currentSeasonBeerDetailedResponseForMatch.getTotalLiquors() + " panáků.";
+        return "V aktuální sezoně " + seasonService.getCurrentSeason(true, appTeam).getName() + " se vypilo celkem " + currentSeasonBeerDetailedResponseForMatch.getTotalLiquors() + " panáků.";
     }
 
-    private String getMatchWithMostLiquorsInCurrentSeason(BeerDetailedResponse currentSeasonBeerDetailedResponseForMatch) {
+    private String getMatchWithMostLiquorsInCurrentSeason(BeerDetailedResponse currentSeasonBeerDetailedResponseForMatch, AppTeamEntity appTeam) {
         List<BeerDetailedDTO> beerList = currentSeasonBeerDetailedResponseForMatch.getBeerList();
         beerList.sort(new OrderBeerByBeerOrLiquorNumber(false));
         if (beerList.isEmpty() || beerList.get(0).getLiquorNumber() == 0) {
-            return "Nelze najít zápas s nejvíce panáky v této sezoně " + seasonService.getCurrentSeason().getName() + ", protože si zatím nikdo žádný nedal! Aspoň jeden Liščí Trus denně je prospěšný pro zdraví, to vám potvrdí každý doktor";
+            return "Nelze najít zápas s nejvíce panáky v této sezoně " + seasonService.getCurrentSeason(true, appTeam).getName() + ", protože si zatím nikdo žádný nedal! Aspoň jeden Liščí Trus denně je prospěšný pro zdraví, to vám potvrdí každý doktor";
         }
         BeerDetailedDTO beer = beerList.get(0);
         MatchHelper matchHelper = new MatchHelper(beer.getMatch());
-        return "Nejvíce panáků v aktuální sezoně " + seasonService.getCurrentSeason().getName() + " padlo v zápase " + matchHelper.getMatchWithOpponentNameAndDate() + ", kdy proběhlo celkem " + beer.getLiquorNumber() + " kořalek.";
+        return "Nejvíce panáků v aktuální sezoně " + seasonService.getCurrentSeason(true, appTeam).getName() + " padlo v zápase " + matchHelper.getMatchWithOpponentNameAndDate() + ", kdy proběhlo celkem " + beer.getLiquorNumber() + " kořalek.";
     }
 
     private String getSeasonWithMostLiquors(BeerDetailedResponse allBeerDetailedResponseForMatch) {
@@ -645,34 +654,34 @@ public class RandomFact {
         return "Největší objem peněz v pokutách přinesl zápas " + matchHelper.getMatchWithOpponentNameAndDate() + " kdy se vybralo " + fine.getFineAmount() + " Kč.";
     }
 
-    private String getNumberOfFinesInCurrentSeason(ReceivedFineDetailedResponse currentSeasonFineDetailedResponseForMatch) {
-        return "V aktuální sezoně " + seasonService.getCurrentSeason().getName() + " se rozdalo již " + currentSeasonFineDetailedResponseForMatch.getFinesNumber() + " pokut.";
+    private String getNumberOfFinesInCurrentSeason(ReceivedFineDetailedResponse currentSeasonFineDetailedResponseForMatch, AppTeamEntity appTeam) {
+        return "V aktuální sezoně " + seasonService.getCurrentSeason(true, appTeam).getName() + " se rozdalo již " + currentSeasonFineDetailedResponseForMatch.getFinesNumber() + " pokut.";
     }
 
-    private String getNumberOfFinesAmountInCurrentSeason(ReceivedFineDetailedResponse currentSeasonFineDetailedResponseForMatch) {
-        return "V aktuální sezoně " + seasonService.getCurrentSeason().getName() + " se na pokutách vybralo již " + currentSeasonFineDetailedResponseForMatch.getFinesAmount() + " Kč.";
+    private String getNumberOfFinesAmountInCurrentSeason(ReceivedFineDetailedResponse currentSeasonFineDetailedResponseForMatch, AppTeamEntity appTeam) {
+        return "V aktuální sezoně " + seasonService.getCurrentSeason(true, appTeam).getName() + " se na pokutách vybralo již " + currentSeasonFineDetailedResponseForMatch.getFinesAmount() + " Kč.";
     }
 
-    private String getMatchWithMostFinesInCurrentSeason(ReceivedFineDetailedResponse currentSeasonFineDetailedResponseForMatch) {
+    private String getMatchWithMostFinesInCurrentSeason(ReceivedFineDetailedResponse currentSeasonFineDetailedResponseForMatch, AppTeamEntity appTeam) {
         List<ReceivedFineDetailedDTO> fineList = currentSeasonFineDetailedResponseForMatch.getFineList();
         fineList.sort(new OrderReceivedFineDetailedDTOByFineNumber());
         if (fineList.isEmpty()) {
-            return "Nelze najít zápas s nejvíce pokutami odehraný v této sezoně " + seasonService.getCurrentSeason().getName() + ", protože se zatím žádná pokuta neudělila!";
+            return "Nelze najít zápas s nejvíce pokutami odehraný v této sezoně " + seasonService.getCurrentSeason(true, appTeam).getName() + ", protože se zatím žádná pokuta neudělila!";
         }
         ReceivedFineDetailedDTO fine = fineList.get(0);
         MatchHelper matchHelper = new MatchHelper(fine.getMatch());
-        return "Nejvíce pokut v aktuální sezoně " + seasonService.getCurrentSeason().getName() + " se rozdalo v zápase " + matchHelper.getMatchWithOpponentNameAndDate() + ". Konečné číslo počtu pokut zní " + fine.getFineNumber() + ".";
+        return "Nejvíce pokut v aktuální sezoně " + seasonService.getCurrentSeason(true, appTeam).getName() + " se rozdalo v zápase " + matchHelper.getMatchWithOpponentNameAndDate() + ". Konečné číslo počtu pokut zní " + fine.getFineNumber() + ".";
     }
 
-    private String getMatchWithMostFinesAmountInCurrentSeason(ReceivedFineDetailedResponse currentSeasonFineDetailedResponseForMatch) {
+    private String getMatchWithMostFinesAmountInCurrentSeason(ReceivedFineDetailedResponse currentSeasonFineDetailedResponseForMatch, AppTeamEntity appTeam) {
         List<ReceivedFineDetailedDTO> fineList = currentSeasonFineDetailedResponseForMatch.getFineList();
         fineList.sort(new OrderReceivedFineDetailedDTOByFineNumber());
         if (fineList.isEmpty()) {
-            return "Nelze najít zápas, kde se v této sezoně " + seasonService.getCurrentSeason().getName() + ", nejvíce cálovalo za pokuty, protože se zatím žádná pokuta neudělila!";
+            return "Nelze najít zápas, kde se v této sezoně " + seasonService.getCurrentSeason(true, appTeam).getName() + ", nejvíce cálovalo za pokuty, protože se zatím žádná pokuta neudělila!";
         }
         ReceivedFineDetailedDTO fine = fineList.get(0);
         MatchHelper matchHelper = new MatchHelper(fine.getMatch());
-        return "Největší objem peněz v aktuální sezoně " + seasonService.getCurrentSeason().getName() + " přinesl zápas " + matchHelper.getMatchWithOpponentNameAndDate() + ", kde se vybralo " + fine.getFineAmount() + " Kč.";
+        return "Největší objem peněz v aktuální sezoně " + seasonService.getCurrentSeason(true, appTeam).getName() + " přinesl zápas " + matchHelper.getMatchWithOpponentNameAndDate() + ", kde se vybralo " + fine.getFineAmount() + " Kč.";
     }
 
     private String getSeasonWithMostFines(ReceivedFineDetailedResponse allFineDetailedResponseForMatch) {

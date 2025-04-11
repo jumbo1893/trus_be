@@ -1,7 +1,7 @@
 package com.jumbo.trus.dto.beer.multi;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.jumbo.trus.dto.PlayerDTO;
+import com.jumbo.trus.dto.player.PlayerDTO;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;

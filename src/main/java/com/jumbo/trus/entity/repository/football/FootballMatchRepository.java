@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,6 +31,12 @@ public interface FootballMatchRepository extends JpaRepository<FootballMatchEnti
     @Query(value = "SELECT * FROM football_match WHERE date > CURRENT_TIMESTAMP AND (home_team_id = :teamId OR away_team_id = :teamId) AND already_played = false ORDER BY DATE ASC", nativeQuery = true)
     List<FootballMatchEntity> findNonPlayedNextMatches(@Param("teamId") Long teamId);
 
+    @Query(value = "SELECT * FROM football_match WHERE date < CURRENT_TIMESTAMP AND (home_team_id = :teamId OR away_team_id = :teamId) AND league_id = :leagueId ORDER BY DATE DESC", nativeQuery = true)
+    List<FootballMatchEntity> findPastMatchesInLeague(@Param("teamId") Long teamId, @Param("leagueId") Long leagueId);
+
     @Query(value = "SELECT * FROM football_match WHERE already_played = true AND ((home_team_id = :teamId1 AND away_team_id = :teamId2) OR (home_team_id = :teamId2 AND away_team_id = :teamId1)) ORDER BY DATE DESC", nativeQuery = true)
     List<FootballMatchEntity> findAlreadyPlayedMatchesOfTwoTeams(@Param("teamId1") Long teamId1, @Param("teamId2") Long teamId2);
+
+    @Query(value = "SELECT * FROM football_match WHERE (home_team_id = :teamId OR away_team_id = :teamId) AND date BETWEEN :startDate AND :endDate LIMIT 1", nativeQuery = true)
+    FootballMatchEntity findByDate(@Param("teamId") Long teamId, @Param("startDate") Date startDate, @Param("endDate")Date endDate);
 }

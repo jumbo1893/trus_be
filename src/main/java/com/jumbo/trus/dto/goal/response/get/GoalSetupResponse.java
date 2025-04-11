@@ -1,7 +1,7 @@
 package com.jumbo.trus.dto.goal.response.get;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.jumbo.trus.dto.PlayerDTO;
+import com.jumbo.trus.dto.player.PlayerDTO;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -1,5 +1,6 @@
 package com.jumbo.trus.entity;
 
+import com.jumbo.trus.entity.auth.AppTeamEntity;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.ColumnDefault;
@@ -29,4 +30,7 @@ public class FineEntity {
 
     @OneToMany(mappedBy = "fine")
     private List<ReceivedFineEntity> receivedFineList;
+
+    @ManyToOne
+    private AppTeamEntity appTeam;
 }

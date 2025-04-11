@@ -2,22 +2,27 @@ package com.jumbo.trus.service.football.pkfl.task;
 
 import com.jumbo.trus.dto.pkfl.PkflSeasonDTO;
 import com.jumbo.trus.service.task.SSLHelper;
+import lombok.RequiredArgsConstructor;
 import org.jsoup.Connection;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+@Component
+@RequiredArgsConstructor
 public class RetrieveSeasonUrl {
+
+    private final LoginToPkfl loginToPkfl;
 
     public List<PkflSeasonDTO> getSeasonUrls(String trusUrl) {
         List<PkflSeasonDTO> returnSeasons = new ArrayList<>();
         try {
             //Connect to the website
-            LoginToPkfl loginToPkfl = new LoginToPkfl();
             Connection.Response res = loginToPkfl.getLoggedAccessToPkflWeb(trusUrl);
             Document document = res.parse();
             Element matchesSpinnerDiv = document.getElementsByClass("dropdown-content").get(0);

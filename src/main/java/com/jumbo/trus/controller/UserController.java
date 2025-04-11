@@ -1,12 +1,16 @@
 package com.jumbo.trus.controller;
 
 import com.jumbo.trus.controller.error.ErrorResponse;
+import com.jumbo.trus.dto.player.PlayerDTO;
+import com.jumbo.trus.service.auth.AppTeamService;
 import com.jumbo.trus.service.exceptions.AuthException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import com.jumbo.trus.dto.UserDTO;
-import com.jumbo.trus.entity.UserEntity;
+import com.jumbo.trus.dto.auth.UserDTO;
+import com.jumbo.trus.entity.auth.UserEntity;
 
-import com.jumbo.trus.service.UserService;
+import com.jumbo.trus.service.auth.UserService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -17,35 +21,42 @@ import org.springframework.web.bind.annotation.*;
 import org.webjars.NotFoundException;
 
 
-import java.util.Arrays;
 import java.util.List;
 
 @ControllerAdvice
 @RestController
 @RequestMapping("/user")
+@Slf4j
+@RequiredArgsConstructor
 public class UserController {
 
-    @Autowired
-    UserService userService;
-
+    final UserService userService;
+    final AppTeamService appTeamService;
 
     @PostMapping("/create")
     public UserDTO createUser(@RequestBody @Valid UserDTO userDTO) {
         return userService.create(userDTO);
     }
 
+    @PostMapping("/migration")
+    public void migrateUsers() {
+        userService.migrateAllUsers(appTeamService.getCurrentAppTeamOrThrow());
+    }
+
     @PostMapping({"/auth", "/auth/"})
     public UserDTO login(@RequestBody @Valid UserDTO userDTO, HttpServletRequest req) throws ServletException {
         req.login(userDTO.getMail().toLowerCase().trim(), userDTO.getPassword());
         UserEntity user = (UserEntity) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        UserDTO model = new UserDTO();
-        model.setMail(user.getMail());
-        model.setId(user.getId());
-        model.setAdmin(user.isAdmin());
-        model.setPlayerId(user.getPlayerId());
-        model.setName(user.getName());
-        return model;
+        return userService.returnUserWithoutSensitiveData(user);
     }
+
+    /*private List<UserTeamRoleDTO> getUserTeamList(List<UserTeamRole> entities) {
+        List<UserTeamRoleDTO> roles = new ArrayList<>();
+        for (UserTeamRole userTeamRole : entities) {
+            roles.add(new UserTeamRoleDTO(userTeamRole.getId(), userTeamRole.getUser().getId(), userTeamRole.getAppTeam(), userTeamRole.getRole()));
+        }
+        return roles;
+    }*/
 
     @DeleteMapping("/delete")
     public void deleteUser(HttpServletRequest req) throws NotFoundException, ServletException {
@@ -64,8 +75,8 @@ public class UserController {
     }
 
     @GetMapping("/get-all")
-    public List<UserDTO> getUsers() {
-        return userService.getAll();
+    public List<UserDTO> getUsers(@RequestParam(required = false) Boolean appTeamTeamRolesOnly) {
+        return userService.getAll(appTeamService.getCurrentAppTeamOrThrow().getId(), appTeamTeamRolesOnly);
     }
 
     @PostMapping("/update")
@@ -85,20 +96,18 @@ public class UserController {
 
     @GetMapping("/auth")
     public UserDTO getCurrentUser() throws AuthException {
-        try {
-            UserEntity user = (UserEntity) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-            UserDTO model = new UserDTO();
-            if(user.getName() != null) {
-                model.setName(user.getName());
-            }
-            model.setMail(user.getMail());
-            model.setId(user.getId());
-            model.setAdmin(user.isAdmin());
-            model.setPlayerId(user.getPlayerId());
-            return model;
-        } catch (ClassCastException e) {
-            throw new AuthException("Uživatel je odhlášen", AuthException.NOT_LOGGED_IN);
-        }
+        return userService.getCurrentUser();
+    }
+
+    @PostMapping("/player-add")
+    public void addPlayerToUserRole(@RequestBody PlayerDTO playerDTO) {
+        UserEntity user = (UserEntity) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        appTeamService.addPlayerToCurrentUser(user, playerDTO);
+    }
+
+    @PutMapping("/{userRoleId}/role-change")
+    public void changeUserRole(@PathVariable Long userRoleId, @RequestParam String role) {
+        appTeamService.changeUserRole(userRoleId, role);
     }
 
     @ExceptionHandler({ServletException.class})

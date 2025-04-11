@@ -3,7 +3,7 @@ package com.jumbo.trus.dto.receivedfine.response.get.detailed;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.jumbo.trus.dto.FineDTO;
 import com.jumbo.trus.dto.match.MatchDTO;
-import com.jumbo.trus.dto.PlayerDTO;
+import com.jumbo.trus.dto.player.PlayerDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

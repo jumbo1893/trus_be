@@ -10,6 +10,7 @@ public abstract class SeasonMapper {
 
     @Mapping(target = "matchList", ignore = true)
     @Mapping(target = "editable", ignore = true)
+    @Mapping(target = "appTeam", ignore = true)
     public abstract SeasonEntity toEntity(SeasonDTO source);
     public abstract SeasonDTO toDTO(SeasonEntity source);
 }

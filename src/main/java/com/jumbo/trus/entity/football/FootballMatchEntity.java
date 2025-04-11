@@ -2,6 +2,7 @@ package com.jumbo.trus.entity.football;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.jumbo.trus.entity.MatchEntity;
+import com.jumbo.trus.entity.achievement.PlayerAchievementEntity;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -51,5 +52,8 @@ public class FootballMatchEntity {
 
     @OneToMany(mappedBy = "match")
     private List<FootballMatchPlayerEntity> playerList;
+
+    @OneToMany(mappedBy = "footballMatch")
+    private List<PlayerAchievementEntity> playerAchievements;
 
 }

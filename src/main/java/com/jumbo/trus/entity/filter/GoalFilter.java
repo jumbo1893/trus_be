@@ -1,6 +1,7 @@
 package com.jumbo.trus.entity.filter;
 
 
+import com.jumbo.trus.entity.auth.AppTeamEntity;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -18,6 +19,8 @@ public class GoalFilter {
     private Long matchId;
 
     private Long seasonId;
+
+    private AppTeamEntity appTeam;
 
     //defaultní hodnota
     private int limit = 1000;

@@ -1,5 +1,6 @@
 package com.jumbo.trus.entity;
 
+import com.jumbo.trus.entity.auth.AppTeamEntity;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -21,5 +22,8 @@ public class NotificationEntity {
     private String title;
 
     private String text;
+
+    @ManyToOne
+    private AppTeamEntity appTeam;
 
 }

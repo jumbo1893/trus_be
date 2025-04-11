@@ -1,7 +1,6 @@
 package com.jumbo.trus.service.order;
 
-import com.jumbo.trus.dto.PlayerDTO;
-import com.jumbo.trus.dto.beer.response.get.BeerDetailedDTO;
+import com.jumbo.trus.dto.player.PlayerDTO;
 
 import java.util.Comparator;
 

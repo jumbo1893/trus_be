@@ -4,7 +4,9 @@ import com.jumbo.trus.dto.pkfl.PkflSeasonDTO;
 import com.jumbo.trus.entity.pkfl.PkflSeasonEntity;
 import com.jumbo.trus.entity.repository.PkflSeasonRepository;
 import com.jumbo.trus.mapper.pkfl.PkflSeasonMapper;
+import com.jumbo.trus.service.football.pkfl.task.LoginToPkfl;
 import com.jumbo.trus.service.football.pkfl.task.RetrieveSeasonUrl;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -13,17 +15,16 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class PkflSeasonService {
 
 
     @Value("${pkfl.trus}")
     private String trusUrl;
 
-    @Autowired
-    private PkflSeasonRepository pkflSeasonRepository;
-
-    @Autowired
-    private PkflSeasonMapper pkflSeasonMapper;
+    private final RetrieveSeasonUrl retrieveSeasonUrl;
+    private final PkflSeasonRepository pkflSeasonRepository;
+    private final PkflSeasonMapper pkflSeasonMapper;
 
     public List<PkflSeasonDTO> getAllSeasons() {
         List<PkflSeasonDTO> repositorySeasons = getCurrentSeasonsFromRepository();
@@ -36,7 +37,7 @@ public class PkflSeasonService {
     }
 
     private List<PkflSeasonDTO> getAllSeasonsFromWeb() {
-        return new RetrieveSeasonUrl().getSeasonUrls(trusUrl);
+        return retrieveSeasonUrl.getSeasonUrls(trusUrl);
     }
 
     public List<PkflSeasonDTO> getCurrentSeasons() {
@@ -59,7 +60,7 @@ public class PkflSeasonService {
 
     private List<PkflSeasonDTO> getCurrentSeasonsFromWeb() {
 
-        return new RetrieveSeasonUrl().getCurrentSeasonUrls(trusUrl, getCurrentSeasonString());
+        return retrieveSeasonUrl.getCurrentSeasonUrls(trusUrl, getCurrentSeasonString());
     }
 
     private void saveSeasonsToRepository(List<PkflSeasonDTO> seasons) {

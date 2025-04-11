@@ -1,6 +1,7 @@
 package com.jumbo.trus.entity.filter;
 
 
+import com.jumbo.trus.entity.auth.AppTeamEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -18,6 +19,11 @@ public class BaseSeasonFilter extends BaseFilter {
 
     public BaseSeasonFilter(Long playerId, Long matchId, Long seasonId) {
         super(playerId, matchId);
+        this.seasonId = seasonId;
+    }
+
+    public BaseSeasonFilter(Long playerId, Long matchId, Long seasonId, AppTeamEntity appTeam) {
+        super(playerId, matchId, appTeam);
         this.seasonId = seasonId;
     }
 

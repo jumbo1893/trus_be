@@ -2,7 +2,8 @@ package com.jumbo.trus.dto.beer.response.get;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.jumbo.trus.dto.match.MatchDTO;
-import com.jumbo.trus.dto.PlayerDTO;
+import com.jumbo.trus.dto.player.PlayerDTO;
+import com.jumbo.trus.service.helper.DetailedDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -30,5 +31,13 @@ public class BeerDetailedDTO {
 
     public void addLiquors(int liquors) {
         liquorNumber+=liquors;
+    }
+
+    public BeerDetailedDTO(DetailedDTO detailedDTO) {
+        this.id = detailedDTO.getId();
+        this.beerNumber = detailedDTO.getNumber1();
+        this.liquorNumber = detailedDTO.getNumber2();
+        this.player = detailedDTO.getPlayer();
+        this.match = detailedDTO.getMatch();
     }
 }

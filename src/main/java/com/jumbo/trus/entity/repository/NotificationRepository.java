@@ -1,6 +1,8 @@
 package com.jumbo.trus.entity.repository;
 
 import com.jumbo.trus.entity.NotificationEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -13,6 +15,8 @@ public interface NotificationRepository extends PagingAndSortingRepository<Notif
 
     @Query(value = "SELECT * from notification LIMIT :limit", nativeQuery = true)
     List<NotificationEntity> getAll(@Param("limit") int limit);
+
+    Page<NotificationEntity> findAllByAppTeamId(Long appTeamId, Pageable pageable);
 
 }
 

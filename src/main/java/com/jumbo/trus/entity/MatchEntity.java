@@ -1,5 +1,7 @@
 package com.jumbo.trus.entity;
 
+import com.jumbo.trus.entity.achievement.PlayerAchievementEntity;
+import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.football.FootballMatchEntity;
 import com.jumbo.trus.entity.pkfl.PkflMatchEntity;
 import jakarta.persistence.*;
@@ -42,8 +44,14 @@ public class MatchEntity {
     private List<GoalEntity> goalList;
 
     @ManyToOne
-    private PkflMatchEntity pkflMatch;
+    private FootballMatchEntity footballMatch;
 
     @ManyToOne
-    private FootballMatchEntity footballMatch;
+    private AppTeamEntity appTeam;
+
+    @ManyToOne
+    private PkflMatchEntity pkflMatch;
+
+    @OneToMany(mappedBy = "match")
+    private List<PlayerAchievementEntity> playerAchievements;
 }

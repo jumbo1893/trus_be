@@ -2,6 +2,7 @@ package com.jumbo.trus.dto.football;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.jumbo.trus.dto.helper.LongAndLong;
 import com.jumbo.trus.service.football.pkfl.task.helper.FootballMatchTaskHelper;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -48,11 +49,8 @@ public class FootballMatchDTO {
 
     private boolean alreadyPlayed;
 
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private List<FootballMatchPlayerDTO> playerList;
-
     @NotNull
-    private List<@Positive Long> matchIdList;
+    private List<LongAndLong> matchIdAndAppTeamIdList;
 
     private List<FootballMatchPlayerDTO> homePlayerList;
 
@@ -71,8 +69,7 @@ public class FootballMatchDTO {
         this.awayGoalNumber = footballMatchTaskHelper.getAwayGoalNumber();
         this.urlResult = footballMatchTaskHelper.getUrlResult();
         this.alreadyPlayed = footballMatchTaskHelper.isAlreadyPlayed();
-        this.playerList = new ArrayList<>();
-        this.matchIdList = new ArrayList<>();
+        this.matchIdAndAppTeamIdList = new ArrayList<>();
         this.homePlayerList = new ArrayList<>();
         this.awayPlayerList = new ArrayList<>();
     }

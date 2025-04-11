@@ -1,5 +1,6 @@
 package com.jumbo.trus.dto.football;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
@@ -16,15 +17,17 @@ public class FootballPlayerDTO {
 
     private Long id;
 
-    @NotNull
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<@Positive Long> teamIdList;
 
     private String name;
 
     private int birthYear;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String email;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String phoneNumber;
 
     private String uri;

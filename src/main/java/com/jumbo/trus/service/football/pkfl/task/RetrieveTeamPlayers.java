@@ -2,6 +2,8 @@ package com.jumbo.trus.service.football.pkfl.task;
 
 import com.jumbo.trus.dto.football.FootballPlayerDTO;
 import com.jumbo.trus.dto.football.TeamDTO;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Connection;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -14,16 +16,21 @@ import java.util.List;
 import java.util.Objects;
 
 @Component
+@Slf4j
+@RequiredArgsConstructor
 public class RetrieveTeamPlayers {
 
     private final static String BASE_URL = "https://pkfl.cz";
 
+    private final LoginToPkfl loginToPkfl;
+
 
     public List<FootballPlayerDTO> getFootballers(TeamDTO teamDTO) {
         List<FootballPlayerDTO> footballers = new ArrayList<>();
-        LoginToPkfl loginToPkfl = new LoginToPkfl();
         try {
-            Connection.Response response = loginToPkfl.getLoggedAccessToPkflWeb(teamDTO.getUri());
+            log.debug("Zpracovávám tým {}", teamDTO.getName());
+            Connection.Response response = loginToPkfl.getLoggedAccessToPkflWeb(teamDTO.getUri()+"?do=component-loadTeamDetail");
+            log.debug("načtena URL");
             Document document = response.parse();
             Element playerTable = Objects.requireNonNull(document.getElementById("soupiska"));
             Elements players = playerTable.select("tr");

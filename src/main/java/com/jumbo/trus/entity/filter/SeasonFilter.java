@@ -1,6 +1,7 @@
 package com.jumbo.trus.entity.filter;
 
 
+import com.jumbo.trus.entity.auth.AppTeamEntity;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -14,6 +15,8 @@ public class SeasonFilter {
     private boolean otherSeason = false;
 
     private boolean automaticSeason = false;
+
+    private AppTeamEntity appTeam;
 
     //defaultní hodnota
     private int limit = 1000;

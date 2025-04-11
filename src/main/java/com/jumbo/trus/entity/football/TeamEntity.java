@@ -1,8 +1,11 @@
 package com.jumbo.trus.entity.football;
 
+import com.jumbo.trus.entity.auth.AppTeamEntity;
+import com.jumbo.trus.entity.auth.UserTeamRole;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity(name = "team")
@@ -45,4 +48,7 @@ public class TeamEntity {
     @OneToMany(mappedBy = "team")
     private List<FootballMatchPlayerEntity> footballMatchPlayers;
 
+    @OneToMany(mappedBy = "team")
+    private List<AppTeamEntity> appTeams;
 }
+

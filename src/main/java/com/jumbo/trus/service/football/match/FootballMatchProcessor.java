@@ -13,6 +13,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,6 +49,12 @@ public class FootballMatchProcessor {
 
     public List<FootballMatchDTO> getNextMatches(long teamId) {
         return footballMatchRepository.findNonPlayedNextMatches(teamId).stream()
+                .map(footballMatchMapper::toDTO)
+                .toList();
+    }
+
+    public List<FootballMatchDTO> getPastMatchesInLeague(long teamId, long leagueId) {
+        return footballMatchRepository.findPastMatchesInLeague(teamId, leagueId).stream()
                 .map(footballMatchMapper::toDTO)
                 .toList();
     }
@@ -135,8 +143,9 @@ public class FootballMatchProcessor {
 
     private long finalizeAndSaveMatch(FootballMatchDTO footballMatchDTO, Long repositoryId, List<FootballMatchPlayerDTO> players) {
         footballMatchDTO.setId(repositoryId);
-        footballMatchDTO.setPlayerList(players);
-        return saveMatchToRepository(footballMatchDTO).getId();
+        FootballMatchEntity entity = footballMatchMapper.toEntity(footballMatchDTO);
+        entity.setPlayerList(playerProcessor.convertPlayerListDtoToEntity(players));
+        return saveMatchToRepository(entity).getId();
     }
 
 
@@ -146,5 +155,17 @@ public class FootballMatchProcessor {
 
     private FootballMatchDTO saveMatchToRepository(FootballMatchDTO footballMatchDTO) {
         return footballMatchMapper.toDTO(footballMatchRepository.save(footballMatchMapper.toEntity(footballMatchDTO)));
+    }
+
+    private FootballMatchDTO saveMatchToRepository(FootballMatchEntity footballMatchEntity) {
+        return footballMatchMapper.toDTO(footballMatchRepository.save(footballMatchEntity));
+    }
+
+    public FootballMatchDTO findFootballMatchByDate(long teamId, Date startDate, Date endDate) {
+        FootballMatchEntity entity = footballMatchRepository.findByDate(teamId, startDate, endDate);
+        if (entity == null) {
+            return null;
+        }
+        return footballMatchMapper.toDTO(entity);
     }
 }

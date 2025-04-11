@@ -1,6 +1,7 @@
 package com.jumbo.trus.entity.filter;
 
 
+import com.jumbo.trus.entity.auth.AppTeamEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -14,7 +15,6 @@ public class ReceivedFineFilter extends BaseSeasonFilter {
     private int fineNumber;
 
     private Long fineId;
-
 
     //defaultní hodnota
     private int limit = 1000;

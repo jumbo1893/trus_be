@@ -2,6 +2,7 @@ package com.jumbo.trus.mapper.football;
 
 import com.jumbo.trus.dto.football.FootballMatchDTO;
 import com.jumbo.trus.dto.football.FootballMatchPlayerDTO;
+import com.jumbo.trus.dto.helper.LongAndLong;
 import com.jumbo.trus.entity.MatchEntity;
 import com.jumbo.trus.entity.football.FootballMatchEntity;
 import com.jumbo.trus.entity.football.FootballMatchPlayerEntity;
@@ -22,24 +23,25 @@ public abstract class FootballMatchMapper {
 
     @Mappings({
             @Mapping(target = "matchList", ignore = true),
-            //@Mapping(target = "homePlayerList", ignore = true),
+            @Mapping(target = "playerList", ignore = true),
+            @Mapping(target = "playerAchievements", ignore = true)
             //@Mapping(target = "awayPlayerList", ignore = true),
     })
     public abstract FootballMatchEntity toEntity(FootballMatchDTO source);
 
     @Mappings({
-            @Mapping(target = "matchIdList", expression = "java(getMatchIds(source))"),
+            @Mapping(target = "matchIdAndAppTeamIdList", expression = "java(getMatchIds(source))"),
             @Mapping(target = "homePlayerList", expression = "java(getHomePlayerList(source))"),
             @Mapping(target = "awayPlayerList", expression = "java(getAwayPlayerList(source))"),
-            @Mapping(target = "playerList", ignore = true),
     })
     public abstract FootballMatchDTO toDTO(FootballMatchEntity source);
 
-    protected List<Long> getMatchIds(FootballMatchEntity source){
-        List<Long> result = new ArrayList<>();
+    protected List<LongAndLong> getMatchIds(FootballMatchEntity source){
+        List<LongAndLong> result = new ArrayList<>();
         if (source.getMatchList() != null) {
             for (MatchEntity match : source.getMatchList()) {
-                result.add(match.getId());
+                LongAndLong longAndLong = new LongAndLong(match.getId(), match.getAppTeam().getId());
+                result.add(longAndLong);
             }
         }
         return result;

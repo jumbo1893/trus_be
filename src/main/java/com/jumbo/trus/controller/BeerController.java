@@ -1,5 +1,6 @@
 package com.jumbo.trus.controller;
 
+import com.jumbo.trus.config.security.RoleRequired;
 import com.jumbo.trus.dto.beer.*;
 import com.jumbo.trus.dto.beer.multi.BeerListDTO;
 import com.jumbo.trus.dto.beer.response.get.BeerDetailedResponse;
@@ -8,8 +9,10 @@ import com.jumbo.trus.dto.beer.response.multi.BeerMultiAddResponse;
 import com.jumbo.trus.dto.stats.StatsDTO;
 import com.jumbo.trus.entity.filter.BeerFilter;
 import com.jumbo.trus.entity.filter.StatisticsFilter;
+import com.jumbo.trus.service.auth.AppTeamService;
 import com.jumbo.trus.service.beer.BeerService;
 import com.jumbo.trus.service.beer.BeerStatsService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
@@ -22,62 +25,56 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/beer")
+@RequiredArgsConstructor
 public class BeerController {
 
-    private final List<SseEmitter> emitters = new ArrayList<>();
+    private final BeerService beerService;
+    private final BeerStatsService beerStatsService;
+    private final AppTeamService appTeamService;
 
-    @Autowired
-    BeerService beerService;
-
-    @Autowired
-    BeerStatsService beerStatsService;
-
-    @Secured("ROLE_ADMIN")
+    @RoleRequired("ADMIN")
     @PostMapping("/add")
     public BeerDTO addBeer(@RequestBody BeerDTO beerDTO) {
-        return beerService.addBeer(beerDTO);
+        return beerService.addBeer(beerDTO, appTeamService.getCurrentAppTeamOrThrow());
     }
 
+    @RoleRequired("READER")
     @GetMapping("/get-all")
     public List<BeerDTO> getBeers(BeerFilter beerFilter) {
-        /*ExecutorService sseMvcExecutor = Executors.newSingleThreadExecutor();
-        sseMvcExecutor.execute(() -> {
-            try {
-                for (int i = 0; true; i++) {
-                   postMessage("test" + i);
-                    Thread.sleep(1000);
-                }
-            } catch (Exception ex) {
-                System.out.println(ex);
-            }
-        });*/
+        beerFilter.setAppTeam(appTeamService.getCurrentAppTeamOrThrow());
         return beerService.getAll(beerFilter);
     }
 
+    @RoleRequired("READER")
     @GetMapping("/get-all-detailed")
     public BeerDetailedResponse getDetailedBeers(StatisticsFilter filter) {
+        filter.setAppTeam(appTeamService.getCurrentAppTeamOrThrow());
         return beerService.getAllDetailed(filter);
     }
 
-    @Secured("ROLE_ADMIN")
+    @RoleRequired("ADMIN")
     @PostMapping("/multiple-add")
     public BeerMultiAddResponse addMultipleBeer(@RequestBody BeerListDTO beerListDTO) {
-        return beerService.addMultipleBeer(beerListDTO);
+        return beerService.addMultipleBeer(beerListDTO, appTeamService.getCurrentAppTeamOrThrow());
     }
 
-    @Secured("ROLE_ADMIN")
+    @RoleRequired("ADMIN")
     @DeleteMapping("/{beerId}")
     public void deleteMatch(@PathVariable Long beerId) throws NotFoundException {
         beerService.deleteBeer(beerId);
     }
 
+    @RoleRequired("READER")
     @GetMapping("/setup")
     public BeerSetupResponse setupBeers(BeerFilter beerFilter) {
+        beerFilter.setAppTeam(appTeamService.getCurrentAppTeamOrThrow());
         return beerService.setupBeers(beerFilter);
     }
 
+    @RoleRequired("READER")
     @GetMapping("/stats")
     public List<StatsDTO> getBeerStats(StatisticsFilter filter) {
+        filter.setAppTeam(appTeamService.getCurrentAppTeamOrThrow());
         return beerStatsService.getBeerStatistics(filter);
     }
 }

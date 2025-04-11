@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -16,10 +17,10 @@ import java.util.List;
 public class FootballMatchDetail {
 
     @NotNull
-    private FootballMatchDTO footballMatchDTO;
+    private FootballMatchDTO footballMatch;
 
     @NotNull
-    private List<FootballMatchDTO> mutualMatches;
+    private List<FootballMatchDTO> mutualMatches = new ArrayList<>();
 
     private String aggregateScore;
 

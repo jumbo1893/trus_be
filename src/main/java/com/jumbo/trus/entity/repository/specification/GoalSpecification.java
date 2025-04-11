@@ -19,6 +19,9 @@ public class GoalSpecification implements Specification<GoalEntity> {
     public Predicate toPredicate(@NotNull Root<GoalEntity> root, @NotNull CriteriaQuery<?> query, @NotNull CriteriaBuilder criteriaBuilder) {
         List<Predicate> predicates = new ArrayList<>();
 
+        if (filter.getAppTeam() != null) {
+            predicates.add(criteriaBuilder.equal(root.get(GoalEntity_.APP_TEAM), filter.getAppTeam()));
+        }
 
         if (filter.getMatchId() != null) {
             Join<MatchEntity, GoalEntity> join = root.join(GoalEntity_.MATCH);

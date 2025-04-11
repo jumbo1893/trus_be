@@ -1,93 +1,83 @@
 package com.jumbo.trus.service.home;
 
 import com.jumbo.trus.config.Config;
-import com.jumbo.trus.dto.UserDTO;
+import com.jumbo.trus.dto.auth.UserDTO;
 import com.jumbo.trus.dto.beer.response.get.BeerDetailedResponse;
 import com.jumbo.trus.dto.home.Chart;
 import com.jumbo.trus.dto.home.Coordinate;
 import com.jumbo.trus.dto.match.MatchDTO;
 import com.jumbo.trus.dto.receivedfine.response.get.detailed.ReceivedFineDetailedResponse;
+import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.filter.StatisticsFilter;
 import com.jumbo.trus.service.*;
+import com.jumbo.trus.service.auth.UserService;
 import com.jumbo.trus.service.beer.BeerService;
 import com.jumbo.trus.service.beer.BeerStatsService;
 import com.jumbo.trus.service.beer.helper.AverageBeer;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.jumbo.trus.service.receivedFine.ReceivedFineService;
+import com.jumbo.trus.service.player.PlayerService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class ChartMaker {
 
-    @Autowired
-    private PlayerService playerService;
-
-    @Autowired
-    private BeerService beerService;
-
-    @Autowired
-    private BeerStatsService beerStatsService;
-
-    @Autowired
-    private SeasonService seasonService;
-
-    @Autowired
-    private MatchService matchService;
-
-    @Autowired
-    private ReceivedFineService receivedFineService;
-
-    @Autowired
-    private UserService userService;
+    private final PlayerService playerService;
+    private final BeerService beerService;
+    private final BeerStatsService beerStatsService;
+    private final SeasonService seasonService;
+    private final MatchService matchService;
+    private final ReceivedFineService receivedFineService;
+    private final UserService userService;
 
 
-    public Chart setupChartCoordinatesForUser(Long playerId) {
-        final Long finalPlayerId = getPlayerId(playerId);
+    public Chart setupChartCoordinatesForUser(Long playerId, AppTeamEntity appTeam) {
+        final Long finalPlayerId = getPlayerId(playerId, appTeam.getId());
         if (finalPlayerId == null) {
             return null;
         }
-        List<MatchDTO> matches = matchService.getMatchesByDate(5, true);
+        List<MatchDTO> matches = matchService.getMatchesByDate(5, true, appTeam.getId());
         Collections.reverse(matches);
-        return getPlayerChart(finalPlayerId, matches, finalPlayerId);
+        return getPlayerChart(finalPlayerId, matches, finalPlayerId, appTeam);
     }
 
-    public List<Chart> setupChartsCoordinates(Long playerId) {
-        final Long finalPlayerId = getPlayerId(playerId);
+    public List<Chart> setupChartsCoordinates(Long playerId, AppTeamEntity appTeam) {
+        final Long finalPlayerId = getPlayerId(playerId, appTeam.getId());
         List<Long> surroundingPlayerIds;
+        Long appTeamId = appTeam.getId();
         if (finalPlayerId == null) {
-            surroundingPlayerIds = findBestPlayers();
+            surroundingPlayerIds = findBestPlayers(appTeam);
         }
         else {
-            surroundingPlayerIds = findSurroundingPlayers(finalPlayerId);
+            surroundingPlayerIds = findSurroundingPlayers(finalPlayerId, appTeam);
         }
         List<Chart> surroundingPlayerCharts = new ArrayList<>();
-        List<MatchDTO> matches = matchService.getMatchesByDate(5, true);
+        List<MatchDTO> matches = matchService.getMatchesByDate(5, true, appTeamId);
         Collections.reverse(matches);
         for (Long surroundingPlayerId : surroundingPlayerIds) {
-            surroundingPlayerCharts.add(getPlayerChart(surroundingPlayerId, matches, finalPlayerId));
+            surroundingPlayerCharts.add(getPlayerChart(surroundingPlayerId, matches, finalPlayerId, appTeam));
         }
         return surroundingPlayerCharts;
     }
 
-    private Long getPlayerId(Long playerId) {
+    private Long getPlayerId(Long playerId, long appTeamId) {
         UserDTO userDTO;
         if (playerId != null) {
-            userDTO = new UserDTO();
-            userDTO.setPlayerId(playerId);
-        } else {
-            userDTO = userService.getCurrentUser();
-            if (userDTO.getPlayerId() == null) {
-                return null;
-            }
+            return playerId;
         }
-        return userDTO.getPlayerId();
+        return userService.getCurrentUser().getTeamRoles().stream()
+                .filter(teamRole -> teamRole.getPlayer() != null && Objects.equals(teamRole.getAppTeam().getId(), appTeamId))
+                .map(teamRole -> teamRole.getPlayer().getId()) // Převede na playerId
+                .findFirst()
+                .orElse(null);
+
     }
 
-    private Chart getPlayerChart(Long playerId, List<MatchDTO> matches, Long originalPlayerId) {
+    private Chart getPlayerChart(Long playerId, List<MatchDTO> matches, Long originalPlayerId, AppTeamEntity appTeam) {
         List<Coordinate> coordinates = new ArrayList<>();
         int beerMaximum = 0;
         int fineMaximum = 0;
@@ -95,6 +85,7 @@ public class ChartMaker {
             Coordinate coordinate = new Coordinate();
             coordinate.setMatchInitials(getMatchInitials(match));
             StatisticsFilter statisticsFilter = new StatisticsFilter(playerId, match.getId(), Config.ALL_SEASON_ID, false);
+            statisticsFilter.setAppTeam(appTeam);
             BeerDetailedResponse beer = beerService.getAllDetailed(statisticsFilter);
             ReceivedFineDetailedResponse fine = receivedFineService.getAllDetailed(statisticsFilter);
             if (beer.getTotalBeers() > beerMaximum) {
@@ -116,10 +107,10 @@ public class ChartMaker {
         return new Chart(fineMaximum, beerMaximum, getBeerChartLabels(beerMaximum), getFineChartLabels(fineMaximum), coordinates, playerService.getPlayer(playerId), playerId.equals(originalPlayerId));
     }
 
-    private List<Long> findSurroundingPlayers(Long playerId) {
-        List<AverageBeer> sumBeerList = beerStatsService.getAverageBeerAndLiquorListOrderByTotalBeer(seasonService.getCurrentSeason(false).getId());
+    private List<Long> findSurroundingPlayers(Long playerId, AppTeamEntity appTeam) {
+        List<AverageBeer> sumBeerList = beerStatsService.getAverageBeerAndLiquorListOrderByTotalBeer(seasonService.getCurrentSeason(false, appTeam).getId(), appTeam.getId());
         if (sumBeerList.size() < 5) {
-            sumBeerList = beerStatsService.getAverageBeerAndLiquorListOrderByTotalBeer(seasonService.getCurrentSeason(false).getId());
+            sumBeerList = beerStatsService.getAverageBeerAndLiquorListOrderByTotalBeer(seasonService.getCurrentSeason(false, appTeam).getId(), appTeam.getId());
         }
         if (sumBeerList.size() < 5) {
             return getPlayerIdsFromBeerList(sumBeerList);
@@ -127,10 +118,10 @@ public class ChartMaker {
         return getPlayerIdsFromBeerList(getSurroundingBeersFromBeerList(sumBeerList, playerId));
     }
 
-    private List<Long> findBestPlayers() {
-        List<AverageBeer> sumBeerList = beerStatsService.getAverageBeerAndLiquorListOrderByTotalBeer(seasonService.getCurrentSeason(false).getId());
+    private List<Long> findBestPlayers(AppTeamEntity appTeam) {
+        List<AverageBeer> sumBeerList = beerStatsService.getAverageBeerAndLiquorListOrderByTotalBeer(seasonService.getCurrentSeason(false, appTeam).getId(), appTeam.getId());
         if (sumBeerList.size() < 5) {
-            sumBeerList = beerStatsService.getAverageBeerAndLiquorListOrderByTotalBeer(seasonService.getCurrentSeason(false).getId());
+            sumBeerList = beerStatsService.getAverageBeerAndLiquorListOrderByTotalBeer(seasonService.getCurrentSeason(false, appTeam).getId(), appTeam.getId());
         }
         if (sumBeerList.size() < 5) {
             return getPlayerIdsFromBeerList(sumBeerList);

@@ -33,7 +33,9 @@ public class TableTeamDTO {
 
     private int points;
 
-    private TeamDTO team;
+    private Long teamId;
+
+    private String teamName;
 
     private LeagueDTO league;
 

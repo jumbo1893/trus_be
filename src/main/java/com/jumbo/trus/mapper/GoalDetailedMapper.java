@@ -1,6 +1,6 @@
 package com.jumbo.trus.mapper;
 
-import com.jumbo.trus.dto.PlayerDTO;
+import com.jumbo.trus.dto.player.PlayerDTO;
 import com.jumbo.trus.dto.goal.response.get.GoalDetailedDTO;
 import com.jumbo.trus.dto.match.MatchDTO;
 import com.jumbo.trus.entity.GoalEntity;
@@ -22,6 +22,7 @@ public abstract class GoalDetailedMapper {
     @Mappings({
             @Mapping(target = "player.id", source = "player"),
             @Mapping(target = "match.id", source = "match"),
+            @Mapping(target = "appTeam", ignore = true),
     })
     public abstract GoalEntity toEntity(GoalDetailedDTO source);
 

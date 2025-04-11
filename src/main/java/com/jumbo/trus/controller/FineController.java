@@ -1,9 +1,12 @@
 package com.jumbo.trus.controller;
 
+import com.jumbo.trus.config.security.RoleRequired;
 import com.jumbo.trus.controller.error.ErrorResponse;
 import com.jumbo.trus.dto.FineDTO;
+import com.jumbo.trus.service.auth.AppTeamService;
 import com.jumbo.trus.service.fine.FineService;
 import com.jumbo.trus.service.exceptions.NonEditableEntityException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,29 +18,31 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/fine")
+@RequiredArgsConstructor
 public class FineController {
 
-    @Autowired
-    FineService fineService;
+    private final FineService fineService;
+    private final AppTeamService appTeamService;
 
-    @Secured("ROLE_ADMIN")
+    @RoleRequired("ADMIN")
     @PostMapping("/add")
     public FineDTO addFine(@RequestBody FineDTO fineDTO) {
-        return fineService.addFine(fineDTO);
+        return fineService.addFine(fineDTO, appTeamService.getCurrentAppTeamOrThrow());
     }
 
+    @RoleRequired("READER")
     @GetMapping("/get-all")
     public List<FineDTO> getFines(@RequestParam(defaultValue = "1000")int limit) {
-        return fineService.getAll(limit);
+        return fineService.getAll(limit, appTeamService.getCurrentAppTeamOrThrow().getId());
     }
 
-    @Secured("ROLE_ADMIN")
+    @RoleRequired("ADMIN")
     @PutMapping("/{fineId}")
     public FineDTO editFine(@PathVariable Long fineId, @RequestBody FineDTO fineDTO) throws NotFoundException {
         return fineService.editFine(fineId, fineDTO);
     }
 
-    @Secured("ROLE_ADMIN")
+    @RoleRequired("ADMIN")
     @DeleteMapping("/{fineId}")
     public void deleteFine(@PathVariable Long fineId) throws NotFoundException {
         fineService.deleteFine(fineId);

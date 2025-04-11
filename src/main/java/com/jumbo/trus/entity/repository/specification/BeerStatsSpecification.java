@@ -20,6 +20,9 @@ public class BeerStatsSpecification implements Specification<BeerEntity> {
     public Predicate toPredicate(@NotNull Root<BeerEntity> root, @NotNull CriteriaQuery<?> query, @NotNull CriteriaBuilder criteriaBuilder) {
         List<Predicate> predicates = new ArrayList<>();
 
+        if (filter.getAppTeam() != null) {
+            predicates.add(criteriaBuilder.equal(root.get(BeerEntity_.APP_TEAM), filter.getAppTeam()));
+        }
 
         if (filter.getMatchId() != null) {
             Join<MatchEntity, BeerEntity> matchJoin = root.join(BeerEntity_.MATCH);

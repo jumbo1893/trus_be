@@ -12,6 +12,7 @@ public abstract class GoalMapper {
     @Mappings({
             @Mapping(target = "player.id", source = "playerId"),
             @Mapping(target = "match.id", source = "matchId"),
+            @Mapping(target = "appTeam", ignore = true),
     })
     public abstract GoalEntity toEntity(GoalDTO source);
     @Mappings({

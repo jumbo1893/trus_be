@@ -2,6 +2,7 @@ package com.jumbo.trus.mapper.football;
 
 import com.jumbo.trus.dto.football.FootballPlayerDTO;
 import com.jumbo.trus.entity.football.FootballPlayerEntity;
+import com.jumbo.trus.mapper.PlayerMapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
@@ -12,6 +13,7 @@ public abstract class FootballPlayerMapper {
 
     @Mappings({
             @Mapping(target = "teamList", ignore = true),
+            @Mapping(target = "player", ignore = true),
     })
     public abstract FootballPlayerEntity toEntity(FootballPlayerDTO source);
 

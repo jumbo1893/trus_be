@@ -1,9 +1,13 @@
 package com.jumbo.trus.service.football.player;
 
 import com.jumbo.trus.dto.football.FootballPlayerDTO;
+import com.jumbo.trus.dto.football.TableTeamDTO;
 import com.jumbo.trus.dto.football.TeamDTO;
+import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.repository.football.FootballPlayerRepository;
+import com.jumbo.trus.entity.repository.football.TeamRepository;
 import com.jumbo.trus.mapper.football.FootballPlayerMapper;
+import com.jumbo.trus.mapper.football.TeamMapper;
 import com.jumbo.trus.service.UpdateService;
 import com.jumbo.trus.service.football.team.TeamService;
 import com.jumbo.trus.service.football.pkfl.task.RetrievePkflPlayer;
@@ -24,7 +28,8 @@ public class FootballPlayerService {
 
     private final FootballPlayerRepository footballPlayerRepository;
     private final FootballPlayerMapper footballPlayerMapper;
-    private final TeamService teamService;
+    private final TeamRepository teamRepository;
+    private final TeamMapper teamMapper;
     private final UpdateService updateService;
     private final RetrievePkflPlayer retrievePkflPlayer;
     private final FootballPlayerProcessor footballPlayerProcessor;
@@ -32,6 +37,14 @@ public class FootballPlayerService {
 
     public List<FootballPlayerDTO> getAllPlayers() {
         return footballPlayerRepository.findAll().stream().map(footballPlayerMapper::toDTO).toList();
+    }
+
+    public List<FootballPlayerDTO> getAllPlayersByCurrentTeam(AppTeamEntity appTeam) {
+        return footballPlayerRepository.findAllByTeamId(appTeam.getTeam().getId()).stream().map(footballPlayerMapper::toDTO).toList();
+    }
+
+    public List<FootballPlayerDTO> getAllPastPlayersByCurrentTeam(AppTeamEntity appTeam) {
+        return footballPlayerRepository.findAllByTeamIdWithInactive(appTeam.getTeam().getId()).stream().map(footballPlayerMapper::toDTO).toList();
     }
 
     public void updatePlayers() {
@@ -57,11 +70,19 @@ public class FootballPlayerService {
     }
 
     private List<TeamDTO> loadTeams() {
-        return isNeededToLoadAllTeams() ? teamService.getAllTeams() : teamService.getAllTeamsFromCurrentSeason();
+        return isNeededToLoadAllTeams() ? getAllTeams() : getAllTeamsFromCurrentSeason();
+    }
+
+    private List<TeamDTO> getAllTeams() {
+        return teamRepository.findAll().stream().map(teamMapper::toDTO).toList();
+    }
+
+    private List<TeamDTO> getAllTeamsFromCurrentSeason() {
+        return teamRepository.findTeamsFromCurrentSeason().stream().map(teamMapper::toDTO).toList();
     }
 
     private boolean isNeededToLoadAllTeams() {
-        logger.debug("isNeededToLoadAllLeagues: {}", updateService.getUpdateByName(PLAYER_UPDATE) == null);
+        logger.debug("isNeededToLoadAllTeams: {}", updateService.getUpdateByName(PLAYER_UPDATE) == null);
         return updateService.getUpdateByName(PLAYER_UPDATE) == null;
     }
 

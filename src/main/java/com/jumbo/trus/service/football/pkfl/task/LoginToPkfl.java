@@ -1,6 +1,9 @@
 package com.jumbo.trus.service.football.pkfl.task;
 
+import com.jumbo.trus.service.football.pkfl.PkflProperties;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Connection;
 import org.jsoup.select.Elements;
 
@@ -9,18 +12,23 @@ import java.util.Map;
 
 import org.jsoup.Jsoup;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
-@NoArgsConstructor
+@RequiredArgsConstructor
+@Slf4j
+@Component
 public class LoginToPkfl {
 
-    @Value("${pkfl.login_page}")
+    private final PkflProperties pkflProperties;
+
+    /*@Value("${pkfl.login_page}")
     private static String PKFL_LOGIN_PAGE;
 
     @Value("${pkfl.login_mail}")
     private static String PKFL_LOGIN_MAIL;
 
     @Value("${pkfl.login_password}")
-    private static String PKFL_LOGIN_PASSWORD;
+    private static String PKFL_LOGIN_PASSWORD;*/
 
     public Connection.Response getLoggedAccessToPkflWeb(String url) throws IOException {
         Connection.Response res = Jsoup.connect(url).method(Connection.Method.GET).execute();
@@ -33,9 +41,9 @@ public class LoginToPkfl {
     }
 
     private Map<String, String> loginToPkflWeb() throws IOException {
-        Connection.Response res = Jsoup.connect(PKFL_LOGIN_PAGE)
-                .data("email", PKFL_LOGIN_MAIL)
-                .data("password", PKFL_LOGIN_PASSWORD)
+        Connection.Response res = Jsoup.connect(pkflProperties.getLoginPage())
+                .data("email", pkflProperties.getLoginMail())
+                .data("password", pkflProperties.getLoginPassword())
                 .data("send", "Přihlásit")
                 .data("_do", "signInForm-submit")
                 .method(Connection.Method.POST)

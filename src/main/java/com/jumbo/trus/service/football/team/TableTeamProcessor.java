@@ -2,8 +2,11 @@ package com.jumbo.trus.service.football.team;
 
 import com.jumbo.trus.dto.football.TableTeamDTO;
 import com.jumbo.trus.dto.football.TeamDTO;
+import com.jumbo.trus.entity.football.TableTeamEntity;
 import com.jumbo.trus.entity.repository.football.TableTeamRepository;
 import com.jumbo.trus.mapper.football.TableTeamMapper;
+import com.jumbo.trus.mapper.football.TeamMapper;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -15,23 +18,28 @@ public class TableTeamProcessor {
 
     private final TableTeamRepository tableTeamRepository;
     private final TableTeamMapper tableTeamMapper;
+    private final TeamMapper teamMapper;
 
     public int updateTableTeamIfNeeded(TableTeamDTO newTableTeam, TeamDTO teamDTO) {
         TableTeamDTO currentTableTeam = getTableTeamByTeamAndLeague(teamDTO.getId(), newTableTeam.getLeague().getId());
         if (currentTableTeam == null) {
-            newTableTeam.setTeam(teamDTO);
-            tableTeamRepository.save(tableTeamMapper.toEntity(newTableTeam));
+            saveTableTeam(newTableTeam, teamDTO);
             return 1;
         }
 
         if (!currentTableTeam.equals(newTableTeam)) {
             newTableTeam.setId(currentTableTeam.getId());
-            newTableTeam.setTeam(teamDTO);
-            tableTeamRepository.save(tableTeamMapper.toEntity(newTableTeam));
+            saveTableTeam(newTableTeam, teamDTO);
             return 1;
         }
 
         return 0;
+    }
+
+    private void saveTableTeam(TableTeamDTO tableTeamDTO, TeamDTO teamDTO) {
+        TableTeamEntity tableTeam = tableTeamMapper.toEntity(tableTeamDTO);
+        tableTeam.setTeam(teamMapper.toEntity(teamDTO));
+        tableTeamRepository.save(tableTeam);
     }
 
     public List<TableTeamDTO> getTableTeamsByTeam(TeamDTO teamDTO) {
@@ -40,5 +48,9 @@ public class TableTeamProcessor {
 
     public TableTeamDTO getTableTeamByTeamAndLeague(Long teamId, Long leagueId) {
         return tableTeamMapper.toDTO(tableTeamRepository.findByTeamIdAndLeagueId(teamId, leagueId));
+    }
+
+    public TableTeamDTO getTableTeamById(long tableTeamId) {
+        return tableTeamMapper.toDTO(tableTeamRepository.findById(tableTeamId).orElseThrow(() -> new EntityNotFoundException(String.valueOf(tableTeamId))));
     }
 }

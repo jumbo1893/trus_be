@@ -19,6 +19,10 @@ public class ReceivedFineSpecification implements Specification<ReceivedFineEnti
     public Predicate toPredicate(@NotNull Root<ReceivedFineEntity> root, @NotNull CriteriaQuery<?> query, @NotNull CriteriaBuilder criteriaBuilder) {
         List<Predicate> predicates = new ArrayList<>();
 
+        if (filter.getAppTeam() != null) {
+            predicates.add(criteriaBuilder.equal(root.get(ReceivedFineEntity_.APP_TEAM), filter.getAppTeam()));
+        }
+
         if (filter.getMatchId() != null) {
             Join<MatchEntity, ReceivedFineEntity> join = root.join(ReceivedFineEntity_.MATCH);
             predicates.add(criteriaBuilder.equal(join.get(MatchEntity_.ID), filter.getMatchId()));

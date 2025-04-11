@@ -8,11 +8,10 @@ import com.jumbo.trus.entity.BeerEntity;
 import com.jumbo.trus.entity.filter.StatisticsFilter;
 import com.jumbo.trus.entity.repository.BeerRepository;
 import com.jumbo.trus.mapper.BeerDetailedMapper;
-import com.jumbo.trus.mapper.BeerMapper;
-import com.jumbo.trus.service.PlayerService;
+import com.jumbo.trus.service.player.PlayerService;
 import com.jumbo.trus.service.beer.helper.AverageBeer;
 import com.jumbo.trus.service.helper.NumberRounder;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
@@ -21,41 +20,34 @@ import java.util.*;
 import static com.jumbo.trus.config.Config.ALL_SEASON_ID;
 
 @Service
+@RequiredArgsConstructor
 public class BeerStatsService {
 
-    @Autowired
-    private BeerRepository beerRepository;
-
-    @Autowired
-    private PlayerService playerService;
-
-
-    @Autowired
-    private BeerDetailedMapper beerDetailedMapper;
-
-    @Autowired
-    private BeerMapper beerMapper;
+    private final BeerRepository beerRepository;
+    private final PlayerService playerService;
+    private final BeerDetailedMapper beerDetailedMapper;
 
     public List<StatsDTO> getBeerStatistics(StatisticsFilter filter) {
         Long seasonId = filter.getSeasonId();
         List<StatsDTO> statsDTOList = new ArrayList<>();
-        statsDTOList.add(getMaxNumber(true, seasonId));
-        statsDTOList.add(getMaxNumber(false, seasonId));
-        statsDTOList.add(getAverageNumber(true, seasonId));
-        statsDTOList.add(getAverageNumber(false, seasonId));
-        statsDTOList.add(getAverageNumberByGoal(true, seasonId));
-        statsDTOList.add(getAverageNumberByGoal(false, seasonId));
-        statsDTOList.add(getAverageNumberByAssist(true, seasonId));
-        statsDTOList.add(getAverageNumberByAssist(false, seasonId));
+        Long appTeamId = filter.getAppTeam().getId();
+        statsDTOList.add(getMaxNumber(true, seasonId, appTeamId));
+        statsDTOList.add(getMaxNumber(false, seasonId, appTeamId));
+        statsDTOList.add(getAverageNumber(true, seasonId, appTeamId));
+        statsDTOList.add(getAverageNumber(false, seasonId, appTeamId));
+        statsDTOList.add(getAverageNumberByGoal(true, seasonId, appTeamId));
+        statsDTOList.add(getAverageNumberByGoal(false, seasonId, appTeamId));
+        statsDTOList.add(getAverageNumberByAssist(true, seasonId, appTeamId));
+        statsDTOList.add(getAverageNumberByAssist(false, seasonId, appTeamId));
         return statsDTOList;
     }
 
 
-    private StatsDTO getMaxNumber(boolean forBeer, Long seasonId) {
+    private StatsDTO getMaxNumber(boolean forBeer, Long seasonId, long appTeamId) {
         StatsDTO statsDTO = new StatsDTO();
         statsDTO.setDropdownText(forBeer ? "Max počet piv" : "Max počet panáků");
         List<PlayerStatsDTO> playerStatsList = new ArrayList<>();
-        List<BeerDetailedDTO> maxBeerList = findDetailedPlayersWithMaximumBeers(forBeer, seasonId);
+        List<BeerDetailedDTO> maxBeerList = findDetailedPlayersWithMaximumBeers(forBeer, seasonId, appTeamId);
         for (BeerDetailedDTO playerBeer : maxBeerList) {
             int beverageNumber = getBeerOrLiquorFromBeer(playerBeer, forBeer);
             PlayerStatsDTO playerStatsDTO = new PlayerStatsDTO(playerBeer.getPlayer(), beverageNumber + (forBeer ?" piv v zápase " : " panáků v zápase ") + getMatchText(playerBeer));
@@ -65,33 +57,33 @@ public class BeerStatsService {
         return statsDTO;
     }
 
-    public List<BeerDetailedDTO> findDetailedPlayersWithMaximumBeers(boolean forBeer, Long seasonId) {
-        List<BeerEntity> beerEntityList = isForAllSeasons(seasonId) ? (forBeer ? beerRepository.getMaxBeer() : beerRepository.getMaxLiquor()) : (forBeer ? beerRepository.getMaxBeer(seasonId) : beerRepository.getMaxLiquor(seasonId));
+    private List<BeerDetailedDTO> findDetailedPlayersWithMaximumBeers(boolean forBeer, Long seasonId, long appTeamId) {
+        List<BeerEntity> beerEntityList = isForAllSeasons(seasonId) ? (forBeer ? beerRepository.getMaxBeer(appTeamId) : beerRepository.getMaxLiquor(appTeamId)) : (forBeer ? beerRepository.getMaxBeer(seasonId, appTeamId) : beerRepository.getMaxLiquor(seasonId, appTeamId));
         return beerEntityList.stream().map(beerDetailedMapper::toDTO).toList();
     }
 
-    public List<AverageBeer> getAverageNumberList(boolean forBeer, Long seasonId, String orderBy) {
+    public List<AverageBeer> getAverageNumberList(boolean forBeer, Long seasonId, String orderBy, long appTeamId) {
         Sort sort = Sort.by(Sort.Direction.DESC, orderBy);
-        return isForAllSeasons(seasonId) ? (forBeer ? beerRepository.getAverageBeer(sort) : beerRepository.getAverageLiquor(sort))
-                : forBeer ? beerRepository.getAverageBeer(seasonId, sort) : beerRepository.getAverageLiquor(seasonId, sort);
+        return isForAllSeasons(seasonId) ? (forBeer ? beerRepository.getAverageBeer(sort, appTeamId) : beerRepository.getAverageLiquor(sort, appTeamId))
+                : forBeer ? beerRepository.getAverageBeer(seasonId, appTeamId, sort) : beerRepository.getAverageLiquor(seasonId, appTeamId, sort);
     }
 
-    public List<AverageBeer> getAverageBeerAndLiquorListOrderByTotalBeer(Long seasonId) {
-        return isForAllSeasons(seasonId) ? beerRepository.getAverageBeerAndLiquorSum() : beerRepository.getAverageBeerAndLiquorSum(seasonId);
+    public List<AverageBeer> getAverageBeerAndLiquorListOrderByTotalBeer(Long seasonId, long appTeamId) {
+        return isForAllSeasons(seasonId) ? beerRepository.getAverageBeerAndLiquorSum(appTeamId) : beerRepository.getAverageBeerAndLiquorSum(seasonId, appTeamId);
     }
 
-    private StatsDTO getAverageNumber(boolean forBeer, Long seasonId) {
-        List<AverageBeer> averageBeerList = getAverageNumberList(forBeer, seasonId, "avgBeerPerMatch");
+    private StatsDTO getAverageNumber(boolean forBeer, Long seasonId, long appTeamId) {
+        List<AverageBeer> averageBeerList = getAverageNumberList(forBeer, seasonId, "avgBeerPerMatch", appTeamId);
         return averageNumberHelper(averageBeerList, forBeer ? "Průměrný počet piv" : "Průměrný počet panáků", forBeer ?" piv na zápas " : " panáků na zápas ");
     }
 
-    private StatsDTO getAverageNumberByGoal(boolean forBeer, Long seasonId) {
-        List<AverageBeer> averageBeerList = isForAllSeasons(seasonId) ? (forBeer ? beerRepository.getGoalBeerRatio() : beerRepository.getGoalLiquorRatio()) : forBeer ? beerRepository.getGoalBeerRatio(seasonId) : beerRepository.getGoalLiquorRatio(seasonId);
+    private StatsDTO getAverageNumberByGoal(boolean forBeer, Long seasonId, long appTeamId) {
+        List<AverageBeer> averageBeerList = isForAllSeasons(seasonId) ? (forBeer ? beerRepository.getGoalBeerRatio(appTeamId) : beerRepository.getGoalLiquorRatio(appTeamId)) : forBeer ? beerRepository.getGoalBeerRatio(seasonId, appTeamId) : beerRepository.getGoalLiquorRatio(seasonId, appTeamId);
         return averageNumberHelper(averageBeerList, forBeer ? "Počet piv na gól" : "Počet panáků na gól", forBeer ?" piv na 1 gól " : " panáků na 1 gól ");
     }
 
-    private StatsDTO getAverageNumberByAssist(boolean forBeer, Long seasonId) {
-        List<AverageBeer> averageBeerList = isForAllSeasons(seasonId) ? (forBeer ? beerRepository.getAssistBeerRatio() : beerRepository.getAssistLiquorRatio()) : forBeer ? beerRepository.getAssistBeerRatio(seasonId) : beerRepository.getAssistLiquorRatio(seasonId);
+    private StatsDTO getAverageNumberByAssist(boolean forBeer, Long seasonId, long appTeamId) {
+        List<AverageBeer> averageBeerList = isForAllSeasons(seasonId) ? (forBeer ? beerRepository.getAssistBeerRatio(appTeamId) : beerRepository.getAssistLiquorRatio(appTeamId)) : forBeer ? beerRepository.getAssistBeerRatio(seasonId, appTeamId) : beerRepository.getAssistLiquorRatio(seasonId, appTeamId);
         return averageNumberHelper(averageBeerList, forBeer ? "Počet piv na asistenci" : "Počet panáků na asistenci", forBeer ?" piv na 1 asistenci " : " panáků na 1 asistenci ");
     }
 

@@ -13,6 +13,7 @@ public abstract class ReceivedFineMapper {
             @Mapping(target = "player.id", source = "playerId"),
             @Mapping(target = "match.id", source = "matchId"),
             @Mapping(target = "fine", source = "fine"),
+            @Mapping(target = "appTeam", ignore = true),
     })
     public abstract ReceivedFineEntity toEntity(ReceivedFineDTO source);
     @Mappings({

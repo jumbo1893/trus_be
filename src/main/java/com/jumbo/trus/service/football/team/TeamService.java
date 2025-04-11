@@ -2,9 +2,16 @@ package com.jumbo.trus.service.football.team;
 
 import com.jumbo.trus.dto.football.TableTeamDTO;
 import com.jumbo.trus.dto.football.TeamDTO;
+import com.jumbo.trus.dto.football.detail.FootballTableTeamDetail;
+import com.jumbo.trus.entity.auth.AppTeamEntity;
+import com.jumbo.trus.entity.football.TableTeamEntity;
+import com.jumbo.trus.entity.football.TeamEntity;
 import com.jumbo.trus.entity.repository.football.TeamRepository;
+import com.jumbo.trus.mapper.football.TableTeamMapper;
 import com.jumbo.trus.mapper.football.TeamMapper;
 import com.jumbo.trus.service.football.helper.TeamTableTeam;
+import com.jumbo.trus.service.football.match.FootballMatchDetailProcessor;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,6 +27,9 @@ public class TeamService {
     private final TeamMapper teamMapper;
     private final TeamProcessor teamProcessor;
     private final TeamRetriever teamRetriever;
+    private final FootballMatchDetailProcessor footballMatchDetailProcessor;
+    private final TableTeamProcessor tableTeamProcessor;
+    private final TableTeamMapper tableTeamMapper;
 
     public List<TeamDTO> getAllTeams() {
         return teamRepository.findAll().stream().map(teamMapper::toDTO).toList();
@@ -28,7 +38,6 @@ public class TeamService {
     public List<TableTeamDTO> getTable(Long teamId) {
         return teamProcessor.getTableTeamsByTeamId(teamId);
     }
-
 
     public List<TeamDTO> getAllTeamsFromCurrentSeason() {
         return teamRepository.findTeamsFromCurrentSeason().stream().map(teamMapper::toDTO).toList();
@@ -40,8 +49,18 @@ public class TeamService {
                 : null;
     }
 
+    public TeamEntity getTeamById(Long id) {
+        return teamRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.valueOf(id)));
+    }
+
     public void enhanceTeamWithFootballTeam(TeamDTO teamDTO) {
         teamProcessor.enhanceTeamWithTableTeam(teamDTO);
+    }
+
+    public FootballTableTeamDetail getFootballTeamDetail(Long tableTeamId, AppTeamEntity appTeam) {
+        FootballTableTeamDetail footballTableTeamDetail = new FootballTableTeamDetail();
+        footballTableTeamDetail.setTableTeam(tableTeamProcessor.getTableTeamById(tableTeamId));
+        return footballMatchDetailProcessor.enhanceFootballTeamDetail(footballTableTeamDetail, appTeam);
     }
 
     public void updateTeams() {

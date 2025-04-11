@@ -1,5 +1,6 @@
 package com.jumbo.trus.entity;
 
+import com.jumbo.trus.entity.auth.AppTeamEntity;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -22,4 +23,7 @@ public class ReceivedFineEntity {
 
     @ManyToOne
     private PlayerEntity player;
+
+    @ManyToOne
+    private AppTeamEntity appTeam;
 }

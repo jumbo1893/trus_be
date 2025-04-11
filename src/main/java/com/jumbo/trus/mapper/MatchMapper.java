@@ -12,7 +12,7 @@ import org.mapstruct.Mappings;
 import java.util.ArrayList;
 import java.util.List;
 
-@Mapper(componentModel = "spring", uses = {BeerMapper.class, BeerDetailedMapper.class, ReceivedFineDetailedMapper.class, GoalMapper.class, PkflMatchMapper.class, FootballMatchMapper.class})
+@Mapper(componentModel = "spring", uses = {BeerMapper.class, BeerDetailedMapper.class, ReceivedFineDetailedMapper.class, GoalMapper.class, FootballMatchMapper.class})
 public abstract class MatchMapper {
 
     @Mappings({
@@ -21,11 +21,15 @@ public abstract class MatchMapper {
             @Mapping(target = "beerList", ignore = true),
             @Mapping(target = "fineList", ignore = true),
             @Mapping(target = "goalList", ignore = true),
+            @Mapping(target = "appTeam", ignore = true),
+            @Mapping(target = "pkflMatch", ignore = true),
+            @Mapping(target = "playerAchievements", ignore = true)
     })
     public abstract MatchEntity toEntity(MatchDTO source);
     @Mappings({
             @Mapping(target = "seasonId", source = "season.id"),
             @Mapping(target = "playerIdList", expression = "java(getPlayerIds(source))"),
+
     })
     public abstract MatchDTO toDTO(MatchEntity source);
 

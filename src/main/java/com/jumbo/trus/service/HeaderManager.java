@@ -21,6 +21,14 @@ public class HeaderManager {
         return Long.parseLong(teamId);
     }
 
+    public Long getAppTeamIdHeader() {
+        String teamId = request.getHeader("app-team-id");
+        if (teamId == null) {
+            return null;
+        }
+        return Long.parseLong(teamId);
+    }
+
     public String getAnotherHeader() {
         return request.getHeader("Another-Header");
     }

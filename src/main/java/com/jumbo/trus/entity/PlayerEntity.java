@@ -1,19 +1,28 @@
 package com.jumbo.trus.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.jumbo.trus.entity.achievement.PlayerAchievementEntity;
+import com.jumbo.trus.entity.auth.AppTeamEntity;
+import com.jumbo.trus.entity.auth.UserTeamRole;
+import com.jumbo.trus.entity.football.FootballPlayerEntity;
 import lombok.Data;
 
 import jakarta.persistence.*;
+import lombok.EqualsAndHashCode;
+
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 @Entity(name = "player")
 @Data
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class PlayerEntity {
 
     @Id
     @GeneratedValue(generator="player_seq")
     @SequenceGenerator(name = "player_seq", sequenceName = "player_seq", allocationSize = 1)
+    @EqualsAndHashCode.Include
     private long id;
 
     @Column(nullable = false)
@@ -40,4 +49,18 @@ public class PlayerEntity {
 
     @OneToMany(mappedBy = "player")
     private List<GoalEntity> goalList;
+
+    @ManyToOne
+    private AppTeamEntity appTeam;
+
+    @OneToOne
+    @JoinColumn(name = "football_player_id", unique = true)
+    private FootballPlayerEntity footballPlayer;
+
+    @OneToMany(mappedBy = "player")
+    private List<UserTeamRole> userTeamRoles = new ArrayList<>();
+
+
+    @OneToMany(mappedBy = "player")
+    private List<PlayerAchievementEntity> playerAchievements;
 }

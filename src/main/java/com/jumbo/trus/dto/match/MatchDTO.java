@@ -35,7 +35,5 @@ public class MatchDTO {
 
     private boolean home;
 
-    private PkflMatchDTO pkflMatch;
-
     private FootballMatchDTO footballMatch;
 }

@@ -2,7 +2,7 @@ package com.jumbo.trus.mapper;
 
 import com.jumbo.trus.dto.FineDTO;
 import com.jumbo.trus.dto.match.MatchDTO;
-import com.jumbo.trus.dto.PlayerDTO;
+import com.jumbo.trus.dto.player.PlayerDTO;
 import com.jumbo.trus.dto.receivedfine.response.get.detailed.ReceivedFineDetailedDTO;
 import com.jumbo.trus.entity.MatchEntity;
 import com.jumbo.trus.entity.PlayerEntity;
@@ -17,13 +17,14 @@ import org.mapstruct.Mappings;
 import java.util.ArrayList;
 import java.util.List;
 
-@Mapper(componentModel = "spring", uses = {MatchMapper.class, PkflMatchMapper.class, PkflIndividualStatsMapper.class, FootballMatchMapper.class})
+@Mapper(componentModel = "spring", uses = {MatchMapper.class, PkflMatchMapper.class, PkflIndividualStatsMapper.class, FootballMatchMapper.class, PlayerMapper.class})
 public abstract class ReceivedFineDetailedMapper {
 
     @Mappings({
             @Mapping(target = "player.id", source = "player"),
             @Mapping(target = "match.id", source = "match"),
             @Mapping(target = "fine.id", source = "fine"),
+            @Mapping(target = "appTeam", ignore = true),
     })
     public abstract ReceivedFineEntity toEntity(ReceivedFineDetailedDTO source);
 
