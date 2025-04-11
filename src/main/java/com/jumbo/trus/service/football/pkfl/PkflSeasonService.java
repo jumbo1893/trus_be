@@ -4,10 +4,8 @@ import com.jumbo.trus.dto.pkfl.PkflSeasonDTO;
 import com.jumbo.trus.entity.pkfl.PkflSeasonEntity;
 import com.jumbo.trus.entity.repository.PkflSeasonRepository;
 import com.jumbo.trus.mapper.pkfl.PkflSeasonMapper;
-import com.jumbo.trus.service.football.pkfl.task.LoginToPkfl;
 import com.jumbo.trus.service.football.pkfl.task.RetrieveSeasonUrl;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 

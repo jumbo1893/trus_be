@@ -1,6 +1,5 @@
 package com.jumbo.trus.dto.goal.response.get;
 
-import com.jumbo.trus.service.helper.DetailedDTO;
 import com.jumbo.trus.service.helper.DetailedResponse;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;

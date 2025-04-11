@@ -1,8 +1,6 @@
 package com.jumbo.trus.mapper;
 
-import com.jumbo.trus.dto.NotificationDTO;
 import com.jumbo.trus.dto.StepUpdateDTO;
-import com.jumbo.trus.entity.NotificationEntity;
 import com.jumbo.trus.entity.StepUpdateEntity;
 import org.mapstruct.Mapper;
 

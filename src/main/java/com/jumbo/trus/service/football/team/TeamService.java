@@ -4,7 +4,6 @@ import com.jumbo.trus.dto.football.TableTeamDTO;
 import com.jumbo.trus.dto.football.TeamDTO;
 import com.jumbo.trus.dto.football.detail.FootballTableTeamDetail;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
-import com.jumbo.trus.entity.football.TableTeamEntity;
 import com.jumbo.trus.entity.football.TeamEntity;
 import com.jumbo.trus.entity.repository.football.TeamRepository;
 import com.jumbo.trus.mapper.football.TableTeamMapper;

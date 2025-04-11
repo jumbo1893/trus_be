@@ -1,7 +1,6 @@
 package com.jumbo.trus.service.football.match;
 
 import com.jumbo.trus.dto.football.FootballMatchDTO;
-import com.jumbo.trus.dto.football.TeamDTO;
 import com.jumbo.trus.dto.football.detail.FootballMatchDetail;
 import com.jumbo.trus.dto.football.detail.FootballTableTeamDetail;
 import com.jumbo.trus.entity.auth.AppTeamEntity;

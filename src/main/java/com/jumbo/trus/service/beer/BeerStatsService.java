@@ -8,14 +8,15 @@ import com.jumbo.trus.entity.BeerEntity;
 import com.jumbo.trus.entity.filter.StatisticsFilter;
 import com.jumbo.trus.entity.repository.BeerRepository;
 import com.jumbo.trus.mapper.BeerDetailedMapper;
-import com.jumbo.trus.service.player.PlayerService;
 import com.jumbo.trus.service.beer.helper.AverageBeer;
 import com.jumbo.trus.service.helper.NumberRounder;
+import com.jumbo.trus.service.player.PlayerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.jumbo.trus.config.Config.ALL_SEASON_ID;
 

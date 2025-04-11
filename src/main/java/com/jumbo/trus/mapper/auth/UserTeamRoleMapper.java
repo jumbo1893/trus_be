@@ -1,8 +1,6 @@
 package com.jumbo.trus.mapper.auth;
 
-import com.jumbo.trus.dto.auth.AppTeamDTO;
 import com.jumbo.trus.dto.auth.UserTeamRoleDTO;
-import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.auth.UserTeamRole;
 import com.jumbo.trus.mapper.PlayerMapper;
 import com.jumbo.trus.mapper.football.TeamMapper;

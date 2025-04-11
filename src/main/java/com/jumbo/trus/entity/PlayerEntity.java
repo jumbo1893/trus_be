@@ -5,9 +5,8 @@ import com.jumbo.trus.entity.achievement.PlayerAchievementEntity;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.auth.UserTeamRole;
 import com.jumbo.trus.entity.football.FootballPlayerEntity;
-import lombok.Data;
-
 import jakarta.persistence.*;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.util.ArrayList;

@@ -1,9 +1,10 @@
 package com.jumbo.trus.entity.football.view;
 
+import jakarta.persistence.Embeddable;
+import lombok.Data;
+
 import java.io.Serializable;
 import java.util.Objects;
-import jakarta.persistence.*;
-import lombok.Data;
 
 @Embeddable
 @Data

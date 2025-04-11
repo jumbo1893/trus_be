@@ -1,7 +1,7 @@
 package com.jumbo.trus.service.receivedFine;
 
 import com.jumbo.trus.dto.goal.GoalDTO;
-import com.jumbo.trus.dto.receivedfine.*;
+import com.jumbo.trus.dto.receivedfine.ReceivedFineDTO;
 import com.jumbo.trus.dto.receivedfine.multi.ReceivedFineListDTO;
 import com.jumbo.trus.dto.receivedfine.response.ReceivedFineResponse;
 import com.jumbo.trus.dto.receivedfine.response.get.detailed.ReceivedFineDetailedResponse;
@@ -9,12 +9,12 @@ import com.jumbo.trus.dto.receivedfine.response.get.setup.ReceivedFineSetupRespo
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.filter.ReceivedFineFilter;
 import com.jumbo.trus.entity.filter.StatisticsFilter;
-import com.jumbo.trus.entity.repository.*;
+import com.jumbo.trus.entity.repository.ReceivedFineRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.List;
 
 @RequiredArgsConstructor
 @Service

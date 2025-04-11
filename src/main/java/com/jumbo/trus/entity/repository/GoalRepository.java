@@ -1,6 +1,5 @@
 package com.jumbo.trus.entity.repository;
 
-import com.jumbo.trus.entity.BeerEntity;
 import com.jumbo.trus.entity.GoalEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;

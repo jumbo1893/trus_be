@@ -2,7 +2,6 @@ package com.jumbo.trus.dto.match;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.jumbo.trus.dto.football.FootballMatchDTO;
-import com.jumbo.trus.dto.pkfl.PkflMatchDTO;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;

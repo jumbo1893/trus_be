@@ -1,11 +1,9 @@
 package com.jumbo.trus.dto.football;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.jumbo.trus.dto.helper.LongAndLong;
 import com.jumbo.trus.service.football.pkfl.task.helper.FootballMatchTaskHelper;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

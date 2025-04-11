@@ -1,7 +1,6 @@
 package com.jumbo.trus.dto.home;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.jumbo.trus.dto.football.FootballMatchDTO;
 import com.jumbo.trus.dto.football.detail.FootballMatchDetail;
 import com.jumbo.trus.dto.pkfl.PkflMatchDTO;
 import jakarta.validation.constraints.NotNull;

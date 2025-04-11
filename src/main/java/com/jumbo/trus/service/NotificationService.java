@@ -2,10 +2,10 @@ package com.jumbo.trus.service;
 
 import com.jumbo.trus.config.Config;
 import com.jumbo.trus.dto.NotificationDTO;
-import com.jumbo.trus.entity.*;
+import com.jumbo.trus.entity.NotificationEntity;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.auth.UserEntity;
-import com.jumbo.trus.entity.repository.*;
+import com.jumbo.trus.entity.repository.NotificationRepository;
 import com.jumbo.trus.entity.repository.auth.AppTeamRepository;
 import com.jumbo.trus.mapper.NotificationMapper;
 import com.jumbo.trus.service.exceptions.AuthException;

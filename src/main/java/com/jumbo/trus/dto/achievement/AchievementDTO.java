@@ -1,6 +1,5 @@
 package com.jumbo.trus.dto.achievement;
 
-import com.jumbo.trus.dto.football.TeamDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

@@ -1,7 +1,6 @@
 package com.jumbo.trus.service.football.player;
 
 import com.jumbo.trus.dto.football.FootballPlayerDTO;
-import com.jumbo.trus.dto.football.TableTeamDTO;
 import com.jumbo.trus.dto.football.TeamDTO;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.repository.football.FootballPlayerRepository;
@@ -9,7 +8,6 @@ import com.jumbo.trus.entity.repository.football.TeamRepository;
 import com.jumbo.trus.mapper.football.FootballPlayerMapper;
 import com.jumbo.trus.mapper.football.TeamMapper;
 import com.jumbo.trus.service.UpdateService;
-import com.jumbo.trus.service.football.team.TeamService;
 import com.jumbo.trus.service.football.pkfl.task.RetrievePkflPlayer;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;

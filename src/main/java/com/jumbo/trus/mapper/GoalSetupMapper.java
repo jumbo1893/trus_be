@@ -1,7 +1,7 @@
 package com.jumbo.trus.mapper;
 
-import com.jumbo.trus.dto.player.PlayerDTO;
 import com.jumbo.trus.dto.goal.response.get.GoalSetupResponse;
+import com.jumbo.trus.dto.player.PlayerDTO;
 import com.jumbo.trus.entity.GoalEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

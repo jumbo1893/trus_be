@@ -1,8 +1,7 @@
 package com.jumbo.trus.service.beer;
 
-import com.jumbo.trus.dto.player.PlayerDTO;
 import com.jumbo.trus.dto.SeasonDTO;
-import com.jumbo.trus.dto.beer.*;
+import com.jumbo.trus.dto.beer.BeerDTO;
 import com.jumbo.trus.dto.beer.multi.BeerListDTO;
 import com.jumbo.trus.dto.beer.multi.BeerNoMatchDTO;
 import com.jumbo.trus.dto.beer.multi.BeerNoMatchWithPlayerDTO;
@@ -10,25 +9,27 @@ import com.jumbo.trus.dto.beer.response.get.BeerDetailedResponse;
 import com.jumbo.trus.dto.beer.response.get.BeerSetupResponse;
 import com.jumbo.trus.dto.beer.response.multi.BeerMultiAddResponse;
 import com.jumbo.trus.dto.match.MatchDTO;
+import com.jumbo.trus.dto.player.PlayerDTO;
+import com.jumbo.trus.entity.BeerEntity;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
+import com.jumbo.trus.entity.filter.BeerFilter;
 import com.jumbo.trus.entity.filter.MatchFilter;
 import com.jumbo.trus.entity.filter.StatisticsFilter;
-import com.jumbo.trus.mapper.BeerMapper;
-import com.jumbo.trus.entity.BeerEntity;
-import com.jumbo.trus.entity.filter.BeerFilter;
 import com.jumbo.trus.entity.repository.BeerRepository;
 import com.jumbo.trus.entity.repository.specification.BeerSpecification;
+import com.jumbo.trus.mapper.BeerMapper;
 import com.jumbo.trus.service.MatchService;
 import com.jumbo.trus.service.NotificationService;
-import com.jumbo.trus.service.player.PlayerService;
 import com.jumbo.trus.service.helper.DetailedResponseHelper;
 import com.jumbo.trus.service.helper.PairSeasonMatch;
 import com.jumbo.trus.service.order.OrderBeerByBeerAndLiquorNumberThenName;
+import com.jumbo.trus.service.player.PlayerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service

@@ -1,6 +1,5 @@
 package com.jumbo.trus.entity.auth;
 
-import com.jumbo.trus.entity.football.TableTeamEntity;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;

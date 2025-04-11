@@ -1,5 +1,7 @@
 package com.jumbo.trus.controller;
 
+import com.jumbo.trus.aspect.PostCommitTask;
+import com.jumbo.trus.aspect.appteam.StoreAppTeam;
 import com.jumbo.trus.config.security.RoleRequired;
 import com.jumbo.trus.dto.goal.GoalDTO;
 import com.jumbo.trus.dto.goal.multi.GoalListDTO;
@@ -11,8 +13,6 @@ import com.jumbo.trus.entity.filter.StatisticsFilter;
 import com.jumbo.trus.service.GoalService;
 import com.jumbo.trus.service.auth.AppTeamService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 import org.webjars.NotFoundException;
 
@@ -28,6 +28,8 @@ public class GoalController {
 
     @RoleRequired("ADMIN")
     @PostMapping("/add")
+    @PostCommitTask
+    @StoreAppTeam
     public GoalDTO addGoal(@RequestBody GoalDTO goalDTO) {
         return goalService.addGoal(goalDTO, appTeamService.getCurrentAppTeamOrThrow());
     }
@@ -55,12 +57,16 @@ public class GoalController {
 
     @RoleRequired("ADMIN")
     @PostMapping("/multiple-add")
+    @PostCommitTask
+    @StoreAppTeam
     public GoalMultiAddResponse addMultipleGoal(@RequestBody GoalListDTO goalListDTO) {
         return goalService.addMultipleGoal(goalListDTO, appTeamService.getCurrentAppTeamOrThrow());
     }
 
     @RoleRequired("ADMIN")
     @DeleteMapping("/{goalId}")
+    @PostCommitTask
+    @StoreAppTeam
     public void deleteGoal(@PathVariable Long goalId) throws NotFoundException {
         goalService.deleteGoal(goalId);
     }

@@ -1,28 +1,32 @@
 package com.jumbo.trus.service;
 
-import com.jumbo.trus.dto.player.PlayerDTO;
 import com.jumbo.trus.dto.goal.GoalDTO;
 import com.jumbo.trus.dto.goal.multi.GoalListDTO;
 import com.jumbo.trus.dto.goal.response.GoalMultiAddResponse;
 import com.jumbo.trus.dto.goal.response.get.GoalDetailedResponse;
 import com.jumbo.trus.dto.goal.response.get.GoalSetupResponse;
+import com.jumbo.trus.dto.player.PlayerDTO;
 import com.jumbo.trus.entity.GoalEntity;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.filter.GoalFilter;
 import com.jumbo.trus.entity.filter.StatisticsFilter;
-import com.jumbo.trus.entity.repository.*;
+import com.jumbo.trus.entity.repository.GoalRepository;
 import com.jumbo.trus.entity.repository.specification.GoalSpecification;
-import com.jumbo.trus.mapper.*;
-import com.jumbo.trus.service.receivedFine.ReceivedFineService;
+import com.jumbo.trus.mapper.GoalMapper;
+import com.jumbo.trus.mapper.GoalSetupMapper;
 import com.jumbo.trus.service.helper.DetailedResponseHelper;
 import com.jumbo.trus.service.player.PlayerService;
+import com.jumbo.trus.service.receivedFine.ReceivedFineService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.webjars.NotFoundException;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service

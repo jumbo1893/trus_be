@@ -1,7 +1,6 @@
 package com.jumbo.trus.dto.auth;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.jumbo.trus.entity.auth.UserTeamRole;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

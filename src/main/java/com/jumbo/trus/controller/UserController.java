@@ -1,25 +1,22 @@
 package com.jumbo.trus.controller;
 
 import com.jumbo.trus.controller.error.ErrorResponse;
-import com.jumbo.trus.dto.player.PlayerDTO;
-import com.jumbo.trus.service.auth.AppTeamService;
-import com.jumbo.trus.service.exceptions.AuthException;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import com.jumbo.trus.dto.auth.UserDTO;
+import com.jumbo.trus.dto.player.PlayerDTO;
 import com.jumbo.trus.entity.auth.UserEntity;
-
+import com.jumbo.trus.service.auth.AppTeamService;
 import com.jumbo.trus.service.auth.UserService;
+import com.jumbo.trus.service.exceptions.AuthException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.webjars.NotFoundException;
-
 
 import java.util.List;
 

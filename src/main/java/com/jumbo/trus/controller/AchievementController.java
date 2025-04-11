@@ -1,13 +1,8 @@
 package com.jumbo.trus.controller;
 
-import com.jumbo.trus.aspect.PostCommitTask;
-import com.jumbo.trus.aspect.appteam.StoreAppTeam;
 import com.jumbo.trus.config.security.RoleRequired;
-import com.jumbo.trus.dto.FineDTO;
 import com.jumbo.trus.dto.achievement.AchievementDetail;
 import com.jumbo.trus.dto.achievement.PlayerAchievementDTO;
-import com.jumbo.trus.dto.player.PlayerSetup;
-import com.jumbo.trus.service.achievement.AchievementCalculator;
 import com.jumbo.trus.service.achievement.AchievementService;
 import com.jumbo.trus.service.achievement.helper.AchievementType;
 import com.jumbo.trus.service.auth.AppTeamService;
@@ -25,7 +20,13 @@ public class AchievementController {
     private final AchievementService achievementService;
     private final AppTeamService appTeamService;
 
+    @RoleRequired("ADMIN")
+    @PostMapping("/{playerId}")
+    public void updatePlayer(@PathVariable Long playerId) {
+        achievementService.updatePlayerAchievements(playerId, appTeamService.getCurrentAppTeamOrThrow());
+    }
 
+    @RoleRequired("ADMIN")
     @GetMapping("/test")
     public void testAllPlayers() {
         achievementService.updateAllPlayerAchievements(appTeamService.getCurrentAppTeamOrThrow(), AchievementType.ALL);

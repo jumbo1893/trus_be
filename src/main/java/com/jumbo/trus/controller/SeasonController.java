@@ -1,13 +1,13 @@
 package com.jumbo.trus.controller;
 
+import com.jumbo.trus.aspect.PostCommitTask;
+import com.jumbo.trus.aspect.appteam.StoreAppTeam;
 import com.jumbo.trus.config.security.RoleRequired;
 import com.jumbo.trus.dto.SeasonDTO;
 import com.jumbo.trus.entity.filter.SeasonFilter;
 import com.jumbo.trus.service.SeasonService;
 import com.jumbo.trus.service.auth.AppTeamService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 import org.webjars.NotFoundException;
 
@@ -24,6 +24,8 @@ public class SeasonController {
 
     @RoleRequired("ADMIN")
     @PostMapping("/add")
+    @PostCommitTask
+    @StoreAppTeam
     public SeasonDTO addSeason(@RequestBody SeasonDTO seasonDTO) {
         return seasonService.addSeason(seasonDTO, appTeamService.getCurrentAppTeamOrThrow());
     }
@@ -37,12 +39,16 @@ public class SeasonController {
 
     @RoleRequired("ADMIN")
     @PutMapping("/{seasonId}")
+    @PostCommitTask
+    @StoreAppTeam
     public SeasonDTO editSeason(@PathVariable Long seasonId, @RequestBody SeasonDTO seasonDTO) throws NotFoundException {
         return seasonService.editSeason(seasonId, seasonDTO, appTeamService.getCurrentAppTeamOrThrow());
     }
 
     @RoleRequired("ADMIN")
     @DeleteMapping("/{seasonId}")
+    @PostCommitTask
+    @StoreAppTeam
     public void deleteSeason(@PathVariable Long seasonId) throws NotFoundException {
         seasonService.deleteSeason(seasonId);
     }

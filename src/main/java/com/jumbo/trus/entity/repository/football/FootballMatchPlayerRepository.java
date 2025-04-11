@@ -2,7 +2,6 @@ package com.jumbo.trus.entity.repository.football;
 
 import com.jumbo.trus.entity.football.FootballMatchPlayerEntity;
 import com.jumbo.trus.entity.football.FootballMatchPlayerEntity_;
-import com.jumbo.trus.entity.pkfl.PkflIndividualStatsEntity_;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;

@@ -1,6 +1,7 @@
 package com.jumbo.trus.service.football.pkfl.task;
 
-import com.jumbo.trus.dto.pkfl.*;
+import com.jumbo.trus.dto.pkfl.PkflOpponentDTO;
+import com.jumbo.trus.dto.pkfl.PkflTableTeamDTO;
 import com.jumbo.trus.service.football.helper.WinDrawLose;
 import com.jumbo.trus.service.task.SSLHelper;
 import org.jsoup.nodes.Document;

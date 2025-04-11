@@ -1,8 +1,8 @@
 package com.jumbo.trus.dto.goal.response.get;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.jumbo.trus.dto.player.PlayerDTO;
 import com.jumbo.trus.dto.match.MatchDTO;
+import com.jumbo.trus.dto.player.PlayerDTO;
 import com.jumbo.trus.service.helper.DetailedDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;

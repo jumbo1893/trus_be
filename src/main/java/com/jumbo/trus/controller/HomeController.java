@@ -1,15 +1,15 @@
 package com.jumbo.trus.controller;
 
 import com.jumbo.trus.config.security.RoleRequired;
-import com.jumbo.trus.dto.auth.UserDTO;
 import com.jumbo.trus.dto.home.HomeSetup;
 import com.jumbo.trus.entity.auth.UserEntity;
 import com.jumbo.trus.service.auth.AppTeamService;
 import com.jumbo.trus.service.home.HomeService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/home")

@@ -1,15 +1,12 @@
 package com.jumbo.trus.dto.football.stats;
 
-import com.jumbo.trus.dto.football.FootballMatchDTO;
 import com.jumbo.trus.dto.football.FootballPlayerDTO;
 import com.jumbo.trus.dto.football.LeagueDTO;
 import com.jumbo.trus.dto.football.TeamDTO;
-import com.jumbo.trus.dto.pkfl.stats.PkflCardComment;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
 import java.util.Objects;
 
 @Data

@@ -1,5 +1,7 @@
 package com.jumbo.trus.controller;
 
+import com.jumbo.trus.aspect.PostCommitTask;
+import com.jumbo.trus.aspect.appteam.StoreAppTeam;
 import com.jumbo.trus.config.security.RoleRequired;
 import com.jumbo.trus.dto.match.MatchDTO;
 import com.jumbo.trus.dto.match.response.SetupMatchResponse;
@@ -7,9 +9,6 @@ import com.jumbo.trus.entity.filter.MatchFilter;
 import com.jumbo.trus.service.MatchService;
 import com.jumbo.trus.service.auth.AppTeamService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.annotation.Secured;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.webjars.NotFoundException;
 
@@ -25,6 +24,8 @@ public class MatchController {
 
     @RoleRequired("ADMIN")
     @PostMapping("/add")
+    @PostCommitTask
+    @StoreAppTeam
     public MatchDTO addMatch(@RequestBody MatchDTO matchDTO) {
         return matchService.addMatch(matchDTO, appTeamService.getCurrentAppTeamOrThrow());
     }
@@ -44,12 +45,16 @@ public class MatchController {
 
     @RoleRequired("ADMIN")
     @PutMapping("/{matchId}")
+    @PostCommitTask
+    @StoreAppTeam
     public MatchDTO editMatch(@PathVariable Long matchId, @RequestBody MatchDTO matchDTO) throws NotFoundException {
         return matchService.editMatch(matchId, matchDTO, appTeamService.getCurrentAppTeamOrThrow());
     }
 
     @RoleRequired("ADMIN")
     @DeleteMapping("/{matchId}")
+    @PostCommitTask
+    @StoreAppTeam
     public void deleteMatch(@PathVariable Long matchId) throws NotFoundException {
         matchService.deleteMatch(matchId);
     }

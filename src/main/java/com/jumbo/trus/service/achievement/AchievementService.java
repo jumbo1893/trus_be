@@ -1,12 +1,10 @@
 package com.jumbo.trus.service.achievement;
 
-import com.jumbo.trus.aspect.appteam.AppTeamContextHolder;
 import com.jumbo.trus.dto.achievement.AchievementDTO;
 import com.jumbo.trus.dto.achievement.AchievementDetail;
 import com.jumbo.trus.dto.achievement.AchievementPlayerDetail;
 import com.jumbo.trus.dto.achievement.PlayerAchievementDTO;
 import com.jumbo.trus.dto.player.PlayerDTO;
-import com.jumbo.trus.entity.PlayerEntity;
 import com.jumbo.trus.entity.achievement.PlayerAchievementEntity;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.repository.achievement.AchievementRepository;
@@ -15,16 +13,16 @@ import com.jumbo.trus.mapper.PlayerMapper;
 import com.jumbo.trus.mapper.achievement.AchievementMapper;
 import com.jumbo.trus.mapper.achievement.PlayerAchievementMapper;
 import com.jumbo.trus.service.achievement.helper.AchievementType;
+import com.jumbo.trus.service.achievement.helper.IMatchIdNumberOneNumberTwo;
 import com.jumbo.trus.service.order.OrderAchievementBySuccessRate;
 import com.jumbo.trus.service.order.OrderPlayerByName;
 import com.jumbo.trus.service.player.PlayerService;
-import com.jumbo.trus.service.achievement.helper.IMatchIdNumberOneNumberTwo;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.webjars.NotFoundException;
 
 import java.util.ArrayList;
@@ -50,9 +48,14 @@ public class AchievementService {
         if (appTeam == null) {
             throw new IllegalStateException("AppTeamId nebyl nastaven!");
         }
-
         achievementCalculator.calculateAllAchievements(playerService.getAll(appTeam.getId()), appTeam, achievementType);
         log.debug("Vypočteno!");
+    }
+
+    public void updatePlayerAchievements(Long playerId, AppTeamEntity appTeam) {
+        List<PlayerDTO> playerDTOList = new ArrayList<>();
+        playerDTOList.add(playerService.getPlayer(playerId));
+        achievementCalculator.calculateAllAchievements(playerDTOList, appTeam, AchievementType.ALL);
     }
 
     public AchievementDetail getAchievementDetail(long playerAchievementId, AppTeamEntity appTeam) {
@@ -63,8 +66,7 @@ public class AchievementService {
     }
 
     public PlayerAchievementDTO editPlayerAchievement(Long playerAchievementId, PlayerAchievementDTO playerAchievementDTO) throws NotFoundException {
-        PlayerAchievementEntity foundEntity = playerAchievementRepository.findById(playerAchievementId)
-                .orElseThrow(() -> new NotFoundException("Achievement s id " + playerAchievementId + "nenalezen v db"));
+
         PlayerAchievementEntity entity = playerAchievementMapper.toEntity(playerAchievementDTO);
         entity.setId(playerAchievementId);
         PlayerAchievementEntity savedEntity = playerAchievementRepository.save(entity);
@@ -132,5 +134,4 @@ public class AchievementService {
         }
         return (float) accomplishedNumber/totalNumber;
     }
-
 }

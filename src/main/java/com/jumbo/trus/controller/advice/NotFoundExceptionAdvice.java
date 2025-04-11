@@ -1,9 +1,6 @@
 package com.jumbo.trus.controller.advice;
 
 import com.jumbo.trus.controller.error.ErrorResponse;
-import com.jumbo.trus.controller.error.FieldValidationResponse;
-import com.jumbo.trus.service.exceptions.FieldValidationException;
-import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;

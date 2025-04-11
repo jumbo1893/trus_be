@@ -1,9 +1,5 @@
 package com.jumbo.trus.entity.achievement;
 
-import com.jumbo.trus.entity.*;
-import com.jumbo.trus.entity.auth.UserEntity;
-import com.jumbo.trus.entity.auth.UserTeamRole;
-import com.jumbo.trus.entity.football.TeamEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -45,6 +41,7 @@ public class AchievementEntity {
         this.onlyForPlayers = onlyForPlayers;
         this.description = description;
         this.secondaryCondition = secondaryCondition;
+        this.manually = manually;
     }
 
     public AchievementEntity(String name, String code, Boolean onlyForPlayers, String description, Boolean manually) {

@@ -1,10 +1,12 @@
 package com.jumbo.trus.controller;
 
+import com.jumbo.trus.aspect.PostCommitTask;
+import com.jumbo.trus.aspect.appteam.StoreAppTeam;
 import com.jumbo.trus.config.security.RoleRequired;
 import com.jumbo.trus.dto.receivedfine.ReceivedFineDTO;
-import com.jumbo.trus.dto.receivedfine.response.get.detailed.ReceivedFineDetailedResponse;
 import com.jumbo.trus.dto.receivedfine.multi.ReceivedFineListDTO;
 import com.jumbo.trus.dto.receivedfine.response.ReceivedFineResponse;
+import com.jumbo.trus.dto.receivedfine.response.get.detailed.ReceivedFineDetailedResponse;
 import com.jumbo.trus.dto.receivedfine.response.get.setup.ReceivedFineSetupResponse;
 import com.jumbo.trus.entity.filter.ReceivedFineFilter;
 import com.jumbo.trus.entity.filter.StatisticsFilter;
@@ -27,12 +29,16 @@ public class ReceivedFineController {
 
     @Secured("ADMIN")
     @PostMapping("/add")
+    @PostCommitTask
+    @StoreAppTeam
     public ReceivedFineDTO addFine(@RequestBody ReceivedFineDTO receivedFineDTO) {
         return receivedFineService.addFine(receivedFineDTO, appTeamService.getCurrentAppTeamOrThrow());
     }
 
     @RoleRequired("ADMIN")
     @PostMapping("/player-add")
+    @PostCommitTask
+    @StoreAppTeam
     public ReceivedFineResponse addFinesToPlayer(@RequestBody ReceivedFineListDTO receivedFineListDTO) {
         return receivedFineService.addFineToPlayer(receivedFineListDTO, appTeamService.getCurrentAppTeamOrThrow());
     }
@@ -53,12 +59,16 @@ public class ReceivedFineController {
 
     @RoleRequired("ADMIN")
     @PostMapping("/multiple-add")
+    @PostCommitTask
+    @StoreAppTeam
     public ReceivedFineResponse addMultipleFine(@RequestBody ReceivedFineListDTO receivedFineListDTO) {
         return receivedFineService.addMultipleFines(receivedFineListDTO, appTeamService.getCurrentAppTeamOrThrow());
     }
 
     @RoleRequired("ADMIN")
     @DeleteMapping("/{fineId}")
+    @PostCommitTask
+    @StoreAppTeam
     public void deleteMatch(@PathVariable Long fineId) throws NotFoundException {
         receivedFineService.deleteFine(fineId);
     }

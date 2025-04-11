@@ -1,12 +1,12 @@
 package com.jumbo.trus.service.football.pkfl.job;
 
-import com.jumbo.trus.service.football.player.FootballPlayerService;
 import com.jumbo.trus.service.football.league.LeagueService;
 import com.jumbo.trus.service.football.match.FootballMatchService;
+import com.jumbo.trus.service.football.player.FootballPlayerService;
 import com.jumbo.trus.service.football.team.TeamService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component

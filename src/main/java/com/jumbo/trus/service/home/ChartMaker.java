@@ -9,17 +9,21 @@ import com.jumbo.trus.dto.match.MatchDTO;
 import com.jumbo.trus.dto.receivedfine.response.get.detailed.ReceivedFineDetailedResponse;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.filter.StatisticsFilter;
-import com.jumbo.trus.service.*;
+import com.jumbo.trus.service.MatchService;
+import com.jumbo.trus.service.SeasonService;
 import com.jumbo.trus.service.auth.UserService;
 import com.jumbo.trus.service.beer.BeerService;
 import com.jumbo.trus.service.beer.BeerStatsService;
 import com.jumbo.trus.service.beer.helper.AverageBeer;
-import com.jumbo.trus.service.receivedFine.ReceivedFineService;
 import com.jumbo.trus.service.player.PlayerService;
+import com.jumbo.trus.service.receivedFine.ReceivedFineService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service

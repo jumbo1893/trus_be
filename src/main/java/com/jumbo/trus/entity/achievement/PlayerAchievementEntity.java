@@ -1,6 +1,5 @@
 package com.jumbo.trus.entity.achievement;
 
-import com.jumbo.trus.dto.football.FootballMatchDTO;
 import com.jumbo.trus.entity.MatchEntity;
 import com.jumbo.trus.entity.PlayerEntity;
 import com.jumbo.trus.entity.football.FootballMatchEntity;

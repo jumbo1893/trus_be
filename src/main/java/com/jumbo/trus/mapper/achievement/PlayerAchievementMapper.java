@@ -1,14 +1,11 @@
 package com.jumbo.trus.mapper.achievement;
 
-import com.jumbo.trus.dto.achievement.AchievementDTO;
 import com.jumbo.trus.dto.achievement.PlayerAchievementDTO;
-import com.jumbo.trus.entity.achievement.AchievementEntity;
 import com.jumbo.trus.entity.achievement.PlayerAchievementEntity;
 import com.jumbo.trus.mapper.MatchMapper;
 import com.jumbo.trus.mapper.PlayerMapper;
 import com.jumbo.trus.mapper.football.FootballMatchMapper;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring", uses = {AchievementMapper.class, PlayerMapper.class, MatchMapper.class, FootballMatchMapper.class})
 public abstract class PlayerAchievementMapper {

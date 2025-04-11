@@ -1,11 +1,11 @@
 package com.jumbo.trus.service.fine;
 
 import com.jumbo.trus.dto.FineDTO;
+import com.jumbo.trus.entity.FineEntity;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
+import com.jumbo.trus.entity.repository.FineRepository;
 import com.jumbo.trus.entity.repository.ReceivedFineRepository;
 import com.jumbo.trus.mapper.FineMapper;
-import com.jumbo.trus.entity.FineEntity;
-import com.jumbo.trus.entity.repository.FineRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;

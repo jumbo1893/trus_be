@@ -1,7 +1,6 @@
 package com.jumbo.trus.entity.repository.auth;
 
 import com.jumbo.trus.entity.auth.AppTeamEntity;
-import com.jumbo.trus.entity.auth.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

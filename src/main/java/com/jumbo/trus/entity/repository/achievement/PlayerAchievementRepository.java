@@ -2,9 +2,9 @@ package com.jumbo.trus.entity.repository.achievement;
 
 import com.jumbo.trus.entity.PlayerEntity;
 import com.jumbo.trus.entity.achievement.PlayerAchievementEntity;
-import com.jumbo.trus.service.achievement.helper.IMatchIdNumberOneNumberTwo;
-import com.jumbo.trus.service.achievement.helper.IGoalBeerMatch;
 import com.jumbo.trus.service.achievement.helper.IGoalBeerFineMatch;
+import com.jumbo.trus.service.achievement.helper.IGoalBeerMatch;
+import com.jumbo.trus.service.achievement.helper.IMatchIdNumberOneNumberTwo;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

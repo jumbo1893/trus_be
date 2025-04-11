@@ -35,9 +35,9 @@ public class PlayerController {
         return playerService.getAll(appTeamService.getCurrentAppTeamOrThrow().getId());
     }
 
-    @PostCommitTask
     @RoleRequired("READER")
     @GetMapping("/setup")
+    @PostCommitTask
     @StoreAppTeam
     public PlayerSetup setupPlayer(@RequestParam(required = false) Long playerId) {
         return playerAchievementService.setupPlayerWithAchievements(playerId, appTeamService.getCurrentAppTeamOrThrow());

@@ -1,9 +1,12 @@
 package com.jumbo.trus.entity.repository.specification;
 
-import com.jumbo.trus.entity.*;
-import com.jumbo.trus.entity.filter.GoalFilter;
+import com.jumbo.trus.entity.StepUpdateEntity;
+import com.jumbo.trus.entity.StepUpdateEntity_;
 import com.jumbo.trus.entity.filter.StepFilter;
-import jakarta.persistence.criteria.*;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;

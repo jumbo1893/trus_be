@@ -1,6 +1,5 @@
 package com.jumbo.trus.entity.repository.auth;
 
-import com.jumbo.trus.entity.PlayerEntity;
 import com.jumbo.trus.entity.auth.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

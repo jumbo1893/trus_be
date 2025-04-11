@@ -1,7 +1,6 @@
 package com.jumbo.trus.entity.filter;
 
 
-import com.jumbo.trus.entity.auth.AppTeamEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;

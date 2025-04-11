@@ -1,9 +1,9 @@
 package com.jumbo.trus.dto.match.response;
 
-import com.jumbo.trus.dto.player.PlayerDTO;
 import com.jumbo.trus.dto.SeasonDTO;
 import com.jumbo.trus.dto.football.FootballMatchDTO;
 import com.jumbo.trus.dto.match.MatchDTO;
+import com.jumbo.trus.dto.player.PlayerDTO;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;

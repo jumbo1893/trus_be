@@ -4,7 +4,6 @@ import com.jumbo.trus.dto.home.HomeSetup;
 import com.jumbo.trus.dto.player.PlayerDTO;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.service.auth.AppTeamService;
-import com.jumbo.trus.service.auth.UserService;
 import com.jumbo.trus.service.fact.RandomFact;
 import com.jumbo.trus.service.football.match.FootballMatchService;
 import com.jumbo.trus.service.player.PlayerService;

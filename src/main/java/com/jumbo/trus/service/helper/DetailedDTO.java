@@ -1,10 +1,10 @@
 package com.jumbo.trus.service.helper;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.jumbo.trus.dto.player.PlayerDTO;
 import com.jumbo.trus.dto.beer.response.get.BeerDetailedDTO;
 import com.jumbo.trus.dto.goal.response.get.GoalDetailedDTO;
 import com.jumbo.trus.dto.match.MatchDTO;
+import com.jumbo.trus.dto.player.PlayerDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

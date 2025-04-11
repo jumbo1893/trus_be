@@ -17,10 +17,10 @@ public class PlayerAchievementService {
 
     public PlayerSetup setupPlayerWithAchievements(Long playerId, AppTeamEntity appTeamEntity) {
         PlayerSetup playerSetup = playerService.setupPlayer(playerId, appTeamEntity);
+        achievementService.updatePlayerAchievements(playerId, appTeamEntity);
         if (playerId != null) {
             playerSetup.setAchievementPlayerDetail(achievementService.getAchievementsForPlayer(playerId));
         }
-        log.debug("vracím player setup");
         return playerSetup;
     }
 }
