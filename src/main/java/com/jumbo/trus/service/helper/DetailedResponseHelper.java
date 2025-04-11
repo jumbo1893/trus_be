@@ -137,6 +137,6 @@ public class DetailedResponseHelper {
 
     public enum DetailedType {
         BEER,
-        GOAL;
+        GOAL
     }
 }

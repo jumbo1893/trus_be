@@ -113,11 +113,7 @@ public class BirthdayCalculator {
     private int calculateAge(PlayerDTO playerDTO) {
         Calendar playerCalendar = Calendar.getInstance();
         playerCalendar.setTime(playerDTO.getBirthday());
-        int age = currentDate.get(Calendar.YEAR) - playerCalendar.get(Calendar.YEAR);
-        /*if (isTodayBirthday(playerDTO)) {
-            age--; // Ještě nemáte narozeniny v aktuálním roce
-        }*/
-        return age;
+        return currentDate.get(Calendar.YEAR) - playerCalendar.get(Calendar.YEAR);
     }
 
     private boolean isBirthdayInThisYear(Calendar playerCalendar) {
