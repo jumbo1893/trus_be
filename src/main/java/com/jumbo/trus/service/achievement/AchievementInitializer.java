@@ -50,7 +50,7 @@ public class AchievementInitializer implements CommandLineRunner {
                     new AchievementEntity("Žlutý/Hnědý poplach", "ZLUTY_HNEDY_POPLACH", true, "Kocovina + vyprazdňování při zápase", false),
                     new AchievementEntity("Sběratel", "SBERATEL", false, "Získej dva achievementy za zápas", false),
                     new AchievementEntity("Medmrdka", "MEDMRDKA", true, "Dvě zmínky v tisku za sezonu", false),
-                    new AchievementEntity("Naroď se", "NAROD_SE", true, "Alias achievement útěchy - Pokuta za narozeniny", false),
+                    new AchievementEntity("Naroď se", "NAROD_SE", false, "Alias achievement útěchy - Pokuta za narozeniny", false),
                     new AchievementEntity("Priority", "PRIORITY", false, "Účást na všech zápasech v sezóně", false),
                     new AchievementEntity("Žlutá je dobrá", "ZLUTA_JE_DOBRA", true, "Zaznamenej v sezoně jak vyprazdňování při zápase tak žlutou kartu", false),
                     new AchievementEntity("Ionťák", "IONTAK", true, "Zaznamenej v zápase alespoň jedno pivo, ale vynechej třetí poločas", false),
