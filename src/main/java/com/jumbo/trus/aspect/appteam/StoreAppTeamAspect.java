@@ -19,6 +19,7 @@ public class StoreAppTeamAspect {
 
     @Before("@within(StoreAppTeam) || @annotation(StoreAppTeam)")
     public void storeAppTeamId() {
+
         AppTeamEntity appTeam = appTeamService.getCurrentAppTeamOrThrow();
         AppTeamContextHolder.setAppTeam(appTeam);
     }

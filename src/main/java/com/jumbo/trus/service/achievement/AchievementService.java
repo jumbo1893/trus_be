@@ -44,7 +44,7 @@ public class AchievementService {
     @Async
     @Transactional
     public void updateAllPlayerAchievements(AppTeamEntity appTeam, AchievementType achievementType) {
-
+        log.debug("updateAllPlayerAchievements! {}", appTeam == null);
         if (appTeam == null) {
             throw new IllegalStateException("AppTeamId nebyl nastaven!");
         }
