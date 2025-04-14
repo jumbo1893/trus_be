@@ -1,5 +1,7 @@
 package com.jumbo.trus.controller;
 
+import com.jumbo.trus.aspect.PostCommitTask;
+import com.jumbo.trus.aspect.appteam.StoreAppTeam;
 import com.jumbo.trus.config.security.RoleRequired;
 import com.jumbo.trus.dto.player.PlayerDTO;
 import com.jumbo.trus.dto.player.PlayerSetup;
@@ -23,6 +25,8 @@ public class PlayerController {
 
     @RoleRequired("ADMIN")
     @PostMapping("/add")
+    @PostCommitTask
+    @StoreAppTeam
     public PlayerDTO addPlayer(@RequestBody PlayerDTO playerDTO) {
         return playerService.addPlayer(playerDTO, appTeamService.getCurrentAppTeamOrThrow());
     }
@@ -59,12 +63,16 @@ public class PlayerController {
 
     @RoleRequired("ADMIN")
     @PutMapping("/{playerId}")
+    @PostCommitTask
+    @StoreAppTeam
     public PlayerDTO editPlayer(@PathVariable Long playerId, @RequestBody PlayerDTO playerDTO) throws NotFoundException {
         return playerService.editPlayer(playerId, playerDTO);
     }
 
     @RoleRequired("ADMIN")
     @DeleteMapping("/{playerId}")
+    @PostCommitTask
+    @StoreAppTeam
     public void deletePlayer(@PathVariable Long playerId) throws NotFoundException {
         playerService.deletePlayer(playerId);
     }

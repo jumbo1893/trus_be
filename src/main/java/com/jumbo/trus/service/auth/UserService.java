@@ -7,7 +7,6 @@ import com.jumbo.trus.entity.auth.UserEntity;
 import com.jumbo.trus.entity.auth.UserTeamRole;
 import com.jumbo.trus.entity.repository.auth.UserRepository;
 import com.jumbo.trus.entity.repository.auth.UserTeamRoleRepository;
-import com.jumbo.trus.mapper.auth.AppTeamMapper;
 import com.jumbo.trus.mapper.auth.UserTeamRoleMapper;
 import com.jumbo.trus.service.NotificationService;
 import com.jumbo.trus.service.exceptions.AuthException;
@@ -35,7 +34,6 @@ public class UserService implements UserDetailsService {
     private final PasswordEncoder passwordEncoder;
     private final NotificationService notificationService;
     private final UserTeamRoleMapper userTeamRoleMapper;
-    private final AppTeamMapper appTeamMapper;
     private final TeamService teamService;
     private final PlayerService playerService;
     private final UserTeamRoleRepository userTeamRoleRepository;
@@ -44,16 +42,20 @@ public class UserService implements UserDetailsService {
     public void migrateAllUsers(AppTeamEntity appTeamEntity) {
         List<UserEntity> users = userRepository.findAll();
         for (UserEntity user : users) {
-            UserTeamRole userTeamRole = new UserTeamRole();
-            userTeamRole.setAppTeam(appTeamEntity);
-            Long playerId = userRepository.findPlayerId(user.getId());
-            if (playerId != null) {
-                userTeamRole.setPlayer(playerService.getPlayerEntity(playerId));
-            }
-            userTeamRole.setUser(user);
-            userTeamRole.setRole(user.isAdmin() ? "ADMIN" : "READER");
-            userTeamRoleRepository.save(userTeamRole);
+            createNewUserTeamRole(appTeamEntity, user, user.isAdmin());
         }
+    }
+
+    private UserTeamRole createNewUserTeamRole(AppTeamEntity appTeamEntity, UserEntity user, boolean isAdmin) {
+        UserTeamRole userTeamRole = new UserTeamRole();
+        userTeamRole.setAppTeam(appTeamEntity);
+        Long playerId = userRepository.findPlayerId(user.getId());
+        if (playerId != null) {
+            userTeamRole.setPlayer(playerService.getPlayerEntity(playerId));
+        }
+        userTeamRole.setUser(user);
+        userTeamRole.setRole(isAdmin ? "ADMIN" : "READER");
+        return userTeamRoleRepository.save(userTeamRole);
     }
 
     public UserDTO create(UserDTO user) {
@@ -61,13 +63,17 @@ public class UserService implements UserDetailsService {
             UserEntity entity = new UserEntity();
             entity.setMail(user.getMail().toLowerCase().trim());
             entity.setPassword(passwordEncoder.encode(user.getPassword()));
-
+            //DOČASNĚ ZVOLÍME STEJNÝ APP TEAM JAKO MÁ JINÝ UŽIVATEL
             entity = userRepository.save(entity);
+            UserTeamRoleDTO userTeamRole = userTeamRoleMapper.toDTO(createNewUserTeamRole(userRepository.findAll().get(0).getTeamRoles().get(0).getAppTeam(), entity, false));
 
             UserDTO dto = new UserDTO();
             dto.setId(entity.getId());
             dto.setMail(entity.getMail());
             dto.setAdmin(entity.isAdmin());
+            List<UserTeamRoleDTO> rolesList = new ArrayList<>();
+            rolesList.add(userTeamRole);
+            dto.setTeamRoles(rolesList);
             //notificationService.addAdminNotification("Zaregistrován nový uživatel", entity.getMail());
             return dto;
         } catch (DataIntegrityViolationException e) {
