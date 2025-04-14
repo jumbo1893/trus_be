@@ -1,7 +1,5 @@
 package com.jumbo.trus.controller;
 
-import com.jumbo.trus.aspect.PostCommitTask;
-import com.jumbo.trus.aspect.appteam.StoreAppTeam;
 import com.jumbo.trus.config.security.RoleRequired;
 import com.jumbo.trus.dto.player.PlayerDTO;
 import com.jumbo.trus.dto.player.PlayerSetup;
@@ -37,8 +35,6 @@ public class PlayerController {
 
     @RoleRequired("READER")
     @GetMapping("/setup")
-    @PostCommitTask
-    @StoreAppTeam
     public PlayerSetup setupPlayer(@RequestParam(required = false) Long playerId) {
         return playerAchievementService.setupPlayerWithAchievements(playerId, appTeamService.getCurrentAppTeamOrThrow());
     }

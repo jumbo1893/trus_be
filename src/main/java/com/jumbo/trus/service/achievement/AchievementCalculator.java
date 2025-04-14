@@ -150,7 +150,6 @@ public class AchievementCalculator {
     }
 
     private Long getExistingPlayerAchievementId(PlayerAchievementDTO playerAchievement) {
-        log.debug("getExistingPlayerAchievementId, player: {}, achievement: {} ", playerAchievement.getPlayer().getId(), playerAchievement.getAchievement().getId());
         PlayerAchievementEntity entity = playerAchievementRepository.findByPlayerIdAndAchievementId(playerAchievement.getPlayer().getId(), playerAchievement.getAchievement().getId()).orElse(null);
         if (entity == null) {
             return null;
