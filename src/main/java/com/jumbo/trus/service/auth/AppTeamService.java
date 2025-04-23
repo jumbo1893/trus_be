@@ -1,5 +1,6 @@
 package com.jumbo.trus.service.auth;
 
+import com.jumbo.trus.dto.auth.AppTeamDTO;
 import com.jumbo.trus.dto.auth.AppTeamRegistration;
 import com.jumbo.trus.dto.auth.UserTeamRoleDTO;
 import com.jumbo.trus.dto.player.PlayerDTO;
@@ -10,13 +11,13 @@ import com.jumbo.trus.entity.auth.UserTeamRole;
 import com.jumbo.trus.entity.football.TeamEntity;
 import com.jumbo.trus.entity.repository.auth.AppTeamRepository;
 import com.jumbo.trus.entity.repository.auth.UserTeamRoleRepository;
+import com.jumbo.trus.entity.repository.football.TeamRepository;
 import com.jumbo.trus.mapper.PlayerMapper;
 import com.jumbo.trus.mapper.auth.AppTeamMapper;
 import com.jumbo.trus.mapper.auth.UserTeamRoleMapper;
 import com.jumbo.trus.service.HeaderManager;
 import com.jumbo.trus.service.exceptions.AuthException;
 import com.jumbo.trus.service.exceptions.FieldValidationException;
-import com.jumbo.trus.service.football.team.TeamService;
 import com.jumbo.trus.service.helper.ValidationField;
 import com.jumbo.trus.service.player.PlayerService;
 import lombok.RequiredArgsConstructor;
@@ -30,9 +31,9 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class AppTeamService {
+public class AppTeamService implements AppTeamProvider {
 
-    private final TeamService teamService;
+    private final TeamRepository teamRepository;
     private final UserService userService;
     private final AppTeamRepository appTeamRepository;
     private final UserTeamRoleRepository userTeamRoleRepository;
@@ -51,9 +52,14 @@ public class AppTeamService {
         return findAppTeamByIdOrThrow(id);
     }
 
+    public List<AppTeamDTO> getAllAppTeams() {
+        return appTeamRepository.findAll().stream().map(appTeamMapper::toDTO).toList();
+    }
+
     public void registerAppTeam(AppTeamRegistration appTeamRegistration) {
         UserEntity user = userService.getCurrentUserEntity();
-        TeamEntity team = teamService.getTeamById(appTeamRegistration.getFootballTeamId());
+        TeamEntity team = teamRepository.findById(appTeamRegistration.getFootballTeamId())
+                .orElseThrow(() -> new NotFoundException("Tým s id " + appTeamRegistration.getFootballTeamId() + " nenalezen!"));
         createNewAppTeamIfNotExists(appTeamRegistration, user, team);
     }
 
@@ -62,6 +68,10 @@ public class AppTeamService {
         AppTeamEntity appTeam = findAppTeamByIdOrThrow(appTeamId);
         log.debug(appTeam.getTeamRoles().stream().map(userTeamRoleMapper::toDTO).toList().toString());
         createNewUserTeamRole(user, appTeam, "READER");
+    }
+
+    public AppTeamDTO getLisciTrusAppTeam() {
+        return appTeamMapper.toDTO(findAppTeamByName("Liščí Trus").orElseThrow());
     }
 
     private Optional<AppTeamEntity> findAppTeamByName(String name) {

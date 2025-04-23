@@ -11,7 +11,7 @@ import com.jumbo.trus.mapper.auth.UserTeamRoleMapper;
 import com.jumbo.trus.service.NotificationService;
 import com.jumbo.trus.service.exceptions.AuthException;
 import com.jumbo.trus.service.exceptions.DuplicateEmailException;
-import com.jumbo.trus.service.football.team.TeamService;
+import com.jumbo.trus.service.football.team.TeamProcessor;
 import com.jumbo.trus.service.player.PlayerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -34,7 +34,7 @@ public class UserService implements UserDetailsService {
     private final PasswordEncoder passwordEncoder;
     private final NotificationService notificationService;
     private final UserTeamRoleMapper userTeamRoleMapper;
-    private final TeamService teamService;
+    private final TeamProcessor teamProcessor;
     private final PlayerService playerService;
     private final UserTeamRoleRepository userTeamRoleRepository;
 
@@ -166,7 +166,7 @@ public class UserService implements UserDetailsService {
         dto.setAdmin(entity.isAdmin());
         dto.setTeamRoles(entity.getTeamRoles().stream().map(userTeamRoleMapper::toDTO).toList());
         for (UserTeamRoleDTO teamRole : dto.getTeamRoles())
-            teamService.enhanceTeamWithFootballTeam(teamRole.getAppTeam().getTeam());
+            teamProcessor.enhanceTeamWithTableTeam(teamRole.getAppTeam().getTeam());
         return dto;
     }
 }

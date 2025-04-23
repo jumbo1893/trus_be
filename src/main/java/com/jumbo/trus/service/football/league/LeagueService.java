@@ -2,8 +2,10 @@ package com.jumbo.trus.service.football.league;
 
 import com.jumbo.trus.dto.football.LeagueDTO;
 import com.jumbo.trus.dto.football.Organization;
+import com.jumbo.trus.entity.football.LeagueEntity;
 import com.jumbo.trus.entity.repository.football.LeagueRepository;
 import com.jumbo.trus.mapper.football.LeagueMapper;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +26,11 @@ public class LeagueService {
 
     public List<LeagueDTO> getAllLeagues() {
         return leagueRepository.findAll().stream().map(leagueMapper::toDTO).toList();
+    }
+
+    public LeagueDTO getLeagueBy(Long id) {
+        LeagueEntity leagueEntity = leagueRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.valueOf(id)));
+        return leagueMapper.toDTO(leagueEntity);
     }
 
     public List<LeagueDTO> getAllLeagues(Organization organization) {

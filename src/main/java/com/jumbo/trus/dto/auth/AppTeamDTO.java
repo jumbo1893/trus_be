@@ -16,6 +16,8 @@ public class AppTeamDTO {
 
     private Long ownerId;
 
+    private String ownerName;
+
     private TeamDTO team;
 
 }

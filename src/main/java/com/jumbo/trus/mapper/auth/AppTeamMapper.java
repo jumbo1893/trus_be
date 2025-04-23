@@ -22,5 +22,6 @@ public abstract class AppTeamMapper {
     public abstract AppTeamEntity toEntity(AppTeamDTO source);
 
     @Mapping(target = "ownerId", source = "owner.id")
+    @Mapping(target = "ownerName", source = "owner.name")
     public abstract AppTeamDTO toDTO(AppTeamEntity source);
 }

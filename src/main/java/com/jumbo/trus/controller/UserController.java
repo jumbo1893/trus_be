@@ -2,11 +2,13 @@ package com.jumbo.trus.controller;
 
 import com.jumbo.trus.controller.error.ErrorResponse;
 import com.jumbo.trus.dto.auth.UserDTO;
+import com.jumbo.trus.dto.auth.registration.RegistrationSetup;
 import com.jumbo.trus.dto.player.PlayerDTO;
 import com.jumbo.trus.entity.auth.UserEntity;
 import com.jumbo.trus.service.auth.AppTeamService;
 import com.jumbo.trus.service.auth.UserService;
 import com.jumbo.trus.service.exceptions.AuthException;
+import com.jumbo.trus.service.football.team.TeamService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -29,6 +31,7 @@ public class UserController {
 
     final UserService userService;
     final AppTeamService appTeamService;
+    final TeamService teamService;
 
     @PostMapping("/create")
     public UserDTO createUser(@RequestBody @Valid UserDTO userDTO) {
@@ -47,13 +50,10 @@ public class UserController {
         return userService.returnUserWithoutSensitiveData(user);
     }
 
-    /*private List<UserTeamRoleDTO> getUserTeamList(List<UserTeamRole> entities) {
-        List<UserTeamRoleDTO> roles = new ArrayList<>();
-        for (UserTeamRole userTeamRole : entities) {
-            roles.add(new UserTeamRoleDTO(userTeamRole.getId(), userTeamRole.getUser().getId(), userTeamRole.getAppTeam(), userTeamRole.getRole()));
-        }
-        return roles;
-    }*/
+    @GetMapping("/registration-setup")
+    public RegistrationSetup getRegistrationSetup() {
+        return teamService.getRegistrationSetup();
+    }
 
     @DeleteMapping("/delete")
     public void deleteUser(HttpServletRequest req) throws NotFoundException, ServletException {

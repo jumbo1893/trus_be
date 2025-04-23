@@ -24,4 +24,6 @@ public interface TeamRepository extends JpaRepository<TeamEntity, Long> {
 
     @Query(value = "SELECT * FROM team WHERE current_league_id in (SELECT id FROM league WHERE current_league = true)", nativeQuery = true)
     List<TeamEntity> findTeamsFromCurrentSeason();
+
+    List<TeamEntity> findAllTeamsByCurrentLeagueId(@Param("currentLeagueId") Long currentLeagueId);
 }

@@ -1,14 +1,20 @@
 package com.jumbo.trus.service.football.team;
 
+import com.jumbo.trus.dto.auth.AppTeamDTO;
+import com.jumbo.trus.dto.auth.registration.LeagueWithTeams;
+import com.jumbo.trus.dto.auth.registration.RegistrationSetup;
+import com.jumbo.trus.dto.auth.registration.TeamWithAppTeams;
+import com.jumbo.trus.dto.football.Organization;
 import com.jumbo.trus.dto.football.TableTeamDTO;
 import com.jumbo.trus.dto.football.TeamDTO;
 import com.jumbo.trus.dto.football.detail.FootballTableTeamDetail;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.football.TeamEntity;
 import com.jumbo.trus.entity.repository.football.TeamRepository;
-import com.jumbo.trus.mapper.football.TableTeamMapper;
 import com.jumbo.trus.mapper.football.TeamMapper;
+import com.jumbo.trus.service.auth.AppTeamProvider;
 import com.jumbo.trus.service.football.helper.TeamTableTeam;
+import com.jumbo.trus.service.football.league.LeagueService;
 import com.jumbo.trus.service.football.match.FootballMatchDetailProcessor;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +22,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -28,7 +36,8 @@ public class TeamService {
     private final TeamRetriever teamRetriever;
     private final FootballMatchDetailProcessor footballMatchDetailProcessor;
     private final TableTeamProcessor tableTeamProcessor;
-    private final TableTeamMapper tableTeamMapper;
+    private final LeagueService leagueService;
+    private final AppTeamProvider appTeamProvider;
 
     public List<TeamDTO> getAllTeams() {
         return teamRepository.findAll().stream().map(teamMapper::toDTO).toList();
@@ -40,6 +49,43 @@ public class TeamService {
 
     public List<TeamDTO> getAllTeamsFromCurrentSeason() {
         return teamRepository.findTeamsFromCurrentSeason().stream().map(teamMapper::toDTO).toList();
+    }
+
+    public RegistrationSetup getRegistrationSetup() {
+        List<LeagueWithTeams> currentLeagues = leagueService
+                .getAllLeagues(Organization.PKFL, true)
+                .stream()
+                .map(LeagueWithTeams::new)
+                .toList();
+        currentLeagues.forEach(this::enhanceLeagueWithTeams);
+        Map<Long, TeamWithAppTeams> teamIdToTeamMap = currentLeagues.stream()
+                .flatMap(league -> league.getTeamWithAppTeamsList().stream())
+                .collect(Collectors.toMap(TeamWithAppTeams::getId, team -> team));
+
+        appTeamProvider.getAllAppTeams().forEach(appTeam -> {
+            TeamWithAppTeams team = teamIdToTeamMap.get(appTeam.getTeam().getId());
+            if (team != null) {
+                team.getAppTeamList().add(appTeam);
+            }
+        });
+
+        AppTeamDTO primaryAppTeam = appTeamProvider.getLisciTrusAppTeam();
+        return new RegistrationSetup(
+                currentLeagues,
+                new LeagueWithTeams(leagueService.getLeagueBy(primaryAppTeam.getTeam().getCurrentLeagueId())),
+                new TeamWithAppTeams(primaryAppTeam.getTeam()),
+                primaryAppTeam
+        );
+    }
+
+    private void enhanceLeagueWithTeams(LeagueWithTeams leagueWithTeams) {
+        List<TeamWithAppTeams> teams = teamRepository
+                .findAllTeamsByCurrentLeagueId(leagueWithTeams.getId())
+                .stream()
+                .map(teamMapper::toDTO)
+                .map(TeamWithAppTeams::new)
+                .toList();
+        leagueWithTeams.setTeamWithAppTeamsList(teams);
     }
 
     public TeamDTO getTeamByUri(String uri) {
