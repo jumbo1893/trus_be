@@ -15,6 +15,8 @@ import com.jumbo.trus.service.football.team.TeamProcessor;
 import com.jumbo.trus.service.player.PlayerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -63,17 +65,13 @@ public class UserService implements UserDetailsService {
             UserEntity entity = new UserEntity();
             entity.setMail(user.getMail().toLowerCase().trim());
             entity.setPassword(passwordEncoder.encode(user.getPassword()));
-            //DOČASNĚ ZVOLÍME STEJNÝ APP TEAM JAKO MÁ JINÝ UŽIVATEL
+            entity.setName(user.getName().trim());
             entity = userRepository.save(entity);
-            UserTeamRoleDTO userTeamRole = userTeamRoleMapper.toDTO(createNewUserTeamRole(userRepository.findAll().get(0).getTeamRoles().get(0).getAppTeam(), entity, false));
 
             UserDTO dto = new UserDTO();
             dto.setId(entity.getId());
             dto.setMail(entity.getMail());
             dto.setAdmin(entity.isAdmin());
-            List<UserTeamRoleDTO> rolesList = new ArrayList<>();
-            rolesList.add(userTeamRole);
-            dto.setTeamRoles(rolesList);
             //notificationService.addAdminNotification("Zaregistrován nový uživatel", entity.getMail());
             return dto;
         } catch (DataIntegrityViolationException e) {
@@ -136,10 +134,6 @@ public class UserService implements UserDetailsService {
         return returnUserWithoutSensitiveData(userRepository.save(userEntity));
     }
 
-    public void registerAppTeam(Long footballTeamId, Long name) {
-
-    }
-
     public UserDTO getCurrentUser() {
         try {
             Long userId = getCurrentUserEntity().getId();
@@ -169,4 +163,20 @@ public class UserService implements UserDetailsService {
             teamProcessor.enhanceTeamWithTableTeam(teamRole.getAppTeam().getTeam());
         return dto;
     }
+
+    public void refreshUserInSecurityContext() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !(authentication.getPrincipal() instanceof UserEntity oldUser)) {
+            return;
+        }
+
+        UserEntity freshUser = findById(oldUser.getId()); // z DB
+        Authentication newAuth = new UsernamePasswordAuthenticationToken(
+                freshUser,
+                authentication.getCredentials(),
+                authentication.getAuthorities() // můžeš tam dát Collections.emptyList(), protože nepoužíváš authorities
+        );
+        SecurityContextHolder.getContext().setAuthentication(newAuth);
+    }
+
 }

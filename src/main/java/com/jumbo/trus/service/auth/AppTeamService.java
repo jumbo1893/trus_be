@@ -2,6 +2,7 @@ package com.jumbo.trus.service.auth;
 
 import com.jumbo.trus.dto.auth.AppTeamDTO;
 import com.jumbo.trus.dto.auth.AppTeamRegistration;
+import com.jumbo.trus.dto.auth.UserDTO;
 import com.jumbo.trus.dto.auth.UserTeamRoleDTO;
 import com.jumbo.trus.dto.player.PlayerDTO;
 import com.jumbo.trus.entity.PlayerEntity;
@@ -56,18 +57,21 @@ public class AppTeamService implements AppTeamProvider {
         return appTeamRepository.findAll().stream().map(appTeamMapper::toDTO).toList();
     }
 
-    public void registerAppTeam(AppTeamRegistration appTeamRegistration) {
+    public UserDTO registerAppTeam(AppTeamRegistration appTeamRegistration) {
         UserEntity user = userService.getCurrentUserEntity();
         TeamEntity team = teamRepository.findById(appTeamRegistration.getFootballTeamId())
                 .orElseThrow(() -> new NotFoundException("Tým s id " + appTeamRegistration.getFootballTeamId() + " nenalezen!"));
         createNewAppTeamIfNotExists(appTeamRegistration, user, team);
+        userService.refreshUserInSecurityContext();
+        return userService.getCurrentUser();
     }
 
-    public void addCurrentUserToAppTeam(Long appTeamId) {
+    public UserDTO addCurrentUserToAppTeam(Long appTeamId) {
         UserEntity user = userService.getCurrentUserEntity();
         AppTeamEntity appTeam = findAppTeamByIdOrThrow(appTeamId);
-        log.debug(appTeam.getTeamRoles().stream().map(userTeamRoleMapper::toDTO).toList().toString());
         createNewUserTeamRole(user, appTeam, "READER");
+        userService.refreshUserInSecurityContext();
+        return userService.getCurrentUser();
     }
 
     public AppTeamDTO getLisciTrusAppTeam() {
@@ -103,7 +107,6 @@ public class AppTeamService implements AppTeamProvider {
 
         PlayerEntity playerEntity = playerService.getPlayerEntity(playerDTO.getId());
         log.debug("footballPlayer id: {}", playerEntity.getFootballPlayer() != null ? playerEntity.getFootballPlayer().getId() : "null");
-
         userTeamRole.setPlayer(playerEntity); // důležité: žádné toEntity()
         userTeamRoleRepository.save(userTeamRole);
     }

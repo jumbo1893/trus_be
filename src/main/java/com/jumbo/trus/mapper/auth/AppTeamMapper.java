@@ -19,6 +19,7 @@ public abstract class AppTeamMapper {
     @Mapping(target = "fineList", ignore = true)
     @Mapping(target = "beerList", ignore = true)
     @Mapping(target = "owner", ignore = true)
+    @Mapping(target = "id", ignore = true)
     public abstract AppTeamEntity toEntity(AppTeamDTO source);
 
     @Mapping(target = "ownerId", source = "owner.id")
