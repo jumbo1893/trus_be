@@ -18,12 +18,14 @@ import com.jumbo.trus.service.fine.FineService;
 import com.jumbo.trus.service.player.PlayerService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class ReceivedFineUpdater {
@@ -128,13 +130,12 @@ public class ReceivedFineUpdater {
         for (Long playerId : receivedFineListDTO.getPlayerIdList()) {
             processPlayerFines(receivedFineListDTO, receivedFineResponse, notificationFine, playerId, firstFineProcessed, appTeam);
             firstFineProcessed = true;
-            String players = receivedFineListDTO.getPlayerIdList().stream()
-                    .map(id -> playerService.getPlayer(id).getName())
-                    .collect(Collectors.joining(", "));
-            notificationPlayer.append(players);
-            receivedFineResponse.addEditedPlayer();
         }
-        trimTrailingComma(notificationPlayer);
+        String players = receivedFineListDTO.getPlayerIdList().stream()
+                .map(id -> playerService.getPlayer(id).getName())
+                .collect(Collectors.joining(", "));
+        notificationPlayer.append(players);
+        receivedFineResponse.addEditedPlayer();
         notificationPlayer.append(" o:");
         return notificationPlayer + "\n" + notificationFine;
     }
@@ -146,12 +147,6 @@ public class ReceivedFineUpdater {
         newReceivedFineDTO.setFineNumber(receivedFineDTO.getFineNumber());
         newReceivedFineDTO.setFine(receivedFineDTO.getFine());
         return newReceivedFineDTO;
-    }
-
-    private void trimTrailingComma(StringBuilder sb) {
-        if (!sb.isEmpty()) {
-            sb.setLength(sb.length() - 2);
-        }
     }
 
     private void processPlayerFines(ReceivedFineListDTO receivedFineListDTO, ReceivedFineResponse receivedFineResponse,
