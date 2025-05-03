@@ -36,8 +36,9 @@ public class PlayerService {
     private final FootballPlayerService footballPlayerService;
     private final FootballPlayerStatsService footballPlayerStatsService;
 
-    public PlayerDTO addPlayer(PlayerDTO playerDTO, AppTeamEntity appTeamEntity) {
+    public PlayerDTO addPlayer(PlayerDTO playerDTO, AppTeamEntity appTeam) {
         PlayerEntity entity = playerMapper.toEntity(playerDTO);
+        entity.setAppTeam(appTeam);
         PlayerEntity savedEntity = playerRepository.save(entity);
         notificationService.addNotification("Přidán " + (playerDTO.isFan() ? "fanoušek" : "hráč"), playerDTO.getName() + ", s narozeninami " + playerDTO.getBirthday());
         return playerMapper.toDTO(savedEntity);
