@@ -11,6 +11,7 @@ public abstract class UserMapper {
 
     @Mapping(target = "appTeamsOwner", ignore = true)
     @Mapping(target = "authorities", ignore = true)
+    @Mapping(target = "athletes", ignore = true)
     public abstract UserEntity toEntity(UserDTO source);
 
     @Mapping(target = "password", ignore = true)

@@ -31,3 +31,9 @@ pkfl:
   login_mail: ${PKFL_LOGIN_MAIL}
   login_password: ${PKFL_LOGIN_PASSWORD}
 
+strava:
+  url: ${SERVER_URL:https://localhost:8443}
+  callback_endpoint: ${STRAVA_CALLBACK_ENDPOINT:/strava/callback}
+  client_id: ${STRAVA_CLIENT_ID:0}
+  client_secret: ${STRAVA_CLIENT_SECRET:0}
+

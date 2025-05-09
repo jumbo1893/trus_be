@@ -1,5 +1,6 @@
 package com.jumbo.trus.entity.auth;
 
+import com.jumbo.trus.entity.strava.AthleteEntity;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
@@ -36,6 +37,9 @@ public class UserEntity implements UserDetails {
 
     @OneToMany(mappedBy = "owner")
     private List<AppTeamEntity> appTeamsOwner;
+
+    @OneToMany(mappedBy = "user")
+    private List<AthleteEntity> athletes;
 
     @Override
     public String getUsername() {
