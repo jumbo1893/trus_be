@@ -52,12 +52,17 @@ public class FootballMatchService {
                 FootballMatchDetail nextFootballMatchDetail = getFootballMatchDetail(nextMatch.getId(), appTeamEntity, false);
                 matches.add(nextFootballMatchDetail);
             }
+            else {
+                matches.add(null);
+            }
             FootballMatchDTO lastMatch = footballMatchProcessor.getLastMatch(teamId);
             if (lastMatch != null) {
                 FootballMatchDetail lastFootballMatchDetail = getFootballMatchDetail(lastMatch.getId(), appTeamEntity, false);
                 matches.add(lastFootballMatchDetail);
             }
-
+            else {
+                matches.add(null);
+            }
         }
         return matches;
     }
