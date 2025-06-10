@@ -48,11 +48,16 @@ public class FootballMatchService {
         List<FootballMatchDetail> matches = new ArrayList<>();
         if (teamId != null) {
             FootballMatchDTO nextMatch = footballMatchProcessor.getNextMatch(teamId);
-            FootballMatchDetail nextFootballMatchDetail = getFootballMatchDetail(nextMatch.getId(), appTeamEntity, false);
+            if (nextMatch != null) {
+                FootballMatchDetail nextFootballMatchDetail = getFootballMatchDetail(nextMatch.getId(), appTeamEntity, false);
+                matches.add(nextFootballMatchDetail);
+            }
             FootballMatchDTO lastMatch = footballMatchProcessor.getLastMatch(teamId);
-            FootballMatchDetail lastFootballMatchDetail = getFootballMatchDetail(lastMatch.getId(), appTeamEntity, false);
-            matches.add(nextFootballMatchDetail);
-            matches.add(lastFootballMatchDetail);
+            if (lastMatch != null) {
+                FootballMatchDetail lastFootballMatchDetail = getFootballMatchDetail(lastMatch.getId(), appTeamEntity, false);
+                matches.add(lastFootballMatchDetail);
+            }
+
         }
         return matches;
     }
