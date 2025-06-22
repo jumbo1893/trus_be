@@ -5,10 +5,10 @@ import com.jumbo.trus.entity.repository.football.LeagueRepository;
 import com.jumbo.trus.mapper.football.LeagueMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class LeagueProcessor {
@@ -20,25 +20,22 @@ public class LeagueProcessor {
         return !leagueRepository.existsByUri(league.getUri());
     }
 
-    public int saveNewLeaguesToRepository(List<LeagueDTO> leaguesFromWeb) {
-        leaguesFromWeb.forEach(league -> leagueRepository.save(leagueMapper.toEntity(league)));
-        return leaguesFromWeb.size();
+    public void saveNewLeagueToRepository(LeagueDTO leagueFromWeb) {
+        leagueRepository.save(leagueMapper.toEntity(leagueFromWeb));
     }
 
     @Transactional
-    public int updateLeagueIfNeeded(List<LeagueDTO> leaguesFromWeb) {
+    public int updateLeagueIfNeeded(LeagueDTO leagueFromWeb) {
         int updatedLeagues = 0;
-        for (LeagueDTO newLeague : leaguesFromWeb) {
-            LeagueDTO currentLeague = leagueMapper.toDTO(leagueRepository.findByUri(newLeague.getUri()));
-            if (!currentLeague.equals(newLeague)) {
-                updatedLeagues += leagueRepository.updateLeagueFields(
+        LeagueDTO currentLeague = leagueMapper.toDTO(leagueRepository.findByUri(leagueFromWeb.getUri()));
+        if (!currentLeague.equals(leagueFromWeb)) {
+            updatedLeagues += leagueRepository.updateLeagueFields(
                     currentLeague.getId(),
-                    newLeague.getName(),
-                    newLeague.getRank(),
-                    newLeague.getYear(),
-                    newLeague.isCurrentLeague()
-                );
-            }
+                    leagueFromWeb.getName(),
+                    leagueFromWeb.getRank(),
+                    leagueFromWeb.getYear(),
+                    leagueFromWeb.isCurrentLeague()
+            );
         }
         return updatedLeagues;
     }

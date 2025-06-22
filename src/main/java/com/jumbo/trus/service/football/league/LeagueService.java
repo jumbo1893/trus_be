@@ -52,13 +52,19 @@ public class LeagueService {
     }
 
     private int processLeagues(List<LeagueDTO> leaguesFromWeb) {
+        int processedLeagues = 0;
         if (leaguesFromWeb.isEmpty()) {
             return 0;
         }
-        if (leagueProcessor.isNewLeague(leaguesFromWeb.get(0))) {
-            return leagueProcessor.saveNewLeaguesToRepository(leaguesFromWeb);
+        for (LeagueDTO league : leaguesFromWeb) {
+            if (leagueProcessor.isNewLeague(leaguesFromWeb.get(0))) {
+                leagueProcessor.saveNewLeagueToRepository(league);
+                processedLeagues++;
+            }
+            else {
+                processedLeagues += leagueProcessor.updateLeagueIfNeeded(league);
+            }
         }
-
-        return leagueProcessor.updateLeagueIfNeeded(leaguesFromWeb);
+        return processedLeagues;
     }
 }

@@ -34,13 +34,21 @@ public class RetrievePkflLeagues {
                 document = SSLHelper.getConnection(BASE_URL + yearElement.select("a[href]").attr("href")).get();
             }
             for (Element spinnerButton : getLeagueSpinner(document)) {
-                returnLeagues.add(returnPkflLeague(spinnerButton, yearElement, document.baseUri().equals(PKFL_LEAGUE_URL)));
+                LeagueDTO leagueDTO = returnPkflLeague(spinnerButton, yearElement, document.baseUri().equals(PKFL_LEAGUE_URL));
+                if (isLeagueEligible(leagueDTO)) {
+                    returnLeagues.add(leagueDTO);
+                }
+
 
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
         return returnLeagues;
+    }
+
+    boolean isLeagueEligible(LeagueDTO leagueDTO) {
+        return !leagueDTO.getName().contains("Celkov");
     }
 
     public List<LeagueDTO> getAllPastLeagues() {
