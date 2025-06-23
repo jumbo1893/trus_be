@@ -4,7 +4,7 @@ import com.jumbo.trus.dto.home.HomeSetup;
 import com.jumbo.trus.dto.player.PlayerDTO;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.service.auth.AppTeamService;
-import com.jumbo.trus.service.fact.RandomFact;
+import com.jumbo.trus.service.fact.RandomFactService;
 import com.jumbo.trus.service.football.match.FootballMatchService;
 import com.jumbo.trus.service.player.PlayerService;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 public class HomeService {
 
     private final PlayerService playerService;
-    private final RandomFact randomFact;
+    private final RandomFactService randomFactService;
     private final ChartMaker chartMaker;
     private final FootballMatchService footballMatchService;
     private final AppTeamService appTeamService;
@@ -23,7 +23,7 @@ public class HomeService {
     public HomeSetup setup(Long userId, AppTeamEntity appTeamEntity) {
         HomeSetup homeSetup = new HomeSetup();
         homeSetup.setNextBirthday(getUpcomingBirthday(appTeamEntity.getId()));
-        homeSetup.setRandomFacts(randomFact.getRandomFacts(appTeamEntity));
+        homeSetup.setRandomFacts(randomFactService.getRandomFacts(appTeamEntity));
         homeSetup.setChart(chartMaker.setupChartCoordinatesForUser(getCurrentPlayerId(userId), appTeamEntity));
         homeSetup.setCharts(chartMaker.setupChartsCoordinates(getCurrentPlayerId(userId), appTeamEntity));
         setNextAndLastMatch(homeSetup, appTeamEntity);

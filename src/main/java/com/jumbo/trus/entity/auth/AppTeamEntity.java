@@ -54,6 +54,9 @@ public class AppTeamEntity {
     @OneToMany(mappedBy = "appTeam")
     private List<BeerEntity> beerList;
 
+    @OneToMany(mappedBy = "appTeam")
+    private List<DynamicTextEntity> dynamicTextList;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

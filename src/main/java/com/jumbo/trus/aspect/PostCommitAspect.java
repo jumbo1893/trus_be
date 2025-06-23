@@ -5,6 +5,7 @@ import com.jumbo.trus.controller.*;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.service.achievement.AchievementService;
 import com.jumbo.trus.service.achievement.helper.AchievementType;
+import com.jumbo.trus.service.fact.RandomFactService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
@@ -22,6 +23,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 public class PostCommitAspect {
 
     private final AchievementService achievementService;
+    private final RandomFactService randomFactService;
     private final TaskExecutor taskExecutor;  // Spring-managed async executor
 
     @AfterReturning(pointcut = "@annotation(com.jumbo.trus.aspect.PostCommitTask)", returning = "result")
@@ -35,11 +37,13 @@ public class PostCommitAspect {
                 public void afterCommit() {
                     log.info("Spouštím asynchronní úkol po transakci...");
                     taskExecutor.execute(() -> achievementService.updateAllPlayerAchievements(appTeam, getAchievementTypeByClass(className)));
+                    taskExecutor.execute(() -> randomFactService.saveOrUpdateRandomFacts(appTeam));
                 }
             });
         } else {
             log.warn("Transakce není aktivní, spouštím ihned...");
             taskExecutor.execute(() -> achievementService.updateAllPlayerAchievements(appTeam, getAchievementTypeByClass(className)));
+            taskExecutor.execute(() -> randomFactService.saveOrUpdateRandomFacts(appTeam));
         }
     }
 

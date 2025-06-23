@@ -28,5 +28,7 @@ public class MatchFilter {
     //defaultní hodnota
     private int limit = 1000;
 
-
+    public MatchFilter(AppTeamEntity appTeam) {
+        this.appTeam = appTeam;
+    }
 }

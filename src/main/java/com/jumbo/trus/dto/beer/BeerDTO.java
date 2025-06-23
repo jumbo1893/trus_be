@@ -30,4 +30,9 @@ public class BeerDTO {
         this.liquorNumber = beerNoMatchDTO.getLiquorNumber();
         this.playerId = beerNoMatchDTO.getPlayerId();
     }
+
+    public BeerDTO(int beerNumber, int liquorNumber) {
+        this.beerNumber = beerNumber;
+        this.liquorNumber = liquorNumber;
+    }
 }
