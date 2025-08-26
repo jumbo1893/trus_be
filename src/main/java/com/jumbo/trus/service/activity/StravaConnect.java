@@ -4,6 +4,7 @@ import com.jumbo.trus.dto.strava.StravaTokenResponse;
 import com.jumbo.trus.entity.repository.strava.AthleteRepository;
 import com.jumbo.trus.entity.strava.AthleteEntity;
 import com.jumbo.trus.service.auth.UserService;
+import com.jumbo.trus.util.JwtTokenUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
@@ -26,6 +27,7 @@ public class StravaConnect {
     private final RestTemplate restTemplate;
     private final StravaProperties stravaProperties;
     private final UserService userService;
+    private final JwtTokenUtil jwtTokenUtil;
 
 
     public void exchangeCodeForToken(String code, Long userId) {
@@ -52,13 +54,15 @@ public class StravaConnect {
     }
 
     public String connectRedirectUrl(Long userId) {
+        String token = jwtTokenUtil.generateToken(userId);
         return String.format(
-                "https://www.strava.com/oauth/authorize?client_id=%s&redirect_uri=%s&response_type=code&scope=activity:read_all&state=%d",
+                "https://www.strava.com/oauth/authorize?client_id=%s&redirect_uri=%s&response_type=code&scope=activity:read_all&state=%s",
                 stravaProperties.getClientId(),
                 stravaProperties.getUrl() + stravaProperties.getCallbackEndpoint(),
-                userId
+                token
         );
     }
+
 
     public AthleteEntity refreshAccessToken(AthleteEntity athlete) {
         String url = "https://www.strava.com/oauth/token";

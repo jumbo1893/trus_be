@@ -57,7 +57,7 @@ public class LeagueService {
             return 0;
         }
         for (LeagueDTO league : leaguesFromWeb) {
-            if (leagueProcessor.isNewLeague(leaguesFromWeb.get(0))) {
+            if (leagueProcessor.isNewLeague(league)) {
                 leagueProcessor.saveNewLeagueToRepository(league);
                 processedLeagues++;
             }

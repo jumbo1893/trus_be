@@ -29,7 +29,7 @@ public class RetrieveTeamPlayers {
         List<FootballPlayerDTO> footballers = new ArrayList<>();
         try {
             log.debug("Zpracovávám tým {}", teamDTO.getName());
-            Connection.Response response = loginToPkfl.getLoggedAccessToPkflWeb(teamDTO.getUri()+"?do=component-loadTeamDetail");
+            Connection.Response response = loginToPkfl.getLoggedAccessToPkflWeb(teamDTO.getUri());
             log.debug("načtena URL");
             Document document = response.parse();
             Element playerTable = Objects.requireNonNull(document.getElementById("soupiska"));

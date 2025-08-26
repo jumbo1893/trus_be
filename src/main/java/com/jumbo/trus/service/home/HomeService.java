@@ -8,8 +8,10 @@ import com.jumbo.trus.service.fact.RandomFactService;
 import com.jumbo.trus.service.football.match.FootballMatchService;
 import com.jumbo.trus.service.player.PlayerService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class HomeService {

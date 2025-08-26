@@ -19,7 +19,7 @@ import com.jumbo.trus.service.helper.Pair;
 import com.jumbo.trus.service.order.OrderBeerByAttendance;
 import com.jumbo.trus.service.order.OrderBeerByBeerOrLiquorNumber;
 import com.jumbo.trus.service.player.PlayerService;
-import com.jumbo.trus.service.util.Util;
+import com.jumbo.trus.util.Util;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

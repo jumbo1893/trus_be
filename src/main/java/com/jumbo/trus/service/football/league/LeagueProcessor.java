@@ -27,6 +27,7 @@ public class LeagueProcessor {
     @Transactional
     public int updateLeagueIfNeeded(LeagueDTO leagueFromWeb) {
         int updatedLeagues = 0;
+        log.debug("liga {}", leagueFromWeb);
         LeagueDTO currentLeague = leagueMapper.toDTO(leagueRepository.findByUri(leagueFromWeb.getUri()));
         if (!currentLeague.equals(leagueFromWeb)) {
             updatedLeagues += leagueRepository.updateLeagueFields(

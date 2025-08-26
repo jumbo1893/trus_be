@@ -1,4 +1,4 @@
-package com.jumbo.trus.service.util;
+package com.jumbo.trus.util;
 
 public class Util {
 

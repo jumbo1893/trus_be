@@ -5,6 +5,7 @@ import com.jumbo.trus.dto.strava.AthleteActivities;
 import com.jumbo.trus.entity.auth.UserEntity;
 import com.jumbo.trus.service.activity.StravaService;
 import com.jumbo.trus.service.auth.AppTeamService;
+import com.jumbo.trus.util.JwtTokenUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -23,6 +24,7 @@ public class StravaController {
 
     private final StravaService stravaService;
     private final AppTeamService appTeamService;
+    private final JwtTokenUtil jwtTokenUtil;
 
     @RoleRequired("READER")
     @GetMapping("/connect")
@@ -35,7 +37,7 @@ public class StravaController {
     @GetMapping("/callback")
     public ResponseEntity<String> handleCallback(@RequestParam String code, @RequestParam String state) {
         try {
-            Long userId = Long.parseLong(state);
+            Long userId = jwtTokenUtil.parseToken(state);
             stravaService.exchangeCodeForToken(code, userId);
             return ResponseEntity.ok("""
                 <html>
@@ -48,7 +50,7 @@ public class StravaController {
         } catch (Exception e) {
             log.debug(String.valueOf(e));
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("<h2>Nastala chyba při propojení se Stravou.</h2>");
+                    .body("<h2>Nastala chyba při propojení se Stravou. Token je neplatný nebo vypršel.</h2>");
         }
     }
 
