@@ -2,6 +2,7 @@ package com.jumbo.trus.entity.auth;
 
 import com.jumbo.trus.entity.*;
 import com.jumbo.trus.entity.football.TeamEntity;
+import com.jumbo.trus.entity.notification.NotificationEntity;
 import jakarta.persistence.*;
 import lombok.Data;
 

@@ -34,6 +34,6 @@ pkfl:
 strava:
   url: ${SERVER_URL:https://localhost:8443}
   callback_endpoint: ${STRAVA_CALLBACK_ENDPOINT:/strava/callback}
-  client_id: ${STRAVA_CLIENT_ID:0}
-  client_secret: ${STRAVA_CLIENT_SECRET:0}
+  client_id: ${STRAVA_CLIENT_ID:158335}
+  client_secret: ${STRAVA_CLIENT_SECRET:3c6b9de67649f79f4f7e771d8cb7a0c05c82577a}
 

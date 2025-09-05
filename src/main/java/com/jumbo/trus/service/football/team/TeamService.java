@@ -10,7 +10,7 @@ import com.jumbo.trus.dto.football.TeamDTO;
 import com.jumbo.trus.dto.football.detail.FootballTableTeamDetail;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.football.TeamEntity;
-import com.jumbo.trus.entity.repository.football.TeamRepository;
+import com.jumbo.trus.repository.football.TeamRepository;
 import com.jumbo.trus.mapper.football.TeamMapper;
 import com.jumbo.trus.service.auth.AppTeamProvider;
 import com.jumbo.trus.service.football.helper.TeamTableTeam;

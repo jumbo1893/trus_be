@@ -3,13 +3,16 @@ package com.jumbo.trus.entity.football;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.jumbo.trus.entity.MatchEntity;
 import com.jumbo.trus.entity.achievement.PlayerAchievementEntity;
+import com.jumbo.trus.entity.notification.push.NotificationFootballMatch;
 import jakarta.persistence.*;
 import lombok.Data;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
-@Entity(name = "football_match")
+@Entity
+@Table(name = "football_match")
 @Data
 public class FootballMatchEntity {
 
@@ -51,9 +54,12 @@ public class FootballMatchEntity {
     private List<MatchEntity> matchList;
 
     @OneToMany(mappedBy = "match")
-    private List<FootballMatchPlayerEntity> playerList;
+    private Set<FootballMatchPlayerEntity> playerList;
 
     @OneToMany(mappedBy = "footballMatch")
     private List<PlayerAchievementEntity> playerAchievements;
+
+    @OneToMany(mappedBy = "footballMatch")
+    private List<NotificationFootballMatch> footballMatchNotifications;
 
 }

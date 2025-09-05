@@ -13,7 +13,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-@Entity(name = "player")
+@Entity
+@Table(name = "player")
 @Data
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class PlayerEntity {

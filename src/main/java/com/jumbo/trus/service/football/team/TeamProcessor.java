@@ -2,7 +2,7 @@ package com.jumbo.trus.service.football.team;
 
 import com.jumbo.trus.dto.football.TableTeamDTO;
 import com.jumbo.trus.dto.football.TeamDTO;
-import com.jumbo.trus.entity.repository.football.TeamRepository;
+import com.jumbo.trus.repository.football.TeamRepository;
 import com.jumbo.trus.mapper.football.TeamMapper;
 import com.jumbo.trus.service.football.helper.TeamTableTeam;
 import com.jumbo.trus.service.helper.Pair;

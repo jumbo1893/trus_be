@@ -3,7 +3,7 @@ package com.jumbo.trus.service.football.team;
 import com.jumbo.trus.dto.football.TableTeamDTO;
 import com.jumbo.trus.dto.football.TeamDTO;
 import com.jumbo.trus.entity.football.TableTeamEntity;
-import com.jumbo.trus.entity.repository.football.TableTeamRepository;
+import com.jumbo.trus.repository.football.TableTeamRepository;
 import com.jumbo.trus.mapper.football.TableTeamMapper;
 import com.jumbo.trus.mapper.football.TeamMapper;
 import jakarta.persistence.EntityNotFoundException;

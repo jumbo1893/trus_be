@@ -28,6 +28,10 @@ public class HeaderManager {
         return Long.parseLong(teamId);
     }
 
+    public String getDeviceHeader() {
+        return request.getHeader("device");
+    }
+
     public String getAnotherHeader() {
         return request.getHeader("Another-Header");
     }

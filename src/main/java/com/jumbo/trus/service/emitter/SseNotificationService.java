@@ -1,7 +1,7 @@
 package com.jumbo.trus.service.emitter;
 
 import com.jumbo.trus.dto.EventDTO;
-import com.jumbo.trus.entity.repository.emitter.EmitterRepository;
+import com.jumbo.trus.repository.emitter.EmitterRepository;
 import com.jumbo.trus.mapper.EventMapper;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

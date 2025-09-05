@@ -3,7 +3,7 @@ package com.jumbo.trus.service.fine;
 import com.jumbo.trus.config.Config;
 import com.jumbo.trus.dto.FineDTO;
 import com.jumbo.trus.entity.FineEntity;
-import com.jumbo.trus.entity.repository.FineRepository;
+import com.jumbo.trus.repository.FineRepository;
 import com.jumbo.trus.mapper.FineMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

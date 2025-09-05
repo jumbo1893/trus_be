@@ -6,7 +6,7 @@ import com.jumbo.trus.dto.stats.PlayerStatsDTO;
 import com.jumbo.trus.dto.stats.StatsDTO;
 import com.jumbo.trus.entity.BeerEntity;
 import com.jumbo.trus.entity.filter.StatisticsFilter;
-import com.jumbo.trus.entity.repository.BeerRepository;
+import com.jumbo.trus.repository.BeerRepository;
 import com.jumbo.trus.mapper.BeerDetailedMapper;
 import com.jumbo.trus.service.beer.helper.AverageBeer;
 import com.jumbo.trus.service.helper.NumberRounder;

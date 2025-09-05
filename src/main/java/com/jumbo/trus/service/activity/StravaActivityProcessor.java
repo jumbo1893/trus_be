@@ -1,7 +1,7 @@
 package com.jumbo.trus.service.activity;
 
 import com.jumbo.trus.dto.strava.StravaActivity;
-import com.jumbo.trus.entity.repository.strava.ActivityRepository;
+import com.jumbo.trus.repository.strava.ActivityRepository;
 import com.jumbo.trus.entity.strava.ActivityEntity;
 import com.jumbo.trus.entity.strava.AthleteEntity;
 import lombok.RequiredArgsConstructor;

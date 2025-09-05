@@ -1,7 +1,7 @@
 package com.jumbo.trus.service.fine;
 
 import com.jumbo.trus.config.Config;
-import com.jumbo.trus.entity.repository.FineRepository;
+import com.jumbo.trus.repository.FineRepository;
 import com.jumbo.trus.service.exceptions.NonEditableEntityException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

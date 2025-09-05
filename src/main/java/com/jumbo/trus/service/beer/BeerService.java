@@ -15,13 +15,14 @@ import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.filter.BeerFilter;
 import com.jumbo.trus.entity.filter.MatchFilter;
 import com.jumbo.trus.entity.filter.StatisticsFilter;
-import com.jumbo.trus.entity.repository.BeerRepository;
-import com.jumbo.trus.entity.repository.specification.BeerSpecification;
 import com.jumbo.trus.mapper.BeerMapper;
+import com.jumbo.trus.repository.BeerRepository;
+import com.jumbo.trus.repository.specification.BeerSpecification;
 import com.jumbo.trus.service.MatchService;
-import com.jumbo.trus.service.NotificationService;
 import com.jumbo.trus.service.helper.DetailedResponseHelper;
 import com.jumbo.trus.service.helper.PairSeasonMatch;
+import com.jumbo.trus.service.notification.NotificationService;
+import com.jumbo.trus.service.notification.push.BeerNotificationMaker;
 import com.jumbo.trus.service.order.OrderBeerByBeerAndLiquorNumberThenName;
 import com.jumbo.trus.service.player.PlayerService;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +43,7 @@ public class BeerService {
     private final BeerMapper beerMapper;
     private final NotificationService notificationService;
     private final DetailedResponseHelper detailedResponseHelper;
+    private final BeerNotificationMaker beerNotificationMaker;
 
     /**
      * metoda napamuje hráče a zápas z přepravky k pivu a uloží ho do DB
@@ -49,7 +51,7 @@ public class BeerService {
      * @return Pivo z DB
      */
     public BeerDTO addBeer(BeerDTO beerDTO, AppTeamEntity appTeam) {
-        return beerMapper.toDTO(saveBeerToRepository(beerDTO, appTeam));
+        return beerMapper.toDTO(saveBeerToRepository(beerDTO, null, appTeam));
     }
 
     /**
@@ -76,16 +78,16 @@ public class BeerService {
         if (isNeededToRewriteBeer(oldBeer, beerDTO)) {
             beerMultiAddResponse.addBeersLiquorsAndPlayer(beerDTO.getBeerNumber() - oldBeer.getBeerNumber(), beerDTO.getLiquorNumber() - oldBeer.getLiquorNumber(), false);
             beerDTO.setId(oldBeer.getId());
-            saveBeerToRepository(beerDTO, appTeam);
-            setMultiGoalNotification(newBeerNotification, newLiquorNotification, beerDTO, oldBeer);
+            saveBeerToRepository(beerDTO, oldBeer, appTeam);
+            setMultiBeerNotification(newBeerNotification, newLiquorNotification, beerDTO, oldBeer);
         } else if (isNeededToAddNewBeer(oldBeer, beerDTO)) {
             beerMultiAddResponse.addBeersLiquorsAndPlayer(beerDTO.getBeerNumber(), beerDTO.getLiquorNumber(), true);
-            saveBeerToRepository(beerDTO, appTeam);
-            setMultiGoalNotification(newBeerNotification, newLiquorNotification, beerDTO, oldBeer);
+            saveBeerToRepository(beerDTO, null, appTeam);
+            setMultiBeerNotification(newBeerNotification, newLiquorNotification, beerDTO, null);
         }
     }
 
-    private void setMultiGoalNotification(StringBuilder newBeerNotification, StringBuilder newLiquorNotification, BeerDTO beerDTO, BeerDTO oldBeer) {
+    private void setMultiBeerNotification(StringBuilder newBeerNotification, StringBuilder newLiquorNotification, BeerDTO beerDTO, BeerDTO oldBeer) {
         String playerName = playerService.getPlayer(beerDTO.getPlayerId()).getName();
         if ((oldBeer != null && beerDTO.getBeerNumber() != oldBeer.getBeerNumber()) || (oldBeer == null && beerDTO.getBeerNumber() != 0)) {
             newBeerNotification.append(playerName).append(" vypil piv: ").append(beerDTO.getBeerNumber()).append("\n");
@@ -195,11 +197,13 @@ public class BeerService {
         beer.setPlayer(playerService.getPlayerEntity(beerDTO.getPlayerId()));
     }
 
-    private BeerEntity saveBeerToRepository(BeerDTO beerDTO, AppTeamEntity appTeam) {
+    private BeerEntity saveBeerToRepository(BeerDTO beerDTO, BeerDTO oldBeer, AppTeamEntity appTeam) {
         BeerEntity entity = beerMapper.toEntity(beerDTO);
         entity.setAppTeam(appTeam);
         mapPlayerAndMatch(entity, beerDTO);
-        return beerRepository.save(entity);
+        BeerEntity returnEntity = beerRepository.save(entity);
+        beerNotificationMaker.sendBeerNotify(entity, oldBeer);
+        return returnEntity;
     }
 
 

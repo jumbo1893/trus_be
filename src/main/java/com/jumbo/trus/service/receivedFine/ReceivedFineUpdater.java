@@ -9,12 +9,13 @@ import com.jumbo.trus.dto.receivedfine.response.ReceivedFineResponse;
 import com.jumbo.trus.entity.ReceivedFineEntity;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.filter.ReceivedFineFilter;
-import com.jumbo.trus.entity.repository.ReceivedFineRepository;
-import com.jumbo.trus.entity.repository.specification.ReceivedFineSpecification;
 import com.jumbo.trus.mapper.ReceivedFineMapper;
+import com.jumbo.trus.repository.ReceivedFineRepository;
+import com.jumbo.trus.repository.specification.ReceivedFineSpecification;
 import com.jumbo.trus.service.MatchService;
-import com.jumbo.trus.service.NotificationService;
 import com.jumbo.trus.service.fine.FineService;
+import com.jumbo.trus.service.notification.NotificationService;
+import com.jumbo.trus.service.notification.push.FineNotificationMaker;
 import com.jumbo.trus.service.player.PlayerService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -36,9 +37,10 @@ public class ReceivedFineUpdater {
     private final PlayerService playerService;
     private final FineService fineService;
     private final NotificationService notificationService;
+    private final FineNotificationMaker fineNotificationMaker;
 
     public ReceivedFineDTO addFine(ReceivedFineDTO receivedFineDTO, AppTeamEntity appTeam) {
-        return receivedFineMapper.toDTO(saveFineToRepository(receivedFineDTO, appTeam));
+        return receivedFineMapper.toDTO(saveFineToRepository(receivedFineDTO, null, appTeam));
     }
 
     public ReceivedFineResponse addFineToPlayer(ReceivedFineListDTO receivedFineListDTO, AppTeamEntity appTeam) {
@@ -186,7 +188,7 @@ public class ReceivedFineUpdater {
         if (oldFine != null) { //pokud existuje pokuta, musíme zapisovat pod jejím ID
             receivedFineDTO.setId(oldFine.getId());
         }
-        saveFineToRepository(receivedFineDTO, appTeam);
+        saveFineToRepository(receivedFineDTO, oldFine, appTeam);
     }
 
     /**
@@ -211,11 +213,13 @@ public class ReceivedFineUpdater {
         return new ReceivedFineResponse(matchService.getMatch(matchId).getName());
     }
 
-    private ReceivedFineEntity saveFineToRepository(ReceivedFineDTO receivedFineDTO, AppTeamEntity appTeam) {
+    private ReceivedFineEntity saveFineToRepository(ReceivedFineDTO receivedFineDTO, ReceivedFineDTO oldFine, AppTeamEntity appTeam) {
         ReceivedFineEntity entity = receivedFineMapper.toEntity(receivedFineDTO);
         entity.setAppTeam(appTeam);
         mapPlayerMatchAndFine(entity, receivedFineDTO);
-        return receivedFineRepository.save(entity);
+        ReceivedFineEntity savedEntity = receivedFineRepository.save(entity);
+        fineNotificationMaker.sendFineNotify(entity, oldFine);
+        return savedEntity;
     }
 
     private void mapPlayerMatchAndFine(ReceivedFineEntity receivedFine, ReceivedFineDTO receivedFineDTO) {

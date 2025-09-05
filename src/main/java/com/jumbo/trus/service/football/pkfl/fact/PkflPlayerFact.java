@@ -4,15 +4,13 @@ package com.jumbo.trus.service.football.pkfl.fact;
 import com.jumbo.trus.dto.helper.StringAndString;
 import com.jumbo.trus.dto.pkfl.PkflMatchDTO;
 import com.jumbo.trus.entity.pkfl.PkflIndividualStatsEntity;
-import com.jumbo.trus.entity.repository.PkflIndividualStatsRepository;
+import com.jumbo.trus.repository.PkflIndividualStatsRepository;
 import com.jumbo.trus.mapper.pkfl.PkflMatchMapper;
 import com.jumbo.trus.mapper.pkfl.PkflRefereeMapper;
 import com.jumbo.trus.service.football.pkfl.fact.helper.DoubleAndString;
+import com.jumbo.trus.service.helper.DateFormatter;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class PkflPlayerFact {
@@ -145,7 +143,7 @@ public class PkflPlayerFact {
         } else {
             returnMatch = match.getOpponent().getName() + " - Liščí Trus";
         }
-        returnMatch += ", " + formatDateForFrontend(match.getDate());
+        returnMatch += ", " + DateFormatter.formatDateForFrontend(match.getDate());
         return returnMatch;
     }
 
@@ -157,10 +155,5 @@ public class PkflPlayerFact {
             resultList.add(new DoubleAndString(total, text));
         }
         return resultList;
-    }
-
-    String formatDateForFrontend(Date date) {
-        DateFormat dateFormat = new SimpleDateFormat("dd. MM. yyyy HH:mm");
-        return dateFormat.format(date);
     }
 }

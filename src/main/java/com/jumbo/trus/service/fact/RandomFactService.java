@@ -5,7 +5,7 @@ import com.jumbo.trus.dto.SeasonDTO;
 import com.jumbo.trus.entity.DynamicTextEntity;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.filter.StatisticsFilter;
-import com.jumbo.trus.entity.repository.DynamicTextRepository;
+import com.jumbo.trus.repository.DynamicTextRepository;
 import com.jumbo.trus.service.SeasonService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;

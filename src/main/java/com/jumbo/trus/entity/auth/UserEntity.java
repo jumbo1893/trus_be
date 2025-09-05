@@ -1,5 +1,6 @@
 package com.jumbo.trus.entity.auth;
 
+import com.jumbo.trus.entity.notification.push.DeviceToken;
 import com.jumbo.trus.entity.strava.AthleteEntity;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -10,8 +11,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
-@Entity(name = "auth")
+@Entity
+@Table(name = "auth")
 @Data
 public class UserEntity implements UserDetails {
 
@@ -41,6 +44,9 @@ public class UserEntity implements UserDetails {
     @OneToMany(mappedBy = "user")
     private List<AthleteEntity> athletes;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<DeviceToken> deviceTokens;
+
     @Override
     public String getUsername() {
         return mail;
@@ -53,6 +59,19 @@ public class UserEntity implements UserDetails {
             authorities.add(new SimpleGrantedAuthority("ROLE_" + teamRole.getRole().toUpperCase() + "_TEAM_" + teamRole.getAppTeam().getId()));
         }
         return authorities;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        UserEntity that = (UserEntity) o;
+        return Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
     }
 
     @Override
@@ -75,3 +94,5 @@ public class UserEntity implements UserDetails {
         return true;
     }
 }
+
+

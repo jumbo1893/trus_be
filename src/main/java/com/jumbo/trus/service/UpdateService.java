@@ -1,10 +1,8 @@
 package com.jumbo.trus.service;
 
 import com.jumbo.trus.dto.UpdateDTO;
-import com.jumbo.trus.entity.repository.UpdateRepository;
 import com.jumbo.trus.mapper.UpdateMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.jumbo.trus.repository.UpdateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,8 +10,6 @@ import java.util.Date;
 
 @Service
 public class UpdateService {
-
-    Logger logger = LoggerFactory.getLogger(UpdateService.class);
 
     @Autowired
     private UpdateRepository updateRepository;

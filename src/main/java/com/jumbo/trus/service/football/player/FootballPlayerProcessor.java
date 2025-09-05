@@ -2,12 +2,10 @@ package com.jumbo.trus.service.football.player;
 
 import com.jumbo.trus.dto.football.FootballPlayerDTO;
 import com.jumbo.trus.dto.football.TeamDTO;
-import com.jumbo.trus.entity.repository.football.FootballPlayerRepository;
+import com.jumbo.trus.repository.football.FootballPlayerRepository;
 import com.jumbo.trus.service.football.pkfl.task.RetrieveTeamPlayers;
 import com.jumbo.trus.service.helper.Pair;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -16,7 +14,6 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 public class FootballPlayerProcessor {
-    private final Logger logger = LoggerFactory.getLogger(FootballPlayerProcessor.class);
     private final FootballPlayerRepository footballPlayerRepository;
     private final RetrieveTeamPlayers retrieveTeamPlayers;
     private final PlayerUpdateHelper playerUpdateHelper;

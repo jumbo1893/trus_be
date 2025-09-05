@@ -24,8 +24,8 @@ public abstract class FootballMatchMapper {
     @Mappings({
             @Mapping(target = "matchList", ignore = true),
             @Mapping(target = "playerList", ignore = true),
-            @Mapping(target = "playerAchievements", ignore = true)
-            //@Mapping(target = "awayPlayerList", ignore = true),
+            @Mapping(target = "playerAchievements", ignore = true),
+            @Mapping(target = "footballMatchNotifications", ignore = true),
     })
     public abstract FootballMatchEntity toEntity(FootballMatchDTO source);
 

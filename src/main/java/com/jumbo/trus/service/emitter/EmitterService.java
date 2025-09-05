@@ -1,6 +1,6 @@
 package com.jumbo.trus.service.emitter;
 
-import com.jumbo.trus.entity.repository.emitter.EmitterRepository;
+import com.jumbo.trus.repository.emitter.EmitterRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;

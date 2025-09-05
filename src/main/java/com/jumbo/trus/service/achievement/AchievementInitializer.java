@@ -1,7 +1,7 @@
 package com.jumbo.trus.service.achievement;
 
 import com.jumbo.trus.entity.achievement.AchievementEntity;
-import com.jumbo.trus.entity.repository.achievement.AchievementRepository;
+import com.jumbo.trus.repository.achievement.AchievementRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 

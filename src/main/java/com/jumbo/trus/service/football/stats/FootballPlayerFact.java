@@ -5,17 +5,15 @@ import com.jumbo.trus.dto.football.FootballMatchDTO;
 import com.jumbo.trus.dto.helper.StringAndString;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.football.FootballMatchPlayerEntity;
-import com.jumbo.trus.entity.repository.football.FootballMatchPlayerRepository;
+import com.jumbo.trus.repository.football.FootballMatchPlayerRepository;
 import com.jumbo.trus.mapper.football.FootballMatchMapper;
 import com.jumbo.trus.service.football.pkfl.fact.helper.DoubleAndString;
+import com.jumbo.trus.service.helper.DateFormatter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.function.Function;
 
@@ -129,7 +127,7 @@ public class FootballPlayerFact {
         return String.format("%s %s, %s",
                 match.getHomeTeam().getName(),
                 match.getAwayTeam().getName(),
-                formatDateForFrontend(match.getDate()));
+                DateFormatter.formatDateForFrontend(match.getDate()));
     }
 
     private List<DoubleAndString> objectToDoubleAndString(List<Object[]> result) {
@@ -140,10 +138,5 @@ public class FootballPlayerFact {
             resultList.add(new DoubleAndString(total, text));
         }
         return resultList;
-    }
-
-    private String formatDateForFrontend(Date date) {
-        DateFormat dateFormat = new SimpleDateFormat("dd. MM. yyyy HH:mm");
-        return dateFormat.format(date);
     }
 }

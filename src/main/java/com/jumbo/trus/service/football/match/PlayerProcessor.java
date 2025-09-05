@@ -6,10 +6,10 @@ import com.jumbo.trus.dto.football.TeamDTO;
 import com.jumbo.trus.dto.football.detail.BestScorer;
 import com.jumbo.trus.entity.football.FootballMatchPlayerEntity;
 import com.jumbo.trus.entity.football.view.BestScorerEntity;
-import com.jumbo.trus.entity.repository.football.FootballMatchPlayerRepository;
-import com.jumbo.trus.entity.repository.view.BestScorerViewRepository;
 import com.jumbo.trus.mapper.football.BestScorerViewMapper;
 import com.jumbo.trus.mapper.football.FootballMatchPlayerMapper;
+import com.jumbo.trus.repository.football.FootballMatchPlayerRepository;
+import com.jumbo.trus.repository.view.BestScorerViewRepository;
 import com.jumbo.trus.service.football.pkfl.task.helper.FootballMatchDetailTaskHelper;
 import com.jumbo.trus.service.football.pkfl.task.helper.PlayerMatchStatsHelper;
 import com.jumbo.trus.service.football.player.FootballPlayerService;
@@ -20,6 +20,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -47,8 +48,8 @@ public class PlayerProcessor {
                 .orElse(null);
     }
 
-    public List<FootballMatchPlayerEntity> convertPlayerListDtoToEntity(List<FootballMatchPlayerDTO> playerList) {
-        return playerList.stream().map(footballMatchPlayerMapper::toEntity).toList();
+    public Set<FootballMatchPlayerEntity> convertPlayerListDtoToEntity(List<FootballMatchPlayerDTO> playerList) {
+        return playerList.stream().map(footballMatchPlayerMapper::toEntity).collect(Collectors.toSet());
     }
 
     private List<FootballMatchPlayerDTO> savePlayerList(Long matchId, List<FootballMatchPlayerDTO> playerList) {

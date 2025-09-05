@@ -1,6 +1,6 @@
 package com.jumbo.trus.service.fine;
 
-import com.jumbo.trus.service.NotificationService;
+import com.jumbo.trus.service.notification.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

@@ -1,6 +1,6 @@
 package com.jumbo.trus.dto.match;
 
-import java.text.SimpleDateFormat;
+import com.jumbo.trus.service.helper.DateFormatter;
 
 public class MatchHelper {
 
@@ -15,11 +15,6 @@ public class MatchHelper {
     }
 
     public String getMatchWithOpponentNameAndDate() {
-        return getMatchWithOpponentName() + ", " + matchDateToString();
-    }
-
-    public String matchDateToString() {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd. MM. yyyy");
-        return dateFormat.format(matchDTO.getDate());
+        return getMatchWithOpponentName() + ", " + DateFormatter.formatToMatchDate(matchDTO);
     }
 }

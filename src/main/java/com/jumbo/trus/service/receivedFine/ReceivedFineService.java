@@ -9,7 +9,7 @@ import com.jumbo.trus.dto.receivedfine.response.get.setup.ReceivedFineSetupRespo
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.filter.ReceivedFineFilter;
 import com.jumbo.trus.entity.filter.StatisticsFilter;
-import com.jumbo.trus.entity.repository.ReceivedFineRepository;
+import com.jumbo.trus.repository.ReceivedFineRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

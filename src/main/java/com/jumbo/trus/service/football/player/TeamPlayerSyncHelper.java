@@ -1,6 +1,6 @@
 package com.jumbo.trus.service.football.player;
 
-import com.jumbo.trus.entity.repository.football.FootballPlayerRepository;
+import com.jumbo.trus.repository.football.FootballPlayerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
