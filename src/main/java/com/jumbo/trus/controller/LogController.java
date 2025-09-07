@@ -18,7 +18,7 @@ public class LogController {
 
     @RoleRequired("READER")
     @PostMapping("/add")
-    public LogDTO addToken(@RequestBody LogDTO logDTO) {
+    public LogDTO addLog(@RequestBody LogDTO logDTO) {
         return logService.addLog(logDTO);
     }
 }

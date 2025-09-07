@@ -20,6 +20,7 @@ public class LogEntity {
     @SequenceGenerator(name = "log_seq", sequenceName = "log_seq", allocationSize = 1)
     private Long id;
 
+    @Column(columnDefinition = "TEXT")
     private String message;
 
     private String logClass;
