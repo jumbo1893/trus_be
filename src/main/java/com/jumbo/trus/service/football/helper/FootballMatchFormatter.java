@@ -22,7 +22,7 @@ public class FootballMatchFormatter {
                 match.getHomeTeam().getName(),
                 match.getAwayTeam().getName(),
                 match.getHomeGoalNumber(),
-                match.getAwayTeam());
+                match.getAwayGoalNumber());
     }
 
     public static String toStringWithResultAndRefereeComment(FootballMatchDTO match) {
@@ -30,7 +30,7 @@ public class FootballMatchFormatter {
                 match.getHomeTeam().getName(),
                 match.getAwayTeam().getName(),
                 match.getHomeGoalNumber(),
-                match.getAwayTeam(),
+                match.getAwayGoalNumber(),
                 match.getRefereeComment());
     }
 }
