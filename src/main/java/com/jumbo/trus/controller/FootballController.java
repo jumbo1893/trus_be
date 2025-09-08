@@ -105,6 +105,4 @@ public class FootballController {
     public void updateMatches() {
         pkflScheduledJob.runPkflMatchJob();
     }
-
-
 }

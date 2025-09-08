@@ -5,7 +5,9 @@ import com.jumbo.trus.entity.MatchEntity;
 import com.jumbo.trus.entity.achievement.PlayerAchievementEntity;
 import com.jumbo.trus.entity.notification.push.NotificationFootballMatch;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 import java.util.Date;
 import java.util.List;
@@ -13,7 +15,9 @@ import java.util.Set;
 
 @Entity
 @Table(name = "football_match")
-@Data
+@Getter
+@Setter
+@ToString
 public class FootballMatchEntity {
 
     @Id
