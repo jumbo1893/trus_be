@@ -26,7 +26,7 @@ public class PushScheduledJob {
     public void findUpcomingMatches() {
         log.debug("spuštěn findUpcomingMatches job ");
         LocalDateTime now = LocalDateTime.now();
-        Date from = Date.from(now.minusDays(3).atZone(ZoneId.systemDefault()).toInstant());
+        Date from = Date.from(now.minusDays(7).atZone(ZoneId.systemDefault()).toInstant());
         Date to = Date.from(now.plusDays(3).atZone(ZoneId.systemDefault()).toInstant());
         List<NotificationPair> pairs = pushNotificationRepository.findNotificationPairs(from, to);
         matchNotificationMaker.sendMatchNotify(pairs);
