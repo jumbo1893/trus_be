@@ -22,7 +22,7 @@ public class PushScheduledJob {
 
     private final PushNotificationRepository pushNotificationRepository;
 
-    @Scheduled(cron = "0 0 * * * *")
+    @Scheduled(cron = "0 0 9-0 * * *")
     public void findUpcomingMatches() {
         log.debug("spuštěn findUpcomingMatches job ");
         LocalDateTime now = LocalDateTime.now();
