@@ -33,8 +33,9 @@ public class PushService {
     }
 
     public void sendPush(DeviceToken deviceToken, String title, String body) throws Exception {
-        fcmService.sendPush(deviceToken, title, body);
-        saveSentPushToRepository(title, body, deviceToken);
+        if (fcmService.sendPush(deviceToken, title, body)) {
+            saveSentPushToRepository(title, body, deviceToken);
+        }
     }
 
     public void sendTestPush() {

@@ -12,11 +12,11 @@ import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.filter.MatchFilter;
 import com.jumbo.trus.entity.filter.ReceivedFineFilter;
 import com.jumbo.trus.entity.filter.StatisticsFilter;
+import com.jumbo.trus.mapper.ReceivedFineDetailedMapper;
+import com.jumbo.trus.mapper.ReceivedFineMapper;
 import com.jumbo.trus.repository.ReceivedFineRepository;
 import com.jumbo.trus.repository.specification.ReceivedFineSpecification;
 import com.jumbo.trus.repository.specification.ReceivedFineStatsSpecification;
-import com.jumbo.trus.mapper.ReceivedFineDetailedMapper;
-import com.jumbo.trus.mapper.ReceivedFineMapper;
 import com.jumbo.trus.service.MatchService;
 import com.jumbo.trus.service.fine.FineService;
 import com.jumbo.trus.service.helper.PairSeasonMatch;
@@ -85,7 +85,6 @@ public class ReceivedFineGetter {
 
     public ReceivedFineSetupResponse setupPlayers(ReceivedFineFilter receivedFineFilter) {
         PairSeasonMatch pairSeasonMatch = matchService.returnSeasonAndMatchByFilter(receivedFineFilter);
-        log.debug("PairSeasonMatch {}", pairSeasonMatch);
         SeasonDTO seasonDTO = pairSeasonMatch.getSeasonDTO();
         MatchDTO matchDTO = pairSeasonMatch.getMatchDTO();
         MatchFilter matchFilter = new MatchFilter();

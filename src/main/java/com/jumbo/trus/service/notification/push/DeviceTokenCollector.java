@@ -62,5 +62,9 @@ public class DeviceTokenCollector {
             deviceTokenRepository.save(existing);
         }
     }
+
+    public void deleteToken(DeviceToken deviceToken) {
+        deviceTokenRepository.delete(deviceToken);
+    }
 }
 

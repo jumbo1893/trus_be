@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -26,17 +28,24 @@ public class MatchNotificationMaker {
     private final FootballMatchMapper footballMatchMapper;
 
     public void sendMatchNotify(List<NotificationPair> pairs) {
-        for (NotificationPair pair : pairs) {
-            DeviceToken token = pair.getDeviceToken();
-            FootballMatchEntity match = pair.getFootballMatch();
+        // seskupit podle zápasu
+        Map<FootballMatchEntity, List<DeviceToken>> grouped = pairs.stream()
+                .collect(Collectors.groupingBy(NotificationPair::getFootballMatch,
+                        Collectors.mapping(NotificationPair::getDeviceToken, Collectors.toList())));
+
+        for (Map.Entry<FootballMatchEntity, List<DeviceToken>> entry : grouped.entrySet()) {
+            FootballMatchEntity match = entry.getKey();
             NotificationType notificationType = findMatchNotificationToSend(match);
             if (notificationType != null) {
-                try {
-                    sendUpcomingMatchNotify(token, match, notificationType);
-                    createAndSaveNotificationFootballMatch(match, notificationType);
-                } catch (Exception e) {
-                    log.error("error:", e);
+                for (DeviceToken token : entry.getValue()) {
+                    try {
+                        sendUpcomingMatchNotify(token, match, notificationType);
+                    } catch (Exception e) {
+                        log.error("error sending push to {}", token, e);
+                    }
                 }
+                // pošle se všem uživatelům → až teď uložíme
+                createAndSaveNotificationFootballMatch(match, notificationType);
             }
         }
     }

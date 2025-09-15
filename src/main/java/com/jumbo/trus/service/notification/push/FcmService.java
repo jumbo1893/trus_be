@@ -2,17 +2,20 @@ package com.jumbo.trus.service.notification.push;
 
 import com.jumbo.trus.entity.notification.push.DeviceToken;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FcmService {
 
     private final GoogleTokenService tokenService;
     private final OkHttpClient client = new OkHttpClient();
+    private final DeviceTokenCollector deviceTokenCollector;
 
-    public void sendPush(DeviceToken deviceToken, String title, String body) throws Exception {
+    public boolean sendPush(DeviceToken deviceToken, String title, String body) throws Exception {
         String accessToken = tokenService.getAccessToken();
 
         String jsonMessage = """
@@ -40,10 +43,22 @@ public class FcmService {
 
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
-                assert response.body() != null;
-                throw new RuntimeException("FCM error: " + response.code() + " " + response.body().string());
+                String responseBody = response.body() != null ? response.body().string() : "";
+                if (response.code() == 404 && responseBody.contains("UNREGISTERED")) {
+                    // Token už není platný
+                    deviceTokenCollector.deleteToken(deviceToken);
+                    return false;
+                }
+                else {
+                    throw new RuntimeException("FCM error: " + response.code() + " " + responseBody);
+                }
             }
         }
+        catch (RuntimeException e) {
+            log.error(e.getMessage());
+            return false;
+        }
+        return true;
     }
 
 }
