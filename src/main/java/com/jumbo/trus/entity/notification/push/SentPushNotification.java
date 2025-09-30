@@ -23,6 +23,7 @@ public class SentPushNotification {
 
     private String title;
 
+    @Column(columnDefinition = "TEXT")
     private String body;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "Europe/Prague")

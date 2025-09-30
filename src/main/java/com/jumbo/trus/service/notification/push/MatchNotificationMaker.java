@@ -41,7 +41,7 @@ public class MatchNotificationMaker {
                     try {
                         sendUpcomingMatchNotify(token, match, notificationType);
                     } catch (Exception e) {
-                        log.error("error sending push to {}", token, e);
+                        log.error("error sending push to {}", token.getUser().getName(), e);
                     }
                 }
                 // pošle se všem uživatelům → až teď uložíme
