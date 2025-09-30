@@ -31,13 +31,19 @@ public class DeviceToken {
 
     private String deviceType;
 
+    private String status;
+
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "Europe/Prague")
+    private Date modificationTime;
+
     @OneToMany(mappedBy = "deviceToken", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SentPushNotification> sentPushNotification;
 
-    public DeviceToken(String token, UserEntity user, Date registrationTime, String deviceType) {
+    public DeviceToken(String token, UserEntity user, Date registrationTime, String deviceType, String status) {
         this.token = token;
         this.user = user;
         this.registrationTime = registrationTime;
         this.deviceType = deviceType;
+        this.status = status;
     }
 }

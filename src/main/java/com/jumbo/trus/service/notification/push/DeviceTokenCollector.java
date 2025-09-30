@@ -49,7 +49,8 @@ public class DeviceTokenCollector {
                 token,
                 user,
                 new Date(),
-                headerManager.getDeviceHeader()
+                headerManager.getDeviceHeader(),
+                "ACTIVE"
         );
         deviceTokenRepository.save(deviceToken);
     }
@@ -61,6 +62,12 @@ public class DeviceTokenCollector {
             existing.setDeviceType(headerManager.getDeviceHeader());
             deviceTokenRepository.save(existing);
         }
+    }
+
+    public void invalidateToken(DeviceToken deviceToken, String status) {
+        deviceToken.setStatus(status);
+        deviceToken.setModificationTime(new Date());
+        deviceTokenRepository.save(deviceToken);
     }
 
     public void deleteToken(DeviceToken deviceToken) {

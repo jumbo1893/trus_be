@@ -46,7 +46,12 @@ public class FcmService {
                 String responseBody = response.body() != null ? response.body().string() : "";
                 if (response.code() == 404 && responseBody.contains("UNREGISTERED")) {
                     // Token už není platný
-                    deviceTokenCollector.deleteToken(deviceToken);
+                    deviceTokenCollector.invalidateToken(deviceToken, "EXPIRED");
+                    return false;
+                }
+                else if (response.code() == 400 && responseBody.contains("INVALID_ARGUMENT")) {
+                    // Token už není platný
+                    deviceTokenCollector.invalidateToken(deviceToken, "INVALID");
                     return false;
                 }
                 else {
@@ -54,7 +59,7 @@ public class FcmService {
                 }
             }
         }
-        catch (RuntimeException e) {
+        catch (Exception e) {
             log.error(e.getMessage());
             return false;
         }

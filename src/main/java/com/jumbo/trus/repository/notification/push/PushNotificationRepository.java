@@ -21,6 +21,7 @@ public interface PushNotificationRepository extends JpaRepository<DeviceToken, L
     JOIN FootballMatchEntity fm
         ON (fm.homeTeam.id = t.id OR fm.awayTeam.id = t.id)
     WHERE fm.date BETWEEN :from AND :to
+    AND dt.status = 'ACTIVE'
     """)
     List<NotificationPair> findNotificationPairs(
             @Param("from") Date from,
