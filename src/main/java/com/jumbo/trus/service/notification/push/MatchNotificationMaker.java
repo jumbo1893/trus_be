@@ -34,16 +34,14 @@ public class MatchNotificationMaker {
                         Collectors.mapping(NotificationPair::getDeviceToken, Collectors.toList())));
 
         for (Map.Entry<FootballMatchEntity, List<DeviceToken>> entry : grouped.entrySet()) {
-
             FootballMatchEntity match = entry.getKey();
             NotificationType notificationType = findMatchNotificationToSend(match);
             if (notificationType != null) {
                 for (DeviceToken token : entry.getValue()) {
-                    log.debug("posílám push pro match {} a token id {}", entry.getKey().getId(), token.getId());
                     try {
                         sendUpcomingMatchNotify(token, match, notificationType);
                     } catch (Exception e) {
-                        log.error("error sending push to {}", token.getUser().getName(), e);
+                        log.error("error sending push to tokenId {}", token.getId(), e);
                     }
                 }
                 // pošle se všem uživatelům → až teď uložíme

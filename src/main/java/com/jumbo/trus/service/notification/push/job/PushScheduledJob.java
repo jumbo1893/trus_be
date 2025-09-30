@@ -24,7 +24,6 @@ public class PushScheduledJob {
     private final PushNotificationRepository pushNotificationRepository;
 
     @Scheduled(cron = "0 0 9-23 * * *")
-    @Scheduled(cron = "0 */3 * * * *")
     @Transactional
     public void findUpcomingMatches() {
         log.debug("spuštěn PushScheduledJob pro findUpcomingMatches");

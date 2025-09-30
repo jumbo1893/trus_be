@@ -3,7 +3,7 @@ package com.jumbo.trus.service.notification.push;
 import com.jumbo.trus.entity.notification.push.DeviceToken;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.OkHttpClient;
+import okhttp3.*;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -16,10 +16,7 @@ public class FcmService {
     private final DeviceTokenCollector deviceTokenCollector;
 
     public boolean sendPush(DeviceToken deviceToken, String title, String body) throws Exception {
-
-        log.debug("user: {}, title: {} ", deviceToken.getUser().getId(), title);
-        return true;
-        /*String accessToken = tokenService.getAccessToken();
+        String accessToken = tokenService.getAccessToken();
 
         String jsonMessage = """
     {
@@ -61,7 +58,7 @@ public class FcmService {
             log.error(e.getMessage());
             return false;
         }
-        return true;*/
+        return true;
     }
 
 }
