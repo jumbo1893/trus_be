@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -24,6 +25,7 @@ public class PushScheduledJob {
 
     @Scheduled(cron = "0 0 9-23 * * *")
     @Scheduled(cron = "0 */3 * * * *")
+    @Transactional
     public void findUpcomingMatches() {
         log.debug("spuštěn PushScheduledJob pro findUpcomingMatches");
         LocalDateTime now = LocalDateTime.now();
