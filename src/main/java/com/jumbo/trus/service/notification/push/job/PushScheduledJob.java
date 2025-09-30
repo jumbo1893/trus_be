@@ -23,8 +23,9 @@ public class PushScheduledJob {
     private final PushNotificationRepository pushNotificationRepository;
 
     @Scheduled(cron = "0 0 9-23 * * *")
+    @Scheduled(cron = "0 */3 * * * *")
     public void findUpcomingMatches() {
-        log.debug("spuštěn findUpcomingMatches job ");
+        log.debug("spuštěn PushScheduledJob pro findUpcomingMatches");
         LocalDateTime now = LocalDateTime.now();
         Date from = Date.from(now.minusDays(7).atZone(ZoneId.systemDefault()).toInstant());
         Date to = Date.from(now.plusDays(3).atZone(ZoneId.systemDefault()).toInstant());
