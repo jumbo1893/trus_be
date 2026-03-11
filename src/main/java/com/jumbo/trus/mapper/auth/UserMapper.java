@@ -13,6 +13,9 @@ public abstract class UserMapper {
     @Mapping(target = "authorities", ignore = true)
     @Mapping(target = "athletes", ignore = true)
     @Mapping(target = "deviceTokens", ignore = true)
+    @Mapping(target = "enabledPushNotifications", ignore = true)
+    @Mapping(target = "footbarAccounts", ignore = true)
+    @Mapping(target = "OAuthStateEntities", ignore = true)
     public abstract UserEntity toEntity(UserDTO source);
 
     @Mapping(target = "password", ignore = true)

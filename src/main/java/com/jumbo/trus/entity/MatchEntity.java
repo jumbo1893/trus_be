@@ -3,6 +3,7 @@ package com.jumbo.trus.entity;
 import com.jumbo.trus.entity.achievement.PlayerAchievementEntity;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.football.FootballMatchEntity;
+import com.jumbo.trus.entity.footbar.FootbarSessionEntity;
 import com.jumbo.trus.entity.pkfl.PkflMatchEntity;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -54,4 +55,7 @@ public class MatchEntity {
 
     @OneToMany(mappedBy = "match")
     private List<PlayerAchievementEntity> playerAchievements;
+
+    @OneToMany(mappedBy = "match")
+    private List<FootbarSessionEntity> footbarSessions;
 }

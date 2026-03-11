@@ -25,17 +25,21 @@ import com.jumbo.trus.service.player.PlayerService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.webjars.NotFoundException;
 
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.jumbo.trus.config.Config.ALL_SEASON_ID;
 import static com.jumbo.trus.config.Config.AUTOMATIC_SEASON_ID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MatchService {
@@ -93,6 +97,12 @@ public class MatchService {
         return matchDTOList;
     }
 
+    public List<MatchEntity> getAllEntitiesBySeasonId(AppTeamEntity appTeam, Long seasonId) {
+        if (seasonId == null || seasonId == ALL_SEASON_ID) {
+            return matchRepository.getMatchesOrderByDateDesc(1000, appTeam.getId());
+        }
+        return matchRepository.findAllBySeasonId(seasonId, appTeam.getId());
+    }
 
     /**
      * @param limit limit počtu zápasů
@@ -302,6 +312,19 @@ public class MatchService {
 
     private void appTeamSetter(MatchEntity entity, AppTeamEntity appTeam) {
         entity.setAppTeam(appTeam);
+    }
+
+    public MatchDTO findMatchByFootballMatchId(long footballMatchId, long appTeamId) {
+        MatchEntity matchEntity = matchRepository.findAllByFootballMatchId(footballMatchId, appTeamId)
+                .orElseThrow(() -> new EntityNotFoundException(String.valueOf(footballMatchId)));
+        return matchMapper.toDTO(matchEntity);
+    }
+
+    public MatchEntity findMatchByAroundTime(AppTeamEntity appTeam, Date startTime, Date endTime) {
+        Date from = Date.from(startTime.toInstant().minus(1, ChronoUnit.HOURS));
+        Date to = Date.from(endTime.toInstant().plus(2, ChronoUnit.HOURS));
+        return matchRepository.findMatchByTimeBetween(appTeam, from, to)
+                .orElse(null);
     }
 
 }

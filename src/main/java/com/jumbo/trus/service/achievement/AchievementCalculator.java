@@ -22,10 +22,10 @@ import com.jumbo.trus.entity.filter.MatchFilter;
 import com.jumbo.trus.entity.filter.ReceivedFineFilter;
 import com.jumbo.trus.entity.filter.SeasonFilter;
 import com.jumbo.trus.entity.filter.StatisticsFilter;
-import com.jumbo.trus.repository.achievement.AchievementRepository;
-import com.jumbo.trus.repository.achievement.PlayerAchievementRepository;
 import com.jumbo.trus.mapper.achievement.AchievementMapper;
 import com.jumbo.trus.mapper.achievement.PlayerAchievementMapper;
+import com.jumbo.trus.repository.achievement.AchievementRepository;
+import com.jumbo.trus.repository.achievement.PlayerAchievementRepository;
 import com.jumbo.trus.service.GoalService;
 import com.jumbo.trus.service.MatchService;
 import com.jumbo.trus.service.SeasonService;
@@ -41,6 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -99,7 +100,7 @@ public class AchievementCalculator {
                     Map.entry("IONTAK", (p, a, at, t) -> calculateIONTAKAchievement(p, a, t)),
                     Map.entry("SPORTOVEC", this::calculateSPORTOVECAchievement),
                     Map.entry("PROC", (p, a, at, t) -> calculatePROCAchievement(p, a, t)),
-                    Map.entry("HLADINKA", (p, a, at, t)-> calculateHLADINKAAchievement(p, a, t)),
+                    Map.entry("HLADINKA", (p, a, at, t) -> calculateHLADINKAAchievement(p, a, t)),
                     Map.entry("STENE", this::calculateSTENEAchievement),
                     Map.entry("CIRHOZA", (p, a, at, t) -> calculateCIRHOZAAchievement(p, a, t)),
                     Map.entry("TEN_TO_PERFEKTNE_KOPE", (p, a, at, t) -> calculateTEN_TO_PERFEKTNE_KOPEAchievement(p, a, t)),
@@ -118,16 +119,33 @@ public class AchievementCalculator {
         for (AchievementDTO achievement : achievements) {
             PlayerAchievementDTO playerAchievementDTO = calculateAchievementForPlayer(achievement, player, appTeam, achievementType);
             if (playerAchievementDTO != null) {
-                if (isNeededToSaveAchievement(playerAchievementDTO)) {
-                    saveOrRewriteAchievementToRepository(playerAchievementDTO);
+                PlayerAchievementDTO existingPlayerAchievement = returnExistingPlayerAchievementEntityByPlayerAndAchievement(playerAchievementDTO);
+                if (existingPlayerAchievement == null) {
+                    saveNewAchievementToRepository(playerAchievementDTO);
                 }
-                else {
-                    initSaveManuallyAchievements(playerAchievementDTO);
+                else if (existingPlayerAchievement.equalsByPlayerAchievementMatchAndAccomplished(playerAchievementDTO)) {
+                    rewriteAchievementInRepository(playerAchievementDTO, existingPlayerAchievement.getId());
+                }
+                else if(playerAchievementDTO.getAccomplished() != existingPlayerAchievement.getAccomplished()) {
+                    rewriteAchievementInRepository(playerAchievementDTO, existingPlayerAchievement.getId());
                 }
             }
         }
     }
 
+    private PlayerAchievementDTO returnExistingPlayerAchievementEntityByPlayerAndAchievement(PlayerAchievementDTO playerAchievement) {
+        PlayerAchievementEntity entity = playerAchievementRepository.findByPlayerIdAndAchievementId(
+                playerAchievement.getPlayer().getId(), playerAchievement.getAchievement().getId()).orElse(null);
+        if (entity == null) {
+            return null;
+        }
+        return playerAchievementMapper.toDTO(entity);
+    }
+
+    private PlayerAchievementEntity returnEntityIfIsNeededToRewriteAchievement(PlayerAchievementDTO playerAchievement) {
+        return playerAchievementRepository.findByPlayerIdAndAchievementIdAndAccomplished(
+                playerAchievement.getPlayer().getId(), playerAchievement.getAchievement().getId(), !playerAchievement.getAccomplished()).orElse(null);
+    }
 
     private PlayerAchievementDTO calculateAchievementForPlayer(AchievementDTO achievement, PlayerDTO player, AppTeamEntity appTeam, AchievementType achievementType) {
         if (isNeededToCalculateAchievementForPlayer(player, achievement)) {
@@ -137,34 +155,26 @@ public class AchievementCalculator {
         return null;
     }
 
-    private boolean isNeededToSaveAchievement(PlayerAchievementDTO playerAchievementDTO) {
+    private boolean isManuallyAchievement(PlayerAchievementDTO playerAchievementDTO) {
         return !playerAchievementDTO.getAchievement().isManually();
     }
 
-    private void saveOrRewriteAchievementToRepository(PlayerAchievementDTO playerAchievement) {
-        Long achievementId = getExistingPlayerAchievementId(playerAchievement);
-        if (achievementId != null) {
-            playerAchievement.setId(achievementId);
-        }
-        saveNewAchievementToRepository(playerAchievement);
-    }
-
-    private Long getExistingPlayerAchievementId(PlayerAchievementDTO playerAchievement) {
-        PlayerAchievementEntity entity = playerAchievementRepository.findByPlayerIdAndAchievementId(playerAchievement.getPlayer().getId(), playerAchievement.getAchievement().getId()).orElse(null);
-        if (entity == null) {
-            return null;
-        }
-        return entity.getId();
+    private void rewriteAchievementInRepository(PlayerAchievementDTO playerAchievement, long existingId) {
+        playerAchievement.setId(existingId);
+        saveAchievementWithAccomplishedDate(playerAchievement);
     }
 
     private void saveNewAchievementToRepository(PlayerAchievementDTO playerAchievement) {
-        playerAchievementRepository.save(playerAchievementMapper.toEntity(playerAchievement));
+        saveAchievementWithAccomplishedDate(playerAchievement);
     }
 
-    private void initSaveManuallyAchievements(PlayerAchievementDTO playerAchievementDTO) {
-        if(!playerAchievementRepository.existsByPlayerAndAchievement(playerAchievementDTO.getPlayer().getId(), playerAchievementDTO.getAchievement().getId())) {
-            saveNewAchievementToRepository(playerAchievementDTO);
+    private void saveAchievementWithAccomplishedDate(PlayerAchievementDTO playerAchievement) {
+        if (playerAchievement.getAccomplished()) {
+            playerAchievement.setAccomplishedDate(new Date());
+        } else {
+            playerAchievement.setAccomplishedDate(null);
         }
+        playerAchievementRepository.save(playerAchievementMapper.toEntity(playerAchievement));
     }
 
     private boolean isNeededToCalculateAchievementForPlayer(PlayerDTO player, AchievementDTO achievement) {
@@ -173,7 +183,7 @@ public class AchievementCalculator {
 
 
     private PlayerAchievementDTO calculateKAZDEMU_CO_MU_PATRIAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AchievementType achievementType) {
-        if (achievementType == AchievementType.ALL ||achievementType == AchievementType.MATCH || achievementType == AchievementType.BEER || achievementType == AchievementType.GOAL) {
+        if (achievementType == AchievementType.ALL || achievementType == AchievementType.MATCH || achievementType == AchievementType.BEER || achievementType == AchievementType.GOAL) {
             IGoalBeerMatch iGoalBeerMatch = playerAchievementRepository.getFirstMatchWithSameGoalsAndBeers(playerDTO.getId());
             if (iGoalBeerMatch != null) {
                 return returnPlayerAchievement(achievement, playerDTO, iGoalBeerMatch.getMatchId(),
@@ -185,7 +195,7 @@ public class AchievementCalculator {
     }
 
     private PlayerAchievementDTO calculateFOTBAL_JE_JEN_ZAMINKAAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AppTeamEntity appTeam, AchievementType achievementType) {
-        if (achievementType == AchievementType.ALL ||achievementType == AchievementType.SEASON || achievementType == AchievementType.RECEIVED_FINE || achievementType == AchievementType.MATCH) {
+        if (achievementType == AchievementType.ALL || achievementType == AchievementType.SEASON || achievementType == AchievementType.RECEIVED_FINE || achievementType == AchievementType.MATCH) {
             SeasonFilter seasonFilter = new SeasonFilter();
             seasonFilter.setAppTeam(appTeam);
             for (SeasonDTO season : seasonService.getAll(seasonFilter)) {
@@ -210,7 +220,7 @@ public class AchievementCalculator {
     }
 
     private PlayerAchievementDTO calculateTAHOUNAAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AppTeamEntity appTeam, AchievementType achievementType) {
-        if (achievementType == AchievementType.ALL ||achievementType == AchievementType.BEER) {
+        if (achievementType == AchievementType.ALL || achievementType == AchievementType.BEER) {
             List<BeerDTO> beers = beerService.getTopDrinkersByMatch(appTeam.getId());
             for (int i = 0; i < beers.size(); i++) {
                 Long playerId = playerDTO.getId();
@@ -225,7 +235,7 @@ public class AchievementCalculator {
     }
 
     private PlayerAchievementDTO calculateKORALAAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AchievementType achievementType) {
-        if (achievementType == AchievementType.ALL ||achievementType == AchievementType.BEER) {
+        if (achievementType == AchievementType.ALL || achievementType == AchievementType.BEER) {
             BeerDTO beerDTO = beerService.getFirstMatchWhereLiquorMoreThanBeer(playerDTO.getId());
             if (beerDTO != null) {
                 return returnPlayerAchievement(achievement, playerDTO, beerDTO.getMatchId(), "V zápase vypil " + beerDTO.getBeerNumber() + " piv a " + beerDTO.getLiquorNumber() + " kořalek");
@@ -237,7 +247,7 @@ public class AchievementCalculator {
     }
 
     private PlayerAchievementDTO calculateMECENASAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AppTeamEntity appTeam, AchievementType achievementType) {
-        if (achievementType == AchievementType.ALL ||achievementType == AchievementType.RECEIVED_FINE) {
+        if (achievementType == AchievementType.ALL || achievementType == AchievementType.RECEIVED_FINE) {
             SeasonFilter seasonFilter = new SeasonFilter();
             seasonFilter.setAppTeam(appTeam);
             for (SeasonDTO season : seasonService.getAll(seasonFilter)) {
@@ -257,7 +267,7 @@ public class AchievementCalculator {
     }
 
     private PlayerAchievementDTO calculateOSLAVENECAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AppTeamEntity appTeam, AchievementType achievementType) {
-        if (achievementType == AchievementType.ALL ||achievementType == AchievementType.BEER) {
+        if (achievementType == AchievementType.ALL || achievementType == AchievementType.BEER) {
             List<BeerDTO> beers = beerService.getTopDrinkersByMatch(appTeam.getId());
             for (int i = 0; i < beers.size(); i++) {
                 Long playerId = playerDTO.getId();
@@ -282,7 +292,7 @@ public class AchievementCalculator {
     }
 
     private PlayerAchievementDTO calculateUSPESNY_DENAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AchievementType achievementType) {
-        if (achievementType == AchievementType.ALL ||achievementType == AchievementType.BEER || achievementType == AchievementType.RECEIVED_FINE || achievementType == AchievementType.MATCH) {
+        if (achievementType == AchievementType.ALL || achievementType == AchievementType.BEER || achievementType == AchievementType.RECEIVED_FINE || achievementType == AchievementType.MATCH) {
             IGoalBeerFineMatch iGoalBeerMatch = playerAchievementRepository.getFirstMatchWithGoalYellowBeerAndLiquor(playerDTO.getId(), "Žlutá karta");
             if (iGoalBeerMatch != null) {
                 return returnPlayerAchievement(achievement, playerDTO, iGoalBeerMatch.getMatchId(),
@@ -295,7 +305,7 @@ public class AchievementCalculator {
     }
 
     private PlayerAchievementDTO calculateCERNA_PRACEAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AchievementType achievementType) {
-        if (achievementType == AchievementType.ALL ||achievementType == AchievementType.GOAL || achievementType == AchievementType.MATCH) {
+        if (achievementType == AchievementType.ALL || achievementType == AchievementType.GOAL || achievementType == AchievementType.MATCH) {
             FootballPlayerDTO footballPlayerDTO = playerDTO.getFootballPlayer();
             if (footballPlayerDTO == null) {
                 return returnFailedPlayerAchievement(achievement, playerDTO);
@@ -311,7 +321,7 @@ public class AchievementCalculator {
     }
 
     private PlayerAchievementDTO calculateDOPINGAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AchievementType achievementType) {
-        if (achievementType == AchievementType.ALL ||achievementType == AchievementType.RECEIVED_FINE || achievementType == AchievementType.MATCH) {
+        if (achievementType == AchievementType.ALL || achievementType == AchievementType.RECEIVED_FINE || achievementType == AchievementType.MATCH) {
             Long matchId = playerAchievementRepository.getFirstMatchWithHangoverAndHattrickOrCleanSheet(playerDTO.getId(), "Zbytkáč či kocovina");
             if (matchId != null) {
                 return returnPlayerAchievement(achievement, playerDTO, matchId, "");
@@ -322,7 +332,7 @@ public class AchievementCalculator {
     }
 
     private PlayerAchievementDTO calculateAUTICKOAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AchievementType achievementType) {
-        if (achievementType == AchievementType.ALL ||achievementType == AchievementType.GOAL || achievementType == AchievementType.MATCH) {
+        if (achievementType == AchievementType.ALL || achievementType == AchievementType.GOAL || achievementType == AchievementType.MATCH) {
             GoalDTO goalDTO = goalService.getGoalkeeperWithMostPointsInMatch(playerDTO.getId());
             if (goalDTO != null) {
                 return returnPlayerAchievement(achievement, playerDTO, goalDTO.getMatchId(), "Počer gólů: " + goalDTO.getGoalNumber() + ", počet asistencí: " + goalDTO.getAssistNumber());
@@ -333,7 +343,7 @@ public class AchievementCalculator {
     }
 
     private PlayerAchievementDTO calculateOZEN_SE_OZER_SEAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AchievementType achievementType) {
-        if (achievementType == AchievementType.ALL ||achievementType == AchievementType.BEER || achievementType == AchievementType.RECEIVED_FINE) {
+        if (achievementType == AchievementType.ALL || achievementType == AchievementType.BEER || achievementType == AchievementType.RECEIVED_FINE) {
             BeerDTO beerDTO = beerService.getFirstMatchWhereAtLeastBeersWithFine(playerDTO.getId(), "Svatba", 7);
             if (beerDTO != null) {
                 return returnPlayerAchievement(achievement, playerDTO, beerDTO.getMatchId(), "Vypil " + beerDTO.getBeerNumber() + " piv a " + beerDTO.getLiquorNumber() + " kořalek");
@@ -345,7 +355,7 @@ public class AchievementCalculator {
     }
 
     private PlayerAchievementDTO calculateROSS_GELLERAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AchievementType achievementType) {
-        if (achievementType == AchievementType.ALL ||achievementType == AchievementType.RECEIVED_FINE) {
+        if (achievementType == AchievementType.ALL || achievementType == AchievementType.RECEIVED_FINE) {
             Integer weddingNumber = receivedFineService.getAtLeastNumberOfFineInHistory(playerDTO.getId(), "Svatba", 3);
             if (weddingNumber != null) {
                 return returnPlayerAchievement(achievement, playerDTO, null, "Hráč byl již " + weddingNumber + "x ženatý");
@@ -357,7 +367,7 @@ public class AchievementCalculator {
     }
 
     private PlayerAchievementDTO calculateZASTRELOVANIAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AchievementType achievementType) {
-        if (achievementType == AchievementType.ALL ||achievementType == AchievementType.GOAL || achievementType == AchievementType.RECEIVED_FINE) {
+        if (achievementType == AchievementType.ALL || achievementType == AchievementType.GOAL || achievementType == AchievementType.RECEIVED_FINE) {
             IMatchIdNumberOneNumberTwo iMatchIdNumberOneNumberTwo = playerAchievementRepository.getFirstMatchWithAtLeastXFines(playerDTO.getId(), "Překop", "Gól", 2, 2);
             if (iMatchIdNumberOneNumberTwo != null) {
                 return returnPlayerAchievement(achievement, playerDTO, iMatchIdNumberOneNumberTwo.getMatchId(), "Překopy: " + iMatchIdNumberOneNumberTwo.getFirstNumber() + ", góly: " + iMatchIdNumberOneNumberTwo.getSecondNumber());
@@ -368,7 +378,7 @@ public class AchievementCalculator {
     }
 
     private PlayerAchievementDTO calculateSOBECAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AppTeamEntity appTeam, AchievementType achievementType) {
-        if (achievementType == AchievementType.ALL ||achievementType == AchievementType.GOAL) {
+        if (achievementType == AchievementType.ALL || achievementType == AchievementType.GOAL) {
             SeasonFilter seasonFilter = new SeasonFilter();
             seasonFilter.setAppTeam(appTeam);
             for (SeasonDTO season : seasonService.getAll(seasonFilter)) {
@@ -389,7 +399,7 @@ public class AchievementCalculator {
     }
 
     private PlayerAchievementDTO calculateNESOBECAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AppTeamEntity appTeam, AchievementType achievementType) {
-        if (achievementType == AchievementType.ALL ||achievementType == AchievementType.GOAL) {
+        if (achievementType == AchievementType.ALL || achievementType == AchievementType.GOAL) {
             SeasonFilter seasonFilter = new SeasonFilter();
             seasonFilter.setAppTeam(appTeam);
             for (SeasonDTO season : seasonService.getAll(seasonFilter)) {
@@ -411,7 +421,7 @@ public class AchievementCalculator {
     }
 
     private PlayerAchievementDTO calculateJEN_NA_SKOKAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AchievementType achievementType) {
-        if (achievementType == AchievementType.ALL ||achievementType == AchievementType.RECEIVED_FINE) {
+        if (achievementType == AchievementType.ALL || achievementType == AchievementType.RECEIVED_FINE) {
             IMatchIdNumberOneNumberTwo iMatchIdNumberOneNumberTwo = playerAchievementRepository.getFirstMatchWithAtLeastOneOfFinesAndXSecondFines(playerDTO.getId(), "Pozdní příchod do začátku", "Pozdní příchod po začátku", "Pozdní příchod po 10. minutě", "Červená karta", 1);
             if (iMatchIdNumberOneNumberTwo != null) {
                 return returnPlayerAchievement(achievement, playerDTO, iMatchIdNumberOneNumberTwo.getMatchId(), "");
@@ -422,7 +432,7 @@ public class AchievementCalculator {
     }
 
     private PlayerAchievementDTO calculateHVEZDNE_MANYRYAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AchievementType achievementType) {
-        if (achievementType == AchievementType.ALL ||achievementType == AchievementType.RECEIVED_FINE || achievementType == AchievementType.MATCH) {
+        if (achievementType == AchievementType.ALL || achievementType == AchievementType.RECEIVED_FINE || achievementType == AchievementType.MATCH) {
             IMatchIdNumberOneNumberTwo iMatchIdNumberOneNumberTwo = playerAchievementRepository.getFirstMatchWherePlayerIsBestPlayerWithFine(playerDTO.getId(), "Pozdní příchod do začátku", "Pozdní příchod po začátku", "Pozdní příchod po 10. minutě");
             if (iMatchIdNumberOneNumberTwo != null) {
                 return returnPlayerAchievement(achievement, playerDTO, iMatchIdNumberOneNumberTwo.getMatchId(), "");
@@ -433,7 +443,7 @@ public class AchievementCalculator {
     }
 
     private PlayerAchievementDTO calculateMIREK_DUSINAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AppTeamEntity appTeam, AchievementType achievementType) {
-        if (achievementType == AchievementType.ALL ||achievementType == AchievementType.RECEIVED_FINE) {
+        if (achievementType == AchievementType.ALL || achievementType == AchievementType.RECEIVED_FINE) {
             if (playerDTO.isActive()) {
                 SeasonFilter seasonFilter = new SeasonFilter();
                 seasonFilter.setAppTeam(appTeam);
@@ -456,7 +466,7 @@ public class AchievementCalculator {
     }
 
     private PlayerAchievementDTO calculateKONZISTENCEAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AppTeamEntity appTeam, AchievementType achievementType) {
-        if (achievementType == AchievementType.ALL ||achievementType == AchievementType.GOAL || achievementType == AchievementType.MATCH) {
+        if (achievementType == AchievementType.ALL || achievementType == AchievementType.GOAL || achievementType == AchievementType.MATCH) {
             FootballPlayerDTO footballPlayerDTO = playerDTO.getFootballPlayer();
             if (footballPlayerDTO == null) {
                 return returnFailedPlayerAchievement(achievement, playerDTO);
@@ -472,7 +482,7 @@ public class AchievementCalculator {
     }
 
     private PlayerAchievementDTO calculateDAVID_BECKHAMAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AchievementType achievementType) {
-        if (achievementType == AchievementType.ALL ||achievementType == AchievementType.MATCH || achievementType == AchievementType.RECEIVED_FINE) {
+        if (achievementType == AchievementType.ALL || achievementType == AchievementType.MATCH || achievementType == AchievementType.RECEIVED_FINE) {
             IMatchIdNumberOneNumberTwo iMatchIdNumberOneNumberTwo = playerAchievementRepository.getFirstMatchWherePlayerIsBestPlayerWithFine(playerDTO.getId(), "Zmínka v tisku");
             if (iMatchIdNumberOneNumberTwo != null) {
                 return returnPlayerAchievement(achievement, playerDTO, iMatchIdNumberOneNumberTwo.getMatchId(), "");
@@ -483,7 +493,7 @@ public class AchievementCalculator {
     }
 
     private PlayerAchievementDTO calculateDLOUHA_NOCAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AchievementType achievementType) {
-        if (achievementType == AchievementType.ALL ||achievementType == AchievementType.RECEIVED_FINE) {
+        if (achievementType == AchievementType.ALL || achievementType == AchievementType.RECEIVED_FINE) {
             IMatchIdNumberOneNumberTwo iMatchIdNumberOneNumberTwo = playerAchievementRepository.getFirstMatchWithAtLeastOneOfFinesAndXSecondFines(playerDTO.getId(), "Pozdní příchod do začátku", "Pozdní příchod po začáku", "Pozdní příchod po 10. minutě", "Zbytkáč či kocovina", 1);
             if (iMatchIdNumberOneNumberTwo != null) {
                 return returnPlayerAchievement(achievement, playerDTO, iMatchIdNumberOneNumberTwo.getMatchId(), "");
@@ -494,7 +504,7 @@ public class AchievementCalculator {
     }
 
     private PlayerAchievementDTO calculateZBYTECNE_PRASEAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AppTeamEntity appTeam, AchievementType achievementType) {
-        if (achievementType == AchievementType.ALL ||achievementType == AchievementType.RECEIVED_FINE) {
+        if (achievementType == AchievementType.ALL || achievementType == AchievementType.RECEIVED_FINE) {
             Long matchId = playerAchievementRepository.getFirstWinningMatchWithFine(playerDTO.getId(), "Červená karta", appTeam.getId());
             if (matchId != null) {
                 return returnPlayerAchievement(achievement, playerDTO, matchId, "");
@@ -506,7 +516,7 @@ public class AchievementCalculator {
     }
 
     private PlayerAchievementDTO calculateDEN_BLBECAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AppTeamEntity appTeam, AchievementType achievementType) {
-        if (achievementType == AchievementType.ALL ||achievementType == AchievementType.RECEIVED_FINE) {
+        if (achievementType == AchievementType.ALL || achievementType == AchievementType.RECEIVED_FINE) {
             Long matchId = playerAchievementRepository.findFirstMatchWherePlayerReceivedAtLeastXFines(playerDTO.getId());
             if (matchId != null) {
                 return returnPlayerAchievement(achievement, playerDTO, matchId, getListOfFines(playerDTO.getId(), matchId, appTeam));
@@ -518,7 +528,7 @@ public class AchievementCalculator {
     }
 
     private PlayerAchievementDTO calculatePOROUCHANY_BUDIKAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AppTeamEntity appTeam, AchievementType achievementType) {
-        if (achievementType == AchievementType.ALL ||achievementType == AchievementType.RECEIVED_FINE) {
+        if (achievementType == AchievementType.ALL || achievementType == AchievementType.RECEIVED_FINE) {
             SeasonFilter seasonFilter = new SeasonFilter();
             seasonFilter.setAppTeam(appTeam);
             for (SeasonDTO season : seasonService.getAll(seasonFilter)) {
@@ -533,7 +543,7 @@ public class AchievementCalculator {
     }
 
     private PlayerAchievementDTO calculateZLUTY_HNEDY_POPLACHAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AchievementType achievementType) {
-        if (achievementType == AchievementType.ALL ||achievementType == AchievementType.RECEIVED_FINE) {
+        if (achievementType == AchievementType.ALL || achievementType == AchievementType.RECEIVED_FINE) {
             IMatchIdNumberOneNumberTwo iMatchIdNumberOneNumberTwo = playerAchievementRepository.getFirstMatchWithAtLeastXFines(playerDTO.getId(), "Zbytkáč či kocovina", "Vyprazdňování při zápase", 1, 1);
             if (iMatchIdNumberOneNumberTwo != null) {
                 return returnPlayerAchievement(achievement, playerDTO, iMatchIdNumberOneNumberTwo.getMatchId(), "");
@@ -544,7 +554,7 @@ public class AchievementCalculator {
     }
 
     private PlayerAchievementDTO calculateSBERATELAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AchievementType achievementType) {
-        if (achievementType == AchievementType.ALL ||achievementType == AchievementType.MATCH) {
+        if (achievementType == AchievementType.ALL || achievementType == AchievementType.MATCH) {
             List<PlayerAchievementDTO> playerAchievements = playerAchievementRepository.findFirstDuplicateMatchAchievements(playerDTO.getId()).stream().map(playerAchievementMapper::toDTO).toList();
             if (playerAchievements.size() > 1) {
                 return returnPlayerAchievement(achievement, playerDTO, playerAchievements.get(0).getMatch().getId(), getListOfAchievements(playerAchievements));
@@ -555,7 +565,7 @@ public class AchievementCalculator {
     }
 
     private PlayerAchievementDTO calculateMEDMRDKAAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AppTeamEntity appTeam, AchievementType achievementType) {
-        if (achievementType == AchievementType.ALL ||achievementType == AchievementType.RECEIVED_FINE) {
+        if (achievementType == AchievementType.ALL || achievementType == AchievementType.RECEIVED_FINE) {
             FineDTO fineDTO = fineService.getFineByName("Zmínka v tisku", appTeam.getId());
             SeasonFilter seasonFilter = new SeasonFilter();
             seasonFilter.setAppTeam(appTeam);
@@ -577,7 +587,7 @@ public class AchievementCalculator {
     }
 
     private PlayerAchievementDTO calculateNAROD_SEAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AchievementType achievementType) {
-        if (achievementType == AchievementType.ALL ||achievementType == AchievementType.MATCH || achievementType == AchievementType.PLAYER) {
+        if (achievementType == AchievementType.ALL || achievementType == AchievementType.MATCH || achievementType == AchievementType.PLAYER) {
             MatchDTO matchDTO = matchService.getFirstMatchWherePlayerAttends(playerDTO);
             if (matchDTO != null) {
                 return returnPlayerAchievement(achievement, playerDTO, matchDTO.getId(), "Všechno nejlepší!");
@@ -588,7 +598,7 @@ public class AchievementCalculator {
     }
 
     private PlayerAchievementDTO calculatePRIORITYAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AppTeamEntity appTeam, AchievementType achievementType) {
-        if (achievementType == AchievementType.ALL ||achievementType == AchievementType.MATCH || achievementType == AchievementType.PLAYER) {
+        if (achievementType == AchievementType.ALL || achievementType == AchievementType.MATCH || achievementType == AchievementType.PLAYER) {
             SeasonFilter seasonFilter = new SeasonFilter();
             seasonFilter.setAppTeam(appTeam);
             for (SeasonDTO season : seasonService.getAll(seasonFilter)) {
@@ -605,7 +615,7 @@ public class AchievementCalculator {
     }
 
     private PlayerAchievementDTO calculateZLUTA_JE_DOBRAAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AppTeamEntity appTeam, AchievementType achievementType) {
-        if (achievementType == AchievementType.ALL ||achievementType == AchievementType.RECEIVED_FINE) {
+        if (achievementType == AchievementType.ALL || achievementType == AchievementType.RECEIVED_FINE) {
             SeasonFilter seasonFilter = new SeasonFilter();
             seasonFilter.setAppTeam(appTeam);
             for (SeasonDTO season : seasonService.getAll(seasonFilter)) {
@@ -624,7 +634,7 @@ public class AchievementCalculator {
     }
 
     private PlayerAchievementDTO calculateIONTAKAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AchievementType achievementType) {
-        if (achievementType == AchievementType.ALL ||achievementType == AchievementType.RECEIVED_FINE || achievementType == AchievementType.BEER) {
+        if (achievementType == AchievementType.ALL || achievementType == AchievementType.RECEIVED_FINE || achievementType == AchievementType.BEER) {
             IMatchIdNumberOneNumberTwo iMatchIdNumberOneNumberTwo = playerAchievementRepository.findFirstMatchWhereFineExistsAndPlayerHasBeer(playerDTO.getId(), "Třetí poločas");
             if (iMatchIdNumberOneNumberTwo != null) {
                 return returnPlayerAchievement(achievement, playerDTO, iMatchIdNumberOneNumberTwo.getMatchId(), "Hráč si dal " + iMatchIdNumberOneNumberTwo.getSecondNumber() + " piv");
@@ -635,7 +645,7 @@ public class AchievementCalculator {
     }
 
     private PlayerAchievementDTO calculateSPORTOVECAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AppTeamEntity appTeam, AchievementType achievementType) {
-        if (achievementType == AchievementType.ALL ||achievementType == AchievementType.GOAL || achievementType == AchievementType.BEER) {
+        if (achievementType == AchievementType.ALL || achievementType == AchievementType.GOAL || achievementType == AchievementType.BEER) {
             SeasonFilter seasonFilter = new SeasonFilter();
             seasonFilter.setAppTeam(appTeam);
             for (SeasonDTO season : seasonService.getAll(seasonFilter)) {
@@ -652,7 +662,7 @@ public class AchievementCalculator {
     }
 
     private PlayerAchievementDTO calculatePROCAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AchievementType achievementType) {
-        if (achievementType == AchievementType.ALL ||achievementType == AchievementType.RECEIVED_FINE) {
+        if (achievementType == AchievementType.ALL || achievementType == AchievementType.RECEIVED_FINE) {
             IMatchIdNumberOneNumberTwo iMatchIdNumberOneNumberTwo = playerAchievementRepository.getFirstMatchWithAtLeastOneOfFinesAndXSecondFines(playerDTO.getId(),
                     "Žlutá karta", "Červená karta", "Červená karta", "Zbytkáč či kocovina", 1);
             if (iMatchIdNumberOneNumberTwo != null) {
@@ -664,7 +674,7 @@ public class AchievementCalculator {
     }
 
     private PlayerAchievementDTO calculateHLADINKAAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AchievementType achievementType) {
-        if (achievementType == AchievementType.ALL ||achievementType == AchievementType.RECEIVED_FINE || achievementType == AchievementType.BEER) {
+        if (achievementType == AchievementType.ALL || achievementType == AchievementType.RECEIVED_FINE || achievementType == AchievementType.BEER) {
             IMatchIdNumberOneNumberTwo iMatchIdNumberOneNumberTwo = playerAchievementRepository.findFirstMatchWhereFineExistsAndPlayerHasLiquor(playerDTO.getId(), "Zbytkáč či kocovina");
             if (iMatchIdNumberOneNumberTwo != null) {
                 return returnPlayerAchievement(achievement, playerDTO, iMatchIdNumberOneNumberTwo.getMatchId(), "Hráč si dal " + iMatchIdNumberOneNumberTwo.getSecondNumber() + " panáků");
@@ -675,7 +685,7 @@ public class AchievementCalculator {
     }
 
     private PlayerAchievementDTO calculateSTENEAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AppTeamEntity appTeam, AchievementType achievementType) {
-        if (achievementType == AchievementType.ALL ||achievementType == AchievementType.BEER) {
+        if (achievementType == AchievementType.ALL || achievementType == AchievementType.BEER) {
             SeasonFilter seasonFilter = new SeasonFilter();
             seasonFilter.setAppTeam(appTeam);
             for (SeasonDTO season : seasonService.getAll(seasonFilter)) {
@@ -697,7 +707,7 @@ public class AchievementCalculator {
     }
 
     private PlayerAchievementDTO calculateCIRHOZAAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AchievementType achievementType) {
-        if (achievementType == AchievementType.ALL ||achievementType == AchievementType.MATCH || achievementType == AchievementType.BEER) {
+        if (achievementType == AchievementType.ALL || achievementType == AchievementType.MATCH || achievementType == AchievementType.BEER) {
             BeerDTO beerDTO = beerService.getFirstBeerIfPlayerDrinksAtLeastXLiquorsAndThenNotAttendInNextMatch(playerDTO.getId(), 5);
             if (beerDTO != null) {
                 return returnPlayerAchievement(achievement, playerDTO, beerDTO.getMatchId(), "Vypil " + beerDTO.getBeerNumber() + " piv a " + beerDTO.getLiquorNumber() + " kořalek");
@@ -709,7 +719,7 @@ public class AchievementCalculator {
     }
 
     private PlayerAchievementDTO calculateTEN_TO_PERFEKTNE_KOPEAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AchievementType achievementType) {
-        if (achievementType == AchievementType.ALL ||achievementType == AchievementType.RECEIVED_FINE) {
+        if (achievementType == AchievementType.ALL || achievementType == AchievementType.RECEIVED_FINE) {
             ReceivedFineDTO receivedFine = receivedFineService.getFirstOccurrenceOfFine(playerDTO.getId(), "Nedal penaltu");
             if (receivedFine != null) {
                 return returnPlayerAchievement(achievement, playerDTO, receivedFine.getMatchId(), "");

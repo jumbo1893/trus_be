@@ -1,5 +1,6 @@
 package com.jumbo.trus.entity.achievement;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.jumbo.trus.entity.MatchEntity;
 import com.jumbo.trus.entity.PlayerEntity;
 import com.jumbo.trus.entity.football.FootballMatchEntity;
@@ -8,10 +9,14 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
 import java.util.Objects;
 
 @Entity
-@Table(name = "player_achievement")
+@Table(
+        name = "player_achievement",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"player_id", "achievement_id"})
+)
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -38,6 +43,10 @@ public class PlayerAchievementEntity {
     private String detail;
 
     private Boolean accomplished;
+
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "Europe/Prague")
+    private Date accomplishedDate;
+
 
     @Override
     public boolean equals(Object o) {

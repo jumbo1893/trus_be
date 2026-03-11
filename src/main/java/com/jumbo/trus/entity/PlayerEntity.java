@@ -5,6 +5,7 @@ import com.jumbo.trus.entity.achievement.PlayerAchievementEntity;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.auth.UserTeamRole;
 import com.jumbo.trus.entity.football.FootballPlayerEntity;
+import com.jumbo.trus.entity.footbar.FootbarSessionEntity;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -63,4 +64,7 @@ public class PlayerEntity {
 
     @OneToMany(mappedBy = "player")
     private List<PlayerAchievementEntity> playerAchievements;
+
+    @OneToMany(mappedBy = "player")
+    private List<FootbarSessionEntity> footbarSessions;
 }

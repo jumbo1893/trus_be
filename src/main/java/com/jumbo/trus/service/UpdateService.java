@@ -3,35 +3,48 @@ package com.jumbo.trus.service;
 import com.jumbo.trus.dto.UpdateDTO;
 import com.jumbo.trus.mapper.UpdateMapper;
 import com.jumbo.trus.repository.UpdateRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
 
 @Service
+@RequiredArgsConstructor
 public class UpdateService {
 
-    @Autowired
-    private UpdateRepository updateRepository;
+    private final UpdateRepository updateRepository;
+    private final UpdateMapper updateMapper;
 
-    @Autowired
-    UpdateMapper updateMapper;
+    public UpdateDTO getUpdateByNameAndAppTeamId(String name, Long appTeamId) {
+        return updateMapper.toDTO(updateRepository.findByNameAndAppTeamId(name, appTeamId).orElse(null));
+    }
 
     public UpdateDTO getUpdateByName(String name) {
         return updateMapper.toDTO(updateRepository.getUpdateByName(name));
     }
 
-    public void saveNewUpdate(UpdateDTO updateDTO) {
-        updateRepository.save(updateMapper.toEntity(updateDTO));
+    public UpdateDTO saveNewUniqueUpdate(UpdateDTO updateDTO) {
+        return updateMapper.toDTO(updateRepository.save(updateMapper.toEntity(updateDTO)));
     }
 
-    public void saveNewUpdate(String name) {
+    public void saveNewUniqueUpdate(String name) {
         if (getUpdateByName(name) != null) {
             return;
         }
         UpdateDTO updateDTO = new UpdateDTO();
         updateDTO.setName(name);
         updateDTO.setDate(new Date());
-        saveNewUpdate(updateDTO);
+        saveNewUniqueUpdate(updateDTO);
+    }
+
+    public UpdateDTO saveNewUniqueUpdate(String name, Long appTeamId) {
+        UpdateDTO updateDTO = getUpdateByNameAndAppTeamId(name, appTeamId);
+        if (updateDTO == null) {
+            updateDTO = new UpdateDTO();
+        }
+        updateDTO.setName(name);
+        updateDTO.setAppTeamId(appTeamId);
+        updateDTO.setDate(new Date());
+        return saveNewUniqueUpdate(updateDTO);
     }
 }

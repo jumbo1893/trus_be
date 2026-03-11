@@ -1,9 +1,9 @@
-package com.jumbo.trus.service.activity;
+package com.jumbo.trus.service.activity.strava;
 
 import com.jumbo.trus.dto.strava.StravaActivity;
-import com.jumbo.trus.repository.strava.ActivityRepository;
 import com.jumbo.trus.entity.strava.ActivityEntity;
 import com.jumbo.trus.entity.strava.AthleteEntity;
+import com.jumbo.trus.repository.strava.ActivityRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;

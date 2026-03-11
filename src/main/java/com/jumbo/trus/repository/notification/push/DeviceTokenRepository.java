@@ -1,5 +1,6 @@
 package com.jumbo.trus.repository.notification.push;
 
+import com.jumbo.trus.entity.auth.UserEntity;
 import com.jumbo.trus.entity.notification.NotificationEntity;
 import com.jumbo.trus.entity.notification.push.DeviceToken;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -25,6 +26,26 @@ public interface DeviceTokenRepository extends PagingAndSortingRepository<Device
             WHERE utr.player.id = :playerId
             """)
     List<DeviceToken> findDeviceTokensByPlayerId(@Param("playerId") Long playerId);
+
+    @Query("""
+    SELECT u
+    FROM UserEntity u
+    WHERE EXISTS (
+        SELECT 1
+        FROM DeviceToken dt
+        WHERE dt.user = u
+    )
+    AND EXISTS (
+        SELECT 1
+        FROM UserEntity u2
+        JOIN u2.teamRoles utr
+        WHERE u2 = u
+          AND utr.appTeam.id = :appTeamId
+          AND utr.role = 'ADMIN'
+    )
+    ORDER BY u.name ASC, u.id ASC
+""")
+    List<UserEntity> findAdminUsersByAppTeamOrdered(@Param("appTeamId") Long appTeamId);
 
 }
 

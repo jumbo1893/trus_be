@@ -2,6 +2,7 @@ package com.jumbo.trus.controller;
 
 import com.jumbo.trus.aspect.PostCommitTask;
 import com.jumbo.trus.aspect.appteam.StoreAppTeam;
+import com.jumbo.trus.aspect.footbar.FootbarSync;
 import com.jumbo.trus.config.security.RoleRequired;
 import com.jumbo.trus.dto.match.MatchDTO;
 import com.jumbo.trus.dto.match.response.SetupMatchResponse;
@@ -26,6 +27,7 @@ public class MatchController {
     @PostMapping("/add")
     @PostCommitTask
     @StoreAppTeam
+    @FootbarSync
     public MatchDTO addMatch(@RequestBody MatchDTO matchDTO) {
         return matchService.addMatch(matchDTO, appTeamService.getCurrentAppTeamOrThrow());
     }

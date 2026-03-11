@@ -5,13 +5,15 @@ import com.jumbo.trus.dto.achievement.AchievementDetail;
 import com.jumbo.trus.dto.achievement.AchievementPlayerDetail;
 import com.jumbo.trus.dto.achievement.PlayerAchievementDTO;
 import com.jumbo.trus.dto.player.PlayerDTO;
+import com.jumbo.trus.dto.player.stats.PlayerAchievementCount;
 import com.jumbo.trus.entity.achievement.PlayerAchievementEntity;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
-import com.jumbo.trus.repository.achievement.AchievementRepository;
-import com.jumbo.trus.repository.achievement.PlayerAchievementRepository;
+import com.jumbo.trus.lock.LockManager;
 import com.jumbo.trus.mapper.PlayerMapper;
 import com.jumbo.trus.mapper.achievement.AchievementMapper;
 import com.jumbo.trus.mapper.achievement.PlayerAchievementMapper;
+import com.jumbo.trus.repository.achievement.AchievementRepository;
+import com.jumbo.trus.repository.achievement.PlayerAchievementRepository;
 import com.jumbo.trus.service.achievement.helper.AchievementType;
 import com.jumbo.trus.service.achievement.helper.IMatchIdNumberOneNumberTwo;
 import com.jumbo.trus.service.order.OrderAchievementBySuccessRate;
@@ -27,6 +29,7 @@ import org.webjars.NotFoundException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 
 @Service
 @RequiredArgsConstructor
@@ -40,6 +43,7 @@ public class AchievementService {
     private final PlayerAchievementMapper playerAchievementMapper;
     private final AchievementCalculator achievementCalculator;
     private final PlayerMapper playerMapper;
+    private final LockManager lockManager;
 
     @Async
     @Transactional
@@ -47,9 +51,27 @@ public class AchievementService {
         if (appTeam == null) {
             throw new IllegalStateException("AppTeamId nebyl nastaven!");
         }
-        achievementCalculator.calculateAllAchievements(playerService.getAll(appTeam.getId()), appTeam, achievementType);
-        log.debug("Vypočteno!");
+        ReentrantLock lock = lockManager.getLock(appTeam.getId());
+        if (lock.tryLock()) { // Non-blocking pokus – pokud zamčené, počkáme (fair lock)
+            try {
+                log.debug("Začínám počítat pro appTeam {}!", appTeam.getId());
+                achievementCalculator.calculateAllAchievements(playerService.getAll(appTeam.getId()), appTeam, achievementType);
+            } finally {
+                lock.unlock();
+            }
+        } else {
+            // Pokud nelze získat lock ihned, zařaď do fronty nebo retry – ale pro jednoduchost: čekej blokujícím způsobem
+            lock.lock(); // Blokující čekání
+            try {
+                achievementCalculator.calculateAllAchievements(playerService.getAll(appTeam.getId()), appTeam, achievementType);
+            } finally {
+                lock.unlock();
+            }
+        }
     }
+        /*achievementCalculator.calculateAllAchievements(playerService.getAll(appTeam.getId()), appTeam, achievementType);
+        log.debug("Vypočteno!");*/
+
 
     public void updatePlayerAchievements(Long playerId, AppTeamEntity appTeam) {
         List<PlayerDTO> playerDTOList = new ArrayList<>();
@@ -82,6 +104,21 @@ public class AchievementService {
         }
         achievementDetailList.sort(new OrderAchievementBySuccessRate());
         return achievementDetailList;
+    }
+
+    public PlayerAchievementCount getNumberOfAchievementsForPlayer(Long playerId) {
+        List<PlayerAchievementDTO> list = playerAchievementRepository
+                .findAllByPlayerId(playerId)
+                .stream()
+                .map(playerAchievementMapper::toDTO)
+                .toList();
+
+        int total = list.size();
+        int accomplished = (int) list.stream()
+                .filter(PlayerAchievementDTO::getAccomplished)
+                .count();
+
+        return new PlayerAchievementCount(total, accomplished);
     }
 
     public AchievementPlayerDetail getAchievementsForPlayer(Long playerId) {

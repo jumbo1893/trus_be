@@ -15,7 +15,7 @@ import com.jumbo.trus.repository.specification.ReceivedFineSpecification;
 import com.jumbo.trus.service.MatchService;
 import com.jumbo.trus.service.fine.FineService;
 import com.jumbo.trus.service.notification.NotificationService;
-import com.jumbo.trus.service.notification.push.FineNotificationMaker;
+import com.jumbo.trus.service.notification.push.maker.FineNotificationMaker;
 import com.jumbo.trus.service.player.PlayerService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;

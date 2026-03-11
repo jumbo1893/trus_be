@@ -3,7 +3,7 @@ package com.jumbo.trus.entity.football;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.jumbo.trus.entity.MatchEntity;
 import com.jumbo.trus.entity.achievement.PlayerAchievementEntity;
-import com.jumbo.trus.entity.notification.push.NotificationFootballMatch;
+import com.jumbo.trus.entity.notification.push.match.NotificationFootballMatch;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

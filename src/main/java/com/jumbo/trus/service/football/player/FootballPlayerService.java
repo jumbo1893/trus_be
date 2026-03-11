@@ -3,10 +3,10 @@ package com.jumbo.trus.service.football.player;
 import com.jumbo.trus.dto.football.FootballPlayerDTO;
 import com.jumbo.trus.dto.football.TeamDTO;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
-import com.jumbo.trus.repository.football.FootballPlayerRepository;
-import com.jumbo.trus.repository.football.TeamRepository;
 import com.jumbo.trus.mapper.football.FootballPlayerMapper;
 import com.jumbo.trus.mapper.football.TeamMapper;
+import com.jumbo.trus.repository.football.FootballPlayerRepository;
+import com.jumbo.trus.repository.football.TeamRepository;
 import com.jumbo.trus.service.UpdateService;
 import com.jumbo.trus.service.football.pkfl.task.RetrievePkflPlayer;
 import lombok.RequiredArgsConstructor;
@@ -91,9 +91,18 @@ public class FootballPlayerService {
             updatedFootballers += footballPlayerProcessor.processPlayer(team);
         }
         if (updatedFootballers > 0) {
-            updateService.saveNewUpdate(PLAYER_UPDATE);
+            updateService.saveNewUniqueUpdate(PLAYER_UPDATE);
         }
         return new PlayerProcessingResult(allFootballers, updatedFootballers);
+    }
+
+    public FootballPlayerDTO noPlayer() {
+        FootballPlayerDTO footballPlayerDTO = new FootballPlayerDTO();
+        footballPlayerDTO.setId(0L);
+        footballPlayerDTO.setName("-");
+        footballPlayerDTO.setBirthYear(0);
+        footballPlayerDTO.setUri("");
+        return footballPlayerDTO;
     }
 
 }

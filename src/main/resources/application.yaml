@@ -22,6 +22,13 @@ spring:
   jackson:
     mapper:
       accept-case-insensitive-enums: true
+  task:
+    execution:
+      pool:
+        core-size: 4
+        max-size: 8
+        queue-capacity: 100
+
 notifications:
   enabled: ${NOTIFICATIONS_ENABLED:true}
 pkfl:
@@ -37,3 +44,14 @@ strava:
   client_id: ${STRAVA_CLIENT_ID:158335}
   client_secret: ${STRAVA_CLIENT_SECRET:3c6b9de67649f79f4f7e771d8cb7a0c05c82577a}
 
+footbar:
+  server_url: ${SERVER_URL:https://localhost:8443}
+  callback_endpoint: ${STRAVA_CALLBACK_ENDPOINT:/footbar/callback}
+  url: ${FOOTBAR_URL:https://api.footbar.com}
+  ep_session_list: ${FOOTBAR_EP_SESSION_LIST:/v1/session/list/}
+  ep_session_detail: ${FOOTBAR_EP_SESSION_LIST:/v1/session/detail/}
+  ep_profile_detail: ${FOOTBAR_EP_SESSION_LIST:/v1/profile/detail/}
+
+  token-url: https://api.footbar.com/oauth/token/
+  client-id: ${FOOTBAR_CLIENT_ID:WPPZtIyGSz29iNxOGszLDV2XqoH7IopBrWOVZqmp}
+  client-secret: ${FOOTBAR_CLIENT_SECRET:w9fDgHvfeR0oauOUObUz0S8EyAwfyYt4e23xRc99DRq9sA7UKnbi3f5J22gmkucQwgqLlk4aHowJFw4UrqCyUMxSXiXRClrgumdlMe9Xjy6lNkuCMTPTcfCcrlz6ff29}

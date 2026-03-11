@@ -1,7 +1,7 @@
 package com.jumbo.trus.repository.notification.push;
 
 import com.jumbo.trus.entity.football.FootballMatchEntity;
-import com.jumbo.trus.entity.notification.push.NotificationFootballMatch;
+import com.jumbo.trus.entity.notification.push.match.NotificationFootballMatch;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

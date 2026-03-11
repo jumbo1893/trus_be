@@ -11,20 +11,24 @@ import com.jumbo.trus.dto.beer.response.multi.BeerMultiAddResponse;
 import com.jumbo.trus.dto.match.MatchDTO;
 import com.jumbo.trus.dto.player.PlayerDTO;
 import com.jumbo.trus.entity.BeerEntity;
+import com.jumbo.trus.entity.PlayerEntity;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.filter.BeerFilter;
 import com.jumbo.trus.entity.filter.MatchFilter;
 import com.jumbo.trus.entity.filter.StatisticsFilter;
 import com.jumbo.trus.mapper.BeerMapper;
+import com.jumbo.trus.mapper.PlayerMapper;
 import com.jumbo.trus.repository.BeerRepository;
+import com.jumbo.trus.repository.PlayerRepository;
 import com.jumbo.trus.repository.specification.BeerSpecification;
 import com.jumbo.trus.service.MatchService;
 import com.jumbo.trus.service.helper.DetailedResponseHelper;
 import com.jumbo.trus.service.helper.PairSeasonMatch;
 import com.jumbo.trus.service.notification.NotificationService;
-import com.jumbo.trus.service.notification.push.BeerNotificationMaker;
+import com.jumbo.trus.service.notification.push.maker.BeerNotificationMaker;
 import com.jumbo.trus.service.order.OrderBeerByBeerAndLiquorNumberThenName;
-import com.jumbo.trus.service.player.PlayerService;
+import com.jumbo.trus.service.websocket.WebSocketSender;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -39,11 +43,13 @@ public class BeerService {
 
     private final BeerRepository beerRepository;
     private final MatchService matchService;
-    private final PlayerService playerService;
     private final BeerMapper beerMapper;
     private final NotificationService notificationService;
     private final DetailedResponseHelper detailedResponseHelper;
     private final BeerNotificationMaker beerNotificationMaker;
+    private final WebSocketSender webSocketSender;
+    private final PlayerRepository playerRepository;
+    private final PlayerMapper playerMapper;
 
     /**
      * metoda napamuje hráče a zápas z přepravky k pivu a uloží ho do DB
@@ -79,20 +85,22 @@ public class BeerService {
             beerMultiAddResponse.addBeersLiquorsAndPlayer(beerDTO.getBeerNumber() - oldBeer.getBeerNumber(), beerDTO.getLiquorNumber() - oldBeer.getLiquorNumber(), false);
             beerDTO.setId(oldBeer.getId());
             saveBeerToRepository(beerDTO, oldBeer, appTeam);
+            webSocketSender.sendPlayerStatsUpdate(beerDTO.getPlayerId(), appTeam);
             setMultiBeerNotification(newBeerNotification, newLiquorNotification, beerDTO, oldBeer);
         } else if (isNeededToAddNewBeer(oldBeer, beerDTO)) {
             beerMultiAddResponse.addBeersLiquorsAndPlayer(beerDTO.getBeerNumber(), beerDTO.getLiquorNumber(), true);
             saveBeerToRepository(beerDTO, null, appTeam);
+            webSocketSender.sendPlayerStatsUpdate(beerDTO.getPlayerId(), appTeam);
             setMultiBeerNotification(newBeerNotification, newLiquorNotification, beerDTO, null);
         }
     }
 
     private void setMultiBeerNotification(StringBuilder newBeerNotification, StringBuilder newLiquorNotification, BeerDTO beerDTO, BeerDTO oldBeer) {
-        String playerName = playerService.getPlayer(beerDTO.getPlayerId()).getName();
+        String playerName = getPlayerEntity(beerDTO.getPlayerId()).getName();
         if ((oldBeer != null && beerDTO.getBeerNumber() != oldBeer.getBeerNumber()) || (oldBeer == null && beerDTO.getBeerNumber() != 0)) {
             newBeerNotification.append(playerName).append(" vypil piv: ").append(beerDTO.getBeerNumber()).append("\n");
         }
-        if ((oldBeer != null && beerDTO.getLiquorNumber() != oldBeer.getBeerNumber()) || (oldBeer == null && beerDTO.getLiquorNumber() != 0)) {
+        if ((oldBeer != null && beerDTO.getLiquorNumber() != oldBeer.getLiquorNumber()) || (oldBeer == null && beerDTO.getLiquorNumber() != 0)) {
             newLiquorNotification.append(playerName).append(" vypil panáků: ").append(beerDTO.getLiquorNumber()).append("\n");
         }
     }
@@ -148,7 +156,7 @@ public class BeerService {
             List<PlayerDTO> playersInMatch = matchService.getPlayerListByMatchId(matchDTO.getId());
             List<PlayerDTO> addedPlayers = new ArrayList<>();
             for (BeerDTO beerDTO : beerList) {
-                PlayerDTO playerDTO = playerService.getPlayer(beerDTO.getPlayerId());
+                PlayerDTO playerDTO = playerMapper.toDTO(getPlayerEntity(beerDTO.getPlayerId()));
                 if (playersInMatch.contains(playerDTO)) {
                     beerNoMatchWithPlayerDTOS.add(new BeerNoMatchWithPlayerDTO(beerDTO.getId(), beerDTO.getBeerNumber(), beerDTO.getLiquorNumber(), playerDTO));
                     addedPlayers.add(playerDTO);
@@ -194,7 +202,7 @@ public class BeerService {
 
     private void mapPlayerAndMatch(BeerEntity beer, BeerDTO beerDTO) {
         beer.setMatch(matchService.getMatchEntity(beerDTO.getMatchId()));
-        beer.setPlayer(playerService.getPlayerEntity(beerDTO.getPlayerId()));
+        beer.setPlayer(getPlayerEntity(beerDTO.getPlayerId()));
     }
 
     private BeerEntity saveBeerToRepository(BeerDTO beerDTO, BeerDTO oldBeer, AppTeamEntity appTeam) {
@@ -220,5 +228,9 @@ public class BeerService {
             return null;
         }
         return filterList.get(0);
+    }
+
+    public PlayerEntity getPlayerEntity(long playerId) {
+        return playerRepository.findById(playerId).orElseThrow(() -> new EntityNotFoundException(String.valueOf(playerId)));
     }
 }

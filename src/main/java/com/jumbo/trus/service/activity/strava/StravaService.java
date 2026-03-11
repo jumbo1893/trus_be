@@ -1,4 +1,4 @@
-package com.jumbo.trus.service.activity;
+package com.jumbo.trus.service.activity.strava;
 
 import com.jumbo.trus.dto.auth.UserDTO;
 import com.jumbo.trus.dto.football.FootballMatchDTO;
@@ -7,13 +7,13 @@ import com.jumbo.trus.dto.strava.AthleteActivities;
 import com.jumbo.trus.dto.strava.StravaActivity;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.auth.UserTeamRole;
-import com.jumbo.trus.repository.strava.ActivityRepository;
-import com.jumbo.trus.repository.strava.AthleteRepository;
 import com.jumbo.trus.entity.strava.ActivityEntity;
 import com.jumbo.trus.entity.strava.AthleteEntity;
 import com.jumbo.trus.mapper.PlayerMapper;
 import com.jumbo.trus.mapper.StravaActivityMapper;
 import com.jumbo.trus.mapper.auth.UserMapper;
+import com.jumbo.trus.repository.strava.ActivityRepository;
+import com.jumbo.trus.repository.strava.AthleteRepository;
 import com.jumbo.trus.service.football.match.FootballMatchService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -5,8 +5,8 @@ import com.jumbo.trus.dto.football.FootballMatchDTO;
 import com.jumbo.trus.dto.helper.StringAndString;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.football.FootballMatchPlayerEntity;
-import com.jumbo.trus.repository.football.FootballMatchPlayerRepository;
 import com.jumbo.trus.mapper.football.FootballMatchMapper;
+import com.jumbo.trus.repository.football.FootballMatchPlayerRepository;
 import com.jumbo.trus.service.football.pkfl.fact.helper.DoubleAndString;
 import com.jumbo.trus.service.helper.DateFormatter;
 import lombok.RequiredArgsConstructor;
@@ -25,29 +25,30 @@ public class FootballPlayerFact {
     final private FootballMatchPlayerRepository footballMatchPlayerRepository;
     final private FootballMatchMapper footballMatchMapper;
 
-    public List<StringAndString> getFactsForPlayer(Long playerId, AppTeamEntity appTeamEntity) {
+    public List<StringAndString> getFactsForPlayer(Long footballPlayerId, AppTeamEntity appTeamEntity) {
         List<StringAndString> statsList = new ArrayList<>();
-        statsList.add(mostGoalsInOneMatch(playerId));
-        statsList.add(bestRefereeByBestPlayer(playerId));
-        statsList.add(worstRefereeByBestPlayer(playerId));
-        statsList.add(bestStadiumByGoals(playerId));
-        statsList.add(bestOpponentByGoals(playerId, appTeamEntity));
+        addIfNotNull(statsList, mostGoalsInOneMatch(footballPlayerId));
+        addIfNotNull(statsList, bestRefereeByBestPlayer(footballPlayerId));
+        addIfNotNull(statsList, bestStadiumByGoals(footballPlayerId));
+        addIfNotNull(statsList, bestOpponentByGoals(footballPlayerId, appTeamEntity));
         return statsList;
+    }
+
+    private void addIfNotNull(List<StringAndString> list, StringAndString value) {
+        if (value != null) {
+            list.add(value);
+        }
     }
 
     private StringAndString mostGoalsInOneMatch(Long playerId) {
         StringAndString doubleString = new StringAndString();
         List<FootballMatchPlayerEntity> highestGoals = footballMatchPlayerRepository.findAllWithHighestGoals(playerId);
         int goals = highestGoals.get(0).getGoals();
-        doubleString.setTitle("Nejvíce gólů v jednom zápase: " + goals);
+        doubleString.setTitle("Nejvíce gólů v zápase:");
         if (goals != 0) {
-            StringBuilder text = new StringBuilder("Zápasy:\n");
-            for (FootballMatchPlayerEntity stats : highestGoals) {
-                text.append(formatMatch(footballMatchMapper.toDTO(stats.getMatch()))).append("\n");
-            }
-            doubleString.setText(String.valueOf(text));
+            doubleString.setText(goals + " góly v zápase " + formatMatch(footballMatchMapper.toDTO(highestGoals.get(0).getMatch())));
         } else {
-            doubleString.setText("Tento dřevák zatím gól nevsítil");
+            doubleString.setText("-");
         }
         return doubleString;
     }
@@ -55,16 +56,16 @@ public class FootballPlayerFact {
     private StringAndString bestRefereeByBestPlayer(Long playerId) {
         List<Object[]> result = footballMatchPlayerRepository.findMostAverageBestPlayersPerReferee(playerId);
         return processStats(
-                "Největší miláček rozhodčího: ",
+                "Oblíbený rozhodčí: ",
                 result,
-                "Žádný miláček není, neboť ho žádný rozhodčí nepískal aspoň 3x!",
-                "Žádný miláček není, neboť hráč ještě nebyl ani jednou hvězda zápasu!",
-                item -> "Rozhodčí " + item.getText() + "průměrně udělil hvězdu utkání v " + item.getTotalRoundedInString(2) + " zápasech \n",
+                "-",
+                "-",
+                item -> item.getText() + " - " + item.getTotalRoundedInString(2) +" hvězdy utkání/zápas",
                 true
         );
     }
 
-    private StringAndString worstRefereeByBestPlayer(Long playerId) {
+    /*private StringAndString worstRefereeByBestPlayer(Long playerId) {
         List<Object[]> result = footballMatchPlayerRepository.findLeastAverageBestPlayersPerReferee(playerId);
         return processStats(
                 "Nejhorší průměrné hodnocení dává rozhodčí: ",
@@ -74,16 +75,16 @@ public class FootballPlayerFact {
                 item -> "Rozhodčí " + item.getText() + "průměrně udělil hvězdu utkání v " + item.getTotalRoundedInString(2) + " zápasech \n",
                 false
         );
-    }
+    }*/
 
     private StringAndString bestStadiumByGoals(Long playerId) {
         List<Object[]> result = footballMatchPlayerRepository.findMostAverageGoalsPerStadium(playerId);
         return processStats(
-                "Nejlíp se střílí na stadionu: ",
+                "Oblíbený stadion:",
                 result,
-                "To zatím nevíme, jelikož na žádném stadionu hráč neodehrál aspoň 3 zápasy!",
-                "No asi nikde, když hráč ještě nedal gól!",
-                item -> "Na hřišti " + item.getText() + " vstřelil hráč průměrně " + item.getTotalRoundedInString(2) + " gólů na zápas\n",
+                "-",
+                "-",
+                item -> item.getText() + " - " + item.getTotalRoundedInString(2) + " gólů/zápas",
                 true
         );
     }
@@ -92,11 +93,11 @@ public class FootballPlayerFact {
         Long teamId = appTeamEntity.getTeam().getId();
         List<Object[]> result = footballMatchPlayerRepository.findMostAverageGoalsPerOpponent(teamId, playerId);
         return processStats(
-                "Nejlíp se střílí proti soupeři: ",
+                "Oblíbený soupeř:",
                 result,
-                "Hráč ještě nehrál proti žádnému soupeři aspoň 2x!",
-                "No asi nikde, když hráč ještě nedal gól!",
-                item -> "Proti " + item.getText() + " vstřelil hráč průměrně " + item.getTotalRoundedInString(2) + " gólů na zápas\n",
+                "-",
+                "-",
+                item -> item.getText() + " - " + item.getTotalRoundedInString(2) + " gólů/zápas",
                 true
         );
     }
@@ -109,9 +110,9 @@ public class FootballPlayerFact {
         List<DoubleAndString> resultList = objectToDoubleAndString(result);
 
         if (resultList.isEmpty()) {
-            doubleString.setText(noDataMessage);
+            return null;
         } else if (resultList.stream().allMatch(item -> item.getTotal() == 0)) {
-            doubleString.setText(zeroDataMessage);
+            return null;
         } else {
             StringBuilder text = new StringBuilder();
             resultList.stream()

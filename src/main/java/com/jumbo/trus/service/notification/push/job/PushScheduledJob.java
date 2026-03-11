@@ -2,7 +2,7 @@ package com.jumbo.trus.service.notification.push.job;
 
 import com.jumbo.trus.entity.notification.push.NotificationPair;
 import com.jumbo.trus.repository.notification.push.PushNotificationRepository;
-import com.jumbo.trus.service.notification.push.MatchNotificationMaker;
+import com.jumbo.trus.service.notification.push.maker.MatchNotificationMaker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;

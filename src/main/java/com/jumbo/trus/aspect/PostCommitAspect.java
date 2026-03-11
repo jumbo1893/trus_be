@@ -26,6 +26,7 @@ public class PostCommitAspect {
     private final RandomFactService randomFactService;
     private final TaskExecutor taskExecutor;  // Spring-managed async executor
 
+
     @AfterReturning(pointcut = "@annotation(com.jumbo.trus.aspect.PostCommitTask)", returning = "result")
     public void executePostCommitTask(JoinPoint joinPoint, Object result) {
         AppTeamEntity appTeam = AppTeamContextHolder.getAppTeam();
@@ -44,6 +45,7 @@ public class PostCommitAspect {
             log.warn("Transakce není aktivní, spouštím ihned...");
             taskExecutor.execute(() -> achievementService.updateAllPlayerAchievements(appTeam, getAchievementTypeByClass(className)));
             taskExecutor.execute(() -> randomFactService.saveOrUpdateRandomFacts(appTeam));
+
         }
     }
 

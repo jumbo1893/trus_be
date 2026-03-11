@@ -42,7 +42,6 @@ public class PlayerProcessor {
     }
 
     public BestScorer findBestScorerByTeamIdAndLeagueId(long teamId, long leagueId) {
-        bestScorerViewRepository.findBestScorerByTeamAndLeague(teamId, leagueId);
         Optional<BestScorerEntity> bestScorer = bestScorerViewRepository.findBestScorerByTeamAndLeague(teamId, leagueId);
         return bestScorer.map(bestScorerViewMapper::toDTO)
                 .orElse(null);

@@ -21,4 +21,6 @@ public class UpdateEntity {
 
     private Date date;
 
+    private Long appTeamId;
+
 }

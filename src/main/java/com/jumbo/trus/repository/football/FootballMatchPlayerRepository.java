@@ -51,13 +51,13 @@ public interface FootballMatchPlayerRepository extends JpaRepository<FootballMat
     @Query(value = "SELECT * FROM football_match_player i WHERE i.goals = (SELECT MAX(subI.goals) FROM football_match_player subI WHERE subI.player_id = :playerId) AND i.player_id = :playerId", nativeQuery = true)
     List<FootballMatchPlayerEntity> findAllWithHighestGoals(@Param("playerId") long playerId);
 
-    @Query("SELECT AVG(CASE WHEN " + FootballMatchPlayerEntity_.BEST_PLAYER + " THEN 1 ELSE 0 END) as total, i.match.referee as text FROM football_match_player i WHERE i.player.id = :playerId GROUP BY i.match.referee HAVING COUNT(i.match.referee) > 3 ORDER BY total DESC LIMIT 3")
+    @Query("SELECT AVG(CASE WHEN " + FootballMatchPlayerEntity_.BEST_PLAYER + " THEN 1 ELSE 0 END) as total, i.match.referee as text FROM football_match_player i WHERE i.player.id = :playerId GROUP BY i.match.referee HAVING COUNT(i.match.referee) > 3 ORDER BY total DESC LIMIT 1")
     List<Object[]> findMostAverageBestPlayersPerReferee(@Param("playerId") long playerId);
 
-    @Query("SELECT AVG(CASE WHEN " + FootballMatchPlayerEntity_.BEST_PLAYER + " THEN 1 ELSE 0 END) as total, i.match.referee as text FROM football_match_player i WHERE i.player.id = :playerId GROUP BY i.match.referee HAVING COUNT(i.match.referee) > 3 ORDER BY total ASC LIMIT 3")
+    @Query("SELECT AVG(CASE WHEN " + FootballMatchPlayerEntity_.BEST_PLAYER + " THEN 1 ELSE 0 END) as total, i.match.referee as text FROM football_match_player i WHERE i.player.id = :playerId GROUP BY i.match.referee HAVING COUNT(i.match.referee) > 3 ORDER BY total ASC LIMIT 1")
     List<Object[]> findLeastAverageBestPlayersPerReferee(@Param("playerId") long playerId);
 
-    @Query("SELECT AVG(" + FootballMatchPlayerEntity_.GOALS + ") as total, i.match.stadium as text FROM football_match_player i WHERE i.player.id = :playerId GROUP BY i.match.stadium HAVING COUNT(i.match.stadium) > 3 ORDER BY total DESC LIMIT 3")
+    @Query("SELECT AVG(" + FootballMatchPlayerEntity_.GOALS + ") as total, i.match.stadium as text FROM football_match_player i WHERE i.player.id = :playerId GROUP BY i.match.stadium HAVING COUNT(i.match.stadium) > 3 ORDER BY total DESC LIMIT 1")
     List<Object[]> findMostAverageGoalsPerStadium(@Param("playerId") long playerId);
 
     @Query("SELECT AVG(i.goals) as total, " +
@@ -71,7 +71,7 @@ public interface FootballMatchPlayerRepository extends JpaRepository<FootballMat
             "GROUP BY opponent " +
             "HAVING COUNT(i.id) > 1 " +
             "ORDER BY total DESC " +
-            "LIMIT 3")
+            "LIMIT 1")
     List<Object[]> findMostAverageGoalsPerOpponent(@Param("teamId") long teamId, @Param("playerId") long playerId);
 
     @Query(value = """

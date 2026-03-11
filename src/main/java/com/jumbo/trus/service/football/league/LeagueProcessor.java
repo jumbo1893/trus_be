@@ -1,8 +1,8 @@
 package com.jumbo.trus.service.football.league;
 
 import com.jumbo.trus.dto.football.LeagueDTO;
-import com.jumbo.trus.repository.football.LeagueRepository;
 import com.jumbo.trus.mapper.football.LeagueMapper;
+import com.jumbo.trus.repository.football.LeagueRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

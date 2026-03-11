@@ -32,6 +32,7 @@ public class HomeService {
         return homeSetup;
     }
 
+
     private Long getCurrentPlayerId(Long userId) {
         PlayerDTO player = appTeamService.findCurrentTeamRoleByUserId(userId).getPlayer();
         if (player == null) {

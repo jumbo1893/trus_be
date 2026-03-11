@@ -1,12 +1,14 @@
-package com.jumbo.trus.service.notification.push;
+package com.jumbo.trus.service.notification.push.maker;
 
 import com.jumbo.trus.dto.beer.BeerDTO;
 import com.jumbo.trus.entity.BeerEntity;
 import com.jumbo.trus.entity.notification.push.DeviceToken;
+import com.jumbo.trus.entity.notification.push.settings.NotificationType;
 import com.jumbo.trus.mapper.football.FootballMatchMapper;
 import com.jumbo.trus.repository.notification.push.DeviceTokenRepository;
 import com.jumbo.trus.service.auth.UserService;
 import com.jumbo.trus.service.football.helper.FootballMatchFormatter;
+import com.jumbo.trus.service.notification.push.PushService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -35,7 +37,7 @@ public class BeerNotificationMaker {
 
         for (DeviceToken deviceToken : deviceTokenList) {
             try {
-                pushService.sendPush(deviceToken, getTitle(diffBeer), getBody(diffBeer));
+                pushService.sendPush(deviceToken, getTitle(diffBeer), getBody(diffBeer), NotificationType.BEER);
             } catch (Exception e) {
                 log.error("error:", e);
             }

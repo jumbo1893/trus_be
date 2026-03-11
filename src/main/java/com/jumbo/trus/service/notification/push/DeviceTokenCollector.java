@@ -5,7 +5,8 @@ import com.jumbo.trus.entity.auth.UserEntity;
 import com.jumbo.trus.entity.notification.push.DeviceToken;
 import com.jumbo.trus.repository.notification.push.DeviceTokenRepository;
 import com.jumbo.trus.service.HeaderManager;
-import com.jumbo.trus.service.auth.UserService;
+import com.jumbo.trus.service.auth.AuthService;
+import com.jumbo.trus.service.notification.settings.EnabledPushNotificationInitializer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -17,12 +18,13 @@ import java.util.List;
 public class DeviceTokenCollector {
 
     private final DeviceTokenRepository deviceTokenRepository;
-    private final UserService userService;
+    private final AuthService authService;
     private final HeaderManager headerManager;
+    private final EnabledPushNotificationInitializer enabledPushNotificationInitializer;
 
     public DeviceTokenDTO addNewToken(DeviceTokenDTO deviceTokenDTO) {
         String token = deviceTokenDTO.getToken();
-        UserEntity currentUser = userService.getCurrentUserEntity();
+        UserEntity currentUser = authService.getCurrentUserEntity();
         DeviceToken existing = deviceTokenRepository.findByToken(token).orElse(null);
 
         if (existing == null) {
@@ -30,6 +32,7 @@ public class DeviceTokenCollector {
         } else {
             updateIfDifferentUser(existing, currentUser);
         }
+        enabledPushNotificationInitializer.ensureUserHasAllTypes(currentUser);
         return deviceTokenDTO;
     }
 
@@ -40,8 +43,19 @@ public class DeviceTokenCollector {
                 .toList();
     }
 
+    public void initAllTokensForUsers() {
+        List<DeviceToken> tokens = deviceTokenRepository.findAll();
+        for (DeviceToken token : tokens) {
+            enabledPushNotificationInitializer.ensureUserHasAllTypes(token.getUser());
+        }
+    }
+
     public List<DeviceToken> getTokensByUserList(List<Long> userIds) {
         return deviceTokenRepository.findByUser_IdIn(userIds);
+    }
+
+    public List<UserEntity> getAdminTokenUsersByAppTeam(Long appTeamId) {
+        return deviceTokenRepository.findAdminUsersByAppTeamOrdered(appTeamId);
     }
 
     private void saveNewToken(String token, UserEntity user) {

@@ -43,7 +43,7 @@ public class FineController {
     @PostCommitTask
     @StoreAppTeam
     public FineDTO editFine(@PathVariable Long fineId, @RequestBody FineDTO fineDTO) throws NotFoundException {
-        return fineService.editFine(fineId, fineDTO);
+        return fineService.editFine(fineId, fineDTO, appTeamService.getCurrentAppTeamOrThrow());
     }
 
     @RoleRequired("ADMIN")

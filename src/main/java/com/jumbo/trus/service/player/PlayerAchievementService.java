@@ -12,12 +12,11 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class PlayerAchievementService {
 
-    private final PlayerService playerService;
+    private final PlayerStatsFacade playerStatsFacade;
     private final AchievementService achievementService;
 
     public PlayerSetup setupPlayerWithAchievements(Long playerId, AppTeamEntity appTeamEntity) {
-        PlayerSetup playerSetup = playerService.setupPlayer(playerId, appTeamEntity);
-        //achievementService.updatePlayerAchievements(playerId, appTeamEntity);
+        PlayerSetup playerSetup = playerStatsFacade.setupPlayer(playerId, appTeamEntity);
         if (playerId != null) {
             playerSetup.setAchievementPlayerDetail(achievementService.getAchievementsForPlayer(playerId));
         }

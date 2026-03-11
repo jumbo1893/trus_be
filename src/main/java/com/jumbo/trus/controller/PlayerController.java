@@ -5,9 +5,11 @@ import com.jumbo.trus.aspect.appteam.StoreAppTeam;
 import com.jumbo.trus.config.security.RoleRequired;
 import com.jumbo.trus.dto.player.PlayerDTO;
 import com.jumbo.trus.dto.player.PlayerSetup;
+import com.jumbo.trus.dto.player.stats.PlayerStats;
 import com.jumbo.trus.service.auth.AppTeamService;
 import com.jumbo.trus.service.player.PlayerAchievementService;
 import com.jumbo.trus.service.player.PlayerService;
+import com.jumbo.trus.service.player.PlayerStatsFacade;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.webjars.NotFoundException;
@@ -21,6 +23,7 @@ public class PlayerController {
 
     private final PlayerService playerService;
     private final PlayerAchievementService playerAchievementService;
+    private final PlayerStatsFacade playerStatsFacade;
     private final AppTeamService appTeamService;
 
     @RoleRequired("ADMIN")
@@ -75,5 +78,11 @@ public class PlayerController {
     @StoreAppTeam
     public void deletePlayer(@PathVariable Long playerId) throws NotFoundException {
         playerService.deletePlayer(playerId);
+    }
+
+    @RoleRequired("READER")
+    @GetMapping("/get-stats")
+    public PlayerStats getPlayerStats(@RequestParam Long playerId) {
+        return playerStatsFacade.setupPlayerStats(playerId, appTeamService.getCurrentAppTeamOrThrow(), true);
     }
 }

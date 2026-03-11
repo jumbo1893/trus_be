@@ -21,7 +21,7 @@ public class LeagueRetriever {
         if (isNeededToLoadAllLeagues()) {
             List<LeagueDTO> leaguesFromWeb = retrievePkflLeagues.getAllPastLeagues();
             if (!leaguesFromWeb.isEmpty()) {
-                updateService.saveNewUpdate(LEAGUE_UPDATE);
+                updateService.saveNewUniqueUpdate(LEAGUE_UPDATE);
             }
             return leaguesFromWeb;
         }

@@ -15,23 +15,24 @@ INSERT INTO fine (id, amount, name, editable, inactive)
 SELECT -2, 50, 'Hattrick', false, false
 WHERE NOT EXISTS (SELECT 1 FROM fine WHERE id = -2);
 
--- view pro best_scorer
-CREATE OR REPLACE VIEW best_scorer_view AS
-SELECT
-    fmp.team_id AS team_id,
-    fmp.player_id AS player_id,
-    SUM(fmp.goals) AS total_goals,
-    fm.league_id AS league_id
-FROM
-    football_match_player fmp
-JOIN
-    football_match fm ON fmp.match_id = fm.id
-WHERE
-    fmp.goals IS NOT NULL
-GROUP BY
-    fmp.team_id, fmp.player_id, fm.league_id
-ORDER BY
-    total_goals DESC;
+DROP VIEW IF EXISTS best_scorer_view;
+
+-- indexy
+CREATE INDEX IF NOT EXISTS idx_fmp_team_match_player
+    ON football_match_player (team_id, match_id, player_id);
+
+CREATE INDEX IF NOT EXISTS idx_fmp_goals_notnull
+    ON football_match_player (match_id)
+    WHERE goals IS NOT NULL;
+
+CREATE INDEX IF NOT EXISTS idx_fm_league_id
+    ON football_match (id, league_id);
+
+CREATE INDEX IF NOT EXISTS idx_fmp_team_player_match
+    ON football_match_player (team_id, player_id, match_id);
+
+CREATE INDEX IF NOT EXISTS idx_fm_id_league
+    ON football_match (id, league_id);
 
 -- view pro souhrn inv. statistik
 CREATE OR REPLACE VIEW football_sum_individual_stats AS
@@ -71,6 +72,15 @@ FROM
 JOIN
     football_match fm ON fmp.match_id = fm.id
 GROUP BY
-    fmp.team_id, fmp.player_id, fm.league_id
-ORDER BY
-    matches DESC;
+    fmp.team_id, fmp.player_id, fm.league_id;
+
+create table if not exists team_recalc_job (
+  team_id       bigint primary key,
+  payload       jsonb       not null,
+  available_at  timestamptz not null default now(),
+  attempts      int         not null default 0,
+  updated_at    timestamptz not null default now()
+);
+
+create index if not exists idx_team_recalc_job_available_at
+  on team_recalc_job (available_at);

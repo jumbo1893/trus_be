@@ -1,6 +1,7 @@
 package com.jumbo.trus.repository;
 
 import com.jumbo.trus.entity.MatchEntity;
+import com.jumbo.trus.entity.auth.AppTeamEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
@@ -8,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,14 +20,17 @@ public interface MatchRepository extends PagingAndSortingRepository<MatchEntity,
     @Query(value = "SELECT * from match LIMIT :limit", nativeQuery = true)
     List<MatchEntity> getAll(@Param("limit") int limit);
 
+    @Query(value = "SELECT * from match where season_id = :seasonId AND app_team_id=:#{#appTeamId} ORDER BY DATE DESC", nativeQuery = true)
+    List<MatchEntity> findAllBySeasonId(@Param("seasonId") long seasonId, @Param("appTeamId") Long appTeamId);
+
     @Query(value = "SELECT * from match WHERE app_team_id=:#{#appTeamId} ORDER BY DATE DESC LIMIT :limit", nativeQuery = true)
     List<MatchEntity> getMatchesOrderByDateDesc(@Param("limit") int limit, @Param("appTeamId") Long appTeamId);
 
     @Query(value = "SELECT * from match WHERE app_team_id=:#{#appTeamId} ORDER BY DATE ASC LIMIT :limit", nativeQuery = true)
     List<MatchEntity> getMatchesOrderByDateAsc(@Param("limit") int limit, @Param("appTeamId") Long appTeamId);
 
-    @Query(value = "SELECT * from match WHERE football_match_id=:#{#footballMatchId}", nativeQuery = true)
-    List<MatchEntity> findAllByFootballMatchId(@Param("footballMatchId") long footballMatchId);
+    @Query(value = "SELECT * from match WHERE football_match_id=:#{#footballMatchId} AND app_team_id=:#{#appTeamId}", nativeQuery = true)
+    Optional<MatchEntity> findAllByFootballMatchId(@Param("footballMatchId") long footballMatchId, @Param("appTeamId") Long appTeamId);
 
     @Query(value = "SELECT * from match WHERE pkfl_match_id=:#{#footballMatchId}", nativeQuery = true)
     List<MatchEntity> findAllByPkflMatchId(@Param("footballMatchId") long footballMatchId);
@@ -49,4 +54,15 @@ public interface MatchRepository extends PagingAndSortingRepository<MatchEntity,
                  LIMIT 1
             """, nativeQuery = true)
     Optional<MatchEntity> findFirstMatchWherePlayerAttends(@Param("playerId") Long playerId);
+
+    @Query("""
+    SELECT m FROM match m
+    WHERE m.appTeam = :appTeam
+      AND m.footballMatch.date BETWEEN :from AND :to
+""")
+    Optional<MatchEntity> findMatchByTimeBetween(
+            @Param("appTeam") AppTeamEntity appTeam,
+            @Param("from") Date from,
+            @Param("to") Date to
+    );
 }

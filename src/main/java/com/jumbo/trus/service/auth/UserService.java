@@ -1,17 +1,17 @@
 package com.jumbo.trus.service.auth;
 
 import com.jumbo.trus.dto.auth.UserDTO;
+import com.jumbo.trus.dto.auth.UserSetup;
 import com.jumbo.trus.dto.auth.UserTeamRoleDTO;
+import com.jumbo.trus.dto.player.PlayerDTO;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.auth.UserEntity;
-import com.jumbo.trus.entity.auth.UserTeamRole;
 import com.jumbo.trus.mapper.auth.UserTeamRoleMapper;
 import com.jumbo.trus.repository.auth.UserRepository;
-import com.jumbo.trus.repository.auth.UserTeamRoleRepository;
 import com.jumbo.trus.service.exceptions.AuthException;
 import com.jumbo.trus.service.exceptions.DuplicateEmailException;
 import com.jumbo.trus.service.football.team.TeamProcessor;
-import com.jumbo.trus.service.notification.NotificationService;
+import com.jumbo.trus.service.notification.push.DeviceTokenCollector;
 import com.jumbo.trus.service.player.PlayerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -34,30 +34,41 @@ public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final NotificationService notificationService;
     private final UserTeamRoleMapper userTeamRoleMapper;
     private final TeamProcessor teamProcessor;
     private final PlayerService playerService;
-    private final UserTeamRoleRepository userTeamRoleRepository;
+    private final DeviceTokenCollector deviceTokenCollector;
 
-    //MIGRACE
-    public void migrateAllUsers(AppTeamEntity appTeamEntity) {
-        List<UserEntity> users = userRepository.findAll();
-        for (UserEntity user : users) {
-            createNewUserTeamRole(appTeamEntity, user, user.isAdmin());
-        }
-    }
 
-    private UserTeamRole createNewUserTeamRole(AppTeamEntity appTeamEntity, UserEntity user, boolean isAdmin) {
-        UserTeamRole userTeamRole = new UserTeamRole();
-        userTeamRole.setAppTeam(appTeamEntity);
-        Long playerId = userRepository.findPlayerId(user.getId());
-        if (playerId != null) {
-            userTeamRole.setPlayer(playerService.getPlayerEntity(playerId));
+    public UserSetup returnPlayerSetup(AppTeamEntity appTeamEntity) {
+        UserSetup userSetup = new UserSetup();
+        PlayerDTO noPlayer = playerService.noPlayer();
+        userSetup.setCurrentUser(getCurrentUser());
+        List<PlayerDTO> eligiblePlayers = new ArrayList<>(playerService.getAll(appTeamEntity.getId()));
+        eligiblePlayers.add(0, noPlayer);
+        userSetup.setEligiblePlayersToPairWith(eligiblePlayers);
+        UserDTO userWithCurrentTeamRole = getCurrentUser();
+        removeAllTeamRolesExceptAppTeam(appTeamEntity.getId(), userWithCurrentTeamRole);
+        if (!userWithCurrentTeamRole.getTeamRoles().isEmpty() && !userWithCurrentTeamRole.getTeamRoles().get(0).getRole().equals("ADMIN")) {
+            List<UserDTO> usersWithToken = new ArrayList<>(deviceTokenCollector.getAdminTokenUsersByAppTeam(appTeamEntity.getId())
+                    .stream()
+                    .map(this::returnUserWithoutSensitiveData)
+                    .toList());
+            userSetup.setEligibleUsersToSendNotification(usersWithToken);
         }
-        userTeamRole.setUser(user);
-        userTeamRole.setRole(isAdmin ? "ADMIN" : "READER");
-        return userTeamRoleRepository.save(userTeamRole);
+        else {
+            userSetup.setEligibleUsersToSendNotification(new ArrayList<>());
+        }
+        if (userWithCurrentTeamRole.getTeamRoles().isEmpty()) {
+            userSetup.setPrimaryPlayer(noPlayer);
+        }
+        else if (userWithCurrentTeamRole.getTeamRoles().get(0).getPlayer() == null) {
+            userSetup.setPrimaryPlayer(noPlayer);
+        }
+        else {
+            userSetup.setPrimaryPlayer(userWithCurrentTeamRole.getTeamRoles().get(0).getPlayer());
+        }
+        return userSetup;
     }
 
     public UserDTO create(UserDTO user) {

@@ -2,6 +2,7 @@ package com.jumbo.trus.entity.notification.push;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.jumbo.trus.entity.auth.UserEntity;
+import com.jumbo.trus.entity.notification.push.log.SentPushNotification;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;

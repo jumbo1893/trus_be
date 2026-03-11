@@ -20,4 +20,6 @@ public class UpdateDTO {
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "Europe/Prague")
     @NotNull
     private Date date;
+
+    private Long appTeamId;
 }

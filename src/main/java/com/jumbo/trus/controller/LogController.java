@@ -2,7 +2,7 @@ package com.jumbo.trus.controller;
 
 import com.jumbo.trus.config.security.RoleRequired;
 import com.jumbo.trus.dto.log.LogDTO;
-import com.jumbo.trus.service.notification.push.LogService;
+import com.jumbo.trus.service.LogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

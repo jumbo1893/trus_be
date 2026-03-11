@@ -1,8 +1,8 @@
-package com.jumbo.trus.service.activity;
+package com.jumbo.trus.service.activity.strava;
 
 import com.jumbo.trus.dto.strava.StravaTokenResponse;
-import com.jumbo.trus.repository.strava.AthleteRepository;
 import com.jumbo.trus.entity.strava.AthleteEntity;
+import com.jumbo.trus.repository.strava.AthleteRepository;
 import com.jumbo.trus.service.auth.UserService;
 import com.jumbo.trus.util.JwtTokenUtil;
 import lombok.RequiredArgsConstructor;

@@ -1,8 +1,6 @@
 package com.jumbo.trus.service.player;
 
-import com.jumbo.trus.dto.football.FootballPlayerDTO;
 import com.jumbo.trus.dto.player.PlayerDTO;
-import com.jumbo.trus.dto.player.PlayerSetup;
 import com.jumbo.trus.entity.PlayerEntity;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.mapper.PlayerMapper;
@@ -21,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.webjars.NotFoundException;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -114,34 +113,14 @@ public class PlayerService {
         return birthdayCalculator.returnNextPlayerBirthdayFromList();
     }
 
-    public PlayerSetup setupPlayer(Long playerId, AppTeamEntity appTeam) {
-        PlayerSetup playerSetup = new PlayerSetup();
-        List<FootballPlayerDTO> playerList = new ArrayList<>(footballPlayerService.getAllPastPlayersByCurrentTeam(appTeam));
-        playerList.add(0, noPlayer());
-        playerSetup.setFootballPlayerList(playerList);
-        if (playerId != null) {
-            playerSetup.setPlayer(getPlayer(playerId));
-            FootballPlayerDTO footballPlayerDTO = playerSetup.getPlayer().getFootballPlayer();
-            if (footballPlayerDTO != null) {
-                playerSetup.setPlayerStats(footballPlayerStatsService.getPlayerStatsForPlayer(playerSetup.getPlayer().getFootballPlayer().getId(), appTeam));
-                playerSetup.setPrimaryFootballPlayer(footballPlayerDTO);
-            }
-            else {
-                playerSetup.setPrimaryFootballPlayer(noPlayer());
-            }
-        }
-        else {
-            playerSetup.setPrimaryFootballPlayer(noPlayer());
-        }
-        return playerSetup;
-    }
-
-    private FootballPlayerDTO noPlayer() {
-        FootballPlayerDTO footballPlayerDTO = new FootballPlayerDTO();
-        footballPlayerDTO.setId(0L);
-        footballPlayerDTO.setName("-");
-        footballPlayerDTO.setBirthYear(0);
-        footballPlayerDTO.setUri("");
-        return footballPlayerDTO;
+    public PlayerDTO noPlayer() {
+        PlayerDTO playerDTO = new PlayerDTO();
+        playerDTO.setId(0L);
+        playerDTO.setFootballPlayer(null);
+        playerDTO.setName("-");
+        playerDTO.setFan(false);
+        playerDTO.setBirthday(new Date());
+        playerDTO.setActive(true);
+        return playerDTO;
     }
 }

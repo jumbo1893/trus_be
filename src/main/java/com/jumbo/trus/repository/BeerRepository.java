@@ -54,7 +54,7 @@ public interface BeerRepository extends PagingAndSortingRepository<BeerEntity, L
                     FROM beer
                     INNER JOIN match m ON match_id=m.id
                         WHERE m.season_id=:#{#seasonId}
-                        AND app_team_id=:#{#appTeamId}
+                        AND m.app_team_id=:#{#appTeamId}
                     GROUP BY player_id
                 ) max_beer ON b.player_id = max_beer.player_id AND b.beer_number = max_beer.max_beer_number
                 INNER JOIN match m ON match_id=m.id
@@ -94,7 +94,7 @@ public interface BeerRepository extends PagingAndSortingRepository<BeerEntity, L
                     FROM beer
                     INNER JOIN match m ON match_id=m.id
                         WHERE m.season_id=:#{#seasonId}
-                        AND app_team_id=:#{#appTeamId}
+                        AND m.app_team_id=:#{#appTeamId}
                     GROUP BY player_id
                 ) max_liquor ON b.player_id = max_liquor.player_id AND b.liquor_number = max_liquor.max_liquor_number
                 INNER JOIN match m ON match_id=m.id
@@ -137,7 +137,7 @@ public interface BeerRepository extends PagingAndSortingRepository<BeerEntity, L
             ) mp ON b.player_id = mp.player_id
             INNER JOIN match m ON match_id=m.id
                 WHERE m.season_id=:#{#seasonId}
-                AND b.app_team_id=:#{#appTeamId}
+                AND m.app_team_id=:#{#appTeamId}
             GROUP BY b.player_id, mp.match_count
             HAVING SUM(b.beer_number) > 0
             ORDER BY ?#{#sort}
@@ -175,7 +175,7 @@ public interface BeerRepository extends PagingAndSortingRepository<BeerEntity, L
             ) mp ON b.player_id = mp.player_id
             INNER JOIN match m ON match_id=m.id
                 WHERE m.season_id=:#{#seasonId}
-                AND b.app_team_id=:#{#appTeamId}
+                AND m.app_team_id=:#{#appTeamId}
             GROUP BY b.player_id, mp.match_count
             HAVING SUM(b.liquor_number) > 0
             ORDER BY ?#{#sort}
@@ -196,7 +196,7 @@ public interface BeerRepository extends PagingAndSortingRepository<BeerEntity, L
             ) mp ON b.player_id = mp.player_id
             INNER JOIN match m ON match_id=m.id
                 WHERE m.season_id=:#{#seasonId}
-                AND b.app_team_id=:#{#appTeamId}
+                AND m.app_team_id=:#{#appTeamId}
             GROUP BY b.player_id, mp.match_count
             HAVING SUM(b.beer_number) > 0 OR SUM(b.liquor_number) > 0
             ORDER BY totalBeerNumber DESC
@@ -247,13 +247,13 @@ public interface BeerRepository extends PagingAndSortingRepository<BeerEntity, L
                             FROM goal g
                             INNER JOIN match m ON match_id=m.id
                                 WHERE m.season_id=:#{#seasonId}
-                                AND b.app_team_id=:#{#appTeamId}
+                                AND m.app_team_id=:#{#appTeamId}
                             GROUP BY player_id
                         ) g ON b.player_id = g.player_id
                         INNER JOIN match m ON match_id=m.id
                             WHERE m.season_id=:#{#seasonId}
             			    AND g.goal_count > 0
-            			    AND b.app_team_id=:#{#appTeamId}
+            			    AND m.app_team_id=:#{#appTeamId}
                         GROUP BY b.player_id, g.goal_count
                         HAVING SUM(b.beer_number) > 0
                         ORDER BY avgBeerPerMatch DESC;
@@ -287,13 +287,13 @@ public interface BeerRepository extends PagingAndSortingRepository<BeerEntity, L
                             FROM goal g
                             INNER JOIN match m ON match_id=m.id
                                 WHERE m.season_id=:#{#seasonId}
-                                AND b.app_team_id=:#{#appTeamId}
+                                AND m.app_team_id=:#{#appTeamId}
                             GROUP BY player_id
                         ) g ON b.player_id = g.player_id
                         INNER JOIN match m ON match_id=m.id
                             WHERE m.season_id=:#{#seasonId}
             			    AND g.goal_count > 0
-            			    AND b.app_team_id=:#{#appTeamId}
+            			    AND m.app_team_id=:#{#appTeamId}
                         GROUP BY b.player_id, g.goal_count
                         HAVING SUM(b.liquor_number) > 0
                         ORDER BY avgBeerPerMatch DESC;
@@ -327,13 +327,13 @@ public interface BeerRepository extends PagingAndSortingRepository<BeerEntity, L
                             FROM goal g
                             INNER JOIN match m ON match_id=m.id
                                 WHERE m.season_id=:#{#seasonId}
-                                AND b.app_team_id=:#{#appTeamId}
+                                AND m.app_team_id=:#{#appTeamId}
                             GROUP BY player_id
                         ) g ON b.player_id = g.player_id
                         INNER JOIN match m ON match_id=m.id
                             WHERE m.season_id=:#{#seasonId}
             			    AND g.assist_count > 0
-            			    AND b.app_team_id=:#{#appTeamId}
+            			    AND m.app_team_id=:#{#appTeamId}
                         GROUP BY b.player_id, g.assist_count
                         HAVING SUM(b.beer_number) > 0
                         ORDER BY avgBeerPerMatch DESC;
@@ -367,13 +367,13 @@ public interface BeerRepository extends PagingAndSortingRepository<BeerEntity, L
                             FROM goal g
                             INNER JOIN match m ON match_id=m.id
                                 WHERE m.season_id=:#{#seasonId}
-                                AND b.app_team_id=:#{#appTeamId}
+                                AND m.app_team_id=:#{#appTeamId}
                             GROUP BY player_id
                         ) g ON b.player_id = g.player_id
                         INNER JOIN match m ON match_id=m.id
                             WHERE m.season_id=:#{#seasonId}
             			    AND g.assist_count > 0
-            			    AND b.app_team_id=:#{#appTeamId}
+            			    AND m.app_team_id=:#{#appTeamId}
                         GROUP BY b.player_id, g.assist_count
                         HAVING SUM(b.liquor_number) > 0
                         ORDER BY avgBeerPerMatch DESC;

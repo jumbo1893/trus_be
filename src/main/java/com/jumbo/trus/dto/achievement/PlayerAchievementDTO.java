@@ -1,5 +1,6 @@
 package com.jumbo.trus.dto.achievement;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.jumbo.trus.dto.football.FootballMatchDTO;
 import com.jumbo.trus.dto.match.MatchDTO;
 import com.jumbo.trus.dto.player.PlayerDTO;
@@ -7,6 +8,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+
+import java.util.Date;
+import java.util.Objects;
 
 @Data
 @AllArgsConstructor
@@ -27,6 +31,9 @@ public class PlayerAchievementDTO {
     private String detail;
 
     private Boolean accomplished;
+
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "Europe/Prague")
+    private Date accomplishedDate;
 
     public PlayerAchievementDTO(AchievementDTO achievement, PlayerDTO player, MatchDTO match, String detail, Boolean accomplished) {
         this.achievement = achievement;
@@ -54,5 +61,13 @@ public class PlayerAchievementDTO {
         this.accomplished = accomplished;
     }
 
+    public boolean equalsByPlayerAchievementMatchAndAccomplished(PlayerAchievementDTO o) {
+        if (o == null) return false;
+
+        return Objects.equals(this.achievement.getId(), o.achievement.getId())
+                && Objects.equals(this.player.getId(), o.player.getId())
+                && Objects.equals(this.match, o.match)
+                && Objects.equals(this.accomplished, o.getAccomplished());
+    }
 
 }

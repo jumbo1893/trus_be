@@ -10,12 +10,12 @@ import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.auth.UserEntity;
 import com.jumbo.trus.entity.auth.UserTeamRole;
 import com.jumbo.trus.entity.football.TeamEntity;
-import com.jumbo.trus.repository.auth.AppTeamRepository;
-import com.jumbo.trus.repository.auth.UserTeamRoleRepository;
-import com.jumbo.trus.repository.football.TeamRepository;
 import com.jumbo.trus.mapper.PlayerMapper;
 import com.jumbo.trus.mapper.auth.AppTeamMapper;
 import com.jumbo.trus.mapper.auth.UserTeamRoleMapper;
+import com.jumbo.trus.repository.auth.AppTeamRepository;
+import com.jumbo.trus.repository.auth.UserTeamRoleRepository;
+import com.jumbo.trus.repository.football.TeamRepository;
 import com.jumbo.trus.service.HeaderManager;
 import com.jumbo.trus.service.exceptions.AuthException;
 import com.jumbo.trus.service.exceptions.FieldValidationException;
@@ -104,10 +104,15 @@ public class AppTeamService implements AppTeamProvider {
         if (userTeamRole == null) {
             throw new NotFoundException("Nenalezena role pro user " + userEntity.getUsername());
         }
+        PlayerEntity playerEntity;
+        if (playerDTO.equals(playerService.noPlayer())) {
+            playerEntity = null;
+        }
+        else {
+            playerEntity = playerService.getPlayerEntity(playerDTO.getId());
+        }
 
-        PlayerEntity playerEntity = playerService.getPlayerEntity(playerDTO.getId());
-        log.debug("footballPlayer id: {}", playerEntity.getFootballPlayer() != null ? playerEntity.getFootballPlayer().getId() : "null");
-        userTeamRole.setPlayer(playerEntity); // důležité: žádné toEntity()
+        userTeamRole.setPlayer(playerEntity);
         userTeamRoleRepository.save(userTeamRole);
     }
 

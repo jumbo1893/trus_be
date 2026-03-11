@@ -111,6 +111,7 @@ public class SeasonService {
         validateSeason(seasonDTO.getFromDate(), seasonDTO.getFromDate(), seasonDTO, appTeam);
         SeasonEntity entity = seasonMapper.toEntity(seasonDTO);
         entity.setId(seasonId);
+        entity.setAppTeam(appTeam);
         SeasonEntity savedEntity = seasonRepository.save(entity);
         notificationService.addNotification("Upravena sezona", seasonDTO.getName() + " se začátkem " + seasonDTO.getFromDate() + " a koncem " + seasonDTO.getToDate());
         return seasonMapper.toDTO(savedEntity);

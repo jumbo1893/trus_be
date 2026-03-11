@@ -1,6 +1,9 @@
 package com.jumbo.trus.entity.auth;
 
+import com.jumbo.trus.entity.OAuthStateEntity;
+import com.jumbo.trus.entity.footbar.FootbarAccountEntity;
 import com.jumbo.trus.entity.notification.push.DeviceToken;
+import com.jumbo.trus.entity.notification.push.settings.EnabledPushNotification;
 import com.jumbo.trus.entity.strava.AthleteEntity;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -44,8 +47,17 @@ public class UserEntity implements UserDetails {
     @OneToMany(mappedBy = "user")
     private List<AthleteEntity> athletes;
 
+    @OneToMany(mappedBy = "user")
+    private List<FootbarAccountEntity> footbarAccounts;
+
+    @OneToMany(mappedBy = "user")
+    private List<OAuthStateEntity> oAuthStateEntities;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DeviceToken> deviceTokens;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<EnabledPushNotification> enabledPushNotifications;
 
     @Override
     public String getUsername() {

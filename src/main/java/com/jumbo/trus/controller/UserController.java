@@ -2,6 +2,7 @@ package com.jumbo.trus.controller;
 
 import com.jumbo.trus.controller.error.ErrorResponse;
 import com.jumbo.trus.dto.auth.UserDTO;
+import com.jumbo.trus.dto.auth.UserSetup;
 import com.jumbo.trus.dto.auth.registration.RegistrationSetup;
 import com.jumbo.trus.dto.player.PlayerDTO;
 import com.jumbo.trus.entity.auth.UserEntity;
@@ -36,11 +37,6 @@ public class UserController {
     @PostMapping("/create")
     public UserDTO createUser(@RequestBody @Valid UserDTO userDTO) {
         return userService.create(userDTO);
-    }
-
-    @PostMapping("/migration")
-    public void migrateUsers() {
-        userService.migrateAllUsers(appTeamService.getCurrentAppTeamOrThrow());
     }
 
     @PostMapping({"/auth", "/auth/"})
@@ -94,6 +90,11 @@ public class UserController {
     @GetMapping("/auth")
     public UserDTO getCurrentUser() throws AuthException {
         return userService.getCurrentUser();
+    }
+
+    @GetMapping("/setup")
+    public UserSetup getUserSetup() {
+        return userService.returnPlayerSetup(appTeamService.getCurrentAppTeamOrThrow());
     }
 
     @PostMapping("/player-add")

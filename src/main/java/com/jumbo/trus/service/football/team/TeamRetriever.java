@@ -30,7 +30,7 @@ public class TeamRetriever {
     private List<TeamTableTeam> retrieveAllTeams() {
         List<TeamTableTeam> teams = retrievePkflTeams.getTeams(leagueService.getAllLeagues(Organization.PKFL));
         if (!teams.isEmpty()) {
-            updateService.saveNewUpdate(TEAM_UPDATE);
+            updateService.saveNewUniqueUpdate(TEAM_UPDATE);
         }
         return teams;
     }

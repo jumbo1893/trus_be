@@ -140,7 +140,7 @@ public class FootballMatchService {
     }
 
     private void setUpdateTag() {
-        updateService.saveNewUpdate(MATCH_UPDATE);
+        updateService.saveNewUniqueUpdate(MATCH_UPDATE);
     }
 
     private FootballMatchDTO getFootballMatchFromRepository(Long homeTeamId, Integer round, Long leagueId) {

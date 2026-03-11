@@ -22,7 +22,8 @@ public abstract class MatchMapper {
             @Mapping(target = "goalList", ignore = true),
             @Mapping(target = "appTeam", ignore = true),
             @Mapping(target = "pkflMatch", ignore = true),
-            @Mapping(target = "playerAchievements", ignore = true)
+            @Mapping(target = "playerAchievements", ignore = true),
+            @Mapping(target = "footbarSessions", ignore = true)
     })
     public abstract MatchEntity toEntity(MatchDTO source);
     @Mappings({

@@ -16,6 +16,10 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
 
     Optional<PlayerAchievementEntity> findByPlayerIdAndAchievementId(Long playerId, Long achievementId);
 
+    boolean existsByPlayerIdAndAchievementId(Long playerId, Long achievementId);
+
+    Optional<PlayerAchievementEntity> findByPlayerIdAndAchievementIdAndAccomplished(Long playerId, Long achievementId, boolean accomplished);
+
     @Query("""
                 SELECT
                     COUNT(pae) AS firstNumber,

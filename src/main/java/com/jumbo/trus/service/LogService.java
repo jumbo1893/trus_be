@@ -1,9 +1,8 @@
-package com.jumbo.trus.service.notification.push;
+package com.jumbo.trus.service;
 
 import com.jumbo.trus.dto.log.LogDTO;
 import com.jumbo.trus.entity.log.LogEntity;
 import com.jumbo.trus.repository.log.LogRepository;
-import com.jumbo.trus.service.HeaderManager;
 import com.jumbo.trus.service.auth.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

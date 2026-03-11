@@ -3,7 +3,7 @@ package com.jumbo.trus.controller;
 import com.jumbo.trus.config.security.RoleRequired;
 import com.jumbo.trus.dto.strava.AthleteActivities;
 import com.jumbo.trus.entity.auth.UserEntity;
-import com.jumbo.trus.service.activity.StravaService;
+import com.jumbo.trus.service.activity.strava.StravaService;
 import com.jumbo.trus.service.auth.AppTeamService;
 import com.jumbo.trus.util.JwtTokenUtil;
 import lombok.RequiredArgsConstructor;

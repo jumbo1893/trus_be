@@ -1,4 +1,4 @@
-package com.jumbo.trus.entity.notification.push;
+package com.jumbo.trus.entity.notification.push.match;
 
 import com.jumbo.trus.entity.football.FootballMatchEntity;
 import jakarta.persistence.*;
@@ -21,7 +21,7 @@ public class NotificationFootballMatch {
     private FootballMatchEntity footballMatch;
 
     @Enumerated(EnumType.STRING)
-    private NotificationType type;
+    private NotificationMatchType type;
 
     private boolean sent = false;
 }
