@@ -89,9 +89,9 @@ public class FootbarService {
         List<FootbarAccountSessions> footbarAccountSessions = new ArrayList<>();
         List<MatchEntity> matchEntities = matchService.getAllEntitiesBySeasonId(appTeam, seasonId);
         for (MatchEntity match : matchEntities) {
-            List<FootbarAccountSessions> newSessions = footbarSessionGetter.getListOfFootbarAccountsByMatch(appTeam, match, userId);
-          footbarAccountSessions.addAll(newSessions);
-            if (!newSessions.isEmpty()) {
+            FootbarAccountSessions newSession = footbarSessionGetter.getFootbarAccountSessionByMatch(appTeam, match, userId);
+            if (newSession != null) {
+                footbarAccountSessions.add(newSession);
                 matchDTOList.add(matchMapper.toDTO(match));
             }
         }
