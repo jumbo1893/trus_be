@@ -320,6 +320,14 @@ public class MatchService {
         return matchMapper.toDTO(matchEntity);
     }
 
+    public MatchDTO findMatchByFootballMatchIdOrNull(long footballMatchId, long appTeamId) {
+        try {
+            return findMatchByFootballMatchId(footballMatchId, appTeamId);
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
     public MatchEntity findMatchByAroundTime(AppTeamEntity appTeam, Date startTime, Date endTime) {
         Date from = Date.from(startTime.toInstant().minus(1, ChronoUnit.HOURS));
         Date to = Date.from(endTime.toInstant().plus(2, ChronoUnit.HOURS));

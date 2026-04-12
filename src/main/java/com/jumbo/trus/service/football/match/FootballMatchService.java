@@ -67,6 +67,26 @@ public class FootballMatchService {
         return matches;
     }
 
+    public FootballMatchDetail getNextAndLastFootballMatchDetail(AppTeamEntity appTeamEntity, boolean next) {
+        Long teamId = appTeamEntity.getTeam().getId();
+        if (teamId != null) {
+            if (next) {
+                FootballMatchDTO nextMatch = footballMatchProcessor.getNextMatch(teamId);
+                if (nextMatch != null) {
+                    return getFootballMatchDetail(nextMatch.getId(), appTeamEntity, false);
+                }
+            }
+            else {
+                FootballMatchDTO lastMatch = footballMatchProcessor.getLastMatch(teamId);
+                if (lastMatch != null) {
+                    return getFootballMatchDetail(lastMatch.getId(), appTeamEntity, false);
+
+                }
+            }
+        }
+        return null;
+    }
+
     public List<FootballMatchDTO> getNextMatches(AppTeamEntity appTeam) {
         Long teamId = appTeam.getTeam().getId();
         return footballMatchProcessor.getNextMatches(teamId);

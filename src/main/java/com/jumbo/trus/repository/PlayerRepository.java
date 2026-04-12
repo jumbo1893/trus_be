@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface PlayerRepository extends JpaRepository<PlayerEntity, Long> {
 
-    @Query(value = "SELECT * from player WHERE fan=:#{#fan} AND app_team_id=:#{#appTeamId}", nativeQuery = true)
+    @Query(value = "SELECT * from player WHERE fan=:#{#fan} AND app_team_id=:#{#appTeamId} ORDER BY NAME", nativeQuery = true)
     List<PlayerEntity> getAllByFan(@Param("fan") boolean fan, @Param("appTeamId") Long appTeamId);
 
     @Query(value = "SELECT * from player WHERE active=:#{#active} AND fan = false AND app_team_id=:#{#appTeamId}", nativeQuery = true)

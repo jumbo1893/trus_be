@@ -118,6 +118,9 @@ public class PlayerStatsFacade {
         if (currentSeason) {
             statisticsFilter.setSeasonId(seasonService.getCurrentSeason(true, appTeam).getId());
         }
+        else {
+            statisticsFilter.setSeasonId(seasonService.getAllSeason().getId());
+        }
         return statisticsFilter;
     }
 
