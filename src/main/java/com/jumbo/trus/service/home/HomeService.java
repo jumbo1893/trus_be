@@ -1,5 +1,7 @@
 package com.jumbo.trus.service.home;
 
+import com.jumbo.trus.dto.achievement.PlayerAchievementDTO;
+import com.jumbo.trus.dto.football.FootballMatchDTO;
 import com.jumbo.trus.dto.football.detail.FootballMatchDetail;
 import com.jumbo.trus.dto.helper.Redirect;
 import com.jumbo.trus.dto.helper.RedirectDTO;
@@ -16,6 +18,7 @@ import com.jumbo.trus.service.MatchService;
 import com.jumbo.trus.service.auth.AppTeamService;
 import com.jumbo.trus.service.fact.RandomFactService;
 import com.jumbo.trus.service.football.match.FootballMatchService;
+import com.jumbo.trus.service.player.PlayerAchievementService;
 import com.jumbo.trus.service.player.PlayerService;
 import com.jumbo.trus.service.receivedFine.ReceivedFineService;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +27,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -37,6 +41,8 @@ public class HomeService {
     private final AppTeamService appTeamService;
     private final MatchService matchService;
     private final ReceivedFineService receivedFineService;
+    private final StatsBoardDataService statsBoardDataService;
+    private final PlayerAchievementService playerAchievementService;
 
 
     public HomeSetup setup(Long userId, AppTeamEntity appTeamEntity) {
@@ -50,6 +56,7 @@ public class HomeService {
         homeSetup.setNextAndLastFootballMatch(footballMatchDetails);
         homeSetup.setNextMatch(getNextMatch(appTeamEntity));
         homeSetup.setLastMatch(getLastMatch(appTeamEntity, player));
+        homeSetup.setStatsBoards(statsBoardDataService.getStatsBoardDataList(appTeamEntity));
         return homeSetup;
     }
 
@@ -86,7 +93,10 @@ public class HomeService {
         List<TextWithRedirect> matchInfoList = new ArrayList<>();
         MatchDTO match = matchService.findMatchByFootballMatchIdOrNull(footballMatchDetail.getFootballMatch().getId(), appTeamEntity.getId());
         addTextRedirectToList(matchInfoList, getNumberOfPlayersText(footballMatchDetail, match, false));
-        //addTextRedirectToList(matchInfoList, getFinesNumberText(match, appTeamEntity, player));
+        addTextRedirectToList(matchInfoList, getFinesNumberText(match, appTeamEntity, player));
+        for (TextWithRedirect achievementsText : getAccomplishedAchievements(match, footballMatchDetail.getFootballMatch(), appTeamEntity)) {
+            addTextRedirectToList(matchInfoList, achievementsText);
+        }
         dashboardMatch.setMatchInfoList(matchInfoList);
         return dashboardMatch;
     }
@@ -135,6 +145,28 @@ public class HomeService {
         }
         text.setText(fineText);
         return text;
+    }
+
+    private List<TextWithRedirect> getAccomplishedAchievements(MatchDTO match, FootballMatchDTO footballMatchDTO, AppTeamEntity appTeamEntity) {
+        if (match == null && footballMatchDTO == null) return null;
+        Long matchId = Optional.ofNullable(match)
+                .map(MatchDTO::getId)
+                .orElse(null);
+
+        Long footballMatchId = Optional.ofNullable(footballMatchDTO)
+                .map(FootballMatchDTO::getId)
+                .orElse(null);
+        List<PlayerAchievementDTO> achievements = playerAchievementService.getAllAccomplishedAchievementsByMatch(appTeamEntity.getId(), matchId, footballMatchId);
+        List<TextWithRedirect> textWithRedirects = new ArrayList<>();
+        for (PlayerAchievementDTO achievement : achievements) {
+            TextWithRedirect text = new TextWithRedirect();
+            RedirectDTO redirectDTO = new RedirectDTO();
+            redirectDTO.setRedirect(Redirect.ACHIEVEMENTS);
+            text.setWarningType(WarningType.INFO);
+            text.setText("V zápase byl získaný achievement " + achievement.getAchievement().getName() + " hráčem " + achievement.getPlayer().getName());
+            textWithRedirects.add(text);
+        }
+        return textWithRedirects;
     }
 
     private StatisticsFilter getAllPlayersFilter(AppTeamEntity appTeamEntity, Long matchId) {

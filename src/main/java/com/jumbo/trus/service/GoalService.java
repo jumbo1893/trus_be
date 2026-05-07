@@ -1,6 +1,7 @@
 package com.jumbo.trus.service;
 
 import com.jumbo.trus.dto.goal.GoalDTO;
+import com.jumbo.trus.dto.goal.IPlayerGoalStats;
 import com.jumbo.trus.dto.goal.multi.GoalListDTO;
 import com.jumbo.trus.dto.goal.response.GoalMultiAddResponse;
 import com.jumbo.trus.dto.goal.response.get.GoalDetailedResponse;
@@ -29,6 +30,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static com.jumbo.trus.config.Config.ALL_SEASON_ID;
 
 @Service
 @RequiredArgsConstructor
@@ -228,5 +231,21 @@ public class GoalService {
             goalList.add(0, goal);
         }
         return goalList;
+    }
+
+    public List<IPlayerGoalStats> getListOfPlayersOrderByGoalAndAssistNumber(long seasonId, long appTeamId, int count) {
+        if (seasonId == ALL_SEASON_ID) {
+            return
+                    goalRepository.findTopGoalStatsByAppTeam(
+                            appTeamId,
+                            PageRequest.of(0, count)
+                    );
+        }
+        return
+                goalRepository.findTopGoalStatsByAppTeamAndSeason(
+                        appTeamId,
+                        seasonId,
+                        PageRequest.of(0, count)
+                );
     }
 }

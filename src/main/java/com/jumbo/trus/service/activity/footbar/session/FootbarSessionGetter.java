@@ -1,6 +1,7 @@
 package com.jumbo.trus.service.activity.footbar.session;
 
 import com.jumbo.trus.dto.footbar.FootbarSessionDTO;
+import com.jumbo.trus.dto.footbar.IPlayerRunningStats;
 import com.jumbo.trus.dto.footbar.response.FootbarAccountSessions;
 import com.jumbo.trus.dto.player.PlayerDTO;
 import com.jumbo.trus.entity.MatchEntity;
@@ -17,11 +18,14 @@ import com.jumbo.trus.repository.auth.UserRepository;
 import com.jumbo.trus.repository.footbar.FootbarSessionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+
+import static com.jumbo.trus.config.Config.ALL_SEASON_ID;
 
 @Component
 @RequiredArgsConstructor
@@ -121,5 +125,21 @@ public class FootbarSessionGetter {
 
     public double getTotalDistanceForPlayerAndSeason(long playerId, long seasonId) {
         return footbarSessionRepository.findDistanceByPlayerIdAndSeasonIdAndAppTeam(seasonId, playerId);
+    }
+
+    public List<IPlayerRunningStats> getListOfPlayersOrderByAverageTotalDistance(long seasonId, long appTeamId, int count) {
+        if (seasonId == ALL_SEASON_ID) {
+            return
+                    footbarSessionRepository.findTopRunningStatsByAppTeam(
+                            appTeamId,
+                            PageRequest.of(0, count)
+                    );
+        }
+        return
+                footbarSessionRepository.findTopRunningStatsByAppTeamAndSeason(
+                        appTeamId,
+                        seasonId,
+                        PageRequest.of(0, count)
+                );
     }
 }

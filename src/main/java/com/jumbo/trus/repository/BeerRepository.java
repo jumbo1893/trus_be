@@ -1,7 +1,10 @@
 package com.jumbo.trus.repository;
 
+import com.jumbo.trus.dto.beer.IPlayerDrinkAverageStats;
+import com.jumbo.trus.dto.beer.IPlayerDrinkStats;
 import com.jumbo.trus.entity.BeerEntity;
 import com.jumbo.trus.service.beer.helper.AverageBeer;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -439,5 +442,75 @@ public interface BeerRepository extends PagingAndSortingRepository<BeerEntity, L
                 LIMIT 1;
             """, nativeQuery = true)
     Optional<BeerEntity> findBeerIfPlayerDrinksAtLeastXLiquorsAndThenNotAttendInNextMatch(@Param("playerId") Long playerId, @Param("liquorNumber") int liquorNumber);
+
+    @Query("""
+        SELECT
+            b.player.name AS playerName,
+            COALESCE(SUM(b.beerNumber), 0) AS beerNumber,
+            COALESCE(SUM(b.liquorNumber), 0) AS liquorNumber
+        FROM beer b
+        WHERE b.appTeam.id = :appTeamId
+        GROUP BY b.player.id, b.player.name
+        ORDER BY
+            COALESCE(SUM(b.beerNumber), 0) + COALESCE(SUM(b.liquorNumber), 0) DESC
+    """)
+    List<IPlayerDrinkStats> findTopDrinkStatsByAppTeam(
+            @Param("appTeamId") Long appTeamId,
+            Pageable pageable
+    );
+
+    @Query("""
+        SELECT
+            b.player.name AS playerName,
+            COALESCE(SUM(b.beerNumber), 0) AS beerNumber,
+            COALESCE(SUM(b.liquorNumber), 0) AS liquorNumber
+        FROM beer b
+        WHERE b.appTeam.id = :appTeamId
+          AND b.match.season.id = :seasonId
+        GROUP BY b.player.id, b.player.name
+        ORDER BY
+            COALESCE(SUM(b.beerNumber), 0) + COALESCE(SUM(b.liquorNumber), 0) DESC
+    """)
+    List<IPlayerDrinkStats> findTopDrinkStatsByAppTeamAndSeason(
+            @Param("appTeamId") Long appTeamId,
+            @Param("seasonId") Long seasonId,
+            Pageable pageable
+    );
+
+    @Query("""
+    SELECT
+        p.name AS playerName,
+        COALESCE(1.0 * SUM(b.beerNumber), 0.0) / COUNT(DISTINCT m.id) AS beerNumber,
+        COALESCE(1.0 * SUM(b.liquorNumber), 0.0) / COUNT(DISTINCT m.id) AS liquorNumber
+    FROM match m
+    JOIN m.playerList p
+    LEFT JOIN beer b ON b.match.id = m.id AND b.player.id = p.id
+    WHERE m.appTeam.id = :appTeamId
+    GROUP BY p.id, p.name
+    ORDER BY COALESCE(1.0 * SUM(b.beerNumber), 0.0) / COUNT(DISTINCT m.id) DESC
+""")
+    List<IPlayerDrinkAverageStats> findTopAverageDrinkStatsByAppTeam(
+            @Param("appTeamId") Long appTeamId,
+            Pageable pageable
+    );
+
+    @Query("""
+    SELECT
+        p.name AS playerName,
+        COALESCE(1.0 * SUM(b.beerNumber), 0.0) / COUNT(DISTINCT m.id) AS beerNumber,
+        COALESCE(1.0 * SUM(b.liquorNumber), 0.0) / COUNT(DISTINCT m.id) AS liquorNumber
+    FROM match m
+    JOIN m.playerList p
+    LEFT JOIN beer b ON b.match.id = m.id AND b.player.id = p.id
+    WHERE m.appTeam.id = :appTeamId
+      AND m.season.id = :seasonId
+    GROUP BY p.id, p.name
+    ORDER BY COALESCE(1.0 * SUM(b.beerNumber), 0.0) / COUNT(DISTINCT m.id) DESC
+""")
+    List<IPlayerDrinkAverageStats> findTopAverageDrinkStatsByAppTeamAndSeason(
+            @Param("appTeamId") Long appTeamId,
+            @Param("seasonId") Long seasonId,
+            Pageable pageable
+    );
 }
 

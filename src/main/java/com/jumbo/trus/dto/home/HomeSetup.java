@@ -2,6 +2,7 @@ package com.jumbo.trus.dto.home;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.jumbo.trus.dto.football.detail.FootballMatchDetail;
+import com.jumbo.trus.dto.home.stats.StatsBoardData;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -33,5 +34,7 @@ public class HomeSetup {
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private DashboardMatch lastMatch;
+
+    private List<StatsBoardData> statsBoards;
 
 }

@@ -1,10 +1,12 @@
 package com.jumbo.trus.repository.achievement;
 
+import com.jumbo.trus.dto.achievement.IPlayerAchievementStats;
 import com.jumbo.trus.entity.PlayerEntity;
 import com.jumbo.trus.entity.achievement.PlayerAchievementEntity;
 import com.jumbo.trus.service.achievement.helper.IGoalBeerFineMatch;
 import com.jumbo.trus.service.achievement.helper.IGoalBeerMatch;
 import com.jumbo.trus.service.achievement.helper.IMatchIdNumberOneNumberTwo;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -37,6 +39,18 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
                 AND pae.player.id IN :playerIds
             """)
     List<PlayerEntity> findAccomplishedPlayersByAchievement(@Param("achievementId") Long achievementId, @Param("playerIds") List<Long> playerIds);
+
+    @Query("""
+                SELECT pae
+                FROM PlayerAchievementEntity pae
+                WHERE pae.player.id IN :playerIds
+                  AND pae.accomplished = true
+                ORDER BY pae.accomplishedDate DESC
+            """)
+    List<PlayerAchievementEntity> findLastAccomplishedByPlayers(
+            @Param("playerIds") List<Long> playerIds,
+            Pageable pageable
+    );
 
 
     List<PlayerAchievementEntity> findAllByPlayerId(Long playerId);
@@ -331,6 +345,41 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
             """, nativeQuery = true)
     IMatchIdNumberOneNumberTwo findBeersAndGoalsInSeason(@Param("playerId") Long playerId, @Param("seasonId") Long seasonId);
 
+    @Query("""
+    SELECT
+        pae.player.name AS playerName,
+
+        COALESCE(SUM(CASE WHEN pae.accomplished = true THEN 1 ELSE 0 END), 0) AS accomplishedCount,
+
+        COALESCE(SUM(CASE WHEN pae.accomplished IS NULL OR pae.accomplished = false THEN 1 ELSE 0 END), 0) AS notAccomplishedCount
+
+    FROM PlayerAchievementEntity pae
+    WHERE pae.player.appTeam.id = :appTeamId
+    GROUP BY pae.player.id, pae.player.name
+    ORDER BY
+        COALESCE(SUM(CASE WHEN pae.accomplished = true THEN 1 ELSE 0 END), 0) DESC
+""")
+    List<IPlayerAchievementStats> findTopAchievementStatsByAppTeam(
+            @Param("appTeamId") Long appTeamId,
+            Pageable pageable
+    );
+
+    @Query("""
+    SELECT pae
+    FROM PlayerAchievementEntity pae
+    WHERE pae.accomplished = true
+      AND pae.player.appTeam.id = :appTeamId
+      AND (
+            (:matchId IS NOT NULL AND pae.match.id = :matchId)
+            OR
+            (:footballMatchId IS NOT NULL AND pae.footballMatch.id = :footballMatchId)
+          )
+""")
+    List<PlayerAchievementEntity> findAllAccomplishedByMatchOrFootballMatch(
+            @Param("appTeamId") Long appTeamId,
+            @Param("matchId") Long matchId,
+            @Param("footballMatchId") Long footballMatchId
+    );
 
 }
 

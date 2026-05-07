@@ -66,6 +66,7 @@ public class PlayerStatsFacade {
         playerList.add(0, footballPlayerService.noPlayer());
         playerSetup.setFootballPlayerList(playerList);
         List<TextWithRedirect> playerStats = new ArrayList<>();
+        List<List<TextWithRedirect>> pairedPlayerStats = new ArrayList<>();
         if (playerId != null) {
             playerSetup.setPlayer(playerService.getPlayer(playerId));
             FootballPlayerDTO footballPlayerDTO = playerSetup.getPlayer().getFootballPlayer();
@@ -79,23 +80,30 @@ public class PlayerStatsFacade {
                 playerSetup.setPrimaryFootballPlayer(footballPlayerService.noPlayer());
             }
             PlayerStats statsForCurrentSeason = setupPlayerStats(playerId, appTeam, true);
-            boolean isPlayer = !playerService.getPlayer(playerId).isFan();
-            playerStats.add(new TextWithRedirect(new StringAndString("Piva v sezoně:",
-                    statsForCurrentSeason.getPlayerBeerCount().getTotalBeers() + " piv / " + statsForCurrentSeason.getPlayerBeerCount().getTotalLiquors() + " panáků")));
-            if (isPlayer) {
-                playerStats.add(new TextWithRedirect(new StringAndString("Pokuty v sezoně:",
-                        statsForCurrentSeason.getPlayerFineCount().getTotalFines() + " Kč")));
-                playerStats.add(new TextWithRedirect(new StringAndString("Kanadské body v sezoně:",
-                        statsForCurrentSeason.getPlayerGoalCount().getTotalGoals() + " gólů / " + statsForCurrentSeason.getPlayerGoalCount().getTotalAssists() + " asistencí")));
-            }
             PlayerStats statsForAllSeason = setupPlayerStats(playerId, appTeam, false);
-            playerStats.add(new TextWithRedirect(new StringAndString("Piva celkem:",
+
+            List<TextWithRedirect> beerPairedStats = new ArrayList<>();
+            boolean isPlayer = !playerService.getPlayer(playerId).isFan();
+            beerPairedStats.add(new TextWithRedirect(new StringAndString("Piva v sezoně:",
+                    statsForCurrentSeason.getPlayerBeerCount().getTotalBeers() + " piv / " + statsForCurrentSeason.getPlayerBeerCount().getTotalLiquors() + " panáků")));
+            beerPairedStats.add(new TextWithRedirect(new StringAndString("Piva celkem:",
                     statsForAllSeason.getPlayerBeerCount().getTotalBeers() + " piv / " + statsForAllSeason.getPlayerBeerCount().getTotalLiquors() + " panáků")));
+            pairedPlayerStats.add(beerPairedStats);
+
             if (isPlayer) {
-                playerStats.add(new TextWithRedirect(new StringAndString("Pokuty celkem:",
+                List<TextWithRedirect> finePairedStats = new ArrayList<>();
+                finePairedStats.add(new TextWithRedirect(new StringAndString("Pokuty v sezoně:",
+                        statsForCurrentSeason.getPlayerFineCount().getTotalFines() + " Kč")));
+                finePairedStats.add(new TextWithRedirect(new StringAndString("Pokuty celkem:",
                         statsForAllSeason.getPlayerFineCount().getTotalFines() + " Kč")));
-                playerStats.add(new TextWithRedirect(new StringAndString("Kanadské body celkem:",
+                pairedPlayerStats.add(finePairedStats);
+
+                List<TextWithRedirect> goalPairedStats = new ArrayList<>();
+                goalPairedStats.add(new TextWithRedirect(new StringAndString("Kanadské body v sezoně:",
+                        statsForCurrentSeason.getPlayerGoalCount().getTotalGoals() + " gólů / " + statsForCurrentSeason.getPlayerGoalCount().getTotalAssists() + " asistencí")));
+                goalPairedStats.add(new TextWithRedirect(new StringAndString("Kanadské body celkem:",
                         statsForAllSeason.getPlayerGoalCount().getTotalGoals() + " gólů / " + statsForAllSeason.getPlayerGoalCount().getTotalAssists() + " asistencí")));
+                pairedPlayerStats.add(goalPairedStats);
             }
             if (footballPlayerDTO != null) {
                 for (StringAndString fact : footballPlayerFact.getFactsForPlayer(footballPlayerDTO.getId(), appTeam)) {
@@ -107,6 +115,7 @@ public class PlayerStatsFacade {
         } else {
             playerSetup.setPrimaryFootballPlayer(footballPlayerService.noPlayer());
         }
+        playerSetup.setPairedPlayerStats(pairedPlayerStats);
         playerSetup.setPlayerStats(playerStats);
         return playerSetup;
     }

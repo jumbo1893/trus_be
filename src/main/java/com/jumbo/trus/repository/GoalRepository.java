@@ -1,6 +1,8 @@
 package com.jumbo.trus.repository;
 
+import com.jumbo.trus.dto.goal.IPlayerGoalStats;
 import com.jumbo.trus.entity.GoalEntity;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
@@ -43,6 +45,42 @@ public interface GoalRepository extends PagingAndSortingRepository<GoalEntity, L
             
             """, nativeQuery = true)
     Optional<GoalEntity> findGoalkeeperWithMostPointsInMatch(@Param("playerId") Long playerId);
+
+    @Query("""
+        SELECT
+            g.player.name AS playerName,
+            COALESCE(SUM(g.goalNumber), 0) AS goalNumber,
+            COALESCE(SUM(g.assistNumber), 0) AS assistNumber
+        FROM goal g
+        WHERE g.appTeam.id = :appTeamId
+        GROUP BY g.player.id, g.player.name
+        ORDER BY
+            COALESCE(SUM(g.goalNumber), 0) +
+            COALESCE(SUM(g.assistNumber), 0) DESC
+    """)
+    List<IPlayerGoalStats> findTopGoalStatsByAppTeam(
+            @Param("appTeamId") Long appTeamId,
+            Pageable pageable
+    );
+
+    @Query("""
+        SELECT
+            g.player.name AS playerName,
+            COALESCE(SUM(g.goalNumber), 0) AS goalNumber,
+            COALESCE(SUM(g.assistNumber), 0) AS assistNumber
+        FROM goal g
+        WHERE g.appTeam.id = :appTeamId
+          AND g.match.season.id = :seasonId
+        GROUP BY g.player.id, g.player.name
+        ORDER BY
+            COALESCE(SUM(g.goalNumber), 0) +
+            COALESCE(SUM(g.assistNumber), 0) DESC
+    """)
+    List<IPlayerGoalStats> findTopGoalStatsByAppTeamAndSeason(
+            @Param("appTeamId") Long appTeamId,
+            @Param("seasonId") Long seasonId,
+            Pageable pageable
+    );
 
 }
 

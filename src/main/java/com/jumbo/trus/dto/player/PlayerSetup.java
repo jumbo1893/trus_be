@@ -22,6 +22,8 @@ public class PlayerSetup {
 
     private List<TextWithRedirect> playerStats;
 
+    private List<List<TextWithRedirect>> pairedPlayerStats;
+
     private AchievementPlayerDetail achievementPlayerDetail;
 
 }

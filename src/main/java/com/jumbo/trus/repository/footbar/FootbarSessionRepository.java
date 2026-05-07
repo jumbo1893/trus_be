@@ -1,9 +1,11 @@
 package com.jumbo.trus.repository.footbar;
 
+import com.jumbo.trus.dto.footbar.IPlayerRunningStats;
 import com.jumbo.trus.entity.MatchEntity;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.footbar.FootbarAccountEntity;
 import com.jumbo.trus.entity.footbar.FootbarSessionEntity;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -42,5 +44,45 @@ public interface FootbarSessionRepository extends JpaRepository<FootbarSessionEn
     Double findDistanceByPlayerIdAndSeasonIdAndAppTeam(
             @Param("seasonId") Long seasonId,
             @Param("playerId") Long playerId
+    );
+
+    @Query("""
+        SELECT
+            fs.player.name AS playerName,
+
+            COALESCE(AVG(fs.distance), 0.0) / 1000.0 AS averageDistance,
+
+            COALESCE(SUM(fs.distance), 0.0) / 1000.0 AS totalDistance
+
+        FROM FootbarSessionEntity fs
+        WHERE fs.match.appTeam.id = :appTeamId
+          AND fs.distance IS NOT NULL
+        GROUP BY fs.player.id, fs.player.name
+        ORDER BY AVG(fs.distance) DESC
+    """)
+    List<IPlayerRunningStats> findTopRunningStatsByAppTeam(
+            @Param("appTeamId") Long appTeamId,
+            Pageable pageable
+    );
+
+    @Query("""
+        SELECT
+            fs.player.name AS playerName,
+
+            COALESCE(AVG(fs.distance), 0.0) / 1000.0 AS averageDistance,
+
+            COALESCE(SUM(fs.distance), 0.0) / 1000.0 AS totalDistance
+
+        FROM FootbarSessionEntity fs
+        WHERE fs.match.appTeam.id = :appTeamId
+          AND fs.match.season.id = :seasonId
+          AND fs.distance IS NOT NULL
+        GROUP BY fs.player.id, fs.player.name
+        ORDER BY AVG(fs.distance) DESC
+    """)
+    List<IPlayerRunningStats> findTopRunningStatsByAppTeamAndSeason(
+            @Param("appTeamId") Long appTeamId,
+            @Param("seasonId") Long seasonId,
+            Pageable pageable
     );
 }

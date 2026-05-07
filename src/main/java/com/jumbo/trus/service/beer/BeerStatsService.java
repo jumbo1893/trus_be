@@ -1,5 +1,7 @@
 package com.jumbo.trus.service.beer;
 
+import com.jumbo.trus.dto.beer.IPlayerDrinkAverageStats;
+import com.jumbo.trus.dto.beer.IPlayerDrinkStats;
 import com.jumbo.trus.dto.beer.response.get.BeerDetailedDTO;
 import com.jumbo.trus.dto.match.MatchHelper;
 import com.jumbo.trus.dto.stats.PlayerStatsDTO;
@@ -12,6 +14,7 @@ import com.jumbo.trus.service.beer.helper.AverageBeer;
 import com.jumbo.trus.service.helper.NumberRounder;
 import com.jumbo.trus.service.player.PlayerService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
@@ -73,6 +76,38 @@ public class BeerStatsService {
         return isForAllSeasons(seasonId) ? beerRepository.getAverageBeerAndLiquorSum(appTeamId) : beerRepository.getAverageBeerAndLiquorSum(seasonId, appTeamId);
     }
 
+    public List<IPlayerDrinkStats> getListOfPlayersOrderByBeerAndLiquorNumber(long seasonId, long appTeamId, int count) {
+        if (seasonId == ALL_SEASON_ID) {
+            return
+                    beerRepository.findTopDrinkStatsByAppTeam(
+                            appTeamId,
+                            PageRequest.of(0, count)
+                    );
+        }
+        return
+                beerRepository.findTopDrinkStatsByAppTeamAndSeason(
+                        appTeamId,
+                        seasonId,
+                        PageRequest.of(0, count)
+                );
+    }
+
+    public List<IPlayerDrinkAverageStats> getListOfPlayersOrderByAverageBeerAndLiquorNumber(long seasonId, long appTeamId, int count) {
+        if (seasonId == ALL_SEASON_ID) {
+            return
+                    beerRepository.findTopAverageDrinkStatsByAppTeam(
+                            appTeamId,
+                            PageRequest.of(0, count)
+                    );
+        }
+        return
+                beerRepository.findTopAverageDrinkStatsByAppTeamAndSeason(
+                        appTeamId,
+                        seasonId,
+                        PageRequest.of(0, count)
+                );
+    }
+
     private StatsDTO getAverageNumber(boolean forBeer, Long seasonId, long appTeamId) {
         List<AverageBeer> averageBeerList = getAverageNumberList(forBeer, seasonId, "avgBeerPerMatch", appTeamId);
         return averageNumberHelper(averageBeerList, forBeer ? "Průměrný počet piv" : "Průměrný počet panáků", forBeer ?" piv na zápas " : " panáků na zápas ");
@@ -116,6 +151,5 @@ public class BeerStatsService {
     private boolean isForAllSeasons(Long seasonId) {
         return seasonId == null || seasonId == ALL_SEASON_ID;
     }
-
 
 }

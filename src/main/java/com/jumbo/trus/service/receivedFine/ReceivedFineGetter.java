@@ -4,6 +4,7 @@ import com.jumbo.trus.dto.FineDTO;
 import com.jumbo.trus.dto.SeasonDTO;
 import com.jumbo.trus.dto.match.MatchDTO;
 import com.jumbo.trus.dto.player.PlayerDTO;
+import com.jumbo.trus.dto.receivedfine.IPlayerFineStats;
 import com.jumbo.trus.dto.receivedfine.ReceivedFineDTO;
 import com.jumbo.trus.dto.receivedfine.response.get.detailed.ReceivedFineDetailedDTO;
 import com.jumbo.trus.dto.receivedfine.response.get.detailed.ReceivedFineDetailedResponse;
@@ -30,6 +31,8 @@ import org.springframework.stereotype.Component;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static com.jumbo.trus.config.Config.ALL_SEASON_ID;
 
 @Component
 @RequiredArgsConstructor
@@ -200,6 +203,22 @@ public class ReceivedFineGetter {
                 .stream()
                 .map(receivedFineDetailedMapper::toDTO)
                 .toList();
+    }
+
+    public List<IPlayerFineStats> getListOfPlayersOrderByReceivedFineAmount(long seasonId, long appTeamId, int count) {
+        if (seasonId == ALL_SEASON_ID) {
+            return
+                    receivedFineRepository.findTopFineStatsByAppTeam(
+                            appTeamId,
+                            PageRequest.of(0, count)
+                    );
+        }
+        return
+                receivedFineRepository.findTopFineStatsByAppTeamAndSeason(
+                        appTeamId,
+                        seasonId,
+                        PageRequest.of(0, count)
+                );
     }
 
 }
