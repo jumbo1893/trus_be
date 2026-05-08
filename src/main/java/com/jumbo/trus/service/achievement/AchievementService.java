@@ -5,19 +5,14 @@ import com.jumbo.trus.dto.achievement.AchievementDetail;
 import com.jumbo.trus.dto.achievement.AchievementPlayerDetail;
 import com.jumbo.trus.dto.achievement.PlayerAchievementDTO;
 import com.jumbo.trus.dto.player.PlayerDTO;
-import com.jumbo.trus.dto.player.stats.PlayerAchievementCount;
-import com.jumbo.trus.entity.achievement.PlayerAchievementEntity;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.lock.LockManager;
-import com.jumbo.trus.mapper.PlayerMapper;
 import com.jumbo.trus.mapper.achievement.AchievementMapper;
 import com.jumbo.trus.mapper.achievement.PlayerAchievementMapper;
 import com.jumbo.trus.repository.achievement.AchievementRepository;
 import com.jumbo.trus.repository.achievement.PlayerAchievementRepository;
 import com.jumbo.trus.service.achievement.helper.AchievementType;
-import com.jumbo.trus.service.achievement.helper.IMatchIdNumberOneNumberTwo;
 import com.jumbo.trus.service.order.OrderAchievementBySuccessRate;
-import com.jumbo.trus.service.order.OrderPlayerByName;
 import com.jumbo.trus.service.player.PlayerService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -42,8 +37,8 @@ public class AchievementService {
     private final PlayerAchievementRepository playerAchievementRepository;
     private final PlayerAchievementMapper playerAchievementMapper;
     private final AchievementCalculator achievementCalculator;
-    private final PlayerMapper playerMapper;
     private final LockManager lockManager;
+    private final AchievementDetailService achievementDetailService;
 
     @Async
     @Transactional
@@ -80,45 +75,39 @@ public class AchievementService {
     }
 
     public AchievementDetail getAchievementDetail(long playerAchievementId, AppTeamEntity appTeam) {
-        PlayerAchievementDTO playerAchievementDTO = playerAchievementRepository.findById(playerAchievementId).map(playerAchievementMapper::toDTO).orElseThrow(() -> new EntityNotFoundException(String.valueOf(playerAchievementId)));
-        AchievementDetail achievementDetail = returnAchievementDetail(playerAchievementDTO.getAchievement(), getPlayerIdList(appTeam.getId()), false);
-        achievementDetail.setPlayerAchievement(playerAchievementDTO);
-        return achievementDetail;
+        return achievementDetailService.getAchievementDetail(playerAchievementId, appTeam);
     }
 
-    public PlayerAchievementDTO editPlayerAchievement(Long playerAchievementId, PlayerAchievementDTO playerAchievementDTO) throws NotFoundException {
-
-        PlayerAchievementEntity entity = playerAchievementMapper.toEntity(playerAchievementDTO);
-        entity.setId(playerAchievementId);
-        PlayerAchievementEntity savedEntity = playerAchievementRepository.save(entity);
-        return playerAchievementMapper.toDTO(savedEntity);
+    public PlayerAchievementDTO editPlayerAchievement(Long oldAchievementId, PlayerAchievementDTO playerAchievementDTO, AppTeamEntity appTeam) throws NotFoundException {
+        PlayerAchievementDTO oldAchievement = playerAchievementRepository.findById(oldAchievementId).map(playerAchievementMapper::toDTO).orElseThrow(() -> new EntityNotFoundException(String.valueOf(oldAchievementId)));
+        achievementCalculator.updateExistingAchievement(oldAchievement, playerAchievementDTO, appTeam);
+        return playerAchievementDTO;
     }
 
 
     public List<AchievementDetail> getAllDetailedAchievements(long appTeamId) {
         List<AchievementDetail> achievementDetailList = new ArrayList<>();
-        List<Long> playerIdList = getPlayerIdList(appTeamId);
-        List<AchievementDTO> achievements = achievementRepository.findAll().stream().map(achievementMapper::toDTO).toList();
-        for (AchievementDTO achievement : achievements) {
-            achievementDetailList.add(returnAchievementDetail(achievement, playerIdList, true));
-        }
-        achievementDetailList.sort(new OrderAchievementBySuccessRate());
-        return achievementDetailList;
-    }
 
-    public PlayerAchievementCount getNumberOfAchievementsForPlayer(Long playerId) {
-        List<PlayerAchievementDTO> list = playerAchievementRepository
-                .findAllByPlayerId(playerId)
+        List<Long> playerIdList = achievementDetailService.getPlayerIdList(appTeamId);
+
+        List<AchievementDTO> achievements = achievementRepository.findAll()
                 .stream()
-                .map(playerAchievementMapper::toDTO)
+                .map(achievementMapper::toDTO)
                 .toList();
 
-        int total = list.size();
-        int accomplished = (int) list.stream()
-                .filter(PlayerAchievementDTO::getAccomplished)
-                .count();
+        for (AchievementDTO achievement : achievements) {
+            achievementDetailList.add(
+                    achievementDetailService.returnAchievementDetail(
+                            achievement,
+                            playerIdList,
+                            true
+                    )
+            );
+        }
 
-        return new PlayerAchievementCount(total, accomplished);
+        achievementDetailList.sort(new OrderAchievementBySuccessRate());
+
+        return achievementDetailList;
     }
 
     public AchievementPlayerDetail getAchievementsForPlayer(Long playerId) {
@@ -135,33 +124,6 @@ public class AchievementService {
         achievementPlayerDetail.setTotalCount(playerAchievementList.size());
         achievementPlayerDetail.setSuccessRate(calculateSuccessRate(playerAchievementList.size(), achievementPlayerDetail.getAccomplishedPlayerAchievements().size()));
         return achievementPlayerDetail;
-    }
-
-    private List<Long> getPlayerIdList(long appTeamId) {
-        return playerService.convertPlayerListToPlayerIdList(playerService.getAll(appTeamId));
-    }
-
-    private AchievementDetail returnAchievementDetail(AchievementDTO achievement, List<Long> playerIdList, boolean includeOtherPlayers) {
-        AchievementDetail achievementDetail = new AchievementDetail();
-        achievementDetail.setAchievement(achievement);
-        IMatchIdNumberOneNumberTwo count = getAchievementCount(achievement, playerIdList);
-        achievementDetail.setTotalCount(count.getFirstNumber());
-        achievementDetail.setAccomplishedCount(count.getSecondNumber());
-        achievementDetail.setSuccessRate(calculateSuccessRate(count.getFirstNumber(), count.getSecondNumber()));
-        if (includeOtherPlayers && achievementDetail.getAccomplishedCount() > 0) {
-            achievementDetail.setAccomplishedPlayers(getListOfPlayersWhoAccomplishedAchievement(achievement, playerIdList));
-        }
-        return achievementDetail;
-    }
-
-    private String getListOfPlayersWhoAccomplishedAchievement(AchievementDTO achievement, List<Long> playerIdList) {
-        List<PlayerDTO> accomplishedPlayers = new ArrayList<>(playerAchievementRepository.findAccomplishedPlayersByAchievement(achievement.getId(), playerIdList).stream().map(playerMapper::toDTO).toList());
-        accomplishedPlayers.sort(new OrderPlayerByName());
-        return playerService.getListOfNamesFromListOfPlayers(accomplishedPlayers);
-    }
-
-    private IMatchIdNumberOneNumberTwo getAchievementCount(AchievementDTO achievement, List<Long> playerIdList) {
-        return playerAchievementRepository.countAchievements(playerIdList, achievement.getId());
     }
 
     private float calculateSuccessRate(int totalNumber, int accomplishedNumber) {

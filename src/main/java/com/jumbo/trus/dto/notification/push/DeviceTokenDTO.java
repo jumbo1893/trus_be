@@ -14,12 +14,11 @@ import java.util.Date;
 public class DeviceTokenDTO {
 
     private Long id;
-
     private String token;
-
     private Long userId;
-
     private String deviceType;
+    private String clientDeviceId;
+    private String status;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "Europe/Prague")
     private Date registrationTime;
@@ -30,10 +29,11 @@ public class DeviceTokenDTO {
         this.registrationTime = entity.getRegistrationTime();
         this.deviceType = entity.getDeviceType();
         this.userId = entity.getUser() != null ? entity.getUser().getId() : null;
+        this.clientDeviceId = entity.getClientDeviceId();
+        this.status = entity.getStatus();
     }
 
     public static DeviceTokenDTO fromEntity(DeviceToken entity) {
         return new DeviceTokenDTO(entity);
     }
-
 }

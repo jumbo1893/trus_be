@@ -1,7 +1,6 @@
 package com.jumbo.trus.repository.notification.push;
 
 import com.jumbo.trus.entity.auth.UserEntity;
-import com.jumbo.trus.entity.notification.NotificationEntity;
 import com.jumbo.trus.entity.notification.push.DeviceToken;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -12,7 +11,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
-public interface DeviceTokenRepository extends PagingAndSortingRepository<DeviceToken, Long>, JpaRepository<DeviceToken, Long>, JpaSpecificationExecutor<NotificationEntity> {
+public interface DeviceTokenRepository extends PagingAndSortingRepository<DeviceToken, Long>, JpaRepository<DeviceToken, Long>, JpaSpecificationExecutor<DeviceToken> {
 
     Optional<DeviceToken> findByToken(String token);
 
@@ -24,8 +23,9 @@ public interface DeviceTokenRepository extends PagingAndSortingRepository<Device
             JOIN dt.user u
             JOIN u.teamRoles utr
             WHERE utr.player.id = :playerId
+            AND dt.status = :status
             """)
-    List<DeviceToken> findDeviceTokensByPlayerId(@Param("playerId") Long playerId);
+    List<DeviceToken> findDeviceTokensByPlayerId(@Param("playerId") Long playerId, @Param("status") String status);
 
     @Query("""
     SELECT u
@@ -47,5 +47,29 @@ public interface DeviceTokenRepository extends PagingAndSortingRepository<Device
 """)
     List<UserEntity> findAdminUsersByAppTeamOrdered(@Param("appTeamId") Long appTeamId);
 
+    @Query("""
+    SELECT DISTINCT dt
+    FROM DeviceToken dt
+    JOIN dt.user u
+    JOIN u.teamRoles utr
+    WHERE utr.appTeam.id = :appTeamId
+      AND dt.status = :status
+""")
+    List<DeviceToken> findDeviceTokensByAppTeamIdAndStatus(
+            @Param("appTeamId") Long appTeamId,
+            @Param("status") String status
+    );
+
+    List<DeviceToken> findByUser_IdAndClientDeviceIdAndStatus(
+            Long userId,
+            String clientDeviceId,
+            String status
+    );
+
+    Optional<DeviceToken> findByUser_IdAndClientDeviceIdAndToken(
+            Long userId,
+            String clientDeviceId,
+            String token
+    );
 }
 

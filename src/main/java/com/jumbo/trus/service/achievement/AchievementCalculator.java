@@ -34,16 +34,14 @@ import com.jumbo.trus.service.beer.BeerService;
 import com.jumbo.trus.service.fine.FineService;
 import com.jumbo.trus.service.football.match.FootballMatchService;
 import com.jumbo.trus.service.football.stats.FootballPlayerStatsService;
+import com.jumbo.trus.service.notification.push.maker.AchievementNotificationMaker;
 import com.jumbo.trus.service.order.OrderMatchByDate;
 import com.jumbo.trus.service.receivedFine.ReceivedFineService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @Component
@@ -62,6 +60,7 @@ public class AchievementCalculator {
     private final ReceivedFineService receivedFineService;
     private final FineService fineService;
     private final GoalService goalService;
+    private final AchievementNotificationMaker achievementNotificationMaker;
     private final Map<String, AchievementFunction> achievementCalculators =
             Map.ofEntries(
                     Map.entry("KAZDEMU_CO_MU_PATRI", (p, a, at, t) -> calculateKAZDEMU_CO_MU_PATRIAchievement(p, a, t)),
@@ -115,23 +114,86 @@ public class AchievementCalculator {
         }
     }
 
-    private void calculateAndSaveAchievementForPlayer(List<AchievementDTO> achievements, PlayerDTO player, AppTeamEntity appTeam, AchievementType achievementType) {
+    private void calculateAndSaveAchievementForPlayer(
+            List<AchievementDTO> achievements,
+            PlayerDTO player,
+            AppTeamEntity appTeam,
+            AchievementType achievementType
+    ) {
         for (AchievementDTO achievement : achievements) {
-            PlayerAchievementDTO playerAchievementDTO = calculateAchievementForPlayer(achievement, player, appTeam, achievementType);
-            if (playerAchievementDTO != null) {
-                PlayerAchievementDTO existingPlayerAchievement = returnExistingPlayerAchievementEntityByPlayerAndAchievement(playerAchievementDTO);
-                if (existingPlayerAchievement == null) {
-                    saveNewAchievementToRepository(playerAchievementDTO);
-                }
-                else if (existingPlayerAchievement.equalsByPlayerAchievementMatchAndAccomplished(playerAchievementDTO)) {
-                    rewriteAchievementInRepository(playerAchievementDTO, existingPlayerAchievement.getId());
-                }
-                else if(playerAchievementDTO.getAccomplished() != existingPlayerAchievement.getAccomplished()) {
-                    rewriteAchievementInRepository(playerAchievementDTO, existingPlayerAchievement.getId());
-                }
+            PlayerAchievementDTO calculated = calculateAchievementForPlayer(achievement, player, appTeam, achievementType);
+
+            if (calculated == null) {
+                continue;
+            }
+
+            PlayerAchievementDTO existing = returnExistingPlayerAchievementEntityByPlayerAndAchievement(calculated);
+
+            if (existing == null) {
+                saveNewAchievementToRepository(calculated, appTeam);
+                continue;
+            }
+
+            if (isChanged(existing, calculated)) {
+                updateExistingAchievement(existing, calculated, appTeam);
             }
         }
     }
+
+    private boolean isChanged(PlayerAchievementDTO existing, PlayerAchievementDTO calculated) {
+        return !Objects.equals(existing.getAccomplished(), calculated.getAccomplished())
+                || !sameId(existing.getMatch(), calculated.getMatch())
+                || !sameId(existing.getFootballMatch(), calculated.getFootballMatch())
+                || !Objects.equals(existing.getDetail(), calculated.getDetail());
+    }
+
+
+    private boolean sameId(MatchDTO a, MatchDTO b) {
+        if (a == null || b == null) {
+            return a == b;
+        }
+        return Objects.equals(a.getId(), b.getId());
+    }
+
+    private boolean sameId(FootballMatchDTO a, FootballMatchDTO b) {
+        if (a == null || b == null) {
+            return a == b;
+        }
+        return Objects.equals(a.getId(), b.getId());
+    }
+
+    public void updateExistingAchievement(
+            PlayerAchievementDTO existing,
+            PlayerAchievementDTO calculated,
+            AppTeamEntity appTeam
+    ) {
+        calculated.setId(existing.getId());
+
+        boolean wasAccomplished = Boolean.TRUE.equals(existing.getAccomplished());
+        boolean isAccomplished = Boolean.TRUE.equals(calculated.getAccomplished());
+
+        if (!wasAccomplished && isAccomplished) {
+            calculated.setAccomplishedDate(new Date());
+
+            PlayerAchievementEntity savedEntity =
+                    playerAchievementRepository.save(playerAchievementMapper.toEntity(calculated));
+
+            PlayerAchievementDTO savedDto = playerAchievementMapper.toDTO(savedEntity);
+
+            achievementNotificationMaker.sendAchievementNotify(savedDto, appTeam);
+            return;
+        }
+
+        if (wasAccomplished && isAccomplished) {
+            calculated.setAccomplishedDate(existing.getAccomplishedDate());
+            playerAchievementRepository.save(playerAchievementMapper.toEntity(calculated));
+            return;
+        }
+
+        calculated.setAccomplishedDate(null);
+        playerAchievementRepository.save(playerAchievementMapper.toEntity(calculated));
+    }
+
 
     private PlayerAchievementDTO returnExistingPlayerAchievementEntityByPlayerAndAchievement(PlayerAchievementDTO playerAchievement) {
         PlayerAchievementEntity entity = playerAchievementRepository.findByPlayerIdAndAchievementId(
@@ -155,27 +217,31 @@ public class AchievementCalculator {
         return null;
     }
 
-    private boolean isManuallyAchievement(PlayerAchievementDTO playerAchievementDTO) {
-        return !playerAchievementDTO.getAchievement().isManually();
+    private void saveNewAchievementToRepository(PlayerAchievementDTO playerAchievement, AppTeamEntity appTeam) {
+        if (Boolean.TRUE.equals(playerAchievement.getAccomplished())) {
+            playerAchievement.setAccomplishedDate(new Date());
+            PlayerAchievementEntity savedEntity =
+                    playerAchievementRepository.save(playerAchievementMapper.toEntity(playerAchievement));
+            PlayerAchievementDTO savedDto = playerAchievementMapper.toDTO(savedEntity);
+            achievementNotificationMaker.sendAchievementNotify(savedDto, appTeam);
+        } else {
+            playerAchievement.setAccomplishedDate(null);
+            playerAchievementRepository.save(playerAchievementMapper.toEntity(playerAchievement));
+        }
     }
 
-    private void rewriteAchievementInRepository(PlayerAchievementDTO playerAchievement, long existingId) {
-        playerAchievement.setId(existingId);
-        saveAchievementWithAccomplishedDate(playerAchievement);
-    }
-
-    private void saveNewAchievementToRepository(PlayerAchievementDTO playerAchievement) {
-        saveAchievementWithAccomplishedDate(playerAchievement);
-    }
-
-    private void saveAchievementWithAccomplishedDate(PlayerAchievementDTO playerAchievement) {
+    /*public void saveAchievementWithAccomplishedDate(PlayerAchievementDTO playerAchievement, AppTeamEntity appTeam) {
         if (playerAchievement.getAccomplished()) {
             playerAchievement.setAccomplishedDate(new Date());
+
         } else {
             playerAchievement.setAccomplishedDate(null);
         }
         playerAchievementRepository.save(playerAchievementMapper.toEntity(playerAchievement));
-    }
+        if (playerAchievement.getAccomplished()) {
+            achievementNotificationMaker.sendAchievementNotify(playerAchievement, appTeam);
+        }
+    }*/
 
     private boolean isNeededToCalculateAchievementForPlayer(PlayerDTO player, AchievementDTO achievement) {
         return !achievement.isOnlyForPlayers() || !player.isFan();

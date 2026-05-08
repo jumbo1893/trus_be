@@ -26,7 +26,7 @@ public class FineNotificationMaker {
     private final DeviceTokenRepository deviceTokenRepository;
 
     public void sendFineNotify(ReceivedFineEntity fine, ReceivedFineDTO oldFine) {
-        List<DeviceToken> deviceTokenList = deviceTokenRepository.findDeviceTokensByPlayerId(fine.getPlayer().getId());
+        List<DeviceToken> deviceTokenList = deviceTokenRepository.findDeviceTokensByPlayerId(fine.getPlayer().getId(), "ACTIVE");
         if (deviceTokenList.isEmpty()) {
             return;
         }

@@ -49,4 +49,10 @@ public class PushController {
         pushService.initAllTokenUsers();
     }
 
+    @RoleRequired("READER")
+    @PostMapping("/token/test")
+    public void sendTestPush(@RequestBody DeviceTokenDTO deviceTokenDTO) throws Exception {
+        pushService.sendTestPushToCurrentDevice(deviceTokenDTO);
+    }
+
 }

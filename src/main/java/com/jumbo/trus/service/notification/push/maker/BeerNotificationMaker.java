@@ -26,7 +26,7 @@ public class BeerNotificationMaker {
     private final DeviceTokenRepository deviceTokenRepository;
 
     public void sendBeerNotify(BeerEntity beer, BeerDTO oldBeer) {
-        List<DeviceToken> deviceTokenList = deviceTokenRepository.findDeviceTokensByPlayerId(beer.getPlayer().getId());
+        List<DeviceToken> deviceTokenList = deviceTokenRepository.findDeviceTokensByPlayerId(beer.getPlayer().getId(), "ACTIVE");
         if (deviceTokenList.isEmpty()) {
             return;
         }

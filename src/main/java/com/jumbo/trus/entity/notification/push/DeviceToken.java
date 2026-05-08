@@ -40,11 +40,15 @@ public class DeviceToken {
     @OneToMany(mappedBy = "deviceToken", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SentPushNotification> sentPushNotification;
 
-    public DeviceToken(String token, UserEntity user, Date registrationTime, String deviceType, String status) {
+    @Column(name = "client_device_id")
+    private String clientDeviceId;
+
+    public DeviceToken(String token, UserEntity user, Date registrationTime, String deviceType, String status, String clientDeviceId) {
         this.token = token;
         this.user = user;
         this.registrationTime = registrationTime;
         this.deviceType = deviceType;
         this.status = status;
+        this.clientDeviceId = clientDeviceId;
     }
 }

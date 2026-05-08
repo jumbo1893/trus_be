@@ -84,3 +84,11 @@ create table if not exists team_recalc_job (
 
 create index if not exists idx_team_recalc_job_available_at
   on team_recalc_job (available_at);
+
+  ALTER TABLE device_token ADD COLUMN IF NOT EXISTS client_device_id varchar(255);
+
+  CREATE INDEX IF NOT EXISTS idx_device_token_token
+      ON device_token(token);
+
+  CREATE INDEX IF NOT EXISTS idx_device_token_user_device_status
+      ON device_token(user_id, client_device_id, status);

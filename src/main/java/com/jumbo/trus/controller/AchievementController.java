@@ -41,7 +41,7 @@ public class AchievementController {
     @RoleRequired("ADMIN")
     @PutMapping("/player/{playerAchievementId}")
     public PlayerAchievementDTO editPlayerAchievement(@PathVariable Long playerAchievementId, @RequestBody PlayerAchievementDTO playerAchievementDTO) throws NotFoundException {
-        return achievementService.editPlayerAchievement(playerAchievementId, playerAchievementDTO);
+        return achievementService.editPlayerAchievement(playerAchievementId, playerAchievementDTO, appTeamService.getCurrentAppTeamOrThrow());
     }
 
     @GetMapping("/get-all-detailed")

@@ -7,8 +7,10 @@ import com.jumbo.trus.repository.notification.push.DeviceTokenRepository;
 import com.jumbo.trus.service.HeaderManager;
 import com.jumbo.trus.service.auth.AuthService;
 import com.jumbo.trus.service.notification.settings.EnabledPushNotificationInitializer;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.webjars.NotFoundException;
 
 import java.util.Date;
 import java.util.List;
@@ -22,18 +24,28 @@ public class DeviceTokenCollector {
     private final HeaderManager headerManager;
     private final EnabledPushNotificationInitializer enabledPushNotificationInitializer;
 
+    @Transactional
     public DeviceTokenDTO addNewToken(DeviceTokenDTO deviceTokenDTO) {
         String token = deviceTokenDTO.getToken();
-        UserEntity currentUser = authService.getCurrentUserEntity();
-        DeviceToken existing = deviceTokenRepository.findByToken(token).orElse(null);
+        String clientDeviceId = deviceTokenDTO.getClientDeviceId();
 
-        if (existing == null) {
-            saveNewToken(token, currentUser);
-        } else {
-            updateIfDifferentUser(existing, currentUser);
+        if (token == null || token.isBlank()) {
+            throw new IllegalArgumentException("FCM token nesmí být prázdný");
         }
+
+        if (clientDeviceId == null || clientDeviceId.isBlank()) {
+            throw new IllegalArgumentException("clientDeviceId nesmí být prázdný");
+        }
+
+        UserEntity currentUser = authService.getCurrentUserEntity();
+
+        DeviceToken savedToken = deviceTokenRepository.findByToken(token)
+                .map(existing -> updateExistingToken(existing, currentUser, clientDeviceId))
+                .orElseGet(() -> saveNewTokenAndInvalidateOldDeviceTokens(token, currentUser, clientDeviceId));
+
         enabledPushNotificationInitializer.ensureUserHasAllTypes(currentUser);
-        return deviceTokenDTO;
+
+        return DeviceTokenDTO.fromEntity(savedToken);
     }
 
     public List<DeviceTokenDTO> getAllTokens() {
@@ -58,15 +70,80 @@ public class DeviceTokenCollector {
         return deviceTokenRepository.findAdminUsersByAppTeamOrdered(appTeamId);
     }
 
-    private void saveNewToken(String token, UserEntity user) {
+    private DeviceToken saveNewTokenAndInvalidateOldDeviceTokens(
+            String token,
+            UserEntity user,
+            String clientDeviceId
+    ) {
+        invalidateOldActiveTokensForDevice(user, clientDeviceId, token);
+
         DeviceToken deviceToken = new DeviceToken(
                 token,
                 user,
                 new Date(),
                 headerManager.getDeviceHeader(),
-                "ACTIVE"
+                "ACTIVE",
+                clientDeviceId
         );
-        deviceTokenRepository.save(deviceToken);
+
+        return deviceTokenRepository.save(deviceToken);
+    }
+
+    private DeviceToken updateExistingToken(
+            DeviceToken existing,
+            UserEntity currentUser,
+            String clientDeviceId
+    ) {
+        boolean changed = false;
+
+        if (existing.getUser() == null || !existing.getUser().getId().equals(currentUser.getId())) {
+            existing.setUser(currentUser);
+            changed = true;
+        }
+
+        if (!"ACTIVE".equals(existing.getStatus())) {
+            existing.setStatus("ACTIVE");
+            changed = true;
+        }
+
+        if (!clientDeviceId.equals(existing.getClientDeviceId())) {
+            existing.setClientDeviceId(clientDeviceId);
+            changed = true;
+        }
+
+        String currentDeviceType = headerManager.getDeviceHeader();
+        if (currentDeviceType != null && !currentDeviceType.equals(existing.getDeviceType())) {
+            existing.setDeviceType(currentDeviceType);
+            changed = true;
+        }
+
+        if (changed) {
+            existing.setModificationTime(new Date());
+            existing = deviceTokenRepository.save(existing);
+        }
+
+        invalidateOldActiveTokensForDevice(currentUser, clientDeviceId, existing.getToken());
+
+        return existing;
+    }
+
+    private void invalidateOldActiveTokensForDevice(
+            UserEntity user,
+            String clientDeviceId,
+            String currentToken
+    ) {
+        List<DeviceToken> oldActiveTokens =
+                deviceTokenRepository.findByUser_IdAndClientDeviceIdAndStatus(
+                        user.getId(),
+                        clientDeviceId,
+                        "ACTIVE"
+                );
+
+        for (DeviceToken oldToken : oldActiveTokens) {
+            if (!oldToken.getToken().equals(currentToken)) {
+                invalidateToken(oldToken, "REPLACED");
+            }
+        }
     }
 
     private void updateIfDifferentUser(DeviceToken existing, UserEntity currentUser) {
@@ -86,6 +163,11 @@ public class DeviceTokenCollector {
 
     public void deleteToken(DeviceToken deviceToken) {
         deviceTokenRepository.delete(deviceToken);
+    }
+
+    public DeviceToken findByIdOrThrow(Long id) {
+        return deviceTokenRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Device token s id " + id + " nenalezen"));
     }
 }
 

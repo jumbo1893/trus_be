@@ -43,4 +43,20 @@ public class PushService {
     public void initAllTokenUsers() {
         deviceTokenCollector.initAllTokensForUsers();
     }
+
+    public void sendTestPushToCurrentDevice(DeviceTokenDTO deviceTokenDTO) throws Exception {
+        DeviceTokenDTO savedTokenDto = addNewToken(deviceTokenDTO);
+
+        DeviceToken deviceToken = deviceTokenCollector.findByIdOrThrow(savedTokenDto.getId());
+
+        boolean sent = fcmService.sendPush(
+                deviceToken,
+                "Testovací pushka",
+                "Pokud vidíš tuto zprávu, push notifikace fungují."
+        );
+
+        if (!sent) {
+            throw new IllegalStateException("Testovací pushku se nepodařilo odeslat");
+        }
+    }
 }
