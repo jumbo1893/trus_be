@@ -45,6 +45,7 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
                 FROM PlayerAchievementEntity pae
                 WHERE pae.player.id IN :playerIds
                   AND pae.accomplished = true
+                  AND pae.accomplishedDate IS NOT NULL
                 ORDER BY pae.accomplishedDate DESC
             """)
     List<PlayerAchievementEntity> findLastAccomplishedByPlayers(
@@ -74,24 +75,29 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
     IGoalBeerMatch getFirstMatchWithSameGoalsAndBeers(@Param("playerId") Long playerId);
 
     @Query(value = """
-            SELECT b.match_id AS matchId, b.beer_number AS beerNumber,
-            b.liquor_number AS liquorNumber, g.goal_number AS goalNumber, r.fine_number AS fineNumber
-            FROM beer b
-            JOIN goal g ON b.match_id = g.match_id AND b.player_id = g.player_id
-            JOIN received_fine r ON b.match_id = g.match_id AND b.player_id = g.player_id
-            JOIN match m ON m.id = b.match_id
-            JOIN fine f ON r.fine_id = f.id
-            WHERE b.beer_number > 0
-            AND b.liquor_number > 0
-            AND g.goal_number > 0
-            AND f.name = :fineName
-            AND r.fine_number > 0
-            AND b.player_id = :playerId
-            ORDER BY m.date ASC
-            LIMIT 1
-            """, nativeQuery = true)
-    IGoalBeerFineMatch getFirstMatchWithGoalYellowBeerAndLiquor(@Param("playerId") Long playerId, @Param("fineName") String fineName);
-
+        SELECT b.match_id AS matchId,
+               b.beer_number AS beerNumber,
+               b.liquor_number AS liquorNumber,
+               g.goal_number AS goalNumber,
+               r.fine_number AS fineNumber
+        FROM beer b
+        JOIN goal g ON b.match_id = g.match_id AND b.player_id = g.player_id
+        JOIN received_fine r ON b.match_id = r.match_id AND b.player_id = r.player_id
+        JOIN match m ON m.id = b.match_id
+        JOIN fine f ON r.fine_id = f.id
+        WHERE b.beer_number > 0
+          AND b.liquor_number > 0
+          AND g.goal_number > 0
+          AND f.name = :fineName
+          AND r.fine_number > 0
+          AND b.player_id = :playerId
+        ORDER BY m.date ASC
+        LIMIT 1
+        """, nativeQuery = true)
+    IGoalBeerFineMatch getFirstMatchWithGoalYellowBeerAndLiquor(
+            @Param("playerId") Long playerId,
+            @Param("fineName") String fineName
+    );
     @Query(value = """
             SELECT r.match_id
                     FROM player p
@@ -346,35 +352,35 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
     IMatchIdNumberOneNumberTwo findBeersAndGoalsInSeason(@Param("playerId") Long playerId, @Param("seasonId") Long seasonId);
 
     @Query("""
-    SELECT
-        pae.player.name AS playerName,
-
-        COALESCE(SUM(CASE WHEN pae.accomplished = true THEN 1 ELSE 0 END), 0) AS accomplishedCount,
-
-        COALESCE(SUM(CASE WHEN pae.accomplished IS NULL OR pae.accomplished = false THEN 1 ELSE 0 END), 0) AS notAccomplishedCount
-
-    FROM PlayerAchievementEntity pae
-    WHERE pae.player.appTeam.id = :appTeamId
-    GROUP BY pae.player.id, pae.player.name
-    ORDER BY
-        COALESCE(SUM(CASE WHEN pae.accomplished = true THEN 1 ELSE 0 END), 0) DESC
-""")
+                SELECT
+                    pae.player.name AS playerName,
+            
+                    COALESCE(SUM(CASE WHEN pae.accomplished = true THEN 1 ELSE 0 END), 0) AS accomplishedCount,
+            
+                    COALESCE(SUM(CASE WHEN pae.accomplished IS NULL OR pae.accomplished = false THEN 1 ELSE 0 END), 0) AS notAccomplishedCount
+            
+                FROM PlayerAchievementEntity pae
+                WHERE pae.player.appTeam.id = :appTeamId
+                GROUP BY pae.player.id, pae.player.name
+                ORDER BY
+                    COALESCE(SUM(CASE WHEN pae.accomplished = true THEN 1 ELSE 0 END), 0) DESC
+            """)
     List<IPlayerAchievementStats> findTopAchievementStatsByAppTeam(
             @Param("appTeamId") Long appTeamId,
             Pageable pageable
     );
 
     @Query("""
-    SELECT pae
-    FROM PlayerAchievementEntity pae
-    WHERE pae.accomplished = true
-      AND pae.player.appTeam.id = :appTeamId
-      AND (
-            (:matchId IS NOT NULL AND pae.match.id = :matchId)
-            OR
-            (:footballMatchId IS NOT NULL AND pae.footballMatch.id = :footballMatchId)
-          )
-""")
+                SELECT pae
+                FROM PlayerAchievementEntity pae
+                WHERE pae.accomplished = true
+                  AND pae.player.appTeam.id = :appTeamId
+                  AND (
+                        (:matchId IS NOT NULL AND pae.match.id = :matchId)
+                        OR
+                        (:footballMatchId IS NOT NULL AND pae.footballMatch.id = :footballMatchId)
+                      )
+            """)
     List<PlayerAchievementEntity> findAllAccomplishedByMatchOrFootballMatch(
             @Param("appTeamId") Long appTeamId,
             @Param("matchId") Long matchId,
