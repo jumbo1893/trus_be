@@ -24,4 +24,8 @@ public class AchievementDTO {
     private String secondaryCondition;
 
     private boolean manually;
+
+    private Float teamSuccessRate;
+
+    private AchievementRarity rarity;
 }

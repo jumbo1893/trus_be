@@ -11,5 +11,7 @@ public abstract class AchievementMapper {
     @Mapping(target = "playerAchievements", ignore = true)
     public abstract AchievementEntity toEntity(AchievementDTO source);
 
+    @Mapping(target = "teamSuccessRate", ignore = true)
+    @Mapping(target = "rarity", ignore = true)
     public abstract AchievementDTO toDTO(AchievementEntity source);
 }

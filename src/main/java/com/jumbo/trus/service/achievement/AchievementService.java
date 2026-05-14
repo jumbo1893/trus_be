@@ -1,9 +1,6 @@
 package com.jumbo.trus.service.achievement;
 
-import com.jumbo.trus.dto.achievement.AchievementDTO;
-import com.jumbo.trus.dto.achievement.AchievementDetail;
-import com.jumbo.trus.dto.achievement.AchievementPlayerDetail;
-import com.jumbo.trus.dto.achievement.PlayerAchievementDTO;
+import com.jumbo.trus.dto.achievement.*;
 import com.jumbo.trus.dto.player.PlayerDTO;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.lock.LockManager;
@@ -11,6 +8,7 @@ import com.jumbo.trus.mapper.achievement.AchievementMapper;
 import com.jumbo.trus.mapper.achievement.PlayerAchievementMapper;
 import com.jumbo.trus.repository.achievement.AchievementRepository;
 import com.jumbo.trus.repository.achievement.PlayerAchievementRepository;
+import com.jumbo.trus.service.achievement.helper.AchievementAccomplishedStats;
 import com.jumbo.trus.service.achievement.helper.AchievementType;
 import com.jumbo.trus.service.order.OrderAchievementBySuccessRate;
 import com.jumbo.trus.service.player.PlayerService;
@@ -24,7 +22,9 @@ import org.webjars.NotFoundException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -110,19 +110,33 @@ public class AchievementService {
         return achievementDetailList;
     }
 
-    public AchievementPlayerDetail getAchievementsForPlayer(Long playerId) {
-        List<PlayerAchievementDTO> playerAchievementList = playerAchievementRepository.findAllByPlayerId(playerId).stream().map(playerAchievementMapper::toDTO).toList();
+    public AchievementPlayerDetail getAchievementsForPlayer(Long playerId, Long appTeamId) {
+
+        List<PlayerAchievementDTO> playerAchievementList = playerAchievementRepository.findAllByPlayerId(playerId)
+                .stream()
+                .map(playerAchievementMapper::toDTO)
+                .toList();
+
+        enrichAchievementsWithRarity(playerAchievementList, appTeamId);
+
         AchievementPlayerDetail achievementPlayerDetail = new AchievementPlayerDetail();
+
         for (PlayerAchievementDTO playerAchievementDTO : playerAchievementList) {
-            if (playerAchievementDTO.getAccomplished().equals(true)) {
+            if (Boolean.TRUE.equals(playerAchievementDTO.getAccomplished())) {
                 achievementPlayerDetail.getAccomplishedPlayerAchievements().add(playerAchievementDTO);
-            }
-            else {
+            } else {
                 achievementPlayerDetail.getNotAccomplishedPlayerAchievements().add(playerAchievementDTO);
             }
         }
+
         achievementPlayerDetail.setTotalCount(playerAchievementList.size());
-        achievementPlayerDetail.setSuccessRate(calculateSuccessRate(playerAchievementList.size(), achievementPlayerDetail.getAccomplishedPlayerAchievements().size()));
+        achievementPlayerDetail.setSuccessRate(
+                calculateSuccessRate(
+                        playerAchievementList.size(),
+                        achievementPlayerDetail.getAccomplishedPlayerAchievements().size()
+                )
+        );
+
         return achievementPlayerDetail;
     }
 
@@ -131,5 +145,83 @@ public class AchievementService {
             return 0F;
         }
         return (float) accomplishedNumber/totalNumber;
+    }
+
+    private AchievementRarity resolveRarity(float successRate) {
+
+        if (successRate <= 0.10F) {
+            return AchievementRarity.LEGENDARY;
+        }
+
+        if (successRate <= 0.30F) {
+            return AchievementRarity.EPIC;
+        }
+
+        if (successRate <= 0.60F) {
+            return AchievementRarity.RARE;
+        }
+
+        return AchievementRarity.COMMON;
+    }
+
+    private void enrichAchievementsWithRarity(
+            List<PlayerAchievementDTO> playerAchievementList,
+            Long appTeamId
+    ) {
+        List<PlayerDTO> teamMembers = playerService.getAll(appTeamId);
+
+        long totalPlayersOnly = teamMembers.stream()
+                .filter(player -> !Boolean.TRUE.equals(player.isFan()))
+                .count();
+
+        long totalPlayersAndFans = teamMembers.size();
+
+        List<Object[]> accomplishedCounts =
+                playerAchievementRepository.countAccomplishedStatsByAchievementForTeam(appTeamId);
+
+        Map<Long, AchievementAccomplishedStats> accomplishedStatsByAchievementId =
+                accomplishedCounts.stream()
+                        .collect(Collectors.toMap(
+                                row -> (Long) row[0],
+                                row -> new AchievementAccomplishedStats(
+                                        ((Number) row[1]).longValue(),
+                                        ((Number) row[2]).longValue()
+                                )
+                        ));
+
+        for (PlayerAchievementDTO playerAchievementDTO : playerAchievementList) {
+            AchievementDTO achievement = playerAchievementDTO.getAchievement();
+
+            if (achievement == null) {
+                continue;
+            }
+
+            Long achievementId = achievement.getId();
+            boolean onlyForPlayers = Boolean.TRUE.equals(achievement.isOnlyForPlayers());
+
+            AchievementAccomplishedStats stats = accomplishedStatsByAchievementId.getOrDefault(
+                    achievementId,
+                    new AchievementAccomplishedStats(0L, 0L)
+            );
+
+            long totalRelevantPeople = onlyForPlayers
+                    ? totalPlayersOnly
+                    : totalPlayersAndFans;
+
+            long accomplishedPeople = onlyForPlayers
+                    ? stats.playersOnly()
+                    : stats.playersAndFans();
+
+            float achievementSuccessRate = totalRelevantPeople == 0
+                    ? 0F
+                    : (float) accomplishedPeople / totalRelevantPeople;
+
+            AchievementRarity rarity = resolveRarity(
+                    achievementSuccessRate
+            );
+
+            achievement.setTeamSuccessRate(achievementSuccessRate);
+            achievement.setRarity(rarity);
+        }
     }
 }

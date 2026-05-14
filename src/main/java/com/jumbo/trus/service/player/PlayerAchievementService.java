@@ -28,7 +28,7 @@ public class PlayerAchievementService {
     public PlayerSetup setupPlayerWithAchievements(Long playerId, AppTeamEntity appTeamEntity) {
         PlayerSetup playerSetup = playerStatsFacade.setupPlayer(playerId, appTeamEntity);
         if (playerId != null) {
-            playerSetup.setAchievementPlayerDetail(achievementService.getAchievementsForPlayer(playerId));
+            playerSetup.setAchievementPlayerDetail(achievementService.getAchievementsForPlayer(playerId, appTeamEntity.getId()));
         }
         return playerSetup;
     }

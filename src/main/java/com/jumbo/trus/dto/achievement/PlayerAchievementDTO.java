@@ -35,6 +35,8 @@ public class PlayerAchievementDTO {
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "Europe/Prague")
     private Date accomplishedDate;
 
+
+
     public PlayerAchievementDTO(AchievementDTO achievement, PlayerDTO player, MatchDTO match, String detail, Boolean accomplished) {
         this.achievement = achievement;
         this.player = player;
