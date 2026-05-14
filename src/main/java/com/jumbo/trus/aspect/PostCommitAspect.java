@@ -73,6 +73,9 @@ public class PostCommitAspect {
         else if (className.equals(SeasonController.class.getSimpleName())) {
             return AchievementType.SEASON;
         }
+        else if (className.equals(FootbarController.class.getSimpleName())) {
+            return AchievementType.FOOTBAR;
+        }
         else {
             return AchievementType.ALL;
         }

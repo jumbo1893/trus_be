@@ -9,5 +9,7 @@ public interface AchievementRepository extends JpaRepository<AchievementEntity, 
 
     Optional<AchievementEntity> findByCode(String code);
 
+    boolean existsByCode(String code);
+
 }
 

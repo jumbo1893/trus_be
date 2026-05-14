@@ -92,3 +92,6 @@ create index if not exists idx_team_recalc_job_available_at
 
   CREATE INDEX IF NOT EXISTS idx_device_token_user_device_status
       ON device_token(user_id, client_device_id, status);
+
+CREATE UNIQUE INDEX IF NOT EXISTS uk_achievement_code
+ON achievement (code);

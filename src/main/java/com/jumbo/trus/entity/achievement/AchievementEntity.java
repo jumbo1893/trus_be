@@ -20,6 +20,7 @@ public class AchievementEntity {
     @SequenceGenerator(name = "achievement_seq", sequenceName = "achievement_seq", allocationSize = 1)
     private Long id;
 
+    @Column(nullable = false, unique = true)
     private String code;
 
     private String name;

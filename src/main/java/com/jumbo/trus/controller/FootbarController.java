@@ -1,5 +1,7 @@
 package com.jumbo.trus.controller;
 
+import com.jumbo.trus.aspect.PostCommitTask;
+import com.jumbo.trus.aspect.appteam.StoreAppTeam;
 import com.jumbo.trus.config.security.RoleRequired;
 import com.jumbo.trus.dto.footbar.profile.FootbarProfile;
 import com.jumbo.trus.dto.footbar.response.FootbarSessionSetup;
@@ -59,6 +61,8 @@ public class FootbarController {
 
     @RoleRequired("ADMIN")
     @PostMapping("/sync/{athleteId}")
+    @PostCommitTask
+    @StoreAppTeam
     public ResponseEntity<String> syncActivitiesForAthlete(@PathVariable Long accountId) {
         footbarService.syncSession(accountId, appTeamService.getCurrentAppTeamOrThrow());
         return ResponseEntity.ok("Sessions synced successfully.");
@@ -66,6 +70,8 @@ public class FootbarController {
 
     @RoleRequired("ADMIN")
     @PostMapping("/sync")
+    @PostCommitTask
+    @StoreAppTeam
     public ResponseEntity<Map<String, Date>> syncActivities() {
         try {
             Date date = footbarService.syncSessions(appTeamService.getCurrentAppTeamOrThrow());

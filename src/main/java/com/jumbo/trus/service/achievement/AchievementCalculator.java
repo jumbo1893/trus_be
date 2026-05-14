@@ -62,7 +62,7 @@ public class AchievementCalculator {
     private final GoalService goalService;
     private final AchievementNotificationMaker achievementNotificationMaker;
     private final Map<String, AchievementFunction> achievementCalculators =
-            Map.ofEntries(
+            Map.<String, AchievementFunction>ofEntries(
                     Map.entry("KAZDEMU_CO_MU_PATRI", (p, a, at, t) -> calculateKAZDEMU_CO_MU_PATRIAchievement(p, a, t)),
                     Map.entry("FOTBAL_JE_JEN_ZAMINKA", this::calculateFOTBAL_JE_JEN_ZAMINKAAchievement),
                     Map.entry("PO_PORADNE_PRACI_PORADNA_OSLAVA", (p, a, at, t) -> calculatePO_PORADNE_PRACI_PORADNA_OSLAVAAchievement(p, a, t)),
@@ -103,7 +103,26 @@ public class AchievementCalculator {
                     Map.entry("STENE", this::calculateSTENEAchievement),
                     Map.entry("CIRHOZA", (p, a, at, t) -> calculateCIRHOZAAchievement(p, a, t)),
                     Map.entry("TEN_TO_PERFEKTNE_KOPE", (p, a, at, t) -> calculateTEN_TO_PERFEKTNE_KOPEAchievement(p, a, t)),
-                    Map.entry("ADA_VETVICKA", (p, a, at, t) -> calculateADA_VETVICKAAchievement(p, a, t))
+                    Map.entry("ADA_VETVICKA", (p, a, at, t) -> calculateADA_VETVICKAAchievement(p, a, t)),
+                    Map.entry("KLUB_SRACU", this::calculateKLUB_SRACUAchievement),
+                    Map.entry("OSAMELY_DRZAK", this::calculateOSAMELY_DRZAKAchievement),
+                    Map.entry("VE_DVOU_SE_TO_LEPE_TAHNE", this::calculateVE_DVOU_SE_TO_LEPE_TAHNEAchievement),
+                    Map.entry("STRELEC", this::calculateSTRELECAchievement),
+                    Map.entry("FOTR_JE_LOTR", this::calculateFOTR_JE_LOTRAchievement),
+                    Map.entry("MARATONEC", this::calculateMARATONECAchievement),
+                    Map.entry("ROBERTO_CARLOS", this::calculateROBERTO_CARLOSAchievement),
+                    Map.entry("SPILMACHR", this::calculateSPILMACHRAchievement),
+                    Map.entry("JA_TO_ZA_VAS_OBEHAL", this::calculateJA_TO_ZA_VAS_OBEHALAchievement),
+                    Map.entry("DOPLNENI_TEKUTIN", this::calculateDOPLNENI_TEKUTINAchievement),
+                    Map.entry("NASTUP_JAKO_HROM", this::calculateNASTUP_JAKO_HROMAchievement),
+                    Map.entry("KDYZ_LEJU_TAK_PORADNE", this::calculateKDYZ_LEJU_TAK_PORADNEAchievement),
+                    Map.entry("MACHYREK", this::calculateMACHYREKAchievement),
+                    Map.entry("SDILENY_STRELEC", this::calculateSDILENY_STRELECAchievement),
+                    Map.entry("NESOBECKY_HRDINA", this::calculateNESOBECKY_HRDINAAchievement),
+                    Map.entry("GOLY_NE_RADEJI_PIVO", this::calculateGOLY_NE_RADEJI_PIVOAchievement),
+                    Map.entry("JARDA_KUZEL", this::calculateJARDA_KUZELAchievement),
+                    Map.entry("MODERNI_GOLMANSKA_SKOLA", this::calculateMODERNI_GOLMANSKA_SKOLAAchievement)
+
             );
 
 
@@ -209,12 +228,27 @@ public class AchievementCalculator {
                 playerAchievement.getPlayer().getId(), playerAchievement.getAchievement().getId(), !playerAchievement.getAccomplished()).orElse(null);
     }
 
-    private PlayerAchievementDTO calculateAchievementForPlayer(AchievementDTO achievement, PlayerDTO player, AppTeamEntity appTeam, AchievementType achievementType) {
-        if (isNeededToCalculateAchievementForPlayer(player, achievement)) {
-            return achievementCalculators.get(achievement.getCode())
-                    .apply(player, achievement, appTeam, achievementType);
+    private PlayerAchievementDTO calculateAchievementForPlayer(
+            AchievementDTO achievement,
+            PlayerDTO player,
+            AppTeamEntity appTeam,
+            AchievementType achievementType
+    ) {
+        if (!isNeededToCalculateAchievementForPlayer(player, achievement)) {
+            return null;
         }
-        return null;
+
+        AchievementFunction calculator = achievementCalculators.get(achievement.getCode());
+
+        if (calculator == null) {
+            log.warn("Achievement '{}' s kódem '{}' nemá implementovaný kalkulátor. Přeskakuji výpočet.",
+                    achievement.getName(),
+                    achievement.getCode());
+
+            return null;
+        }
+
+        return calculator.apply(player, achievement, appTeam, achievementType);
     }
 
     private void saveNewAchievementToRepository(PlayerAchievementDTO playerAchievement, AppTeamEntity appTeam) {
@@ -812,6 +846,223 @@ public class AchievementCalculator {
 
     private PlayerAchievementDTO calculatePO_PORADNE_PRACI_PORADNA_OSLAVAAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AchievementType achievementType) {
         return null;
+    }
+
+    private PlayerAchievementDTO calculateKLUB_SRACUAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AppTeamEntity appTeam, AchievementType achievementType) {
+        if (achievementType == AchievementType.ALL || achievementType == AchievementType.RECEIVED_FINE) {
+            IMatchIdNumberOneNumberTwo iMatchIdNumberOneNumberTwo = playerAchievementRepository.findKlubSracu(playerDTO.getId(), appTeam.getId());
+            if (iMatchIdNumberOneNumberTwo != null) {
+                return returnPlayerAchievement(achievement, playerDTO, iMatchIdNumberOneNumberTwo.getMatchId(), "Po tomto zápase nešlo do hospody celkem " + iMatchIdNumberOneNumberTwo.getFirstNumber() + " sráčů");
+            }
+            return returnFailedPlayerAchievement(achievement, playerDTO);
+        }
+        return null;
+    }
+
+    private PlayerAchievementDTO calculateOSAMELY_DRZAKAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AppTeamEntity appTeam, AchievementType achievementType) {
+        if (achievementType == AchievementType.ALL || achievementType == AchievementType.RECEIVED_FINE) {
+            IMatchIdNumberOneNumberTwo iMatchIdNumberOneNumberTwo = playerAchievementRepository.findOsamelyDrzak(playerDTO.getId(), appTeam.getId());
+            if (iMatchIdNumberOneNumberTwo != null) {
+                StatisticsFilter statisticsFilter = new StatisticsFilter();
+                statisticsFilter.setMatchStatsOrPlayerStats(false);
+                statisticsFilter.setPlayerId(playerDTO.getId());
+                statisticsFilter.setMatchId(iMatchIdNumberOneNumberTwo.getMatchId());
+                BeerDetailedResponse response = beerService.getAllDetailed(statisticsFilter);
+                return returnPlayerAchievement(achievement, playerDTO, iMatchIdNumberOneNumberTwo.getMatchId(), "Zápasu se účastnilo celkem " +
+                        iMatchIdNumberOneNumberTwo.getSecondNumber() + " lidí a ty jako jediný jsi šel do hospody. Dal sis " +
+                        response.getTotalBeers() + " piv a " + response.getTotalLiquors() + " panáků.");
+            }
+            return returnFailedPlayerAchievement(achievement, playerDTO);
+        }
+        return null;
+    }
+
+    private PlayerAchievementDTO calculateVE_DVOU_SE_TO_LEPE_TAHNEAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AppTeamEntity appTeam, AchievementType achievementType) {
+        if (achievementType == AchievementType.ALL || achievementType == AchievementType.RECEIVED_FINE || achievementType == AchievementType.BEER) {
+            IMatchIdThreeNumbersAndText result = playerAchievementRepository.findVeDvouSeToLepeTahne(playerDTO.getId(), appTeam.getId());
+            if (result != null) {
+                return returnPlayerAchievement(achievement, playerDTO, result.getMatchId(), "Po zápase jste šli z hráčů na pivo jako jediní ty a " + result.getText() +
+                        ". Dal sis " + result.getSecondNumber() + " piv a " + result.getThirdNumber() + " panáků.");
+            }
+            return returnFailedPlayerAchievement(achievement, playerDTO);
+        }
+        return null;
+    }
+
+    private PlayerAchievementDTO calculateSTRELECAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AppTeamEntity appTeam, AchievementType achievementType) {
+        if (!shouldCalculate(achievementType, AchievementType.GOAL, AchievementType.SEASON, AchievementType.MATCH)) return null;
+        SeasonFilter seasonFilter = new SeasonFilter();
+        seasonFilter.setAppTeam(appTeam);
+        for (SeasonDTO season : seasonService.getAll(seasonFilter)) {
+            IMatchIdNumberOneNumberTwo r = playerAchievementRepository.findStrelecInSeason(playerDTO.getId(), season.getId(), appTeam.getId());
+            if (r != null) {
+                return returnPlayerAchievement(achievement, playerDTO, null, "Nejlepší střelec sezony " + season.getName() + " se " + r.getFirstNumber() + " góly a " + r.getSecondNumber() + " asistencemi.");
+            }
+        }
+        return returnFailedPlayerAchievement(achievement, playerDTO);
+    }
+
+    private PlayerAchievementDTO calculateFOTR_JE_LOTRAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AppTeamEntity appTeam, AchievementType achievementType) {
+        if (!shouldCalculate(achievementType, AchievementType.RECEIVED_FINE)) return null;
+        IMatchIdNumberOneNumberTwo result = playerAchievementRepository.findFotrJeLotr(playerDTO.getId(), appTeam.getId());
+        if (result != null) {
+            String kids = result.getFirstNumber()==1 ? " dítěte" : "dětí";
+            return returnPlayerAchievement(achievement, playerDTO, result.getMatchId(), "Hrdý otec " + result.getFirstNumber() + ". " +
+                    kids + " dostal zatím " + result.getSecondNumber() + " karet");
+        }
+        return returnFailedPlayerAchievement(achievement, playerDTO);
+    }
+
+    private PlayerAchievementDTO calculateMARATONECAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AppTeamEntity appTeam, AchievementType achievementType) {
+        if (!shouldCalculate(achievementType, AchievementType.FOOTBAR)) return null;
+        IMatchIdNumberOneNumberTwo result = playerAchievementRepository.findMaratonec(playerDTO.getId(), appTeam.getId());
+        if (result != null) {
+            return returnPlayerAchievement(achievement, playerDTO, result.getMatchId(), "Hráč doteď uběhl celkem " +
+                    String.format("%.1f", result.getFirstNumber() / 1000.0) + " km");
+        }
+        return returnFailedPlayerAchievement(achievement, playerDTO);
+    }
+
+    private PlayerAchievementDTO calculateROBERTO_CARLOSAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AppTeamEntity appTeam, AchievementType achievementType) {
+        if (!shouldCalculate(achievementType, AchievementType.FOOTBAR, AchievementType.GOAL)) return null;
+        IMatchIdNumberOneNumberTwo result = playerAchievementRepository.findRobertoCarlos(playerDTO.getId(), appTeam.getId());
+        if (result != null) {
+            return returnPlayerAchievement(achievement, playerDTO, result.getMatchId(), "Hráč v zápase vystřelil střelu s maximální rychlostí " + result.getFirstNumber() +
+                    "km/h a dal u toho " + result.getSecondNumber() + " gólů");
+        }
+        return returnFailedPlayerAchievement(achievement, playerDTO);
+    }
+
+    private PlayerAchievementDTO calculateSPILMACHRAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AppTeamEntity appTeam, AchievementType achievementType) {
+        if (!shouldCalculate(achievementType, AchievementType.FOOTBAR)) return null;
+        IMatchIdNumberOneNumberTwo result = playerAchievementRepository.findSpilmachr(playerDTO.getId(), appTeam.getId());
+        if (result != null) {
+            return returnPlayerAchievement(achievement, playerDTO, result.getMatchId(), "Hráč v zápase rozdal celkem " + result.getFirstNumber() +
+                    " přihrávek. Zároveň zaznamenal v zápase " + result.getSecondNumber() + " asistencí");
+        }
+        return returnFailedPlayerAchievement(achievement, playerDTO);
+    }
+
+    private PlayerAchievementDTO calculateJA_TO_ZA_VAS_OBEHALAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AppTeamEntity appTeam, AchievementType achievementType) {
+        if (!shouldCalculate(achievementType, AchievementType.FOOTBAR)) return null;
+        IMatchIdDecimalAndNumber result = playerAchievementRepository.findJaToZaVasObehal(playerDTO.getId(), appTeam.getId());
+        if (result != null) {
+            String distance = roundDoubleToString(result.getFirstNumber());
+            return returnPlayerAchievement(achievement, playerDTO, result.getMatchId(), "Hráč v zápase naběhal " + distance +
+                    "km. Může to být trošku zavádějící, vzhledem k tomu, že footbar mělo nasazeno pouze " + result.getSecondNumber() + " hráčů.");
+        }
+        return returnFailedPlayerAchievement(achievement, playerDTO);
+    }
+
+    private PlayerAchievementDTO calculateDOPLNENI_TEKUTINAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AppTeamEntity appTeam, AchievementType achievementType) {
+        if (!shouldCalculate(achievementType, AchievementType.FOOTBAR, AchievementType.BEER)) return null;
+        IMatchIdDecimalAndNumber result = playerAchievementRepository.findDoplneniTekutin(playerDTO.getId(), appTeam.getId());
+        if (result != null) {
+            String distance = roundDoubleToString(result.getFirstNumber());
+            return returnPlayerAchievement(achievement, playerDTO, result.getMatchId(), "Hráč v zápase naběhal " + distance +
+                    " km. Jako doplnění tekutin mu posloužilo " + result.getSecondNumber() + " piv.");
+        }
+        return returnFailedPlayerAchievement(achievement, playerDTO);
+    }
+
+    private PlayerAchievementDTO calculateNASTUP_JAKO_HROMAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AppTeamEntity appTeam, AchievementType achievementType) {
+        if (!shouldCalculate(achievementType, AchievementType.MATCH, AchievementType.GOAL)) return null;
+        IMatchIdNumberOneNumberTwo result = playerAchievementRepository.findNastupJakoHromGoal(playerDTO.getId(), appTeam.getId());
+        if (result != null) {
+            return returnPlayerAchievement(achievement, playerDTO, result.getMatchId(), "Hráč ve svém prvním zápase za Trus" +
+                    " dal " + result.getFirstNumber() + " gólů.");
+        }
+        return returnFailedPlayerAchievement(achievement, playerDTO);
+    }
+
+    private PlayerAchievementDTO calculateKDYZ_LEJU_TAK_PORADNEAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AppTeamEntity appTeam, AchievementType achievementType) {
+        if (!shouldCalculate(achievementType, AchievementType.BEER, AchievementType.SEASON, AchievementType.MATCH)) return null;
+        SeasonFilter seasonFilter = new SeasonFilter();
+        seasonFilter.setAppTeam(appTeam);
+        for (SeasonDTO season : seasonService.getAll(seasonFilter)) {
+            ISeasonDrinkAverage r = playerAchievementRepository.findKdyzLejuTakPoradneInSeason(playerDTO.getId(), season.getId(), appTeam.getId());
+            if (r != null) {
+                return returnPlayerAchievement(achievement, playerDTO, null, "Nejlepší píč sezony " + season.getName() + " s " +
+                        r.getThirdNumber() + " pivy a " + r.getFourthNumber() + " panáky a průměrem " + roundDoubleToString(r.getFirstNumber()) + " piv na zápas" +
+                        " a " + roundDoubleToString(r.getSecondNumber()) + " panáků na zápas. To vše zvládl v " + r.getFifthNumber() + " zápasech");
+            }
+        }
+        return returnFailedPlayerAchievement(achievement, playerDTO);
+    }
+
+    private PlayerAchievementDTO calculateMACHYREKAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AppTeamEntity appTeam, AchievementType achievementType) {
+        if (!shouldCalculate(achievementType, AchievementType.RECEIVED_FINE)) return null;
+        IMatchIdNumberOneNumberTwo result = playerAchievementRepository.findMachyrek(playerDTO.getId(), appTeam.getId());
+        if (result != null) {
+            return returnPlayerAchievement(achievement, playerDTO, result.getMatchId(), "Hráč vstřelil gól rabonou, zatímco " +
+                    result.getFirstNumber() + " hráčů a fanoušků se na to s obdivem dívalo");
+        }
+        return returnFailedPlayerAchievement(achievement, playerDTO);
+    }
+
+    private PlayerAchievementDTO calculateSDILENY_STRELECAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AppTeamEntity appTeam, AchievementType achievementType) {
+        if (!shouldCalculate(achievementType, AchievementType.GOAL)) return null;
+        IMatchIdNumberOneNumberTwo result = playerAchievementRepository.findSdilenyStrelec(playerDTO.getId(), appTeam.getId());
+        if (result != null) {
+            return returnPlayerAchievement(achievement, playerDTO, result.getMatchId(), "Hráč vstřelil " + result.getFirstNumber() +
+                    " góly. Celkem v tomto zápase střelilo hattrick " + result.getSecondNumber() + " hráčů");
+        }
+        return returnFailedPlayerAchievement(achievement, playerDTO);
+    }
+
+    private PlayerAchievementDTO calculateNESOBECKY_HRDINAAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AppTeamEntity appTeam, AchievementType achievementType) {
+        if (!shouldCalculate(achievementType, AchievementType.GOAL)) return null;
+        IMatchIdNumberOneNumberTwo result = playerAchievementRepository.findNesobeckyHrdina(playerDTO.getId(), appTeam.getId());
+        if (result != null) {
+            return returnPlayerAchievement(achievement, playerDTO, result.getMatchId(), "Hráč rozdal celkem " + result.getFirstNumber() +
+                    " přihrávek. Jako bonus přidal i " + result.getSecondNumber() + " gólů");
+        }
+        return returnFailedPlayerAchievement(achievement, playerDTO);
+    }
+
+    private PlayerAchievementDTO calculateGOLY_NE_RADEJI_PIVOAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AppTeamEntity appTeam, AchievementType achievementType) {
+        if (!shouldCalculate(achievementType, AchievementType.BEER, AchievementType.SEASON, AchievementType.GOAL)) return null;
+        SeasonFilter seasonFilter = new SeasonFilter();
+        seasonFilter.setAppTeam(appTeam);
+        for (SeasonDTO season : seasonService.getAll(seasonFilter)) {
+            IAverageAndTwoNumbers r = playerAchievementRepository.findGolyNeRadejiPivoInSeason(playerDTO.getId(), season.getId(), appTeam.getId());
+            if (r != null) {
+                return returnPlayerAchievement(achievement, playerDTO, null, "Hráč za sezonu " + season.getName() + " získal průměr " +
+                        roundDoubleToString(r.getFirstNumber()) + " piv na gól. Celkem to dělá " + r.getSecondNumber() + " piv a " + r.getThirdNumber()
+                + " gólů.");
+            }
+        }
+        return returnFailedPlayerAchievement(achievement, playerDTO);
+    }
+
+    private PlayerAchievementDTO calculateJARDA_KUZELAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AppTeamEntity appTeam, AchievementType achievementType) {
+        if (!shouldCalculate(achievementType, AchievementType.MATCH)) return null;
+        IMatchIdNumberOneNumberTwo result = playerAchievementRepository.findJardaKuzel(playerDTO.getId(), appTeam.getId());
+        if (result != null) {
+            return returnPlayerAchievement(achievement, playerDTO, result.getMatchId(), "Hráč vynechal předchozí " +
+                    result.getFirstNumber() + " zápasy. Nakonec po velkolepém návratu krom hvězdy utkání vstřelil počet gólů: " + result.getSecondNumber());
+        }
+        return returnFailedPlayerAchievement(achievement, playerDTO);
+    }
+
+    private PlayerAchievementDTO calculateMODERNI_GOLMANSKA_SKOLAAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AppTeamEntity appTeam, AchievementType achievementType) {
+        if (!shouldCalculate(achievementType, AchievementType.MATCH, AchievementType.GOAL)) return null;
+        IMatchIdNumberOneNumberTwo result = playerAchievementRepository.findModerniGolmanskaSkola(playerDTO.getId(), appTeam.getId());
+        if (result != null) {
+            String assist = result.getFirstNumber() > 0 ? "asistence" : "asistenci";
+            return returnPlayerAchievement(achievement, playerDTO, result.getMatchId(), "Tento gólman, který odchytal celých " + result.getSecondNumber() +
+                    " minut si v zápase připsal " + result.getFirstNumber() + " " + assist + ".");
+        }
+        return returnFailedPlayerAchievement(achievement, playerDTO);
+    }
+
+    private String roundDoubleToString(Double number) {
+        return String.format(Locale.US, "%.2f", number);
+    }
+
+    private boolean shouldCalculate(AchievementType type, AchievementType... accepted) {
+        if (type == AchievementType.ALL) return true;
+        return Arrays.asList(accepted).contains(type);
     }
 
     private boolean isPlayerBestDrinkerInBeerListIndex(int index, List<BeerDTO> beers, Long playerId) {
