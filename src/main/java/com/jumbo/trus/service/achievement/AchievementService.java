@@ -20,8 +20,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.webjars.NotFoundException;
 
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
@@ -112,9 +114,22 @@ public class AchievementService {
 
     public AchievementPlayerDetail getAchievementsForPlayer(Long playerId, Long appTeamId) {
 
+        Collator czechCollator = Collator.getInstance(Locale.forLanguageTag("cs-CZ"));
+        czechCollator.setStrength(Collator.PRIMARY);
         List<PlayerAchievementDTO> playerAchievementList = playerAchievementRepository.findAllByPlayerId(playerId)
                 .stream()
                 .map(playerAchievementMapper::toDTO)
+                .sorted((a, b) -> {
+                    String nameA = a.getAchievement() == null || a.getAchievement().getName() == null
+                            ? ""
+                            : a.getAchievement().getName();
+
+                    String nameB = b.getAchievement() == null || b.getAchievement().getName() == null
+                            ? ""
+                            : b.getAchievement().getName();
+
+                    return czechCollator.compare(nameA, nameB);
+                })
                 .toList();
 
         enrichAchievementsWithRarity(playerAchievementList, appTeamId);
@@ -149,15 +164,15 @@ public class AchievementService {
 
     private AchievementRarity resolveRarity(float successRate) {
 
-        if (successRate <= 0.10F) {
+        if (successRate <= 0.05F) {
             return AchievementRarity.LEGENDARY;
         }
 
-        if (successRate <= 0.30F) {
+        if (successRate <= 0.15F) {
             return AchievementRarity.EPIC;
         }
 
-        if (successRate <= 0.60F) {
+        if (successRate <= 0.45F) {
             return AchievementRarity.RARE;
         }
 
