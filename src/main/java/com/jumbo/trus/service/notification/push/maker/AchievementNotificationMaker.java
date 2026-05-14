@@ -29,14 +29,14 @@ public class AchievementNotificationMaker {
         String allTitle = "Hráči " + playerAchievement.getPlayer().getName() + " byl připsán achievement!";
         String playerTitle = "Vysloužil sis nový achievement!";
         String body = buildAchievementPushBody(playerAchievement, appTeam);
-        /*for (DeviceToken deviceToken : deviceTokenList) {
+        for (DeviceToken deviceToken : deviceTokenList) {
             log.debug(deviceToken.getToken());
             try {
                 pushService.sendPush(deviceToken, allTitle, body, NotificationType.APP_TEAM_ACHIEVEMENT);
             } catch (Exception e) {
                 log.error("error:", e);
             }
-        }*/
+        }
         for (DeviceToken deviceToken : playerDeviceTokenList) {
             log.debug(deviceToken.getToken());
             try {
