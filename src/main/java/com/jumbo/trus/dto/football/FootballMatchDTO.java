@@ -77,6 +77,7 @@ public class FootballMatchDTO {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         FootballMatchDTO that = (FootballMatchDTO) o;
+        if (homeTeam == null || that.homeTeam == null || awayTeam == null || that.awayTeam == null) return false;
         return round == that.round && areDatesEqual(date, that.date) && Objects.equals(homeTeam.getId(), that.homeTeam.getId()) && Objects.equals(awayTeam.getId(), that.awayTeam.getId()) && Objects.equals(league.getId(), that.league.getId()) && Objects.equals(stadium, that.stadium) && Objects.equals(referee, that.referee) && Objects.equals(homeGoalNumber, that.homeGoalNumber) && Objects.equals(awayGoalNumber, that.awayGoalNumber) && Objects.equals(urlResult, that.urlResult);
     }
 
