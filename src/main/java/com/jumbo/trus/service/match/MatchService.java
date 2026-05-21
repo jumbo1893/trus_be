@@ -1,4 +1,4 @@
-package com.jumbo.trus.service;
+package com.jumbo.trus.service.match;
 
 import com.jumbo.trus.dto.SeasonDTO;
 import com.jumbo.trus.dto.match.MatchDTO;
@@ -16,6 +16,7 @@ import com.jumbo.trus.mapper.PlayerMapper;
 import com.jumbo.trus.mapper.football.FootballMatchMapper;
 import com.jumbo.trus.repository.*;
 import com.jumbo.trus.repository.specification.MatchSpecification;
+import com.jumbo.trus.service.SeasonService;
 import com.jumbo.trus.service.football.match.FootballMatchService;
 import com.jumbo.trus.service.helper.PairSeasonMatch;
 import com.jumbo.trus.service.notification.NotificationService;

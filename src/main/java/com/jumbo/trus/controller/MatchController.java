@@ -6,9 +6,11 @@ import com.jumbo.trus.aspect.footbar.FootbarSync;
 import com.jumbo.trus.config.security.RoleRequired;
 import com.jumbo.trus.dto.match.MatchDTO;
 import com.jumbo.trus.dto.match.response.SetupMatchResponse;
+import com.jumbo.trus.dto.stats.MatchStatsDTO;
 import com.jumbo.trus.entity.filter.MatchFilter;
-import com.jumbo.trus.service.MatchService;
 import com.jumbo.trus.service.auth.AppTeamService;
+import com.jumbo.trus.service.match.MatchService;
+import com.jumbo.trus.service.match.MatchStatsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.webjars.NotFoundException;
@@ -21,6 +23,7 @@ import java.util.List;
 public class MatchController {
 
     private final MatchService matchService;
+    private final MatchStatsService matchStatsService;
     private final AppTeamService appTeamService;
 
     @RoleRequired("ADMIN")
@@ -65,5 +68,11 @@ public class MatchController {
     @PostMapping("/update")
     public void pairFootballMatches() throws NotFoundException {
         matchService.pairAllFootballMatches(appTeamService.getCurrentAppTeamOrThrow());
+    }
+
+    @RoleRequired("READER")
+    @GetMapping("/get-stats")
+    public MatchStatsDTO getMatchStats(@RequestParam() Long matchId) {
+        return matchStatsService.getMatchStats(matchId, appTeamService.getCurrentAppTeamOrThrow());
     }
 }

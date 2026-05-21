@@ -18,6 +18,8 @@ public class StatisticsFilter extends BaseSeasonFilter {
 
     private String stringFilter;
 
+    private Boolean splitPlayerFinesByFine;
+
     public StatisticsFilter(Long playerId, Long matchId, Long seasonId, Boolean matchStatsOrPlayerStats) {
         super(playerId, matchId, seasonId);
         this.matchStatsOrPlayerStats = matchStatsOrPlayerStats;

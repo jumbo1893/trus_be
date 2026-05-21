@@ -18,9 +18,9 @@ import com.jumbo.trus.mapper.ReceivedFineMapper;
 import com.jumbo.trus.repository.ReceivedFineRepository;
 import com.jumbo.trus.repository.specification.ReceivedFineSpecification;
 import com.jumbo.trus.repository.specification.ReceivedFineStatsSpecification;
-import com.jumbo.trus.service.MatchService;
 import com.jumbo.trus.service.fine.FineService;
 import com.jumbo.trus.service.helper.PairSeasonMatch;
+import com.jumbo.trus.service.match.MatchService;
 import com.jumbo.trus.service.order.OrderReceivedFineDetailedDTOByFineAmount;
 import com.jumbo.trus.service.player.PlayerService;
 import jakarta.persistence.EntityNotFoundException;
@@ -46,9 +46,18 @@ public class ReceivedFineGetter {
     private final PlayerService playerService;
     private final FineService fineService;
 
+
+    private record PlayerFineKey(Long playerId, Long fineId) {
+    }
+
     public List<ReceivedFineDTO> getAll(ReceivedFineFilter receivedFineFilter) {
         ReceivedFineSpecification receivedFineSpecification = new ReceivedFineSpecification(receivedFineFilter);
-        return receivedFineRepository.findAll(receivedFineSpecification, PageRequest.of(0, receivedFineFilter.getLimit())).stream().map(receivedFineMapper::toDTO).collect(Collectors.toList());
+
+        return receivedFineRepository
+                .findAll(receivedFineSpecification, PageRequest.of(0, receivedFineFilter.getLimit()))
+                .stream()
+                .map(receivedFineMapper::toDTO)
+                .collect(Collectors.toList());
     }
 
     public ReceivedFineDetailedResponse getAllDetailed(StatisticsFilter filter) {
@@ -63,21 +72,41 @@ public class ReceivedFineGetter {
         Map<Long, ReceivedFineDetailedDTO> playerMap = new HashMap<>();
         Map<Long, ReceivedFineDetailedDTO> fineMap = new HashMap<>();
 
+        Map<PlayerFineKey, ReceivedFineDetailedDTO> playerFineMap = new HashMap<>();
+
         for (ReceivedFineDetailedDTO fine : fineList) {
             updateResponseStats(response, fine);
-            matchSet.add(fine.getMatch().getId());
-            playerSet.add(fine.getPlayer().getId());
+
+            if (fine.getMatch() != null) {
+                matchSet.add(fine.getMatch().getId());
+            }
+
+            if (fine.getPlayer() != null) {
+                playerSet.add(fine.getPlayer().getId());
+            }
 
             if (Boolean.TRUE.equals(filter.getDetailed())) {
                 aggregateFineStats(fineMap, fine);
             } else if (Boolean.FALSE.equals(filter.getMatchStatsOrPlayerStats())) {
-                aggregatePlayerStats(playerMap, fine);
+                if (Boolean.TRUE.equals(filter.getSplitPlayerFinesByFine())) {
+                    aggregatePlayerFineStats(playerFineMap, fine);
+                } else {
+                    aggregatePlayerStats(playerMap, fine);
+                }
             } else {
                 aggregateMatchStats(matchMap, fine);
             }
         }
 
-        List<ReceivedFineDetailedDTO> returnFineList = determineReturnList(filter, matchMap, playerMap, fineList);
+        List<ReceivedFineDetailedDTO> returnFineList = determineReturnList(
+                filter,
+                matchMap,
+                playerMap,
+                fineMap,
+                playerFineMap,
+                fineList
+        );
+
         returnFineList.sort(new OrderReceivedFineDetailedDTOByFineAmount());
 
         response.setFineList(returnFineList);
@@ -90,10 +119,12 @@ public class ReceivedFineGetter {
         PairSeasonMatch pairSeasonMatch = matchService.returnSeasonAndMatchByFilter(receivedFineFilter);
         SeasonDTO seasonDTO = pairSeasonMatch.getSeasonDTO();
         MatchDTO matchDTO = pairSeasonMatch.getMatchDTO();
+
         MatchFilter matchFilter = new MatchFilter();
         matchFilter.setSeasonId(seasonDTO.getId());
         matchFilter.setAppTeam(receivedFineFilter.getAppTeam());
-        List<MatchDTO> matchList = matchService.getAll((matchFilter));
+
+        List<MatchDTO> matchList = matchService.getAll(matchFilter);
 
         List<PlayerDTO> playersInMatch = new ArrayList<>();
         List<PlayerDTO> otherPlayers = new ArrayList<>();
@@ -103,31 +134,44 @@ public class ReceivedFineGetter {
             otherPlayers = new ArrayList<>(playerService.getAllActive(true, receivedFineFilter.getAppTeam().getId()));
             otherPlayers.removeAll(playersInMatch);
         }
+
         return new ReceivedFineSetupResponse(matchDTO, seasonDTO, playersInMatch, otherPlayers, matchList);
     }
 
     public List<ReceivedFineDTO> getAllForSetup(Long playerId, Long matchId, AppTeamEntity appTeam) {
-        if(playerId == null || matchId == null) {
+        if (playerId == null || matchId == null) {
             throw new EntityNotFoundException();
         }
+
         ReceivedFineFilter filter = new ReceivedFineFilter(matchId, playerId);
         filter.setAppTeam(appTeam);
         List<ReceivedFineDTO> receivedFines = getAll(new ReceivedFineFilter(matchId, playerId));
         List<Long> idList = getListOfFineIdsFromReceivedFines(receivedFines);
         List<FineDTO> fineDTOS;
-        if(idList.isEmpty()) {
+        if (idList.isEmpty()) {
             fineDTOS = fineService.getAll(10000000, appTeam.getId());
-        }
-        else {
+        } else {
             fineDTOS = fineService.getFinesExcluding(idList, appTeam.getId());
         }
+
         receivedFines.addAll(makeReceivedFineSetupListFromFineList(fineDTOS, playerId, matchId));
+
         return receivedFines;
     }
 
-    public List<ReceivedFineDTO> getReceivedFinesInMatchesByFineNameAndPlayer(Long playerId, List<Long> matchIds, String fineName, long appTeamId) {
+    public List<ReceivedFineDTO> getReceivedFinesInMatchesByFineNameAndPlayer(
+            Long playerId,
+            List<Long> matchIds,
+            String fineName,
+            long appTeamId
+    ) {
         Long fineId = fineService.getFineByName(fineName, appTeamId).getId();
-        return receivedFineRepository.findAllByPlayerIdFineIdAndMatchesId(playerId, fineId, matchIds).stream().map(receivedFineMapper::toDTO).toList();
+
+        return receivedFineRepository
+                .findAllByPlayerIdFineIdAndMatchesId(playerId, fineId, matchIds)
+                .stream()
+                .map(receivedFineMapper::toDTO)
+                .toList();
     }
 
     public Integer getAtLeastNumberOfFineInHistory(Long playerId, String fineName, int fineNumber) {
@@ -135,19 +179,26 @@ public class ReceivedFineGetter {
     }
 
     public ReceivedFineDTO getFirstOccurrenceOfFine(Long playerId, String fineName) {
-        return receivedFineRepository.findFirstOccurrenceOfFine(playerId, fineName)
+        return receivedFineRepository
+                .findFirstOccurrenceOfFine(playerId, fineName)
                 .map(receivedFineMapper::toDTO)
                 .orElse(null);
     }
 
     private List<Long> getListOfFineIdsFromReceivedFines(List<ReceivedFineDTO> receivedFines) {
-        return receivedFines.stream()
+        return receivedFines
+                .stream()
                 .map(fine -> fine.getFine().getId())
                 .collect(Collectors.toList());
     }
 
-    private List<ReceivedFineDTO> makeReceivedFineSetupListFromFineList(List<FineDTO> fineDTOS, Long playerId, Long matchId) {
-        return fineDTOS.stream()
+    private List<ReceivedFineDTO> makeReceivedFineSetupListFromFineList(
+            List<FineDTO> fineDTOS,
+            Long playerId,
+            Long matchId
+    ) {
+        return fineDTOS
+                .stream()
                 .map(fine -> new ReceivedFineDTO(0, fine, playerId, matchId))
                 .collect(Collectors.toList());
     }
@@ -157,26 +208,60 @@ public class ReceivedFineGetter {
         response.addFineAmount(fine.returnFineAmount());
     }
 
-    private void aggregateFineStats(Map<Long, ReceivedFineDetailedDTO> fineMap, ReceivedFineDetailedDTO fine) {
+    private void aggregateFineStats(
+            Map<Long, ReceivedFineDetailedDTO> fineMap,
+            ReceivedFineDetailedDTO fine
+    ) {
+        if (fine.getFine() == null) {
+            return;
+        }
         fine.setMatch(null);
         fine.setPlayer(null);
         fineMap.merge(fine.getFine().getId(), fine, this::mergeFines);
     }
 
-    private void aggregateMatchStats(Map<Long, ReceivedFineDetailedDTO> matchMap, ReceivedFineDetailedDTO fine) {
+    private void aggregateMatchStats(
+            Map<Long, ReceivedFineDetailedDTO> matchMap,
+            ReceivedFineDetailedDTO fine
+    ) {
+        if (fine.getMatch() == null) {
+            return;
+        }
         fine.setPlayer(null);
-        //fine.setFine(null);
         matchMap.merge(fine.getMatch().getId(), fine, this::mergeFines);
     }
 
-    private void aggregatePlayerStats(Map<Long, ReceivedFineDetailedDTO> playerMap, ReceivedFineDetailedDTO fine) {
+    private void aggregatePlayerStats(
+            Map<Long, ReceivedFineDetailedDTO> playerMap,
+            ReceivedFineDetailedDTO fine
+    ) {
+        if (fine.getPlayer() == null) {
+            return;
+        }
+
         fine.setMatch(null);
-        //fine.setFine(null);
         playerMap.merge(fine.getPlayer().getId(), fine, this::mergeFines);
     }
 
+    private void aggregatePlayerFineStats(
+            Map<PlayerFineKey, ReceivedFineDetailedDTO> playerFineMap,
+            ReceivedFineDetailedDTO fine
+    ) {
+        if (fine.getPlayer() == null || fine.getFine() == null) {
+            return;
+        }
+        fine.setMatch(null);
+        PlayerFineKey key = new PlayerFineKey(
+                fine.getPlayer().getId(),
+                fine.getFine().getId()
+        );
+        playerFineMap.merge(key, fine, this::mergeFines);
+    }
 
-    private ReceivedFineDetailedDTO mergeFines(ReceivedFineDetailedDTO existing, ReceivedFineDetailedDTO newFine) {
+    private ReceivedFineDetailedDTO mergeFines(
+            ReceivedFineDetailedDTO existing,
+            ReceivedFineDetailedDTO newFine
+    ) {
         existing.addFineNumber(newFine.getFineNumber());
         existing.addFineAmount(newFine.returnFineAmount());
         return existing;
@@ -186,39 +271,55 @@ public class ReceivedFineGetter {
             StatisticsFilter filter,
             Map<Long, ReceivedFineDetailedDTO> matchMap,
             Map<Long, ReceivedFineDetailedDTO> playerMap,
-            List<ReceivedFineDetailedDTO> fineList) {
+            Map<Long, ReceivedFineDetailedDTO> fineMap,
+            Map<PlayerFineKey, ReceivedFineDetailedDTO> playerFineMap,
+            List<ReceivedFineDetailedDTO> fineList
+    ) {
+        if (Boolean.TRUE.equals(filter.getDetailed())) {
+            return new ArrayList<>(fineMap.values());
+        }
 
         if (Boolean.TRUE.equals(filter.getMatchStatsOrPlayerStats())) {
             return new ArrayList<>(matchMap.values());
-        } else if (Boolean.FALSE.equals(filter.getMatchStatsOrPlayerStats())) {
-            return new ArrayList<>(playerMap.values());
-        } else {
-            return new ArrayList<>(fineList);
         }
+
+        if (Boolean.FALSE.equals(filter.getMatchStatsOrPlayerStats())) {
+            if (Boolean.TRUE.equals(filter.getSplitPlayerFinesByFine())) {
+                return new ArrayList<>(playerFineMap.values());
+            }
+
+            return new ArrayList<>(playerMap.values());
+        }
+
+        return new ArrayList<>(fineList);
     }
 
     private List<ReceivedFineDetailedDTO> fetchFines(StatisticsFilter filter) {
         ReceivedFineStatsSpecification specification = new ReceivedFineStatsSpecification(filter);
-        return receivedFineRepository.findAll(specification, PageRequest.of(0, filter.getLimit()))
+
+        return receivedFineRepository
+                .findAll(specification, PageRequest.of(0, filter.getLimit()))
                 .stream()
                 .map(receivedFineDetailedMapper::toDTO)
                 .toList();
     }
 
-    public List<IPlayerFineStats> getListOfPlayersOrderByReceivedFineAmount(long seasonId, long appTeamId, int count) {
+    public List<IPlayerFineStats> getListOfPlayersOrderByReceivedFineAmount(
+            long seasonId,
+            long appTeamId,
+            int count
+    ) {
         if (seasonId == ALL_SEASON_ID) {
-            return
-                    receivedFineRepository.findTopFineStatsByAppTeam(
-                            appTeamId,
-                            PageRequest.of(0, count)
-                    );
+            return receivedFineRepository.findTopFineStatsByAppTeam(
+                    appTeamId,
+                    PageRequest.of(0, count)
+            );
         }
-        return
-                receivedFineRepository.findTopFineStatsByAppTeamAndSeason(
-                        appTeamId,
-                        seasonId,
-                        PageRequest.of(0, count)
-                );
-    }
 
+        return receivedFineRepository.findTopFineStatsByAppTeamAndSeason(
+                appTeamId,
+                seasonId,
+                PageRequest.of(0, count)
+        );
+    }
 }
