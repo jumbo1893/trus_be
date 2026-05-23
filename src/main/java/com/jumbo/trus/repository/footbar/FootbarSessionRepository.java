@@ -47,39 +47,39 @@ public interface FootbarSessionRepository extends JpaRepository<FootbarSessionEn
     );
 
     @Query("""
-        SELECT
-            fs.player.name AS playerName,
-
-            COALESCE(AVG(fs.distance), 0.0) / 1000.0 AS averageDistance,
-
-            COALESCE(SUM(fs.distance), 0.0) / 1000.0 AS totalDistance
-
-        FROM FootbarSessionEntity fs
-        WHERE fs.match.appTeam.id = :appTeamId
-          AND fs.distance IS NOT NULL
-        GROUP BY fs.player.id, fs.player.name
-        ORDER BY AVG(fs.distance) DESC
-    """)
+    SELECT
+        fs.player.id AS playerId,
+        COALESCE(AVG(fs.distance), 0.0) / 1000.0 AS averageDistance,
+        COALESCE(SUM(fs.distance), 0.0) / 1000.0 AS totalDistance
+    FROM FootbarSessionEntity fs
+    WHERE fs.match.appTeam.id = :appTeamId
+      AND fs.distance IS NOT NULL
+    GROUP BY fs.player.id
+    ORDER BY
+        AVG(fs.distance) DESC,
+        SUM(fs.distance) DESC,
+        fs.player.id ASC
+""")
     List<IPlayerRunningStats> findTopRunningStatsByAppTeam(
             @Param("appTeamId") Long appTeamId,
             Pageable pageable
     );
 
     @Query("""
-        SELECT
-            fs.player.name AS playerName,
-
-            COALESCE(AVG(fs.distance), 0.0) / 1000.0 AS averageDistance,
-
-            COALESCE(SUM(fs.distance), 0.0) / 1000.0 AS totalDistance
-
-        FROM FootbarSessionEntity fs
-        WHERE fs.match.appTeam.id = :appTeamId
-          AND fs.match.season.id = :seasonId
-          AND fs.distance IS NOT NULL
-        GROUP BY fs.player.id, fs.player.name
-        ORDER BY AVG(fs.distance) DESC
-    """)
+    SELECT
+        fs.player.id AS playerId,
+        COALESCE(AVG(fs.distance), 0.0) / 1000.0 AS averageDistance,
+        COALESCE(SUM(fs.distance), 0.0) / 1000.0 AS totalDistance
+    FROM FootbarSessionEntity fs
+    WHERE fs.match.appTeam.id = :appTeamId
+      AND fs.match.season.id = :seasonId
+      AND fs.distance IS NOT NULL
+    GROUP BY fs.player.id
+    ORDER BY
+        AVG(fs.distance) DESC,
+        SUM(fs.distance) DESC,
+        fs.player.id ASC
+""")
     List<IPlayerRunningStats> findTopRunningStatsByAppTeamAndSeason(
             @Param("appTeamId") Long appTeamId,
             @Param("seasonId") Long seasonId,

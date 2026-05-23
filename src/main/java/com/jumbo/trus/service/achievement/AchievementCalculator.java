@@ -74,7 +74,7 @@ public class AchievementCalculator {
                     Map.entry("CERNA_PRACE", (p, a, at, t) -> calculateCERNA_PRACEAchievement(p, a, t)),
                     //Achievement(p, a)Calculators.put("REZNIK", (p, a, t) -> calculateHattrickHero);
                     Map.entry("DOPING", (p, a, at, t) -> calculateDOPINGAchievement(p, a, t)),
-                    Map.entry("AUTICKO", (p, a, at, t) -> calculateAUTICKOAchievement(p, a, t)),
+                    Map.entry("AUTICKO", this::calculateAUTICKOAchievement),
                     Map.entry("OZEN_SE_OZER_SE", (p, a, at, t) -> calculateOZEN_SE_OZER_SEAchievement(p, a, t)),
                     Map.entry("ROSS_GELLER", (p, a, at, t) -> calculateROSS_GELLERAchievement(p, a, t)),
                     Map.entry("CESTNY_JAKO_KAREL_ERBEN", (p, a, at, t) -> calculateCESTNY_JAKO_KAREL_ERBENAchievement(p, a, t)),
@@ -431,9 +431,9 @@ public class AchievementCalculator {
         return null;
     }
 
-    private PlayerAchievementDTO calculateAUTICKOAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AchievementType achievementType) {
+    private PlayerAchievementDTO calculateAUTICKOAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AppTeamEntity appTeam, AchievementType achievementType) {
         if (achievementType == AchievementType.ALL || achievementType == AchievementType.GOAL || achievementType == AchievementType.MATCH) {
-            GoalDTO goalDTO = goalService.getGoalkeeperWithMostPointsInMatch(playerDTO.getId());
+            GoalDTO goalDTO = goalService.getGoalkeeperWithMostPointsInMatch(playerDTO.getId(), appTeam.getId());
             if (goalDTO != null) {
                 return returnPlayerAchievement(achievement, playerDTO, goalDTO.getMatchId(), "Počer gólů: " + goalDTO.getGoalNumber() + ", počet asistencí: " + goalDTO.getAssistNumber());
             }

@@ -64,31 +64,37 @@ public interface ReceivedFineRepository extends PagingAndSortingRepository<Recei
     Optional<ReceivedFineEntity> findFirstOccurrenceOfFine(@Param("playerId") Long playerId, @Param("fineName") String fineName);
 
     @Query("""
-        SELECT
-            rf.player.name AS playerName,
-            COALESCE(SUM(rf.fine.amount * rf.fineNumber), 0) AS fineAmount,
-            COALESCE(SUM(rf.fineNumber), 0) AS fineCount
-        FROM received_fine rf
-        WHERE rf.appTeam.id = :appTeamId
-        GROUP BY rf.player.id, rf.player.name
-        ORDER BY COALESCE(SUM(rf.fine.amount * rf.fineNumber), 0) DESC
-    """)
+    SELECT
+        rf.player.id AS playerId,
+        COALESCE(SUM(rf.fine.amount * rf.fineNumber), 0) AS fineAmount,
+        COALESCE(SUM(rf.fineNumber), 0) AS fineCount
+    FROM received_fine rf
+    WHERE rf.appTeam.id = :appTeamId
+    GROUP BY rf.player.id
+    ORDER BY
+        COALESCE(SUM(rf.fine.amount * rf.fineNumber), 0) DESC,
+        COALESCE(SUM(rf.fineNumber), 0) DESC,
+        rf.player.id ASC
+""")
     List<IPlayerFineStats> findTopFineStatsByAppTeam(
             @Param("appTeamId") Long appTeamId,
             Pageable pageable
     );
 
     @Query("""
-        SELECT
-            rf.player.name AS playerName,
-            COALESCE(SUM(rf.fine.amount * rf.fineNumber), 0) AS fineAmount,
-            COALESCE(SUM(rf.fineNumber), 0) AS fineCount
-        FROM received_fine rf
-        WHERE rf.appTeam.id = :appTeamId
-          AND rf.match.season.id = :seasonId
-        GROUP BY rf.player.id, rf.player.name
-        ORDER BY COALESCE(SUM(rf.fine.amount * rf.fineNumber), 0) DESC
-    """)
+    SELECT
+        rf.player.id AS playerId,
+        COALESCE(SUM(rf.fine.amount * rf.fineNumber), 0) AS fineAmount,
+        COALESCE(SUM(rf.fineNumber), 0) AS fineCount
+    FROM received_fine rf
+    WHERE rf.appTeam.id = :appTeamId
+      AND rf.match.season.id = :seasonId
+    GROUP BY rf.player.id
+    ORDER BY
+        COALESCE(SUM(rf.fine.amount * rf.fineNumber), 0) DESC,
+        COALESCE(SUM(rf.fineNumber), 0) DESC,
+        rf.player.id ASC
+""")
     List<IPlayerFineStats> findTopFineStatsByAppTeamAndSeason(
             @Param("appTeamId") Long appTeamId,
             @Param("seasonId") Long seasonId,

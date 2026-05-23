@@ -2,7 +2,7 @@ package com.jumbo.trus.dto.footbar;
 
 public interface IPlayerRunningStats {
 
-    String getPlayerName();
+    Long getPlayerId();
 
     Double getAverageDistance();
 

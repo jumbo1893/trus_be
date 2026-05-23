@@ -2,7 +2,7 @@ package com.jumbo.trus.dto.achievement;
 
 public interface IPlayerAchievementStats {
 
-    String getPlayerName();
+    Long getPlayerId();
 
     Long getAccomplishedCount();
 

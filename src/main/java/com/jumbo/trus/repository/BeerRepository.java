@@ -444,33 +444,37 @@ public interface BeerRepository extends PagingAndSortingRepository<BeerEntity, L
     Optional<BeerEntity> findBeerIfPlayerDrinksAtLeastXLiquorsAndThenNotAttendInNextMatch(@Param("playerId") Long playerId, @Param("liquorNumber") int liquorNumber);
 
     @Query("""
-        SELECT
-            b.player.name AS playerName,
-            COALESCE(SUM(b.beerNumber), 0) AS beerNumber,
-            COALESCE(SUM(b.liquorNumber), 0) AS liquorNumber
-        FROM beer b
-        WHERE b.appTeam.id = :appTeamId
-        GROUP BY b.player.id, b.player.name
-        ORDER BY
-            COALESCE(SUM(b.beerNumber), 0) + COALESCE(SUM(b.liquorNumber), 0) DESC
-    """)
+    SELECT
+        b.player.id AS playerId,
+        COALESCE(SUM(b.beerNumber), 0) AS beerNumber,
+        COALESCE(SUM(b.liquorNumber), 0) AS liquorNumber
+    FROM beer b
+    WHERE b.appTeam.id = :appTeamId
+    GROUP BY b.player.id
+    ORDER BY
+        COALESCE(SUM(b.beerNumber), 0) + COALESCE(SUM(b.liquorNumber), 0) DESC,
+        COALESCE(SUM(b.beerNumber), 0) DESC,
+        b.player.id ASC
+""")
     List<IPlayerDrinkStats> findTopDrinkStatsByAppTeam(
             @Param("appTeamId") Long appTeamId,
             Pageable pageable
     );
 
     @Query("""
-        SELECT
-            b.player.name AS playerName,
-            COALESCE(SUM(b.beerNumber), 0) AS beerNumber,
-            COALESCE(SUM(b.liquorNumber), 0) AS liquorNumber
-        FROM beer b
-        WHERE b.appTeam.id = :appTeamId
-          AND b.match.season.id = :seasonId
-        GROUP BY b.player.id, b.player.name
-        ORDER BY
-            COALESCE(SUM(b.beerNumber), 0) + COALESCE(SUM(b.liquorNumber), 0) DESC
-    """)
+    SELECT
+        b.player.id AS playerId,
+        COALESCE(SUM(b.beerNumber), 0) AS beerNumber,
+        COALESCE(SUM(b.liquorNumber), 0) AS liquorNumber
+    FROM beer b
+    WHERE b.appTeam.id = :appTeamId
+      AND b.match.season.id = :seasonId
+    GROUP BY b.player.id
+    ORDER BY
+        COALESCE(SUM(b.beerNumber), 0) + COALESCE(SUM(b.liquorNumber), 0) DESC,
+        COALESCE(SUM(b.beerNumber), 0) DESC,
+        b.player.id ASC
+""")
     List<IPlayerDrinkStats> findTopDrinkStatsByAppTeamAndSeason(
             @Param("appTeamId") Long appTeamId,
             @Param("seasonId") Long seasonId,
@@ -479,15 +483,18 @@ public interface BeerRepository extends PagingAndSortingRepository<BeerEntity, L
 
     @Query("""
     SELECT
-        p.name AS playerName,
+        p.id AS playerId,
         COALESCE(1.0 * SUM(b.beerNumber), 0.0) / COUNT(DISTINCT m.id) AS beerNumber,
         COALESCE(1.0 * SUM(b.liquorNumber), 0.0) / COUNT(DISTINCT m.id) AS liquorNumber
     FROM match m
     JOIN m.playerList p
     LEFT JOIN beer b ON b.match.id = m.id AND b.player.id = p.id
     WHERE m.appTeam.id = :appTeamId
-    GROUP BY p.id, p.name
-    ORDER BY COALESCE(1.0 * SUM(b.beerNumber), 0.0) / COUNT(DISTINCT m.id) DESC
+    GROUP BY p.id
+    ORDER BY
+        COALESCE(1.0 * SUM(b.beerNumber), 0.0) / COUNT(DISTINCT m.id) DESC,
+        COALESCE(1.0 * SUM(b.liquorNumber), 0.0) / COUNT(DISTINCT m.id) DESC,
+        p.id ASC
 """)
     List<IPlayerDrinkAverageStats> findTopAverageDrinkStatsByAppTeam(
             @Param("appTeamId") Long appTeamId,
@@ -496,7 +503,7 @@ public interface BeerRepository extends PagingAndSortingRepository<BeerEntity, L
 
     @Query("""
     SELECT
-        p.name AS playerName,
+        p.id AS playerId,
         COALESCE(1.0 * SUM(b.beerNumber), 0.0) / COUNT(DISTINCT m.id) AS beerNumber,
         COALESCE(1.0 * SUM(b.liquorNumber), 0.0) / COUNT(DISTINCT m.id) AS liquorNumber
     FROM match m
@@ -504,8 +511,11 @@ public interface BeerRepository extends PagingAndSortingRepository<BeerEntity, L
     LEFT JOIN beer b ON b.match.id = m.id AND b.player.id = p.id
     WHERE m.appTeam.id = :appTeamId
       AND m.season.id = :seasonId
-    GROUP BY p.id, p.name
-    ORDER BY COALESCE(1.0 * SUM(b.beerNumber), 0.0) / COUNT(DISTINCT m.id) DESC
+    GROUP BY p.id
+    ORDER BY
+        COALESCE(1.0 * SUM(b.beerNumber), 0.0) / COUNT(DISTINCT m.id) DESC,
+        COALESCE(1.0 * SUM(b.liquorNumber), 0.0) / COUNT(DISTINCT m.id) DESC,
+        p.id ASC
 """)
     List<IPlayerDrinkAverageStats> findTopAverageDrinkStatsByAppTeamAndSeason(
             @Param("appTeamId") Long appTeamId,

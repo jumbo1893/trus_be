@@ -2,7 +2,7 @@ package com.jumbo.trus.dto.beer;
 
 public interface IPlayerDrinkAverageStats {
 
-    String getPlayerName();
+    Long getPlayerId();
 
     Double getBeerNumber();
 

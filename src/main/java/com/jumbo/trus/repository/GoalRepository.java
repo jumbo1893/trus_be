@@ -27,37 +27,49 @@ public interface GoalRepository extends PagingAndSortingRepository<GoalEntity, L
     void deleteByMatchId(@Param("matchId") long matchId);
 
     @Query(value = """
-                SELECT g.*
-                FROM football_match_player fmp
-                JOIN player p ON fmp.player_id = p.football_player_id
-                JOIN football_match fm ON fmp.match_id = fm.id
-                JOIN match m ON m.football_match_id = fm.id
-                JOIN goal g ON g.match_id = m.id AND g.player_id = p.id
-                WHERE p.id = :playerId
-                AND fmp.goalkeeping_minutes > 59
-                AND (g.goal_number + g.assist_number) = (
-                    SELECT MAX(g2.goal_number + g2.assist_number)
-                    FROM goal g2
-                    WHERE g2.match_id = g.match_id
-                )
-                ORDER BY m.date ASC
-                LIMIT 1;
-            
+            SELECT g.*
+            FROM football_match_player fmp
+            JOIN player p 
+              ON p.football_player_id = fmp.player_id
+            JOIN football_match fm 
+              ON fm.id = fmp.match_id
+            JOIN match m 
+              ON m.football_match_id = fm.id
+            JOIN goal g 
+              ON g.match_id = m.id 
+             AND g.player_id = p.id
+            WHERE p.id = :playerId
+              AND m.app_team_id = :appTeamId
+              AND fmp.goalkeeping_minutes > 59
+              AND COALESCE(g.goal_number, 0) + COALESCE(g.assist_number, 0) > 0
+              AND COALESCE(g.goal_number, 0) + COALESCE(g.assist_number, 0) = (
+                  SELECT MAX(
+                      COALESCE(g2.goal_number, 0) + COALESCE(g2.assist_number, 0)
+                  )
+                  FROM goal g2
+                  WHERE g2.match_id = g.match_id
+              )
+            ORDER BY m.date ASC
+            LIMIT 1
             """, nativeQuery = true)
-    Optional<GoalEntity> findGoalkeeperWithMostPointsInMatch(@Param("playerId") Long playerId);
+    Optional<GoalEntity> findGoalkeeperWithMostPointsInMatch(
+            @Param("playerId") Long playerId,
+            @Param("appTeamId") Long appTeamId
+    );
 
     @Query("""
         SELECT
-            g.player.name AS playerName,
-            COALESCE(SUM(g.goalNumber), 0) AS goalNumber,
-            COALESCE(SUM(g.assistNumber), 0) AS assistNumber
+            g.player.id AS playerId,
+            SUM(g.goalNumber) AS goalNumber,
+            SUM(g.assistNumber) AS assistNumber
         FROM goal g
         WHERE g.appTeam.id = :appTeamId
-        GROUP BY g.player.id, g.player.name
+        GROUP BY g.player.id
         ORDER BY
-            COALESCE(SUM(g.goalNumber), 0) +
-            COALESCE(SUM(g.assistNumber), 0) DESC
-    """)
+            SUM(g.goalNumber) + SUM(g.assistNumber) DESC,
+            SUM(g.goalNumber) DESC,
+            g.player.id ASC
+        """)
     List<IPlayerGoalStats> findTopGoalStatsByAppTeam(
             @Param("appTeamId") Long appTeamId,
             Pageable pageable
@@ -65,17 +77,18 @@ public interface GoalRepository extends PagingAndSortingRepository<GoalEntity, L
 
     @Query("""
         SELECT
-            g.player.name AS playerName,
-            COALESCE(SUM(g.goalNumber), 0) AS goalNumber,
-            COALESCE(SUM(g.assistNumber), 0) AS assistNumber
+            g.player.id AS playerId,
+            SUM(g.goalNumber) AS goalNumber,
+            SUM(g.assistNumber) AS assistNumber
         FROM goal g
         WHERE g.appTeam.id = :appTeamId
           AND g.match.season.id = :seasonId
-        GROUP BY g.player.id, g.player.name
+        GROUP BY g.player.id
         ORDER BY
-            COALESCE(SUM(g.goalNumber), 0) +
-            COALESCE(SUM(g.assistNumber), 0) DESC
-    """)
+            SUM(g.goalNumber) + SUM(g.assistNumber) DESC,
+            SUM(g.goalNumber) DESC,
+            g.player.id ASC
+        """)
     List<IPlayerGoalStats> findTopGoalStatsByAppTeamAndSeason(
             @Param("appTeamId") Long appTeamId,
             @Param("seasonId") Long seasonId,

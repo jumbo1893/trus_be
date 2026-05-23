@@ -183,8 +183,8 @@ public class GoalService {
         goalRepository.deleteById(goalId);
     }
 
-    public GoalDTO getGoalkeeperWithMostPointsInMatch(Long playerId) {
-        return goalRepository.findGoalkeeperWithMostPointsInMatch(playerId)
+    public GoalDTO getGoalkeeperWithMostPointsInMatch(Long playerId, Long appTeamId) {
+        return goalRepository.findGoalkeeperWithMostPointsInMatch(playerId, appTeamId)
                 .map(goalMapper::toDTO)
                 .orElse(null);
     }

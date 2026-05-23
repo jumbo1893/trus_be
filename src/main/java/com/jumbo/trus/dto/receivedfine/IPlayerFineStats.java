@@ -2,7 +2,7 @@ package com.jumbo.trus.dto.receivedfine;
 
 public interface IPlayerFineStats {
 
-    String getPlayerName();
+    Long getPlayerId();
 
     Long getFineAmount();
 
