@@ -594,7 +594,13 @@ public class AchievementCalculator {
 
     private PlayerAchievementDTO calculateDLOUHA_NOCAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AchievementType achievementType) {
         if (achievementType == AchievementType.ALL || achievementType == AchievementType.RECEIVED_FINE) {
-            IMatchIdNumberOneNumberTwo iMatchIdNumberOneNumberTwo = playerAchievementRepository.getFirstMatchWithAtLeastOneOfFinesAndXSecondFines(playerDTO.getId(), "Pozdní příchod do začátku", "Pozdní příchod po začáku", "Pozdní příchod po 10. minutě", "Zbytkáč či kocovina", 1);
+            IMatchIdNumberOneNumberTwo iMatchIdNumberOneNumberTwo = playerAchievementRepository.getFirstMatchWithAtLeastOneOfFinesAndXSecondFines(
+                    playerDTO.getId(),
+                    "Pozdní příchod do začátku",
+                    "Pozdní příchod po začátku",
+                    "Pozdní příchod po 10. minutě",
+                    "Zbytkáč či kocovina",
+                    1);
             if (iMatchIdNumberOneNumberTwo != null) {
                 return returnPlayerAchievement(achievement, playerDTO, iMatchIdNumberOneNumberTwo.getMatchId(), "");
             }
