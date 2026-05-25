@@ -26,7 +26,7 @@ public class AchievementNotificationMaker {
     public void sendAchievementNotify(PlayerAchievementDTO playerAchievement, AppTeamEntity appTeam) {
         List<DeviceToken> deviceTokenList = deviceTokenRepository.findDeviceTokensByAppTeamIdAndStatus(appTeam.getId(), "ACTIVE");
         List<DeviceToken> playerDeviceTokenList = deviceTokenRepository.findDeviceTokensByPlayerId(playerAchievement.getPlayer().getId(), "ACTIVE");
-        String allTitle = "Hráči " + playerAchievement.getPlayer().getName() + " byl připsán achievement!";
+        String allTitle = playerAchievement.getPlayer().isFan()? "Fanouškovi " : "Hráči " + playerAchievement.getPlayer().getName() + " byl připsán achievement!";
         String playerTitle = "Vysloužil sis nový achievement!";
         String body = buildAchievementPushBody(playerAchievement, appTeam);
         for (DeviceToken deviceToken : deviceTokenList) {
@@ -54,23 +54,30 @@ public class AchievementNotificationMaker {
         String achievementName = playerAchievement.getAchievement().getName();
         String body;
         if (successRate < 10) {
-            body = "Velká gratulace! Jedná se o velmi raritní achievement " + achievementName + ", který zatím splnilo pouze " + successRate + "% hráčů";
+            body = "Velká gratulace! Jedná se o velmi raritní achievement " + achievementName + ", který zatím splnilo pouze " + successRate + getFanOrPlayerPercentageText(playerAchievement);
         }
         else if (successRate < 30) {
-            body = "Dlouhé úsilí se vyplatilo! Jedná se o raritní achievement " + achievementName + ", který zatím splnilo pouze " + successRate + "% hráčů";
+            body = "Dlouhé úsilí se vyplatilo! Jedná se o raritní achievement " + achievementName + ", který zatím splnilo pouze " + successRate + getFanOrPlayerPercentageText(playerAchievement);
         }
         else if (successRate < 50) {
-            body = "Jedná se o velmi zajímavý achievement " + achievementName + ", který zatím splnilo pouze " + successRate + "% hráčů";
+            body = "Jedná se o velmi zajímavý achievement " + achievementName + ", který zatím splnilo pouze " + successRate + getFanOrPlayerPercentageText(playerAchievement);
         }
         else if (successRate < 70) {
-            body = achievementName + " zařazuje mezi legendy, tedy mezi ostatních " + successRate + "% hráčů";
+            body = achievementName + " zařazuje mezi legendy, tedy mezi ostatních " + successRate + getFanOrPlayerPercentageText(playerAchievement);
         }
         else if (successRate < 90) {
-            body = "Dlouho to trvalo, protože " + achievementName + " splnilo již " + successRate + "% hráčů";
+            body = "Dlouho to trvalo, protože " + achievementName + " splnilo již " + successRate + getFanOrPlayerPercentageText(playerAchievement);
         }
         else {
-            body = "Pověstný kůl v plotě již nestojí, protože " + achievementName + " splnilo dalších " + successRate + "% hráčů";
+            body = "Pověstný kůl v plotě již nestojí, protože " + achievementName + " splnilo dalších " + successRate + getFanOrPlayerPercentageText(playerAchievement);
         }
         return body;
+    }
+
+    private String getFanOrPlayerPercentageText(PlayerAchievementDTO playerAchievement) {
+        if (playerAchievement.getAchievement().isOnlyForPlayers()) {
+            return "% hráčů";
+        }
+        else return "% hráčů a fanoušků";
     }
 }
