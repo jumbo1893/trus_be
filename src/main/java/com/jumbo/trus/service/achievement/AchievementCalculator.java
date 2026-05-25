@@ -601,6 +601,7 @@ public class AchievementCalculator {
                     "Pozdní příchod po 10. minutě",
                     "Zbytkáč či kocovina",
                     1);
+            log.debug("hráč: {}, vysledek {}", playerDTO.getName(), iMatchIdNumberOneNumberTwo);
             if (iMatchIdNumberOneNumberTwo != null) {
                 return returnPlayerAchievement(achievement, playerDTO, iMatchIdNumberOneNumberTwo.getMatchId(), "");
             }
