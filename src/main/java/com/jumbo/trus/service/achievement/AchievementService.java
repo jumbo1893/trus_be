@@ -15,7 +15,6 @@ import com.jumbo.trus.service.player.PlayerService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.webjars.NotFoundException;
@@ -42,7 +41,6 @@ public class AchievementService {
     private final LockManager lockManager;
     private final AchievementDetailService achievementDetailService;
 
-    @Async
     @Transactional
     public void updateAllPlayerAchievements(AppTeamEntity appTeam, AchievementType achievementType) {
         if (appTeam == null) {
