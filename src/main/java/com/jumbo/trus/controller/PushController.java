@@ -44,11 +44,6 @@ public class PushController {
         return enabledPushService.editNotificationsPermit(enabledPushNotificationList);
     }
 
-    @PostMapping("push/init")
-    public void editNotificationsPermit() {
-        pushService.initAllTokenUsers();
-    }
-
     @RoleRequired("READER")
     @PostMapping("/token/test")
     public void sendTestPush(@RequestBody DeviceTokenDTO deviceTokenDTO) throws Exception {

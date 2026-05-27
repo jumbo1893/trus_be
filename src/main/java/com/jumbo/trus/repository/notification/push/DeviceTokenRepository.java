@@ -71,5 +71,13 @@ public interface DeviceTokenRepository extends PagingAndSortingRepository<Device
             String clientDeviceId,
             String token
     );
+
+    @Query("""
+        SELECT DISTINCT dt.user
+        FROM DeviceToken dt
+        WHERE dt.user IS NOT NULL
+          AND dt.status = 'ACTIVE'
+        """)
+    List<UserEntity> findDistinctActiveTokenUsers();
 }
 

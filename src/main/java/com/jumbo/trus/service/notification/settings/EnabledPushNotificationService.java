@@ -22,29 +22,56 @@ public class EnabledPushNotificationService {
 
     private final EnabledPushNotificationRepository enRepo;
     private final UserService userService;
+    private final EnabledPushNotificationInitializer enabledPushNotificationInitializer;
+
 
     public boolean isNotificationEnabled(UserEntity user, NotificationType notificationType) {
-        EnabledPushNotification enabledPushNotification = enRepo.findByUserAndType(user, notificationType).orElse(new EnabledPushNotification(true));
-        EnabledPushNotification globalEnabledPushNotification = enRepo.findByUserAndType(user, NotificationType.GLOBAL).orElse(new EnabledPushNotification(true));
-        return enabledPushNotification.getEnabled() && globalEnabledPushNotification.getEnabled();
+        boolean typeEnabled = enRepo.findByUserAndType(user, notificationType)
+                .map(notification -> notification.getEnabled() == null || notification.getEnabled())
+                .orElse(true);
+
+        boolean globalEnabled = enRepo.findByUserAndType(user, NotificationType.GLOBAL)
+                .map(notification -> notification.getEnabled() == null || notification.getEnabled())
+                .orElse(true);
+
+        return typeEnabled && globalEnabled;
     }
 
+
+    @Transactional
     public List<EnabledPushNotificationDTO> getAllByUser() {
-        List<EnabledPushNotificationDTO> enabledPushNotificationDTOS = new ArrayList<>(enRepo.findAllByUser(userService.getCurrentUserEntity())
+        UserEntity currentUser = userService.getCurrentUserEntity();
+
+        enabledPushNotificationInitializer.ensureUserHasAllTypes(currentUser);
+
+        return enRepo.findAllByUser(currentUser)
                 .stream()
                 .map(this::toDto)
-                .toList());
-        enabledPushNotificationDTOS.sort(Comparator.comparingInt(d -> d.getType().getOrder()));
-        return enabledPushNotificationDTOS;
+                .sorted(Comparator.comparingInt(dto -> dto.getType().getOrder()))
+                .toList();
     }
 
-    public EnabledPushNotificationDTO editNotificationPermit(Long notificationId, EnabledPushNotificationDTO enabledPushNotificationDTO) throws NotFoundException {
-        EnabledPushNotification foundEntity = enRepo.findById(notificationId)
-                .orElseThrow(() -> new NotFoundException("Notifikace s id " + notificationId + "nenalezena v db"));
-        EnabledPushNotification entity = toEntity(enabledPushNotificationDTO);
-        entity.setId(notificationId);
-        EnabledPushNotification savedEntity = enRepo.save(entity);
-        return toDto(savedEntity);
+    @Transactional
+    public EnabledPushNotificationDTO editNotificationPermit(
+            Long notificationId,
+            EnabledPushNotificationDTO dto
+    ) {
+        UserEntity currentUser = userService.getCurrentUserEntity();
+
+        EnabledPushNotification entity = enRepo.findById(notificationId)
+                .orElseThrow(() -> new NotFoundException(
+                        "Notifikace s id " + notificationId + " nenalezena v db"
+                ));
+
+        if (!entity.getUser().getId().equals(currentUser.getId())) {
+            throw new IllegalArgumentException("Nelze upravovat nastavení jiného uživatele");
+        }
+
+        if (dto.getEnabled() != null) {
+            entity.setEnabled(dto.getEnabled());
+        }
+
+        return toDto(enRepo.save(entity));
     }
 
     @Transactional
