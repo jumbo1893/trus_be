@@ -3,14 +3,17 @@ package com.jumbo.trus.service.player;
 import com.jumbo.trus.dto.player.PlayerDTO;
 import com.jumbo.trus.entity.PlayerEntity;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
+import com.jumbo.trus.entity.football.FootballPlayerEntity;
 import com.jumbo.trus.mapper.PlayerMapper;
 import com.jumbo.trus.repository.BeerRepository;
 import com.jumbo.trus.repository.GoalRepository;
 import com.jumbo.trus.repository.PlayerRepository;
 import com.jumbo.trus.repository.ReceivedFineRepository;
+import com.jumbo.trus.service.exceptions.FieldValidationException;
 import com.jumbo.trus.service.football.player.FootballPlayerService;
 import com.jumbo.trus.service.football.stats.FootballPlayerStatsService;
 import com.jumbo.trus.service.helper.BirthdayCalculator;
+import com.jumbo.trus.service.helper.ValidationField;
 import com.jumbo.trus.service.notification.NotificationService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -80,6 +83,7 @@ public class PlayerService {
     public PlayerDTO editPlayer(Long playerId, PlayerDTO playerDTO) throws NotFoundException {
         PlayerEntity foundPlayerEntity = playerRepository.findById(playerId)
                 .orElseThrow(() -> new NotFoundException("Hráč s id " + playerId + "nenalezen v db"));
+        validatePlayer(playerDTO);
         PlayerEntity entity = playerMapper.toEntity(playerDTO);
         entity.setId(playerId);
         entity.setAppTeam(foundPlayerEntity.getAppTeam());
@@ -95,7 +99,7 @@ public class PlayerService {
         goalRepository.deleteByPlayerId(playerId);
         beerRepository.deleteByPlayerId(playerId);
         PlayerEntity playerEntity = playerRepository.getReferenceById(playerId);
-        notificationService.addNotification("Upraven " + (playerEntity.isFan() ? "fanoušek" : "hráč"), playerEntity.getName() + ", s narozeninami " + playerEntity.getBirthday());
+        notificationService.addNotification("Smazán " + (playerEntity.isFan() ? "fanoušek" : "hráč"), playerEntity.getName() + ", s narozeninami " + playerEntity.getBirthday());
         playerRepository.deleteById(playerId);
     }
 
@@ -122,5 +126,18 @@ public class PlayerService {
         playerDTO.setBirthday(new Date());
         playerDTO.setActive(true);
         return playerDTO;
+    }
+
+    private void validatePlayer(PlayerDTO playerDTO) {
+        if (playerDTO.getFootballPlayer() == null) return;
+        FootballPlayerEntity newFootballPlayerEntity = footballPlayerService.getFootballPlayerEntity(playerDTO.getFootballPlayer().getId());
+        if (newFootballPlayerEntity.getPlayer() == null || newFootballPlayerEntity.getPlayer().getId() == playerDTO.getId()) return;
+        makeValidationException(newFootballPlayerEntity.getPlayer().getName(), newFootballPlayerEntity.getName());
+    }
+
+    private void makeValidationException(String oldPlayerName, String footballerName) {
+        List<ValidationField> fields = new ArrayList<>();
+        fields.add(new ValidationField("football_player", "Pod hráčem " + footballerName + " hraje již " +  oldPlayerName));
+        throw new FieldValidationException("Chyba při úpravě hráče", fields);
     }
 }

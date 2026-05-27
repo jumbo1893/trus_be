@@ -3,6 +3,7 @@ package com.jumbo.trus.service.football.player;
 import com.jumbo.trus.dto.football.FootballPlayerDTO;
 import com.jumbo.trus.dto.football.TeamDTO;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
+import com.jumbo.trus.entity.football.FootballPlayerEntity;
 import com.jumbo.trus.mapper.football.FootballPlayerMapper;
 import com.jumbo.trus.mapper.football.TeamMapper;
 import com.jumbo.trus.repository.football.FootballPlayerRepository;
@@ -13,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.webjars.NotFoundException;
 
 import java.util.List;
 import java.util.Optional;
@@ -103,6 +105,11 @@ public class FootballPlayerService {
         footballPlayerDTO.setBirthYear(0);
         footballPlayerDTO.setUri("");
         return footballPlayerDTO;
+    }
+
+    public FootballPlayerEntity getFootballPlayerEntity(Long id) {
+        return footballPlayerRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("FootballPlayer id " + id + " nenalezen!"));
     }
 
 }
