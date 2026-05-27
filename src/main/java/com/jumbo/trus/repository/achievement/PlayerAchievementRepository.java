@@ -1100,5 +1100,93 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
             """, nativeQuery = true)
     IMatchIdNumberOneNumberTwo findModerniGolmanskaSkola(@Param("playerId") Long playerId,
                                                          @Param("appTeamId") Long appTeamId);
+
+    // Morální podpora - hráč se zúčastnil zápasu, ale nebyl na oficiální soupisce
+    @Query(value = """
+        SELECT m.id AS matchId,
+               CAST(COALESCE(SUM(b.beer_number), 0) AS int) AS firstNumber,
+               CAST(COALESCE(SUM(b.liquor_number), 0) AS int) AS secondNumber
+        FROM match m
+        JOIN match_players mp
+             ON mp.match_id = m.id
+            AND mp.player_id = :playerId
+        JOIN player p
+             ON p.id = mp.player_id
+        LEFT JOIN beer b
+             ON b.match_id = m.id
+            AND b.player_id = p.id
+        WHERE p.id = :playerId
+          AND p.fan = false
+          AND p.football_player_id IS NOT NULL
+          AND m.football_match_id IS NOT NULL
+          AND m.app_team_id = :appTeamId
+          AND NOT EXISTS (
+              SELECT 1
+              FROM football_match_player fmp
+              WHERE fmp.match_id = m.football_match_id
+                AND fmp.player_id = p.football_player_id
+          )
+        GROUP BY m.id, m.date
+        ORDER BY m.date ASC, m.id ASC
+        LIMIT 1
+        """, nativeQuery = true)
+    IMatchIdNumberOneNumberTwo findMoralniPodpora(
+            @Param("playerId") Long playerId,
+            @Param("appTeamId") Long appTeamId
+    );
+
+    // Lazar na tribuně - alespoň 3 zápasy mimo oficiální soupisku v jedné sezoně
+    @Query(value = """
+        WITH tribunal_matches AS (
+            SELECT m.id AS match_id,
+                   m.date,
+                   CAST(COALESCE(SUM(b.beer_number), 0) AS int) AS beer_number
+            FROM match m
+            JOIN match_players mp
+                 ON mp.match_id = m.id
+                AND mp.player_id = :playerId
+            JOIN player p
+                 ON p.id = mp.player_id
+            LEFT JOIN beer b
+                 ON b.match_id = m.id
+                AND b.player_id = p.id
+            WHERE p.id = :playerId
+              AND p.fan = false
+              AND p.football_player_id IS NOT NULL
+              AND m.football_match_id IS NOT NULL
+              AND m.season_id = :seasonId
+              AND m.app_team_id = :appTeamId
+              AND NOT EXISTS (
+                  SELECT 1
+                  FROM football_match_player fmp
+                  WHERE fmp.match_id = m.football_match_id
+                    AND fmp.player_id = p.football_player_id
+              )
+            GROUP BY m.id, m.date
+        ),
+        ranked_tribunal_matches AS (
+            SELECT tm.*,
+                   ROW_NUMBER() OVER (
+                       ORDER BY tm.date ASC NULLS LAST, tm.match_id ASC
+                   ) AS tribunal_order
+            FROM tribunal_matches tm
+        ),
+        tribunal_totals AS (
+            SELECT COUNT(*) AS tribunal_match_count,
+                   COALESCE(SUM(beer_number), 0) AS tribunal_beer_count
+            FROM tribunal_matches
+        )
+        SELECT rtm.match_id AS matchId,
+               CAST(tt.tribunal_match_count AS int) AS firstNumber,
+               CAST(tt.tribunal_beer_count AS int) AS secondNumber
+        FROM ranked_tribunal_matches rtm
+        CROSS JOIN tribunal_totals tt
+        WHERE rtm.tribunal_order = 3
+        """, nativeQuery = true)
+    IMatchIdNumberOneNumberTwo findLazarNaTribune(
+            @Param("playerId") Long playerId,
+            @Param("appTeamId") Long appTeamId,
+            @Param("seasonId") Long seasonId
+    );
 }
 

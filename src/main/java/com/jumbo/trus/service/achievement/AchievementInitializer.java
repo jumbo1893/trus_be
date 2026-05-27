@@ -76,7 +76,7 @@ public class AchievementInitializer implements CommandLineRunner {
                 new AchievementEntity("Fotr je lotr", "FOTR_JE_LOTR", true, "Získej kartu v zápase jakožto otec od rodiny", false),
                 new AchievementEntity("Maratonec", "MARATONEC", true, "Uběhni v zápasech Trusu maraton", "Alespoň 42,1 km", false),
                 new AchievementEntity("Roberto Carlos", "ROBERTO_CARLOS", true, "Zaznamenej v zápase střelu s rychlostí přes 80 km/h a gól", false),
-                new AchievementEntity("Špílmachr", "SPILMACHR", true, "Zaznamenej v zápase alespoň 40 přihrávek",  false),
+                new AchievementEntity("Špílmachr", "SPILMACHR", true, "Zaznamenej v zápase alespoň 40 přihrávek", false),
                 new AchievementEntity("Já to za vás oběhal", "JA_TO_ZA_VAS_OBEHAL", true, "Měj v zápase nejvíce naběhaných kilometrů ze všech", "Alespoň 2 hráči s Footbarem", false),
                 new AchievementEntity("Doplnění tekutin", "DOPLNENI_TEKUTIN", true, "Vypij po zápase alespoň tolik piv, kolik si naběhal kilometrů", "Uběhnuté alespoň 3 km", false),
                 new AchievementEntity("Nástup jako hrom", "NASTUP_JAKO_HROM", true, "Ve svém prvním zápase za Trus dej gól", false),
@@ -86,7 +86,10 @@ public class AchievementInitializer implements CommandLineRunner {
                 new AchievementEntity("Nesobecký hrdina", "NESOBECKY_HRDINA", true, "Měj hattrick z asistencí", false),
                 new AchievementEntity("Góly? Ne, raději pivo", "GOLY_NE_RADEJI_PIVO", true, "Měj nejvyšší průměr vypitých piv na gól v sezoně", "Alespoň 1 pivo a 1 gól", false),
                 new AchievementEntity("Jarda Kužel", "JARDA_KUZEL", true, "Přijď na zápas po alespoň třech absencích a získej hvězdu utkání", false),
-                new AchievementEntity("Moderní gólmanská škola", "MODERNI_GOLMANSKA_SKOLA", true, "Zaznamenej alespoň jednu asistenci jako brankář", false)
+                new AchievementEntity("Moderní gólmanská škola", "MODERNI_GOLMANSKA_SKOLA", true, "Zaznamenej alespoň jednu asistenci jako brankář", false),
+                new AchievementEntity("Morální podpora", "MORALNI_PODPORA", true, "I přes zranění/trest se přijď podívat na zápas", false),
+                new AchievementEntity("Lazar na tribunách", "LAZAR_NA_TRIBUNACH", true, "Přijď se podívat alespoň na 3 zápasy v sezoně i přes zranění", false)
+
         );
     }
 }

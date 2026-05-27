@@ -121,7 +121,10 @@ public class AchievementCalculator {
                     Map.entry("NESOBECKY_HRDINA", this::calculateNESOBECKY_HRDINAAchievement),
                     Map.entry("GOLY_NE_RADEJI_PIVO", this::calculateGOLY_NE_RADEJI_PIVOAchievement),
                     Map.entry("JARDA_KUZEL", this::calculateJARDA_KUZELAchievement),
-                    Map.entry("MODERNI_GOLMANSKA_SKOLA", this::calculateMODERNI_GOLMANSKA_SKOLAAchievement)
+                    Map.entry("MODERNI_GOLMANSKA_SKOLA", this::calculateMODERNI_GOLMANSKA_SKOLAAchievement),
+                    Map.entry("MORALNI_PODPORA", this::calculateMORALNI_PODPORAAchievement),
+                    Map.entry("LAZAR_NA_TRIBUNACH", this::calculateLAZAR_NA_TRIBUNACHAchievement)
+
 
             );
 
@@ -1058,6 +1061,31 @@ public class AchievementCalculator {
             String assist = result.getFirstNumber() > 0 ? "asistence" : "asistenci";
             return returnPlayerAchievement(achievement, playerDTO, result.getMatchId(), "Tento gólman, který odchytal celých " + result.getSecondNumber() +
                     " minut si v zápase připsal " + result.getFirstNumber() + " " + assist + ".");
+        }
+        return returnFailedPlayerAchievement(achievement, playerDTO);
+    }
+
+    private PlayerAchievementDTO calculateMORALNI_PODPORAAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AppTeamEntity appTeam, AchievementType achievementType) {
+        if (!shouldCalculate(achievementType, AchievementType.MATCH, AchievementType.SEASON)) return null;
+        IMatchIdNumberOneNumberTwo result = playerAchievementRepository.findMoralniPodpora(playerDTO.getId(), appTeam.getId());
+        if (result != null) {
+            String assist = result.getFirstNumber() > 0 ? "asistence" : "asistenci";
+            return returnPlayerAchievement(achievement, playerDTO, result.getMatchId(), "Hráč strávil utkání na tribuně jako podpora týmu. Celkově tým taktéž podpořil " +
+                    result.getFirstNumber() + " pivy a " + result.getSecondNumber() + " panáky");
+        }
+        return returnFailedPlayerAchievement(achievement, playerDTO);
+    }
+
+    private PlayerAchievementDTO calculateLAZAR_NA_TRIBUNACHAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AppTeamEntity appTeam, AchievementType achievementType) {
+        if (!shouldCalculate(achievementType, AchievementType.MATCH, AchievementType.SEASON)) return null;
+        SeasonFilter seasonFilter = new SeasonFilter();
+        seasonFilter.setAppTeam(appTeam);
+        for (SeasonDTO season : seasonService.getAll(seasonFilter)) {
+            IMatchIdNumberOneNumberTwo r = playerAchievementRepository.findLazarNaTribune(playerDTO.getId(), season.getId(), appTeam.getId());
+            if (r != null) {
+                return returnPlayerAchievement(achievement, playerDTO, null, "Hráč v sezoně " + season.getName() + " strávil celkem " +
+                        r.getFirstNumber() + " zápasů na tribuně a vypil u toho " + r.getSecondNumber() + " piv");
+            }
         }
         return returnFailedPlayerAchievement(achievement, playerDTO);
     }
