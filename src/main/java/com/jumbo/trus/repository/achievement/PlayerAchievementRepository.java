@@ -21,14 +21,15 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
     Optional<PlayerAchievementEntity> findByPlayerIdAndAchievementIdAndAccomplished(Long playerId, Long achievementId, boolean accomplished);
 
     @Query("""
-                SELECT pa.achievement.id,
-                       SUM(CASE WHEN pa.player.fan = false THEN 1 ELSE 0 END),
-                       COUNT(DISTINCT pa.player.id)
-                FROM PlayerAchievementEntity pa
-                WHERE pa.player.appTeam.id = :appTeamId
-                  AND pa.accomplished = true
-                GROUP BY pa.achievement.id
-            """)
+        SELECT pa.achievement.id,
+               SUM(CASE WHEN pa.player.fan = false THEN 1 ELSE 0 END),
+               COUNT(DISTINCT pa.player.id)
+        FROM PlayerAchievementEntity pa
+        WHERE pa.player.appTeam.id = :appTeamId
+          AND pa.accomplished = true
+          AND pa.player.deleted = false
+        GROUP BY pa.achievement.id
+        """)
     List<Object[]> countAccomplishedStatsByAchievementForTeam(
             @Param("appTeamId") Long appTeamId
     );

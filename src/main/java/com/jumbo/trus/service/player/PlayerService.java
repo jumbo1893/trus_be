@@ -5,13 +5,10 @@ import com.jumbo.trus.entity.PlayerEntity;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.football.FootballPlayerEntity;
 import com.jumbo.trus.mapper.PlayerMapper;
-import com.jumbo.trus.repository.BeerRepository;
-import com.jumbo.trus.repository.GoalRepository;
 import com.jumbo.trus.repository.PlayerRepository;
-import com.jumbo.trus.repository.ReceivedFineRepository;
+import com.jumbo.trus.repository.auth.UserTeamRoleRepository;
 import com.jumbo.trus.service.exceptions.FieldValidationException;
 import com.jumbo.trus.service.football.player.FootballPlayerService;
-import com.jumbo.trus.service.football.stats.FootballPlayerStatsService;
 import com.jumbo.trus.service.helper.BirthdayCalculator;
 import com.jumbo.trus.service.helper.ValidationField;
 import com.jumbo.trus.service.notification.NotificationService;
@@ -31,12 +28,9 @@ public class PlayerService {
 
     private final PlayerRepository playerRepository;
     private final PlayerMapper playerMapper;
-    private final BeerRepository beerRepository;
-    private final ReceivedFineRepository receivedFineRepository;
-    private final GoalRepository goalRepository;
     private final NotificationService notificationService;
     private final FootballPlayerService footballPlayerService;
-    private final FootballPlayerStatsService footballPlayerStatsService;
+    private final UserTeamRoleRepository userTeamRoleRepository;
 
     public PlayerDTO addPlayer(PlayerDTO playerDTO, AppTeamEntity appTeam) {
         PlayerEntity entity = playerMapper.toEntity(playerDTO);
@@ -80,27 +74,56 @@ public class PlayerService {
         return players.toString();
     }
 
-    public PlayerDTO editPlayer(Long playerId, PlayerDTO playerDTO) throws NotFoundException {
-        PlayerEntity foundPlayerEntity = playerRepository.findById(playerId)
-                .orElseThrow(() -> new NotFoundException("Hráč s id " + playerId + "nenalezen v db"));
+    public PlayerDTO editPlayer(Long playerId, PlayerDTO playerDTO)
+            throws NotFoundException {
+        PlayerEntity entity = playerRepository.findById(playerId)
+                .orElseThrow(() ->
+                        new NotFoundException("Hráč s id " + playerId + " nenalezen v db")
+                );
+        if (entity.isDeleted()) {
+            throw new NotFoundException("Smazaného hráče nelze upravit");
+        }
         validatePlayer(playerDTO);
-        PlayerEntity entity = playerMapper.toEntity(playerDTO);
-        entity.setId(playerId);
-        entity.setAppTeam(foundPlayerEntity.getAppTeam());
+        entity.setName(playerDTO.getName());
+        entity.setBirthday(playerDTO.getBirthday());
+        entity.setFan(playerDTO.isFan());
+        entity.setActive(playerDTO.isActive());
+        if (playerDTO.getFootballPlayer() == null) {
+            entity.setFootballPlayer(null);
+        } else {
+            entity.setFootballPlayer(
+                    footballPlayerService.getFootballPlayerEntity(
+                            playerDTO.getFootballPlayer().getId()
+                    )
+            );
+        }
         PlayerEntity savedEntity = playerRepository.save(entity);
-        notificationService.addNotification("Upraven " + (playerDTO.isFan() ? "fanoušek" : "hráč"), playerDTO.getName() + ", s narozeninami " + playerDTO.getBirthday());
+        notificationService.addNotification(
+                "Upraven " + (playerDTO.isFan() ? "fanoušek" : "hráč"),
+                playerDTO.getName() + ", s narozeninami " + playerDTO.getBirthday()
+        );
         return playerMapper.toDTO(savedEntity);
     }
 
     @Transactional
     public void deletePlayer(Long playerId) {
-        playerRepository.deleteByPlayersInMatchByPlayerId(playerId);
-        receivedFineRepository.deleteByPlayerId(playerId);
-        goalRepository.deleteByPlayerId(playerId);
-        beerRepository.deleteByPlayerId(playerId);
-        PlayerEntity playerEntity = playerRepository.getReferenceById(playerId);
-        notificationService.addNotification("Smazán " + (playerEntity.isFan() ? "fanoušek" : "hráč"), playerEntity.getName() + ", s narozeninami " + playerEntity.getBirthday());
-        playerRepository.deleteById(playerId);
+        PlayerEntity playerEntity = playerRepository.findById(playerId)
+                .orElseThrow(() ->
+                        new EntityNotFoundException("Hráč s id " + playerId + " nenalezen")
+                );
+        if (playerEntity.isDeleted()) {
+            return;
+        }
+        notificationService.addNotification(
+                "Smazán " + (playerEntity.isFan() ? "fanoušek" : "hráč"),
+                playerEntity.getName() + ", s narozeninami " + playerEntity.getBirthday()
+        );
+        playerEntity.setDeleted(true);
+        playerEntity.setDeletedAt(new Date());
+        playerEntity.setFootballPlayer(null);
+        userTeamRoleRepository.findAllByPlayerId(playerId)
+                .forEach(userTeamRole -> userTeamRole.setPlayer(null));
+        playerRepository.save(playerEntity);
     }
 
     public List<Long> convertPlayerListToPlayerIdList(List<PlayerDTO> players) {

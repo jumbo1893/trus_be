@@ -95,3 +95,9 @@ create index if not exists idx_team_recalc_job_available_at
 
 CREATE UNIQUE INDEX IF NOT EXISTS uk_achievement_code
 ON achievement (code);
+
+ALTER TABLE player
+ADD COLUMN IF NOT EXISTS deleted BOOLEAN NOT NULL DEFAULT FALSE;
+
+ALTER TABLE player
+ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP NULL;

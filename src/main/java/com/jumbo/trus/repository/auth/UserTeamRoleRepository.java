@@ -3,11 +3,14 @@ package com.jumbo.trus.repository.auth;
 import com.jumbo.trus.entity.auth.UserTeamRole;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UserTeamRoleRepository extends JpaRepository<UserTeamRole, Long> {
 
     Optional<UserTeamRole> findByUserIdAndAppTeamId(Long userId, Long appTeamId);
+
+    List<UserTeamRole> findAllByPlayerId(Long playerId);
 
 }
 

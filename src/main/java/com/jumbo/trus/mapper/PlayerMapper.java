@@ -18,7 +18,10 @@ public abstract class PlayerMapper {
             @Mapping(target = "appTeam", ignore = true),
             @Mapping(target = "userTeamRoles", ignore = true),
             @Mapping(target = "playerAchievements", ignore = true),
-            @Mapping(target = "footbarSessions", ignore = true)
+            @Mapping(target = "footbarSessions", ignore = true),
+            @Mapping(target = "deleted", ignore = true),
+            @Mapping(target = "deletedAt", ignore = true)
+
     })
     public abstract PlayerEntity toEntity(PlayerDTO source);
     public abstract PlayerDTO toDTO(PlayerEntity source);

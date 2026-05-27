@@ -39,6 +39,11 @@ public class PlayerEntity {
     @Column(nullable = false)
     private boolean active;
 
+    @Column(nullable = false)
+    private boolean deleted;
+
+    private Date deletedAt;
+
     @ManyToMany(mappedBy = "playerList")
     private List<MatchEntity> matchList;
 
