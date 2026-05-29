@@ -77,10 +77,14 @@ public class HomeService {
 
     private DashboardMatch getNextMatch(AppTeamEntity appTeamEntity) {
         FootballMatchDetail footballMatchDetail = footballMatchService.getNextAndLastFootballMatchDetail(appTeamEntity, true);
+        MatchDTO match = matchService.findMatchByFootballMatchIdOrNull(footballMatchDetail.getFootballMatch().getId(), appTeamEntity.getId());
+        if (match != null && match.getHomeGoalNumber() != null && match.getAwayGoalNumber() != null) {
+            footballMatchDetail.getFootballMatch().setHomeGoalNumber(match.getHomeGoalNumber());
+            footballMatchDetail.getFootballMatch().setAwayGoalNumber(match.getAwayGoalNumber());
+        }
         DashboardMatch dashboardMatch = new DashboardMatch();
         dashboardMatch.setMatch(footballMatchDetail);
         List<TextWithRedirect> matchInfoList = new ArrayList<>();
-        MatchDTO match = matchService.findMatchByFootballMatchIdOrNull(footballMatchDetail.getFootballMatch().getId(), appTeamEntity.getId());
         addTextRedirectToList(matchInfoList, getNumberOfPlayersText(footballMatchDetail, match, true));
         dashboardMatch.setMatchInfoList(matchInfoList);
         return dashboardMatch;
@@ -88,10 +92,14 @@ public class HomeService {
 
     private DashboardMatch getLastMatch(AppTeamEntity appTeamEntity, PlayerDTO player) {
         FootballMatchDetail footballMatchDetail = footballMatchService.getNextAndLastFootballMatchDetail(appTeamEntity, false);
+        MatchDTO match = matchService.findMatchByFootballMatchIdOrNull(footballMatchDetail.getFootballMatch().getId(), appTeamEntity.getId());
+        if (match != null && match.getHomeGoalNumber() != null && match.getAwayGoalNumber() != null) {
+            footballMatchDetail.getFootballMatch().setHomeGoalNumber(match.getHomeGoalNumber());
+            footballMatchDetail.getFootballMatch().setAwayGoalNumber(match.getAwayGoalNumber());
+        }
         DashboardMatch dashboardMatch = new DashboardMatch();
         dashboardMatch.setMatch(footballMatchDetail);
         List<TextWithRedirect> matchInfoList = new ArrayList<>();
-        MatchDTO match = matchService.findMatchByFootballMatchIdOrNull(footballMatchDetail.getFootballMatch().getId(), appTeamEntity.getId());
         addTextRedirectToList(matchInfoList, getNumberOfPlayersText(footballMatchDetail, match, false));
         addTextRedirectToList(matchInfoList, getFinesNumberText(match, appTeamEntity, player));
         for (TextWithRedirect achievementsText : getAccomplishedAchievements(match, footballMatchDetail.getFootballMatch(), appTeamEntity)) {

@@ -35,6 +35,10 @@ public class MatchEntity {
 
     private boolean home;
 
+    private Integer homeGoalNumber;
+
+    private Integer awayGoalNumber;
+
     @OneToMany(mappedBy = "match")
     private List<BeerEntity> beerList;
 

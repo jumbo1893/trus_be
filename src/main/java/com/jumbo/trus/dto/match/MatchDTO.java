@@ -2,6 +2,7 @@ package com.jumbo.trus.dto.match;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.jumbo.trus.dto.football.FootballMatchDTO;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -34,6 +35,13 @@ public class MatchDTO {
     private Date date;
 
     private boolean home;
+
+    @Min(0)
+    private Integer homeGoalNumber;
+
+    @Min(0)
+    private Integer awayGoalNumber;
+
 
     private FootballMatchDTO footballMatch;
 

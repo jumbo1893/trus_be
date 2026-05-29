@@ -58,6 +58,7 @@ public class MatchService {
     private final FootballMatchMapper footballMatchMapper;
     private final FootballMatchService footballMatchService;
     private final NotificationService notificationService;
+    private final MatchResultFineService matchResultFineService;
 
     public void pairAllFootballMatches(AppTeamEntity appTeam) {
         MatchFilter matchFilter = new MatchFilter();
@@ -73,6 +74,7 @@ public class MatchService {
      * @param matchDTO Zápas, který přijde z FE
      * @return Zápas, který byl uložen do DB, s id
      */
+    @Transactional
     public MatchDTO addMatch(MatchDTO matchDTO, AppTeamEntity appTeam) {
         MatchEntity entity = matchMapper.toEntity(matchDTO);
         appTeamSetter(entity, appTeam);
@@ -82,6 +84,8 @@ public class MatchService {
             entity.setFootballMatch(null);
         }
         MatchEntity savedEntity = matchRepository.save(entity);
+        matchResultFineService.rewriteAutomaticFines(savedEntity, appTeam);
+
         MatchHelper matchHelper = new MatchHelper(matchDTO);
         notificationService.addNotification("Přidán nový zápas", matchHelper.getMatchWithOpponentNameAndDate());
         return matchMapper.toDTO(savedEntity);
@@ -154,6 +158,7 @@ public class MatchService {
      * @return nový zápas, který byl uložen do DB
      * @throws NotFoundException zápas nenalezen
      */
+    @Transactional
     public MatchDTO editMatch(Long matchId, MatchDTO matchDTO, AppTeamEntity appTeam) throws NotFoundException {
         if (!matchRepository.existsById(matchId)) {
             throw new NotFoundException("Zápas s id " + matchId + " nenalezen v db");
@@ -166,6 +171,7 @@ public class MatchService {
             entity.setFootballMatch(null);
         }
         MatchEntity savedEntity = matchRepository.save(entity);
+        matchResultFineService.rewriteAutomaticFines(savedEntity, appTeam);
         MatchHelper matchHelper = new MatchHelper(matchDTO);
         notificationService.addNotification("Upraven zápas", matchHelper.getMatchWithOpponentNameAndDate());
         return matchMapper.toDTO(savedEntity);

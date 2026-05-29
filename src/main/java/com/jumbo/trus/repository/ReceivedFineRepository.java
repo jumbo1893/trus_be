@@ -169,5 +169,26 @@ public interface ReceivedFineRepository extends PagingAndSortingRepository<Recei
             @Param("allSeasonId") Long allSeasonId,
             @Param("appTeamId") Long appTeamId
     );
+
+    @Modifying
+    @Query(value = """
+        DELETE FROM received_fine rf
+        USING fine f
+        WHERE rf.fine_id = f.id
+          AND rf.match_id = :matchId
+          AND rf.app_team_id = :appTeamId
+          AND f.name IN (
+              'Prohra o 5 a více (pro hrající)',
+              'Prohra (pro hrající)',
+              'Neúčast při 7. a méně lidech',
+              'Neúčast v zápase (výhra)',
+              'Neúčast v zápase (remíza)',
+              'Neúčast v zápase (prohra)'
+          )
+        """, nativeQuery = true)
+    void deleteAutomaticResultFinesFromMatch(
+            @Param("matchId") Long matchId,
+            @Param("appTeamId") Long appTeamId
+    );
 }
 
