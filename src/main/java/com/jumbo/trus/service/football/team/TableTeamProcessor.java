@@ -43,7 +43,7 @@ public class TableTeamProcessor {
     }
 
     public List<TableTeamDTO> getTableTeamsByTeam(TeamDTO teamDTO) {
-        return tableTeamRepository.findByLeagueIdOrderByPointsDesc(teamDTO.getCurrentLeagueId()).stream().map(tableTeamMapper::toDTO).toList();
+        return tableTeamRepository.findByLeagueIdOrderByRankAsc(teamDTO.getCurrentLeagueId()).stream().map(tableTeamMapper::toDTO).toList();
     }
 
     public TableTeamDTO getTableTeamByTeamAndLeague(Long teamId, Long leagueId) {

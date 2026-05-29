@@ -16,6 +16,7 @@ import com.jumbo.trus.service.auth.AppTeamProvider;
 import com.jumbo.trus.service.football.helper.TeamTableTeam;
 import com.jumbo.trus.service.football.league.LeagueService;
 import com.jumbo.trus.service.football.match.FootballMatchDetailProcessor;
+import com.jumbo.trus.service.football.tablezone.FootballTableZoneEnricher;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,13 +39,16 @@ public class TeamService {
     private final TableTeamProcessor tableTeamProcessor;
     private final LeagueService leagueService;
     private final AppTeamProvider appTeamProvider;
+    private final FootballTableZoneEnricher footballTableZoneEnricher;
 
     public List<TeamDTO> getAllTeams() {
         return teamRepository.findAll().stream().map(teamMapper::toDTO).toList();
     }
 
     public List<TableTeamDTO> getTable(Long teamId) {
-        return teamProcessor.getTableTeamsByTeamId(teamId);
+        List<TableTeamDTO> tableTeams = teamProcessor.getTableTeamsByTeamId(teamId);
+
+        return footballTableZoneEnricher.enrichWithZones(tableTeams);
     }
 
     public List<TeamDTO> getAllTeamsFromCurrentSeason() {

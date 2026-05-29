@@ -14,5 +14,6 @@ public abstract class TableTeamMapper {
 
     @Mapping(target = "teamId", source = "team.id")
     @Mapping(target = "teamName", source = "team.name")
+    @Mapping(target = "tableZone", ignore = true)
     public abstract TableTeamDTO toDTO(TableTeamEntity source);
 }

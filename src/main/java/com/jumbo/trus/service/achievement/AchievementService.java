@@ -1,6 +1,9 @@
 package com.jumbo.trus.service.achievement;
 
-import com.jumbo.trus.dto.achievement.*;
+import com.jumbo.trus.dto.achievement.AchievementDTO;
+import com.jumbo.trus.dto.achievement.AchievementDetail;
+import com.jumbo.trus.dto.achievement.AchievementPlayerDetail;
+import com.jumbo.trus.dto.achievement.PlayerAchievementDTO;
 import com.jumbo.trus.dto.player.PlayerDTO;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.lock.LockManager;
@@ -8,7 +11,6 @@ import com.jumbo.trus.mapper.achievement.AchievementMapper;
 import com.jumbo.trus.mapper.achievement.PlayerAchievementMapper;
 import com.jumbo.trus.repository.achievement.AchievementRepository;
 import com.jumbo.trus.repository.achievement.PlayerAchievementRepository;
-import com.jumbo.trus.service.achievement.helper.AchievementAccomplishedStats;
 import com.jumbo.trus.service.achievement.helper.AchievementType;
 import com.jumbo.trus.service.order.OrderAchievementBySuccessRate;
 import com.jumbo.trus.service.player.PlayerService;
@@ -23,9 +25,8 @@ import java.text.Collator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -40,6 +41,7 @@ public class AchievementService {
     private final AchievementCalculator achievementCalculator;
     private final LockManager lockManager;
     private final AchievementDetailService achievementDetailService;
+    private final AchievementRarityService achievementRarityService;
 
     @Transactional
     public void updateAllPlayerAchievements(AppTeamEntity appTeam, AchievementType achievementType) {
@@ -64,8 +66,6 @@ public class AchievementService {
             }
         }
     }
-        /*achievementCalculator.calculateAllAchievements(playerService.getAll(appTeam.getId()), appTeam, achievementType);
-        log.debug("Vypočteno!");*/
 
 
     public void updatePlayerAchievements(Long playerId, AppTeamEntity appTeam) {
@@ -86,8 +86,6 @@ public class AchievementService {
 
 
     public List<AchievementDetail> getAllDetailedAchievements(long appTeamId) {
-        List<AchievementDetail> achievementDetailList = new ArrayList<>();
-
         List<Long> playerIdList = achievementDetailService.getPlayerIdList(appTeamId);
 
         List<AchievementDTO> achievements = achievementRepository.findAll()
@@ -95,25 +93,22 @@ public class AchievementService {
                 .map(achievementMapper::toDTO)
                 .toList();
 
-        for (AchievementDTO achievement : achievements) {
-            achievementDetailList.add(
-                    achievementDetailService.returnAchievementDetail(
-                            achievement,
-                            playerIdList,
-                            true
-                    )
-            );
-        }
+        achievementRarityService.enrichWithRarity(achievements, appTeamId);
 
-        achievementDetailList.sort(new OrderAchievementBySuccessRate());
-
-        return achievementDetailList;
+        return achievements.stream()
+                .map(achievement -> achievementDetailService.returnAchievementDetail(
+                        achievement,
+                        playerIdList,
+                        true
+                ))
+                .sorted(new OrderAchievementBySuccessRate())
+                .toList();
     }
 
     public AchievementPlayerDetail getAchievementsForPlayer(Long playerId, Long appTeamId) {
-
         Collator czechCollator = Collator.getInstance(Locale.forLanguageTag("cs-CZ"));
         czechCollator.setStrength(Collator.PRIMARY);
+
         List<PlayerAchievementDTO> playerAchievementList = playerAchievementRepository.findAllByPlayerId(playerId)
                 .stream()
                 .map(playerAchievementMapper::toDTO)
@@ -130,7 +125,12 @@ public class AchievementService {
                 })
                 .toList();
 
-        enrichAchievementsWithRarity(playerAchievementList, appTeamId);
+        List<AchievementDTO> achievements = playerAchievementList.stream()
+                .map(PlayerAchievementDTO::getAchievement)
+                .filter(Objects::nonNull)
+                .toList();
+
+        achievementRarityService.enrichWithRarity(achievements, appTeamId);
 
         AchievementPlayerDetail achievementPlayerDetail = new AchievementPlayerDetail();
 
@@ -158,83 +158,5 @@ public class AchievementService {
             return 0F;
         }
         return (float) accomplishedNumber/totalNumber;
-    }
-
-    private AchievementRarity resolveRarity(float successRate) {
-
-        if (successRate <= 0.05F) {
-            return AchievementRarity.LEGENDARY;
-        }
-
-        if (successRate <= 0.15F) {
-            return AchievementRarity.EPIC;
-        }
-
-        if (successRate <= 0.45F) {
-            return AchievementRarity.RARE;
-        }
-
-        return AchievementRarity.COMMON;
-    }
-
-    private void enrichAchievementsWithRarity(
-            List<PlayerAchievementDTO> playerAchievementList,
-            Long appTeamId
-    ) {
-        List<PlayerDTO> teamMembers = playerService.getAll(appTeamId);
-
-        long totalPlayersOnly = teamMembers.stream()
-                .filter(player -> !Boolean.TRUE.equals(player.isFan()))
-                .count();
-
-        long totalPlayersAndFans = teamMembers.size();
-
-        List<Object[]> accomplishedCounts =
-                playerAchievementRepository.countAccomplishedStatsByAchievementForTeam(appTeamId);
-
-        Map<Long, AchievementAccomplishedStats> accomplishedStatsByAchievementId =
-                accomplishedCounts.stream()
-                        .collect(Collectors.toMap(
-                                row -> (Long) row[0],
-                                row -> new AchievementAccomplishedStats(
-                                        ((Number) row[1]).longValue(),
-                                        ((Number) row[2]).longValue()
-                                )
-                        ));
-
-        for (PlayerAchievementDTO playerAchievementDTO : playerAchievementList) {
-            AchievementDTO achievement = playerAchievementDTO.getAchievement();
-
-            if (achievement == null) {
-                continue;
-            }
-
-            Long achievementId = achievement.getId();
-            boolean onlyForPlayers = Boolean.TRUE.equals(achievement.isOnlyForPlayers());
-
-            AchievementAccomplishedStats stats = accomplishedStatsByAchievementId.getOrDefault(
-                    achievementId,
-                    new AchievementAccomplishedStats(0L, 0L)
-            );
-
-            long totalRelevantPeople = onlyForPlayers
-                    ? totalPlayersOnly
-                    : totalPlayersAndFans;
-
-            long accomplishedPeople = onlyForPlayers
-                    ? stats.playersOnly()
-                    : stats.playersAndFans();
-
-            float achievementSuccessRate = totalRelevantPeople == 0
-                    ? 0F
-                    : (float) accomplishedPeople / totalRelevantPeople;
-
-            AchievementRarity rarity = resolveRarity(
-                    achievementSuccessRate
-            );
-
-            achievement.setTeamSuccessRate(achievementSuccessRate);
-            achievement.setRarity(rarity);
-        }
     }
 }

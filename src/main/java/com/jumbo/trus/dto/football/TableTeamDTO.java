@@ -39,6 +39,8 @@ public class TableTeamDTO {
 
     private LeagueDTO league;
 
+    private FootballTableZone tableZone;
+
     public TableTeamDTO(int rank, int matches, int wins, int draws, int losses, int goalsScored, int goalsReceived, String penalty, int points, LeagueDTO league) {
         this.rank = rank;
         this.matches = matches;

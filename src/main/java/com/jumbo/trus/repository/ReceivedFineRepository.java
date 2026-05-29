@@ -1,6 +1,8 @@
 package com.jumbo.trus.repository;
 
 import com.jumbo.trus.dto.receivedfine.IPlayerFineStats;
+import com.jumbo.trus.dto.receivedfine.response.stats.projection.IMatchReceivedFineDetail;
+import com.jumbo.trus.dto.receivedfine.response.stats.projection.IPlayerReceivedFineDetail;
 import com.jumbo.trus.entity.ReceivedFineEntity;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -101,5 +103,71 @@ public interface ReceivedFineRepository extends PagingAndSortingRepository<Recei
             Pageable pageable
     );
 
+    @Query("""
+    SELECT
+        rf.player.id AS playerId,
+        rf.player.name AS playerName,
+        rf.fine.id AS fineId,
+        rf.fine.name AS fineName,
+        rf.fine.amount AS fineAmount,
+        SUM(rf.fineNumber) AS fineCount,
+        SUM(rf.fine.amount * rf.fineNumber) AS totalAmount
+    FROM received_fine rf
+    WHERE rf.appTeam.id = :appTeamId
+      AND rf.match.id = :matchId
+      AND rf.fineNumber > 0
+    GROUP BY
+        rf.player.id,
+        rf.player.name,
+        rf.fine.id,
+        rf.fine.name,
+        rf.fine.amount
+    ORDER BY
+        rf.player.name ASC,
+        rf.fine.name ASC
+    """)
+    List<IMatchReceivedFineDetail> findMatchFineDetail(
+            @Param("matchId") Long matchId,
+            @Param("appTeamId") Long appTeamId
+    );
+
+    @Query("""
+    SELECT
+        rf.match.id AS matchId,
+        rf.match.name AS matchName,
+        rf.match.date AS matchDate,
+        rf.match.season.id AS seasonId,
+        rf.fine.id AS fineId,
+        rf.fine.name AS fineName,
+        rf.fine.amount AS fineAmount,
+        SUM(rf.fineNumber) AS fineCount,
+        SUM(rf.fine.amount * rf.fineNumber) AS totalAmount
+    FROM received_fine rf
+    WHERE rf.appTeam.id = :appTeamId
+      AND rf.player.id = :playerId
+      AND rf.fineNumber > 0
+      AND (
+          :seasonId IS NULL
+          OR :seasonId = :allSeasonId
+          OR rf.match.season.id = :seasonId
+      )
+    GROUP BY
+        rf.match.id,
+        rf.match.name,
+        rf.match.date,
+        rf.match.season.id,
+        rf.fine.id,
+        rf.fine.name,
+        rf.fine.amount
+    ORDER BY
+        rf.match.date DESC,
+        rf.fine.name ASC
+    """)
+    List<IPlayerReceivedFineDetail> findPlayerFineDetail(
+            @Param("playerId") Long playerId,
+            @Param("seasonId") Long seasonId,
+            @Param("allSeasonId") Long allSeasonId,
+            @Param("appTeamId") Long appTeamId
+    );
 }
 

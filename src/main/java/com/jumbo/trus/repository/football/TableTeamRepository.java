@@ -9,5 +9,5 @@ public interface TableTeamRepository extends JpaRepository<TableTeamEntity, Long
 
     TableTeamEntity findByTeamIdAndLeagueId(Long teamId, Long leagueId);
 
-    List<TableTeamEntity> findByLeagueIdOrderByPointsDesc(Long leagueId);
+    List<TableTeamEntity> findByLeagueIdOrderByRankAsc(Long leagueId);
 }

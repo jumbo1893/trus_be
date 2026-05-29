@@ -8,6 +8,8 @@ import com.jumbo.trus.dto.receivedfine.multi.ReceivedFineListDTO;
 import com.jumbo.trus.dto.receivedfine.response.ReceivedFineResponse;
 import com.jumbo.trus.dto.receivedfine.response.get.detailed.ReceivedFineDetailedResponse;
 import com.jumbo.trus.dto.receivedfine.response.get.setup.ReceivedFineSetupResponse;
+import com.jumbo.trus.dto.receivedfine.response.stats.match.ReceivedFinePlayerDetailResponse;
+import com.jumbo.trus.dto.receivedfine.response.stats.player.ReceivedFineMatchDetailResponse;
 import com.jumbo.trus.entity.filter.ReceivedFineFilter;
 import com.jumbo.trus.entity.filter.StatisticsFilter;
 import com.jumbo.trus.service.auth.AppTeamService;
@@ -84,5 +86,29 @@ public class ReceivedFineController {
     @GetMapping("/player/setup")
     public List<ReceivedFineDTO> getListOfReceivedFinesForPlayer(@RequestParam Long playerId, @RequestParam Long matchId) {
         return receivedFineService.getAllForSetup(playerId, matchId, appTeamService.getCurrentAppTeamOrThrow());
+    }
+
+    @RoleRequired("READER")
+    @GetMapping("/statistics/match-detail")
+    public ReceivedFineMatchDetailResponse getMatchStatsDetail(
+            @RequestParam Long matchId
+    ) {
+        return receivedFineService.getMatchStatsDetail(
+                matchId,
+                appTeamService.getCurrentAppTeamOrThrow()
+        );
+    }
+
+    @RoleRequired("READER")
+    @GetMapping("/statistics/player-detail")
+    public ReceivedFinePlayerDetailResponse getPlayerStatsDetail(
+            @RequestParam Long playerId,
+            @RequestParam(required = false) Long seasonId
+    ) {
+        return receivedFineService.getPlayerStatsDetail(
+                playerId,
+                seasonId,
+                appTeamService.getCurrentAppTeamOrThrow()
+        );
     }
 }

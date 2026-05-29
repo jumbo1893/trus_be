@@ -6,6 +6,8 @@ import com.jumbo.trus.dto.receivedfine.multi.ReceivedFineListDTO;
 import com.jumbo.trus.dto.receivedfine.response.ReceivedFineResponse;
 import com.jumbo.trus.dto.receivedfine.response.get.detailed.ReceivedFineDetailedResponse;
 import com.jumbo.trus.dto.receivedfine.response.get.setup.ReceivedFineSetupResponse;
+import com.jumbo.trus.dto.receivedfine.response.stats.match.ReceivedFinePlayerDetailResponse;
+import com.jumbo.trus.dto.receivedfine.response.stats.player.ReceivedFineMatchDetailResponse;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.filter.ReceivedFineFilter;
 import com.jumbo.trus.entity.filter.StatisticsFilter;
@@ -23,6 +25,7 @@ public class ReceivedFineService {
     private final ReceivedFineRepository receivedFineRepository;
     private final ReceivedFineGetter receivedFineGetter;
     private final ReceivedFineUpdater receivedFineUpdater;
+    private final ReceivedFineStatsDetailGetter receivedFineStatsDetailGetter;
 
     public ReceivedFineDTO addFine(ReceivedFineDTO receivedFineDTO, AppTeamEntity appTeam) {
         return receivedFineUpdater.addFine(receivedFineDTO, appTeam);
@@ -79,5 +82,20 @@ public class ReceivedFineService {
     @Transactional
     public void rewriteFinesInDB(Long matchId, List<GoalDTO> goalList, AppTeamEntity appTeam) {
         receivedFineUpdater.rewriteFinesInDB(matchId, goalList, appTeam);
+    }
+
+    public ReceivedFineMatchDetailResponse getMatchStatsDetail(
+            Long matchId,
+            AppTeamEntity appTeam
+    ) {
+        return receivedFineStatsDetailGetter.getMatchDetail(matchId, appTeam);
+    }
+
+    public ReceivedFinePlayerDetailResponse getPlayerStatsDetail(
+            Long playerId,
+            Long seasonId,
+            AppTeamEntity appTeam
+    ) {
+        return receivedFineStatsDetailGetter.getPlayerDetail(playerId, seasonId, appTeam);
     }
 }
