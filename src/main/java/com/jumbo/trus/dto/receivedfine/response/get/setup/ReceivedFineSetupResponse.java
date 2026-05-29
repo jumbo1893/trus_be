@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.jumbo.trus.dto.SeasonDTO;
 import com.jumbo.trus.dto.match.MatchDTO;
 import com.jumbo.trus.dto.player.PlayerDTO;
+import com.jumbo.trus.dto.receivedfine.response.stats.player.PlayerWithFinesDTO;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -31,4 +32,22 @@ public class ReceivedFineSetupResponse {
     @NotNull
     private List<MatchDTO> matchList;
 
+
+    @NotNull
+    private List<PlayerWithFinesDTO> playerFineSummaries;
+
+    public ReceivedFineSetupResponse(
+            MatchDTO match,
+            @NotNull SeasonDTO season,
+            @NotNull List<PlayerDTO> playersInMatch,
+            @NotNull List<PlayerDTO> otherPlayers,
+            @NotNull List<MatchDTO> matchList
+    ) {
+        this.match = match;
+        this.season = season;
+        this.playersInMatch = playersInMatch;
+        this.otherPlayers = otherPlayers;
+        this.matchList = matchList;
+        this.playerFineSummaries = List.of();
+    }
 }

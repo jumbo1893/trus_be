@@ -48,7 +48,23 @@ public class ReceivedFineService {
     }
 
     public ReceivedFineSetupResponse setupPlayers(ReceivedFineFilter receivedFineFilter) {
-        return receivedFineGetter.setupPlayers(receivedFineFilter);
+        ReceivedFineSetupResponse setup =
+                receivedFineGetter.setupPlayers(receivedFineFilter);
+
+        if (setup.getMatch() == null) {
+            setup.setPlayerFineSummaries(List.of());
+            return setup;
+        }
+
+        ReceivedFineMatchDetailResponse matchDetail =
+                receivedFineStatsDetailGetter.getMatchDetail(
+                        setup.getMatch().getId(),
+                        receivedFineFilter.getAppTeam()
+                );
+
+        setup.setPlayerFineSummaries(matchDetail.getPlayers());
+
+        return setup;
     }
 
     public List<ReceivedFineDTO> getAllForSetup(Long playerId, Long matchId, AppTeamEntity appTeam) {
