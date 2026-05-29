@@ -61,4 +61,13 @@ public interface PlayerRepository extends JpaRepository<PlayerEntity, Long> {
             """, nativeQuery = true)
     List<PlayerEntity> getBirthdayPlayers(@Param("appTeamId") Long appTeamId);
 
+    @Query("""
+    SELECT p
+    FROM PlayerEntity p
+    WHERE p.appTeam.id = :appTeamId
+      AND p.deleted = false
+    ORDER BY p.name ASC
+""")
+    List<PlayerEntity> findAllNotDeletedByAppTeam(@Param("appTeamId") Long appTeamId);
+
 }

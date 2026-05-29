@@ -15,7 +15,7 @@ import com.jumbo.trus.mapper.GoalMapper;
 import com.jumbo.trus.mapper.GoalSetupMapper;
 import com.jumbo.trus.repository.GoalRepository;
 import com.jumbo.trus.repository.specification.GoalSpecification;
-import com.jumbo.trus.service.helper.DetailedResponseHelper;
+import com.jumbo.trus.service.goal.GoalDetailedStatsService;
 import com.jumbo.trus.service.match.MatchService;
 import com.jumbo.trus.service.notification.NotificationService;
 import com.jumbo.trus.service.player.PlayerService;
@@ -45,7 +45,7 @@ public class GoalService {
     private final PlayerService playerService;
     private final ReceivedFineService receivedFineService;
     private final NotificationService notificationService;
-    private final DetailedResponseHelper detailedResponseHelper;
+    private final GoalDetailedStatsService goalDetailedStatsService;
 
     /**
      * metoda napamuje hráče a zápas z přepravky ke gólu a uloží ho do DB
@@ -159,10 +159,9 @@ public class GoalService {
      *               detailed se nepoužívá
      * @return Vrací rozšířený seznam vstřelenách gólů z db dle filtru
      */
-   public GoalDetailedResponse getAllDetailed(StatisticsFilter filter) {
-       return new GoalDetailedResponse(detailedResponseHelper.getAllDetailed(filter, DetailedResponseHelper.DetailedType.GOAL));
+    public GoalDetailedResponse getAllDetailed(StatisticsFilter filter) {
+        return goalDetailedStatsService.getAllDetailed(filter);
     }
-
 
     /**
      * Metoda vrátí setup gólů, který se použije v objektu. Jedná se o počet vstřelených gólů a asistencí v daném zápase pro dané hráče dle filtru
