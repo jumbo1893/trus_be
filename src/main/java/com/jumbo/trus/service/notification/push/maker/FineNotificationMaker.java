@@ -9,11 +9,13 @@ import com.jumbo.trus.repository.notification.push.DeviceTokenRepository;
 import com.jumbo.trus.service.auth.UserService;
 import com.jumbo.trus.service.football.helper.FootballMatchFormatter;
 import com.jumbo.trus.service.notification.push.PushService;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -37,11 +39,26 @@ public class FineNotificationMaker {
 
         for (DeviceToken deviceToken : deviceTokenList) {
             try {
-                pushService.sendPush(deviceToken, getTitle(diffFine), getBody(diffFine), NotificationType.FINE);
+                Map<String, String> data = getStringStringMap();
+
+                pushService.sendPush(
+                        deviceToken,
+                        getTitle(diffFine),
+                        getBody(diffFine),
+                        NotificationType.FINE,
+                        data);
             } catch (Exception e) {
                 log.error("error:", e);
             }
         }
+    }
+
+    private static @NotNull Map<String, String> getStringStringMap() {
+        Map<String, String> data = new java.util.HashMap<>();
+        data.put("screenId", "fine-match-screen");
+        data.put("notificationType", NotificationType.FINE.name());
+        data.put("navigateText", "Radši se na to mrknu");
+        return data;
     }
 
     private ReceivedFineEntity calculateDiff(ReceivedFineEntity receivedFine, ReceivedFineDTO oldFine) {
@@ -75,8 +92,7 @@ public class FineNotificationMaker {
         body.append(Math.abs(fine.getFineNumber())).append("x ").append(fine.getFine().getName()).append(" v hodnotě ").append(fine.getFine().getAmount()).append(" Kč");
         if (fine.getMatch().getFootballMatch() != null) {
             body.append(" v zápase ").append(FootballMatchFormatter.toStringBasic(footballMatchMapper.toDTO(fine.getMatch().getFootballMatch()))).append(" uživatelem ").append(user);
-        }
-        else {
+        } else {
             body.append(" uživatelem ").append(user);
         }
         return body.toString();

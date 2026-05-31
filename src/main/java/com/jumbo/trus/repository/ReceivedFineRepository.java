@@ -186,7 +186,7 @@ public interface ReceivedFineRepository extends PagingAndSortingRepository<Recei
               'Neúčast v zápase (prohra)'
           )
         """, nativeQuery = true)
-    void deleteAutomaticResultFinesFromMatch(
+    void  deleteAutomaticResultFinesFromMatch(
             @Param("matchId") Long matchId,
             @Param("appTeamId") Long appTeamId
     );

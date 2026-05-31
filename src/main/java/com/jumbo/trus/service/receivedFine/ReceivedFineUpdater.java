@@ -6,17 +6,19 @@ import com.jumbo.trus.dto.goal.GoalDTO;
 import com.jumbo.trus.dto.receivedfine.ReceivedFineDTO;
 import com.jumbo.trus.dto.receivedfine.multi.ReceivedFineListDTO;
 import com.jumbo.trus.dto.receivedfine.response.ReceivedFineResponse;
+import com.jumbo.trus.entity.MatchEntity;
 import com.jumbo.trus.entity.ReceivedFineEntity;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.filter.ReceivedFineFilter;
 import com.jumbo.trus.mapper.ReceivedFineMapper;
+import com.jumbo.trus.repository.MatchRepository;
 import com.jumbo.trus.repository.ReceivedFineRepository;
 import com.jumbo.trus.repository.specification.ReceivedFineSpecification;
 import com.jumbo.trus.service.fine.FineService;
-import com.jumbo.trus.service.match.MatchService;
 import com.jumbo.trus.service.notification.NotificationService;
 import com.jumbo.trus.service.notification.push.maker.FineNotificationMaker;
 import com.jumbo.trus.service.player.PlayerService;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,11 +35,11 @@ public class ReceivedFineUpdater {
 
     private final ReceivedFineRepository receivedFineRepository;
     private final ReceivedFineMapper receivedFineMapper;
-    private final MatchService matchService;
     private final PlayerService playerService;
     private final FineService fineService;
     private final NotificationService notificationService;
     private final FineNotificationMaker fineNotificationMaker;
+    private final MatchRepository matchRepository;
 
     public ReceivedFineDTO addFine(ReceivedFineDTO receivedFineDTO, AppTeamEntity appTeam) {
         return receivedFineMapper.toDTO(saveFineToRepository(receivedFineDTO, null, appTeam));
@@ -210,7 +212,7 @@ public class ReceivedFineUpdater {
     }
 
     private ReceivedFineResponse initializeReceivedFineResponse(Long matchId) {
-        return new ReceivedFineResponse(matchService.getMatch(matchId).getName());
+        return new ReceivedFineResponse(getMatchEntity(matchId).getName());
     }
 
     private ReceivedFineEntity saveFineToRepository(ReceivedFineDTO receivedFineDTO, ReceivedFineDTO oldFine, AppTeamEntity appTeam) {
@@ -223,9 +225,13 @@ public class ReceivedFineUpdater {
     }
 
     private void mapPlayerMatchAndFine(ReceivedFineEntity receivedFine, ReceivedFineDTO receivedFineDTO) {
-        receivedFine.setMatch(matchService.getMatchEntity(receivedFineDTO.getMatchId()));
+        receivedFine.setMatch(getMatchEntity(receivedFineDTO.getMatchId()));
         receivedFine.setPlayer(playerService.getPlayerEntity(receivedFineDTO.getPlayerId()));
         receivedFine.setFine(fineService.getFineEntity(receivedFineDTO.getFine().getId()));
     }
 
+    private MatchEntity getMatchEntity(long matchId) {
+        return matchRepository.findById(matchId)
+                .orElseThrow(() -> new EntityNotFoundException(String.valueOf(matchId)));
+    }
 }

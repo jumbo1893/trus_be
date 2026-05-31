@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -25,7 +26,18 @@ public class PushService {
     }
 
     public void sendPush(DeviceToken deviceToken, String title, String body, NotificationType type) throws Exception {
-        if (enabledPushNotificationService.isNotificationEnabled(deviceToken.getUser(), type) && fcmService.sendPush(deviceToken, title, body)) {
+        sendPush(deviceToken, title, body, type, Map.of());
+    }
+
+    public void sendPush(
+            DeviceToken deviceToken,
+            String title,
+            String body,
+            NotificationType type,
+            Map<String, String> data
+    ) throws Exception {
+        if (enabledPushNotificationService.isNotificationEnabled(deviceToken.getUser(), type)
+                && fcmService.sendPush(deviceToken, title, body, data)) {
             saveSentPushToRepository(title, body, deviceToken);
         }
     }
@@ -38,10 +50,6 @@ public class PushService {
                 new Date(),
                 "SENT");
         sentPushNotificationRepository.save(sentPushNotification);
-    }
-
-    public void initAllTokenUsers() {
-        deviceTokenCollector.initAllTokensForUsers();
     }
 
     public void sendTestPushToCurrentDevice(DeviceTokenDTO deviceTokenDTO) throws Exception {

@@ -11,6 +11,7 @@ import com.jumbo.trus.mapper.football.FootballMatchMapper;
 import com.jumbo.trus.repository.notification.push.NotificationFootballMatchRepository;
 import com.jumbo.trus.service.football.helper.FootballMatchFormatter;
 import com.jumbo.trus.service.notification.push.PushService;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -41,7 +42,8 @@ public class MatchNotificationMaker {
             if (notificationMatchType != null) {
                 for (DeviceToken token : entry.getValue()) {
                     try {
-                        sendUpcomingMatchNotify(token, match, notificationMatchType);
+                        Map<String, String> data = getStringStringMap(match.getId());
+                        sendUpcomingMatchNotify(token, match, notificationMatchType, data);
                     } catch (Exception e) {
                         log.error("error sending push to tokenId {}", token.getId(), e);
                     }
@@ -50,6 +52,14 @@ public class MatchNotificationMaker {
                 createAndSaveNotificationFootballMatch(match, notificationMatchType);
             }
         }
+    }
+
+    private static @NotNull Map<String, String> getStringStringMap(Long footballMatchId) {
+        Map<String, String> data = new java.util.HashMap<>();
+        data.put("screenId", "match-detail-screen");
+        data.put("navigateText", "Zobraz detail");
+        data.put("footballMatchId", footballMatchId.toString());
+        return data;
     }
 
     private NotificationMatchType findMatchNotificationToSend(FootballMatchEntity footballMatchEntity) {
@@ -81,10 +91,10 @@ public class MatchNotificationMaker {
                 .noneMatch(n -> n.getType() == notificationMatchType && n.isSent());
     }
 
-    private void sendUpcomingMatchNotify(DeviceToken deviceToken, FootballMatchEntity footballMatch, NotificationMatchType notificationMatchType) throws Exception {
+    private void sendUpcomingMatchNotify(DeviceToken deviceToken, FootballMatchEntity footballMatch, NotificationMatchType notificationMatchType,  Map<String, String> data) throws Exception {
         String title = getPushTitle(notificationMatchType);
         String body = getPushBody(notificationMatchType, footballMatchMapper.toDTO(footballMatch));
-        pushService.sendPush(deviceToken, title, body, convertMatchTypeToNotificationType(notificationMatchType));
+        pushService.sendPush(deviceToken, title, body, convertMatchTypeToNotificationType(notificationMatchType), data);
     }
 
     private String getPushTitle(NotificationMatchType notificationMatchType) {

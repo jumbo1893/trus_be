@@ -20,8 +20,20 @@ public class FcmService {
     private final ObjectMapper objectMapper;
 
     public boolean sendPush(DeviceToken deviceToken, String title, String body) {
+        return sendPush(deviceToken, title, body, Map.of());
+    }
+
+    public boolean sendPush(DeviceToken deviceToken, String title, String body, Map<String, String> data) {
         try {
             String accessToken = tokenService.getAccessToken();
+
+            Map<String, String> finalData = new java.util.HashMap<>();
+            finalData.put("title", title);
+            finalData.put("body", body);
+
+            if (data != null) {
+                finalData.putAll(data);
+            }
 
             Map<String, Object> message = Map.of(
                     "message", Map.of(
@@ -30,10 +42,7 @@ public class FcmService {
                                     "title", title,
                                     "body", body
                             ),
-                            "data", Map.of(
-                                    "title", title,
-                                    "body", body
-                            ),
+                            "data", finalData,
                             "apns", Map.of(
                                     "headers", Map.of(
                                             "apns-priority", "10"

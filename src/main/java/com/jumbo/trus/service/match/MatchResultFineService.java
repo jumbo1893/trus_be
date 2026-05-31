@@ -1,20 +1,28 @@
 package com.jumbo.trus.service.match;
 
+import com.jumbo.trus.dto.receivedfine.ReceivedFineDTO;
+import com.jumbo.trus.dto.receivedfine.multi.ReceivedFineListDTO;
 import com.jumbo.trus.entity.FineEntity;
 import com.jumbo.trus.entity.MatchEntity;
 import com.jumbo.trus.entity.PlayerEntity;
-import com.jumbo.trus.entity.ReceivedFineEntity;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
+import com.jumbo.trus.mapper.FineMapper;
+import com.jumbo.trus.mapper.PlayerMapper;
 import com.jumbo.trus.repository.FineRepository;
 import com.jumbo.trus.repository.PlayerRepository;
 import com.jumbo.trus.repository.ReceivedFineRepository;
+import com.jumbo.trus.service.player.PlayerService;
+import com.jumbo.trus.service.receivedFine.ReceivedFineUpdater;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MatchResultFineService {
@@ -22,6 +30,10 @@ public class MatchResultFineService {
     private final ReceivedFineRepository receivedFineRepository;
     private final FineRepository fineRepository;
     private final PlayerRepository playerRepository;
+    private final ReceivedFineUpdater receivedFineService;
+    private final PlayerService playerService;
+    private final PlayerMapper playerMapper;
+    private final FineMapper fineMapper;
 
     @Transactional
     public void rewriteAutomaticFines(MatchEntity match, AppTeamEntity appTeam) {
@@ -83,27 +95,24 @@ public class MatchResultFineService {
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Nenalezena automatická pokuta: " + fineName
                 ));
-
-        List<ReceivedFineEntity> fines = players.stream()
-                .map(player -> createReceivedFine(match, player, fine, appTeam))
-                .toList();
-
-        receivedFineRepository.saveAll(fines);
+       receivedFineService.addMultipleFines(createReceivedFineForPlayer(match, players, fine), appTeam);
     }
 
-    private ReceivedFineEntity createReceivedFine(
+    private ReceivedFineListDTO createReceivedFineForPlayer(
             MatchEntity match,
-            PlayerEntity player,
-            FineEntity fine,
-            AppTeamEntity appTeam
+            List<PlayerEntity> players,
+            FineEntity fine
     ) {
-        ReceivedFineEntity entity = new ReceivedFineEntity();
-        entity.setMatch(match);
-        entity.setPlayer(player);
-        entity.setFine(fine);
-        entity.setFineNumber(1);
-        entity.setAppTeam(appTeam);
-        return entity;
+        ReceivedFineListDTO receivedFineListDTO = new ReceivedFineListDTO();
+        receivedFineListDTO.setMatchId(match.getId());
+        receivedFineListDTO.setPlayerIdList(playerService.convertPlayerListToPlayerIdList(players.stream().map(playerMapper::toDTO).toList()));
+        List<ReceivedFineDTO> receivedFineDTOS = new ArrayList<>();
+        ReceivedFineDTO receivedFineDTO = new ReceivedFineDTO();
+        receivedFineDTO.setFine(fineMapper.toDTO(fine));
+        receivedFineDTO.setFineNumber(1);
+        receivedFineDTOS.add(receivedFineDTO);
+        receivedFineListDTO.setFineList(receivedFineDTOS);
+      return receivedFineListDTO;
     }
 
     private void deleteExistingAutomaticResultFines(Long matchId, Long appTeamId) {
