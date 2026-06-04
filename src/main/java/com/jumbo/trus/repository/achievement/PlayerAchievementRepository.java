@@ -1,5 +1,6 @@
 package com.jumbo.trus.repository.achievement;
 
+import com.jumbo.trus.dto.player.stats.projection.IPlayerAchievementCountProjection;
 import com.jumbo.trus.dto.achievement.IPlayerAchievementStats;
 import com.jumbo.trus.entity.PlayerEntity;
 import com.jumbo.trus.entity.achievement.PlayerAchievementEntity;
@@ -67,6 +68,16 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
 
 
     List<PlayerAchievementEntity> findAllByPlayerId(Long playerId);
+
+    @Query("""
+        SELECT
+            COUNT(pa) AS totalAchievements,
+            COALESCE(SUM(CASE WHEN pa.accomplished = true THEN 1 ELSE 0 END), 0) AS accomplishedAchievements
+        FROM PlayerAchievementEntity pa
+        WHERE pa.player.id = :playerId
+    """)
+    IPlayerAchievementCountProjection countStatsByPlayerId(@Param("playerId") Long playerId);
+
 
     @Query("SELECT CASE WHEN COUNT(i) > 0 THEN true ELSE false END FROM PlayerAchievementEntity i WHERE i.player.id = :playerId AND i.achievement.id = :achievementId")
     boolean existsByPlayerAndAchievement(@Param("playerId") long playerId, @Param("achievementId") long achievementId);

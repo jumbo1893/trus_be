@@ -1,26 +1,26 @@
 package com.jumbo.trus.service.player;
 
-import com.jumbo.trus.dto.achievement.PlayerAchievementDTO;
-import com.jumbo.trus.dto.beer.response.get.BeerDetailedResponse;
 import com.jumbo.trus.dto.football.FootballPlayerDTO;
 import com.jumbo.trus.dto.football.stats.FootballAllIndividualStats;
-import com.jumbo.trus.dto.goal.response.get.GoalDetailedResponse;
 import com.jumbo.trus.dto.helper.StringAndString;
 import com.jumbo.trus.dto.helper.TextWithRedirect;
+import com.jumbo.trus.dto.player.PlayerDTO;
 import com.jumbo.trus.dto.player.PlayerSetup;
 import com.jumbo.trus.dto.player.stats.*;
-import com.jumbo.trus.dto.receivedfine.response.get.detailed.ReceivedFineDetailedResponse;
+import com.jumbo.trus.dto.player.stats.projection.IPlayerAchievementCountProjection;
+import com.jumbo.trus.dto.player.stats.projection.IPlayerBeerCountProjection;
+import com.jumbo.trus.dto.player.stats.projection.IPlayerGoalCountProjection;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.filter.StatisticsFilter;
-import com.jumbo.trus.mapper.achievement.PlayerAchievementMapper;
+import com.jumbo.trus.repository.BeerRepository;
+import com.jumbo.trus.repository.GoalRepository;
+import com.jumbo.trus.repository.ReceivedFineRepository;
 import com.jumbo.trus.repository.achievement.PlayerAchievementRepository;
 import com.jumbo.trus.service.SeasonService;
 import com.jumbo.trus.service.activity.footbar.FootbarService;
 import com.jumbo.trus.service.football.player.FootballPlayerService;
 import com.jumbo.trus.service.football.stats.FootballPlayerFact;
 import com.jumbo.trus.service.football.stats.FootballPlayerStatsService;
-import com.jumbo.trus.service.helper.DetailedResponseHelper;
-import com.jumbo.trus.service.receivedFine.ReceivedFineGetter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -33,10 +33,10 @@ import java.util.List;
 @Slf4j
 public class PlayerStatsFacade {
 
-    private final PlayerAchievementMapper playerAchievementMapper;
     private final PlayerAchievementRepository playerAchievementRepository;
-    private final ReceivedFineGetter receivedFineService;
-    private final DetailedResponseHelper detailedResponseHelper;
+    private final BeerRepository beerRepository;
+    private final GoalRepository goalRepository;
+    private final ReceivedFineRepository receivedFineRepository;
     private final SeasonService seasonService;
     private final FootballPlayerService footballPlayerService;
     private final FootballPlayerStatsService footballPlayerStatsService;
@@ -68,8 +68,9 @@ public class PlayerStatsFacade {
         List<TextWithRedirect> playerStats = new ArrayList<>();
         List<List<TextWithRedirect>> pairedPlayerStats = new ArrayList<>();
         if (playerId != null) {
-            playerSetup.setPlayer(playerService.getPlayer(playerId));
-            FootballPlayerDTO footballPlayerDTO = playerSetup.getPlayer().getFootballPlayer();
+            PlayerDTO playerDTO = playerService.getPlayer(playerId);
+            playerSetup.setPlayer(playerDTO);
+            FootballPlayerDTO footballPlayerDTO = playerDTO.getFootballPlayer();
             if (footballPlayerDTO != null) {
                 playerSetup.setPrimaryFootballPlayer(footballPlayerDTO);
                 FootballAllIndividualStats stats = footballPlayerStatsService.getPlayerStatsForPlayer(footballPlayerDTO.getId(), appTeam);
@@ -83,7 +84,7 @@ public class PlayerStatsFacade {
             PlayerStats statsForAllSeason = setupPlayerStats(playerId, appTeam, false);
 
             List<TextWithRedirect> beerPairedStats = new ArrayList<>();
-            boolean isPlayer = !playerService.getPlayer(playerId).isFan();
+            boolean isPlayer = !playerDTO.isFan();
             beerPairedStats.add(new TextWithRedirect(new StringAndString("Piva v sezoně:",
                     statsForCurrentSeason.getPlayerBeerCount().getTotalBeers() + " piv / " + statsForCurrentSeason.getPlayerBeerCount().getTotalLiquors() + " panáků")));
             beerPairedStats.add(new TextWithRedirect(new StringAndString("Piva celkem:",
@@ -123,6 +124,7 @@ public class PlayerStatsFacade {
     private StatisticsFilter getStatisticFilter(Long playerId, AppTeamEntity appTeam, boolean currentSeason) {
         StatisticsFilter statisticsFilter = new StatisticsFilter();
         statisticsFilter.setPlayerId(playerId);
+        statisticsFilter.setAppTeam(appTeam);
         statisticsFilter.setMatchStatsOrPlayerStats(false);
         if (currentSeason) {
             statisticsFilter.setSeasonId(seasonService.getCurrentSeason(true, appTeam).getId());
@@ -134,37 +136,54 @@ public class PlayerStatsFacade {
     }
 
     private PlayerBeerCount getPlayerBeerCount(StatisticsFilter statisticsFilter) {
-        BeerDetailedResponse beerDetailedResponse = new BeerDetailedResponse(detailedResponseHelper.getAllDetailed(statisticsFilter, DetailedResponseHelper.DetailedType.BEER));
-        return new PlayerBeerCount(beerDetailedResponse.getTotalBeers(), beerDetailedResponse.getTotalLiquors());
+        IPlayerBeerCountProjection count = isAllSeason(statisticsFilter)
+                ? beerRepository.sumForPlayerAndAppTeam(statisticsFilter.getPlayerId(), statisticsFilter.getAppTeam().getId())
+                : beerRepository.sumForPlayerAndAppTeamAndSeason(statisticsFilter.getPlayerId(), statisticsFilter.getAppTeam().getId(), statisticsFilter.getSeasonId());
+
+        return count == null
+                ? new PlayerBeerCount(0, 0)
+                : new PlayerBeerCount(toInt(count.getTotalBeers()), toInt(count.getTotalLiquors()));
     }
 
     private PlayerFineCount getPlayerFineCount(StatisticsFilter statisticsFilter) {
-        ReceivedFineDetailedResponse receivedFineDetailedResponse = receivedFineService.getAllDetailed(statisticsFilter);
-        return new PlayerFineCount(receivedFineDetailedResponse.getFinesAmount());
+        Long totalFines = isAllSeason(statisticsFilter)
+                ? receivedFineRepository.sumFineAmountForPlayerAndAppTeam(statisticsFilter.getPlayerId(), statisticsFilter.getAppTeam().getId())
+                : receivedFineRepository.sumFineAmountForPlayerAndAppTeamAndSeason(statisticsFilter.getPlayerId(), statisticsFilter.getAppTeam().getId(), statisticsFilter.getSeasonId());
+
+        return new PlayerFineCount(toInt(totalFines));
     }
 
     private PlayerGoalCount getPlayerGoalCount(StatisticsFilter statisticsFilter) {
-        GoalDetailedResponse goalDetailedResponse = new GoalDetailedResponse(detailedResponseHelper.getAllDetailed(statisticsFilter, DetailedResponseHelper.DetailedType.GOAL));
-        return new PlayerGoalCount(goalDetailedResponse.getTotalGoals(), goalDetailedResponse.getTotalAssists());
+        IPlayerGoalCountProjection count = isAllSeason(statisticsFilter)
+                ? goalRepository.sumForPlayerAndAppTeam(statisticsFilter.getPlayerId(), statisticsFilter.getAppTeam().getId())
+                : goalRepository.sumForPlayerAndAppTeamAndSeason(statisticsFilter.getPlayerId(), statisticsFilter.getAppTeam().getId(), statisticsFilter.getSeasonId());
+
+        return count == null
+                ? new PlayerGoalCount(0, 0)
+                : new PlayerGoalCount(toInt(count.getTotalGoals()), toInt(count.getTotalAssists()));
     }
 
     private PlayerFootbarCount getPlayerFootbarCount(StatisticsFilter statisticsFilter) {
-        return new PlayerFootbarCount(footbarService.getTotalDistanceForPlayerAndSeason(statisticsFilter.getPlayerId(), statisticsFilter.getSeasonId()));
+        return new PlayerFootbarCount(footbarService.getTotalDistanceForPlayerAndSeason(
+                statisticsFilter.getPlayerId(),
+                statisticsFilter.getSeasonId(),
+                statisticsFilter.getAppTeam().getId()
+        ));
     }
 
     public PlayerAchievementCount getNumberOfAchievementsForPlayer(Long playerId) {
-        List<PlayerAchievementDTO> list = playerAchievementRepository
-                .findAllByPlayerId(playerId)
-                .stream()
-                .map(playerAchievementMapper::toDTO)
-                .toList();
+        IPlayerAchievementCountProjection count = playerAchievementRepository.countStatsByPlayerId(playerId);
+        return count == null
+                ? new PlayerAchievementCount(0, 0)
+                : new PlayerAchievementCount(toInt(count.getTotalAchievements()), toInt(count.getAccomplishedAchievements()));
+    }
 
-        int total = list.size();
-        int accomplished = (int) list.stream()
-                .filter(PlayerAchievementDTO::getAccomplished)
-                .count();
+    private boolean isAllSeason(StatisticsFilter statisticsFilter) {
+        return statisticsFilter.getSeasonId() == com.jumbo.trus.config.Config.ALL_SEASON_ID;
+    }
 
-        return new PlayerAchievementCount(total, accomplished);
+    private int toInt(Number number) {
+        return number == null ? 0 : number.intValue();
     }
 
     private StringAndString returnStringForGoalsAndMatchesFromLeague(FootballAllIndividualStats stats) {

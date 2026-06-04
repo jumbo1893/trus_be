@@ -2,6 +2,7 @@ package com.jumbo.trus.repository;
 
 import com.jumbo.trus.dto.beer.IPlayerDrinkAverageStats;
 import com.jumbo.trus.dto.beer.IPlayerDrinkStats;
+import com.jumbo.trus.dto.player.stats.projection.IPlayerBeerCountProjection;
 import com.jumbo.trus.entity.BeerEntity;
 import com.jumbo.trus.service.beer.helper.AverageBeer;
 import org.springframework.data.domain.Pageable;
@@ -522,5 +523,34 @@ public interface BeerRepository extends PagingAndSortingRepository<BeerEntity, L
             @Param("seasonId") Long seasonId,
             Pageable pageable
     );
+
+    @Query("""
+        SELECT
+            COALESCE(SUM(b.beerNumber), 0) AS totalBeers,
+            COALESCE(SUM(b.liquorNumber), 0) AS totalLiquors
+        FROM beer b
+        WHERE b.appTeam.id = :appTeamId
+          AND b.player.id = :playerId
+    """)
+    IPlayerBeerCountProjection sumForPlayerAndAppTeam(
+            @Param("playerId") Long playerId,
+            @Param("appTeamId") Long appTeamId
+    );
+
+    @Query("""
+        SELECT
+            COALESCE(SUM(b.beerNumber), 0) AS totalBeers,
+            COALESCE(SUM(b.liquorNumber), 0) AS totalLiquors
+        FROM beer b
+        WHERE b.appTeam.id = :appTeamId
+          AND b.player.id = :playerId
+          AND b.match.season.id = :seasonId
+    """)
+    IPlayerBeerCountProjection sumForPlayerAndAppTeamAndSeason(
+            @Param("playerId") Long playerId,
+            @Param("appTeamId") Long appTeamId,
+            @Param("seasonId") Long seasonId
+    );
+
 }
 

@@ -100,7 +100,7 @@ public class FootbarService {
                         seasonService.getSeason(seasonId), matchDTOList, footbarAccountSessions);
     }
 
-    public double getTotalDistanceForPlayerAndSeason(long playerId, long seasonId) {
-        return footbarSessionGetter.getTotalDistanceForPlayerAndSeason(playerId, seasonId);
+    public double getTotalDistanceForPlayerAndSeason(long playerId, long seasonId, long appTeamId) {
+        return footbarSessionGetter.getTotalDistanceForPlayerAndSeason(playerId, seasonId, appTeamId);
     }
 }

@@ -123,8 +123,11 @@ public class FootbarSessionGetter {
         return player;
     }
 
-    public double getTotalDistanceForPlayerAndSeason(long playerId, long seasonId) {
-        return footbarSessionRepository.findDistanceByPlayerIdAndSeasonIdAndAppTeam(seasonId, playerId);
+    public double getTotalDistanceForPlayerAndSeason(long playerId, long seasonId, long appTeamId) {
+        if (seasonId == ALL_SEASON_ID) {
+            return footbarSessionRepository.findDistanceByPlayerIdAndAppTeam(playerId, appTeamId);
+        }
+        return footbarSessionRepository.findDistanceByPlayerIdAndSeasonIdAndAppTeam(seasonId, playerId, appTeamId);
     }
 
     public List<IPlayerRunningStats> getListOfPlayersOrderByAverageTotalDistance(long seasonId, long appTeamId, int count) {

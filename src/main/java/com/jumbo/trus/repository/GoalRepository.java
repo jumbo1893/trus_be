@@ -1,6 +1,7 @@
 package com.jumbo.trus.repository;
 
 import com.jumbo.trus.dto.goal.IPlayerGoalStats;
+import com.jumbo.trus.dto.player.stats.projection.IPlayerGoalCountProjection;
 import com.jumbo.trus.dto.goal.projection.IGoalAttendanceDetail;
 import com.jumbo.trus.entity.GoalEntity;
 import org.springframework.data.domain.Pageable;
@@ -153,6 +154,35 @@ public interface GoalRepository extends PagingAndSortingRepository<GoalEntity, L
             @Param("playerId") Long playerId,
             @Param("matchId") Long matchId,
             @Param("stringFilter") String stringFilter
+    );
+
+
+    @Query("""
+        SELECT
+            COALESCE(SUM(g.goalNumber), 0) AS totalGoals,
+            COALESCE(SUM(g.assistNumber), 0) AS totalAssists
+        FROM goal g
+        WHERE g.appTeam.id = :appTeamId
+          AND g.player.id = :playerId
+    """)
+    IPlayerGoalCountProjection sumForPlayerAndAppTeam(
+            @Param("playerId") Long playerId,
+            @Param("appTeamId") Long appTeamId
+    );
+
+    @Query("""
+        SELECT
+            COALESCE(SUM(g.goalNumber), 0) AS totalGoals,
+            COALESCE(SUM(g.assistNumber), 0) AS totalAssists
+        FROM goal g
+        WHERE g.appTeam.id = :appTeamId
+          AND g.player.id = :playerId
+          AND g.match.season.id = :seasonId
+    """)
+    IPlayerGoalCountProjection sumForPlayerAndAppTeamAndSeason(
+            @Param("playerId") Long playerId,
+            @Param("appTeamId") Long appTeamId,
+            @Param("seasonId") Long seasonId
     );
 
 }

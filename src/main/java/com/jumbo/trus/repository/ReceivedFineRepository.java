@@ -190,5 +190,30 @@ public interface ReceivedFineRepository extends PagingAndSortingRepository<Recei
             @Param("matchId") Long matchId,
             @Param("appTeamId") Long appTeamId
     );
+
+    @Query("""
+        SELECT COALESCE(SUM(rf.fine.amount * rf.fineNumber), 0)
+        FROM received_fine rf
+        WHERE rf.appTeam.id = :appTeamId
+          AND rf.player.id = :playerId
+    """)
+    Long sumFineAmountForPlayerAndAppTeam(
+            @Param("playerId") Long playerId,
+            @Param("appTeamId") Long appTeamId
+    );
+
+    @Query("""
+        SELECT COALESCE(SUM(rf.fine.amount * rf.fineNumber), 0)
+        FROM received_fine rf
+        WHERE rf.appTeam.id = :appTeamId
+          AND rf.player.id = :playerId
+          AND rf.match.season.id = :seasonId
+    """)
+    Long sumFineAmountForPlayerAndAppTeamAndSeason(
+            @Param("playerId") Long playerId,
+            @Param("appTeamId") Long appTeamId,
+            @Param("seasonId") Long seasonId
+    );
+
 }
 
