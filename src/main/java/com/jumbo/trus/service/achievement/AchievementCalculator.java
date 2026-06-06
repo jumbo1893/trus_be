@@ -139,7 +139,7 @@ public class AchievementCalculator {
                     Map.entry("HATTRICK_GORDIEHO_HOWA", this::calculateHATTRICK_GORDIEHO_HOWAAchievement),
                     Map.entry("AMERICKY_FOTBALISTA", (p, a, at, t) -> calculateFineMilestoneAchievement(p, a, at, t, List.of("Překop"), 10)),
                     Map.entry("ALZHEIMER", (p, a, at, t) -> calculateFineMilestoneAchievement(p, a, at, t, List.of("Zapomenutí věcí", "Nekompletní výbava"), 1)),
-                    Map.entry("LEO_BERANEK", (p, a, at, t) -> calculateFineMilestoneAchievement(p, a, at, t, List.of("Nové kopačky"), 1)),
+                    Map.entry("LEO_BERANEK", (p, a, at, t) -> calculateFineMilestoneAchievement(p, a, at, t, List.of("Nový kopačky"), 1)),
                     Map.entry("CERNE_GENY", this::calculateCERNE_GENYAchievement)
 
 
@@ -1212,6 +1212,9 @@ public class AchievementCalculator {
         seasonFilter.setAppTeam(appTeam);
         for (SeasonDTO season : seasonService.getAll(seasonFilter)) {
             IMatchIdNumberOneNumberTwo r = playerAchievementRepository.findLazarNaTribune(playerDTO.getId(), season.getId(), appTeam.getId());
+            if (playerDTO.getId() == 2) {
+                log.debug("sezona: {}, vysledek: {}, appteam {}", season.getName(), r, appTeam.getId());
+            }
             if (r != null) {
                 return returnPlayerAchievement(achievement, playerDTO, null, "Hráč v sezoně " + season.getName() + " strávil celkem " +
                         r.getFirstNumber() + " zápasů na tribuně a vypil u toho " + r.getSecondNumber() + " piv");
