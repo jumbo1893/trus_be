@@ -12,8 +12,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.webjars.NotFoundException;
 
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 @Component
 @RequiredArgsConstructor
@@ -39,9 +41,13 @@ public class DeviceTokenCollector {
 
         UserEntity currentUser = authService.getCurrentUserEntity();
 
-        DeviceToken savedToken = deviceTokenRepository.findByToken(token)
-                .map(existing -> updateExistingToken(existing, currentUser, clientDeviceId))
-                .orElseGet(() -> saveNewTokenAndInvalidateOldDeviceTokens(token, currentUser, clientDeviceId));
+        List<DeviceToken> tokensWithSameValue = deviceTokenRepository.findAllByToken(token);
+
+        DeviceToken savedToken = tokensWithSameValue.isEmpty()
+                ? saveNewTokenAndInvalidateOldDeviceTokens(token, currentUser, clientDeviceId)
+                : updateExistingToken(chooseTokenToKeep(tokensWithSameValue, currentUser, clientDeviceId), currentUser, clientDeviceId);
+
+        invalidateDuplicateTokensWithSameValue(tokensWithSameValue, savedToken);
 
         enabledPushNotificationInitializer.ensureUserHasAllTypes(currentUser);
 
@@ -68,6 +74,39 @@ public class DeviceTokenCollector {
 
     public List<UserEntity> getAdminTokenUsersByAppTeam(Long appTeamId) {
         return deviceTokenRepository.findAdminUsersByAppTeamOrdered(appTeamId);
+    }
+
+
+    private DeviceToken chooseTokenToKeep(
+            List<DeviceToken> tokensWithSameValue,
+            UserEntity currentUser,
+            String clientDeviceId
+    ) {
+        return tokensWithSameValue.stream()
+                .filter(token -> token.getUser() != null && Objects.equals(token.getUser().getId(), currentUser.getId()))
+                .filter(token -> Objects.equals(token.getClientDeviceId(), clientDeviceId))
+                .filter(token -> "ACTIVE".equals(token.getStatus()))
+                .findFirst()
+                .orElseGet(() -> tokensWithSameValue.stream()
+                        .filter(token -> token.getUser() != null && Objects.equals(token.getUser().getId(), currentUser.getId()))
+                        .filter(token -> "ACTIVE".equals(token.getStatus()))
+                        .findFirst()
+                        .orElseGet(() -> tokensWithSameValue.stream()
+                                .max(Comparator.comparing(
+                                        token -> token.getModificationTime() != null
+                                                ? token.getModificationTime()
+                                                : token.getRegistrationTime(),
+                                        Comparator.nullsLast(Comparator.naturalOrder())
+                                ))
+                                .orElseThrow(() -> new IllegalStateException("Nenalezen žádný token ke zpracování"))));
+    }
+
+    private void invalidateDuplicateTokensWithSameValue(List<DeviceToken> tokensWithSameValue, DeviceToken tokenToKeep) {
+        for (DeviceToken duplicateToken : tokensWithSameValue) {
+            if (!Objects.equals(duplicateToken.getId(), tokenToKeep.getId()) && "ACTIVE".equals(duplicateToken.getStatus())) {
+                invalidateToken(duplicateToken, "DUPLICATE");
+            }
+        }
     }
 
     private DeviceToken saveNewTokenAndInvalidateOldDeviceTokens(

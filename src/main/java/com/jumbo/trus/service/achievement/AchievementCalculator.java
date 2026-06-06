@@ -152,6 +152,7 @@ public class AchievementCalculator {
         Map<PlayerAchievementKey, PlayerAchievementDTO> existingAchievements = loadExistingAchievements(playerList);
         Map<String, AchievementCalculationStats> statsByAchievement = new LinkedHashMap<>();
         AchievementCalculationSummary summary = new AchievementCalculationSummary();
+        List<PlayerAchievementDTO> newlyAccomplishedAchievements = new ArrayList<>();
 
         log.info("Achievement calculation started. appTeamId={}, type={}, players={}, achievements={}, existingPlayerAchievements={}",
                 appTeam.getId(), achievementType, playerList.size(), achievements.size(), existingAchievements.size());
@@ -167,7 +168,8 @@ public class AchievementCalculator {
                     achievementType,
                     existingAchievements,
                     statsByAchievement,
-                    summary
+                    summary,
+                    newlyAccomplishedAchievements
             );
 
             long playerMillis = nanosToMillis(System.nanoTime() - playerStart);
@@ -184,6 +186,8 @@ public class AchievementCalculator {
 
         logAchievementCalculationStats(appTeam, achievementType, playerList.size(), achievements.size(), summary,
                 statsByAchievement, System.nanoTime() - totalStart);
+
+        achievementNotificationMaker.sendAchievementNotify(newlyAccomplishedAchievements, appTeam);
     }
 
     private void calculateAndSaveAchievementForPlayer(
@@ -193,7 +197,8 @@ public class AchievementCalculator {
             AchievementType achievementType,
             Map<PlayerAchievementKey, PlayerAchievementDTO> existingAchievements,
             Map<String, AchievementCalculationStats> statsByAchievement,
-            AchievementCalculationSummary summary
+            AchievementCalculationSummary summary,
+            List<PlayerAchievementDTO> newlyAccomplishedAchievements
     ) {
         for (AchievementDTO achievement : achievements) {
             String achievementCode = achievement.getCode();
@@ -223,7 +228,7 @@ public class AchievementCalculator {
             PlayerAchievementDTO existing = existingAchievements.get(playerAchievementKey(calculated));
 
             if (existing == null) {
-                PlayerAchievementDTO saved = saveNewAchievementToRepository(calculated, appTeam);
+                PlayerAchievementDTO saved = saveNewAchievementToRepository(calculated, appTeam, newlyAccomplishedAchievements);
                 existingAchievements.put(playerAchievementKey(saved), saved);
                 stats.created++;
                 summary.created++;
@@ -231,7 +236,7 @@ public class AchievementCalculator {
             }
 
             if (isChanged(existing, calculated)) {
-                PlayerAchievementDTO saved = updateExistingAchievement(existing, calculated, appTeam);
+                PlayerAchievementDTO saved = updateExistingAchievement(existing, calculated, appTeam, newlyAccomplishedAchievements);
                 existingAchievements.put(playerAchievementKey(saved), saved);
                 stats.updated++;
                 summary.updated++;
@@ -334,6 +339,15 @@ public class AchievementCalculator {
             PlayerAchievementDTO calculated,
             AppTeamEntity appTeam
     ) {
+        return updateExistingAchievement(existing, calculated, appTeam, null);
+    }
+
+    private PlayerAchievementDTO updateExistingAchievement(
+            PlayerAchievementDTO existing,
+            PlayerAchievementDTO calculated,
+            AppTeamEntity appTeam,
+            List<PlayerAchievementDTO> newlyAccomplishedAchievements
+    ) {
         calculated.setId(existing.getId());
 
         boolean wasAccomplished = Boolean.TRUE.equals(existing.getAccomplished());
@@ -347,7 +361,7 @@ public class AchievementCalculator {
 
             PlayerAchievementDTO savedDto = playerAchievementMapper.toDTO(savedEntity);
 
-            achievementNotificationMaker.sendAchievementNotify(savedDto, appTeam);
+            collectOrSendAchievementNotification(savedDto, appTeam, newlyAccomplishedAchievements);
             return savedDto;
         }
 
@@ -383,18 +397,35 @@ public class AchievementCalculator {
         return calculator.apply(player, achievement, appTeam, achievementType);
     }
 
-    private PlayerAchievementDTO saveNewAchievementToRepository(PlayerAchievementDTO playerAchievement, AppTeamEntity appTeam) {
+    private PlayerAchievementDTO saveNewAchievementToRepository(
+            PlayerAchievementDTO playerAchievement,
+            AppTeamEntity appTeam,
+            List<PlayerAchievementDTO> newlyAccomplishedAchievements
+    ) {
         if (Boolean.TRUE.equals(playerAchievement.getAccomplished())) {
             playerAchievement.setAccomplishedDate(new Date());
             PlayerAchievementEntity savedEntity =
                     playerAchievementRepository.save(playerAchievementMapper.toEntity(playerAchievement));
             PlayerAchievementDTO savedDto = playerAchievementMapper.toDTO(savedEntity);
-            achievementNotificationMaker.sendAchievementNotify(savedDto, appTeam);
+            collectOrSendAchievementNotification(savedDto, appTeam, newlyAccomplishedAchievements);
             return savedDto;
         }
 
         playerAchievement.setAccomplishedDate(null);
         return playerAchievementMapper.toDTO(playerAchievementRepository.save(playerAchievementMapper.toEntity(playerAchievement)));
+    }
+
+    private void collectOrSendAchievementNotification(
+            PlayerAchievementDTO savedDto,
+            AppTeamEntity appTeam,
+            List<PlayerAchievementDTO> newlyAccomplishedAchievements
+    ) {
+        if (newlyAccomplishedAchievements == null) {
+            achievementNotificationMaker.sendAchievementNotify(savedDto, appTeam);
+            return;
+        }
+
+        newlyAccomplishedAchievements.add(savedDto);
     }
 
     /*public void saveAchievementWithAccomplishedDate(PlayerAchievementDTO playerAchievement, AppTeamEntity appTeam) {
@@ -699,19 +730,20 @@ public class AchievementCalculator {
     }
 
     private PlayerAchievementDTO calculateKONZISTENCEAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AppTeamEntity appTeam, AchievementType achievementType) {
-        if (achievementType == AchievementType.ALL || achievementType == AchievementType.GOAL || achievementType == AchievementType.MATCH) {
-            FootballPlayerDTO footballPlayerDTO = playerDTO.getFootballPlayer();
-            if (footballPlayerDTO == null) {
-                return returnFailedPlayerAchievement(achievement, playerDTO);
-            }
-            FootballMatchPlayerDTO footballMatchPlayerDTO = footballPlayerStatsService.getRowIfPlayerScoresInThreeMatchesInRow(footballPlayerDTO.getId(), appTeam.getId());
-            if (footballMatchPlayerDTO != null) {
-                return returnPlayerAchievementForFootballMatch(achievement, playerDTO, footballMatchPlayerDTO.getMatchId(),
-                        "V posledním zápase dal " + footballMatchPlayerDTO.getGoals() + " gólů");
-            }
-            return returnFailedPlayerAchievement(achievement, playerDTO);
+        if (!shouldCalculate(achievementType, AchievementType.GOAL, AchievementType.MATCH)) return null;
+
+        IMatchIdNumberOneNumberTwo result = playerAchievementRepository.findFirstThreeConsecutiveMatchesWithGoal(
+                playerDTO.getId(),
+                appTeam.getId()
+        );
+
+        if (result != null) {
+            return returnPlayerAchievement(achievement, playerDTO, result.getMatchId(),
+                    "Hráč skóroval ve 3 týmových zápasech za sebou. Za tyto 3 zápasy dal " +
+                            result.getFirstNumber() + " gólů a přidal " + result.getSecondNumber() + " asistencí.");
         }
-        return null;
+
+        return returnFailedPlayerAchievement(achievement, playerDTO);
     }
 
     private PlayerAchievementDTO calculateDAVID_BECKHAMAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AchievementType achievementType) {
@@ -1211,10 +1243,7 @@ public class AchievementCalculator {
         SeasonFilter seasonFilter = new SeasonFilter();
         seasonFilter.setAppTeam(appTeam);
         for (SeasonDTO season : seasonService.getAll(seasonFilter)) {
-            IMatchIdNumberOneNumberTwo r = playerAchievementRepository.findLazarNaTribune(playerDTO.getId(), season.getId(), appTeam.getId());
-            if (playerDTO.getId() == 2) {
-                log.debug("sezona: {}, vysledek: {}, appteam {}", season.getName(), r, appTeam.getId());
-            }
+            IMatchIdNumberOneNumberTwo r = playerAchievementRepository.findLazarNaTribune(playerDTO.getId(), appTeam.getId(), season.getId());
             if (r != null) {
                 return returnPlayerAchievement(achievement, playerDTO, null, "Hráč v sezoně " + season.getName() + " strávil celkem " +
                         r.getFirstNumber() + " zápasů na tribuně a vypil u toho " + r.getSecondNumber() + " piv");

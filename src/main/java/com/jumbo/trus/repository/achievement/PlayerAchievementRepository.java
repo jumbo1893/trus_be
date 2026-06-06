@@ -1255,6 +1255,43 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
     IMatchIdNumberOneNumberTwo findFirstBestPlayerMatch(@Param("playerId") Long playerId,
                                                         @Param("appTeamId") Long appTeamId);
 
+
+    // Konzistence - gól ve třech týmových zápasech za sebou podle tabulky goal + match
+    @Query(value = """
+        WITH ordered_matches AS (
+            SELECT m.id AS match_id,
+                   m.date,
+                   CAST(COALESCE(SUM(g.goal_number), 0) AS int) AS goals,
+                   CAST(COALESCE(SUM(g.assist_number), 0) AS int) AS assists
+            FROM match m
+            LEFT JOIN goal g
+                   ON g.match_id = m.id
+                  AND g.player_id = :playerId
+            WHERE m.app_team_id = :appTeamId
+              AND m.football_match_id IS NOT NULL
+            GROUP BY m.id, m.date
+        ), match_windows AS (
+            SELECT om.*,
+                   LEAD(match_id, 2) OVER (ORDER BY date ASC NULLS LAST, match_id ASC) AS third_match_id,
+                   LEAD(goals, 1) OVER (ORDER BY date ASC NULLS LAST, match_id ASC) AS second_goals,
+                   LEAD(goals, 2) OVER (ORDER BY date ASC NULLS LAST, match_id ASC) AS third_goals,
+                   LEAD(assists, 1) OVER (ORDER BY date ASC NULLS LAST, match_id ASC) AS second_assists,
+                   LEAD(assists, 2) OVER (ORDER BY date ASC NULLS LAST, match_id ASC) AS third_assists
+            FROM ordered_matches om
+        )
+        SELECT third_match_id AS matchId,
+               CAST((goals + second_goals + third_goals) AS int) AS firstNumber,
+               CAST((assists + second_assists + third_assists) AS int) AS secondNumber
+        FROM match_windows
+        WHERE goals > 0
+          AND second_goals > 0
+          AND third_goals > 0
+        ORDER BY date ASC NULLS LAST, match_id ASC
+        LIMIT 1
+        """, nativeQuery = true)
+    IMatchIdNumberOneNumberTwo findFirstThreeConsecutiveMatchesWithGoal(@Param("playerId") Long playerId,
+                                                                        @Param("appTeamId") Long appTeamId);
+
     // Komplexní hráč
     @Query(value = """
         SELECT g.match_id AS matchId,

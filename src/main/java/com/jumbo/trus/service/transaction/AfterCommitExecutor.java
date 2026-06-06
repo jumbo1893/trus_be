@@ -3,6 +3,7 @@ package com.jumbo.trus.service.transaction;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.task.TaskExecutor;
+import org.springframework.core.task.TaskRejectedException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
@@ -25,7 +26,7 @@ public class AfterCommitExecutor {
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                 @Override
                 public void afterCommit() {
-                    taskExecutor.execute(() -> runSafeInNewTransaction(description, task));
+                    executeTask(description, task);
                 }
 
                 @Override
@@ -42,7 +43,16 @@ public class AfterCommitExecutor {
             return;
         }
 
-        taskExecutor.execute(() -> runSafeInNewTransaction(description, task));
+        executeTask(description, task);
+    }
+
+    private void executeTask(String description, Runnable task) {
+        try {
+            taskExecutor.execute(() -> runSafeInNewTransaction(description, task));
+        } catch (TaskRejectedException e) {
+            log.warn("After-commit task '{}' byl odmítnut executor frontou. Spouštím synchronně.", description, e);
+            runSafeInNewTransaction(description, task);
+        }
     }
 
     private void runSafeInNewTransaction(String description, Runnable task) {

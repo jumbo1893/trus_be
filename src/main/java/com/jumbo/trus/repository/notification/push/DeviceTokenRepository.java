@@ -15,6 +15,8 @@ public interface DeviceTokenRepository extends PagingAndSortingRepository<Device
 
     Optional<DeviceToken> findByToken(String token);
 
+    List<DeviceToken> findAllByToken(String token);
+
     List<DeviceToken> findByUser_IdIn(List<Long> userIds);
 
     @Query("""
