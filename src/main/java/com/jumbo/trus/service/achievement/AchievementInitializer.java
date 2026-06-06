@@ -88,7 +88,24 @@ public class AchievementInitializer implements CommandLineRunner {
                 new AchievementEntity("Jarda Kužel", "JARDA_KUZEL", true, "Přijď na zápas po alespoň třech absencích a získej hvězdu utkání", false),
                 new AchievementEntity("Moderní gólmanská škola", "MODERNI_GOLMANSKA_SKOLA", true, "Zaznamenej alespoň jednu asistenci jako brankář", false),
                 new AchievementEntity("Morální podpora", "MORALNI_PODPORA", true, "I přes zranění/trest se přijď podívat na zápas", false),
-                new AchievementEntity("Lazar na tribunách", "LAZAR_NA_TRIBUNACH", true, "Přijď se podívat alespoň na 3 zápasy v sezoně i přes zranění", false)
+                new AchievementEntity("Lazar na tribunách", "LAZAR_NA_TRIBUNACH", true, "Přijď se podívat alespoň na 3 zápasy v sezoně i přes zranění", false),
+                new AchievementEntity("Jednou se začít musí", "JEDNOU_SE_ZACIT_MUSI", false, "Dej si alespoň jedno pivo", false),
+                new AchievementEntity("Když ono to chutná", "KDYZ_ONO_TO_CHUTNA", false, "Vypij alespoň 50 piv", false),
+                new AchievementEntity("Soudek", "SOUDEK", false, "Vypij alespoň 100 piv", false),
+                new AchievementEntity("Cisterna", "CISTERNA", false, "Vypij alespoň 500 piv", false),
+                new AchievementEntity("Přitvrdíme", "PRITVRDIME", false, "Dej si svého prvního panáka", false),
+                new AchievementEntity("Rumový nádeník", "RUMOVY_NADENIK", false, "Vypij alespoň 20 panáků", false),
+                new AchievementEntity("Achievement Milana Čurdy", "ACHIEVEMENT_MILANA_CURDY", false, "Vypij alespoň 50 panáků", false),
+                new AchievementEntity("Hvězda co se nezdá", "HVEZDA_CO_SE_NEZDA", true, "Získej svoji první hvězdu utkání", false),
+                new AchievementEntity("Komplexní hráč", "KOMPLEXNI_HRAC", true, "Měj v zápase gól i asistenci", false),
+                new AchievementEntity("Ultrus", "ULTRUS", false, "Měj alespoň 30 účastí na zápase jako fanoušek", false),
+                new AchievementEntity("Permice na Trus", "PERMICE_NA_TRUS", false, "Měj alespoň 10 účastí na zápase jako fanoušek", false),
+                new AchievementEntity("Do počtu", "DO_POCTU", true, "V pěti utkáních za sebou nezískej ani jeden kanadský bod", false),
+                new AchievementEntity("Hattrick Gordieho Howa", "HATTRICK_GORDIEHO_HOWA", true, "V jednom zápase zaznamenej gól, asistenci a žlutou nebo červenou kartu", false),
+                new AchievementEntity("Americký fotbalista", "AMERICKY_FOTBALISTA", true, "Nasbírej alespoň 10 pokut za překop", false),
+                new AchievementEntity("Alzheimer", "ALZHEIMER", true, "Dostaň pokutu za zapomenutí věcí nebo nekompletní výbavu", false),
+                new AchievementEntity("Leo Beránek", "LEO_BERANEK", true, "Dostaň pokutu za nové kopačky", false),
+                new AchievementEntity("Černé geny", "CERNE_GENY", true, "Dosáhni v zápase maximální rychlosti sprintu alespoň 25 km/h", false)
 
         );
     }

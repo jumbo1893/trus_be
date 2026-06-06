@@ -51,8 +51,12 @@ public class AchievementService {
         ReentrantLock lock = lockManager.getLock(appTeam.getId());
         if (lock.tryLock()) { // Non-blocking pokus – pokud zamčené, počkáme (fair lock)
             try {
-                log.debug("Začínám počítat pro appTeam {}!", appTeam.getId());
-                achievementCalculator.calculateAllAchievements(playerService.getAll(appTeam.getId()), appTeam, achievementType);
+                log.info("Starting updateAllPlayerAchievements. appTeamId={}, type={}", appTeam.getId(), achievementType);
+                long playersLoadStart = System.nanoTime();
+                List<PlayerDTO> players = playerService.getAll(appTeam.getId());
+                log.info("Loaded players for achievement calculation in {} ms. appTeamId={}, players={}",
+                        (System.nanoTime() - playersLoadStart) / 1_000_000, appTeam.getId(), players.size());
+                achievementCalculator.calculateAllAchievements(players, appTeam, achievementType);
             } finally {
                 lock.unlock();
             }
@@ -60,7 +64,12 @@ public class AchievementService {
             // Pokud nelze získat lock ihned, zařaď do fronty nebo retry – ale pro jednoduchost: čekej blokujícím způsobem
             lock.lock(); // Blokující čekání
             try {
-                achievementCalculator.calculateAllAchievements(playerService.getAll(appTeam.getId()), appTeam, achievementType);
+                log.info("Starting queued updateAllPlayerAchievements. appTeamId={}, type={}", appTeam.getId(), achievementType);
+                long playersLoadStart = System.nanoTime();
+                List<PlayerDTO> players = playerService.getAll(appTeam.getId());
+                log.info("Loaded players for queued achievement calculation in {} ms. appTeamId={}, players={}",
+                        (System.nanoTime() - playersLoadStart) / 1_000_000, appTeam.getId(), players.size());
+                achievementCalculator.calculateAllAchievements(players, appTeam, achievementType);
             } finally {
                 lock.unlock();
             }
