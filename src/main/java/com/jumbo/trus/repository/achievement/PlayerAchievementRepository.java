@@ -1,7 +1,7 @@
 package com.jumbo.trus.repository.achievement;
 
-import com.jumbo.trus.dto.player.stats.projection.IPlayerAchievementCountProjection;
 import com.jumbo.trus.dto.achievement.IPlayerAchievementStats;
+import com.jumbo.trus.dto.player.stats.projection.IPlayerAchievementCountProjection;
 import com.jumbo.trus.entity.PlayerEntity;
 import com.jumbo.trus.entity.achievement.PlayerAchievementEntity;
 import com.jumbo.trus.service.achievement.helper.*;
@@ -22,15 +22,15 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
     Optional<PlayerAchievementEntity> findByPlayerIdAndAchievementIdAndAccomplished(Long playerId, Long achievementId, boolean accomplished);
 
     @Query("""
-        SELECT pa.achievement.id,
-               SUM(CASE WHEN pa.player.fan = false THEN 1 ELSE 0 END),
-               COUNT(DISTINCT pa.player.id)
-        FROM PlayerAchievementEntity pa
-        WHERE pa.player.appTeam.id = :appTeamId
-          AND pa.accomplished = true
-          AND pa.player.deleted = false
-        GROUP BY pa.achievement.id
-        """)
+            SELECT pa.achievement.id,
+                   SUM(CASE WHEN pa.player.fan = false THEN 1 ELSE 0 END),
+                   COUNT(DISTINCT pa.player.id)
+            FROM PlayerAchievementEntity pa
+            WHERE pa.player.appTeam.id = :appTeamId
+              AND pa.accomplished = true
+              AND pa.player.deleted = false
+            GROUP BY pa.achievement.id
+            """)
     List<Object[]> countAccomplishedStatsByAchievementForTeam(
             @Param("appTeamId") Long appTeamId
     );
@@ -72,12 +72,12 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
     List<PlayerAchievementEntity> findAllByPlayerIdIn(List<Long> playerIds);
 
     @Query("""
-        SELECT
-            COUNT(pa) AS totalAchievements,
-            COALESCE(SUM(CASE WHEN pa.accomplished = true THEN 1 ELSE 0 END), 0) AS accomplishedAchievements
-        FROM PlayerAchievementEntity pa
-        WHERE pa.player.id = :playerId
-    """)
+                SELECT
+                    COUNT(pa) AS totalAchievements,
+                    COALESCE(SUM(CASE WHEN pa.accomplished = true THEN 1 ELSE 0 END), 0) AS accomplishedAchievements
+                FROM PlayerAchievementEntity pa
+                WHERE pa.player.id = :playerId
+            """)
     IPlayerAchievementCountProjection countStatsByPlayerId(@Param("playerId") Long playerId);
 
 
@@ -1117,44 +1117,9 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
 
     // Morální podpora - hráč se zúčastnil zápasu, ale nebyl na oficiální soupisce
     @Query(value = """
-        SELECT m.id AS matchId,
-               CAST(COALESCE(SUM(b.beer_number), 0) AS int) AS firstNumber,
-               CAST(COALESCE(SUM(b.liquor_number), 0) AS int) AS secondNumber
-        FROM match m
-        JOIN match_players mp
-             ON mp.match_id = m.id
-            AND mp.player_id = :playerId
-        JOIN player p
-             ON p.id = mp.player_id
-        LEFT JOIN beer b
-             ON b.match_id = m.id
-            AND b.player_id = p.id
-        WHERE p.id = :playerId
-          AND p.fan = false
-          AND p.football_player_id IS NOT NULL
-          AND m.football_match_id IS NOT NULL
-          AND m.app_team_id = :appTeamId
-          AND NOT EXISTS (
-              SELECT 1
-              FROM football_match_player fmp
-              WHERE fmp.match_id = m.football_match_id
-                AND fmp.player_id = p.football_player_id
-          )
-        GROUP BY m.id, m.date
-        ORDER BY m.date ASC, m.id ASC
-        LIMIT 1
-        """, nativeQuery = true)
-    IMatchIdNumberOneNumberTwo findMoralniPodpora(
-            @Param("playerId") Long playerId,
-            @Param("appTeamId") Long appTeamId
-    );
-
-    // Lazar na tribuně - alespoň 3 zápasy mimo oficiální soupisku v jedné sezoně
-    @Query(value = """
-        WITH tribunal_matches AS (
-            SELECT m.id AS match_id,
-                   m.date,
-                   CAST(COALESCE(SUM(b.beer_number), 0) AS int) AS beer_number
+            SELECT m.id AS matchId,
+                   CAST(COALESCE(SUM(b.beer_number), 0) AS int) AS firstNumber,
+                   CAST(COALESCE(SUM(b.liquor_number), 0) AS int) AS secondNumber
             FROM match m
             JOIN match_players mp
                  ON mp.match_id = m.id
@@ -1168,7 +1133,6 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
               AND p.fan = false
               AND p.football_player_id IS NOT NULL
               AND m.football_match_id IS NOT NULL
-              AND m.season_id = :seasonId
               AND m.app_team_id = :appTeamId
               AND NOT EXISTS (
                   SELECT 1
@@ -1177,26 +1141,62 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
                     AND fmp.player_id = p.football_player_id
               )
             GROUP BY m.id, m.date
-        ),
-        ranked_tribunal_matches AS (
-            SELECT tm.*,
-                   ROW_NUMBER() OVER (
-                       ORDER BY tm.date ASC NULLS LAST, tm.match_id ASC
-                   ) AS tribunal_order
-            FROM tribunal_matches tm
-        ),
-        tribunal_totals AS (
-            SELECT COUNT(*) AS tribunal_match_count,
-                   COALESCE(SUM(beer_number), 0) AS tribunal_beer_count
-            FROM tribunal_matches
-        )
-        SELECT rtm.match_id AS matchId,
-               CAST(tt.tribunal_match_count AS int) AS firstNumber,
-               CAST(tt.tribunal_beer_count AS int) AS secondNumber
-        FROM ranked_tribunal_matches rtm
-        CROSS JOIN tribunal_totals tt
-        WHERE rtm.tribunal_order = 3
-        """, nativeQuery = true)
+            ORDER BY m.date ASC, m.id ASC
+            LIMIT 1
+            """, nativeQuery = true)
+    IMatchIdNumberOneNumberTwo findMoralniPodpora(
+            @Param("playerId") Long playerId,
+            @Param("appTeamId") Long appTeamId
+    );
+
+    // Lazar na tribuně - alespoň 3 zápasy mimo oficiální soupisku v jedné sezoně
+    @Query(value = """
+            WITH tribunal_matches AS (
+                SELECT m.id AS match_id,
+                       m.date,
+                       CAST(COALESCE(SUM(b.beer_number), 0) AS int) AS beer_number
+                FROM match m
+                JOIN match_players mp
+                     ON mp.match_id = m.id
+                    AND mp.player_id = :playerId
+                JOIN player p
+                     ON p.id = mp.player_id
+                LEFT JOIN beer b
+                     ON b.match_id = m.id
+                    AND b.player_id = p.id
+                WHERE p.id = :playerId
+                  AND p.fan = false
+                  AND p.football_player_id IS NOT NULL
+                  AND m.football_match_id IS NOT NULL
+                  AND m.season_id = :seasonId
+                  AND m.app_team_id = :appTeamId
+                  AND NOT EXISTS (
+                      SELECT 1
+                      FROM football_match_player fmp
+                      WHERE fmp.match_id = m.football_match_id
+                        AND fmp.player_id = p.football_player_id
+                  )
+                GROUP BY m.id, m.date
+            ),
+            ranked_tribunal_matches AS (
+                SELECT tm.*,
+                       ROW_NUMBER() OVER (
+                           ORDER BY tm.date ASC NULLS LAST, tm.match_id ASC
+                       ) AS tribunal_order
+                FROM tribunal_matches tm
+            ),
+            tribunal_totals AS (
+                SELECT COUNT(*) AS tribunal_match_count,
+                       COALESCE(SUM(beer_number), 0) AS tribunal_beer_count
+                FROM tribunal_matches
+            )
+            SELECT rtm.match_id AS matchId,
+                   CAST(tt.tribunal_match_count AS int) AS firstNumber,
+                   CAST(tt.tribunal_beer_count AS int) AS secondNumber
+            FROM ranked_tribunal_matches rtm
+            CROSS JOIN tribunal_totals tt
+            WHERE rtm.tribunal_order = 3
+            """, nativeQuery = true)
     IMatchIdNumberOneNumberTwo findLazarNaTribune(
             @Param("playerId") Long playerId,
             @Param("appTeamId") Long appTeamId,
@@ -1205,252 +1205,256 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
 
     // Společný kumulativní milník piv/panáků
     @Query(value = """
-        WITH drinks_per_match AS (
-            SELECT b.match_id,
-                   m.date,
-                   SUM(COALESCE(b.beer_number, 0)) AS beers,
-                   SUM(COALESCE(b.liquor_number, 0)) AS liquors
-            FROM beer b
-            JOIN match m ON m.id = b.match_id
-            WHERE b.player_id = :playerId
-              AND m.app_team_id = :appTeamId
-            GROUP BY b.match_id, m.date
-        ), cumulative AS (
-            SELECT match_id,
-                   date,
-                   SUM(beers) OVER (ORDER BY date ASC NULLS LAST, match_id ASC) AS cumulative_beers,
-                   SUM(liquors) OVER (ORDER BY date ASC NULLS LAST, match_id ASC) AS cumulative_liquors
-            FROM drinks_per_match
-        )
-        SELECT match_id AS matchId,
-               CAST(cumulative_beers AS int) AS firstNumber,
-               CAST(cumulative_liquors AS int) AS secondNumber
-        FROM cumulative
-        WHERE cumulative_beers >= :beerThreshold
-          AND cumulative_liquors >= :liquorThreshold
-          AND (:beerThreshold > 0 OR :liquorThreshold > 0)
-        ORDER BY date ASC NULLS LAST, match_id ASC
-        LIMIT 1
-        """, nativeQuery = true)
+            WITH drinks_per_match AS (
+                SELECT b.match_id,
+                       m.date,
+                       SUM(COALESCE(b.beer_number, 0)) AS beers,
+                       SUM(COALESCE(b.liquor_number, 0)) AS liquors
+                FROM beer b
+                JOIN match m ON m.id = b.match_id
+                WHERE b.player_id = :playerId
+                  AND m.app_team_id = :appTeamId
+                GROUP BY b.match_id, m.date
+            ), cumulative AS (
+                SELECT match_id,
+                       date,
+                       SUM(beers) OVER (ORDER BY date ASC NULLS LAST, match_id ASC) AS cumulative_beers,
+                       SUM(liquors) OVER (ORDER BY date ASC NULLS LAST, match_id ASC) AS cumulative_liquors
+                FROM drinks_per_match
+            )
+            SELECT match_id AS matchId,
+                   CAST(cumulative_beers AS int) AS firstNumber,
+                   CAST(cumulative_liquors AS int) AS secondNumber
+            FROM cumulative
+            WHERE cumulative_beers >= :beerThreshold
+              AND cumulative_liquors >= :liquorThreshold
+              AND (:beerThreshold > 0 OR :liquorThreshold > 0)
+            ORDER BY date ASC NULLS LAST, match_id ASC
+            LIMIT 1
+            """, nativeQuery = true)
     IMatchIdNumberOneNumberTwo findDrinkMilestone(@Param("playerId") Long playerId,
-                                                   @Param("appTeamId") Long appTeamId,
-                                                   @Param("beerThreshold") int beerThreshold,
-                                                   @Param("liquorThreshold") int liquorThreshold);
+                                                  @Param("appTeamId") Long appTeamId,
+                                                  @Param("beerThreshold") int beerThreshold,
+                                                  @Param("liquorThreshold") int liquorThreshold);
 
     // Hvězda co se nezdá
     @Query(value = """
-        SELECT fm.id AS matchId,
-               CAST(fmp.goals AS int) AS firstNumber,
-               NULL AS secondNumber
-        FROM player p
-        JOIN football_match_player fmp ON fmp.player_id = p.football_player_id
-        JOIN football_match fm ON fm.id = fmp.match_id
-        JOIN match m ON m.football_match_id = fm.id
-        WHERE p.id = :playerId
-          AND m.app_team_id = :appTeamId
-          AND fmp.best_player = true
-        ORDER BY m.date ASC NULLS LAST, m.id ASC
-        LIMIT 1
-        """, nativeQuery = true)
+            SELECT fm.id AS matchId,
+                   CAST(fmp.goals AS int) AS firstNumber,
+                   NULL AS secondNumber
+            FROM player p
+            JOIN football_match_player fmp ON fmp.player_id = p.football_player_id
+            JOIN football_match fm ON fm.id = fmp.match_id
+            JOIN match m ON m.football_match_id = fm.id
+            WHERE p.id = :playerId
+              AND m.app_team_id = :appTeamId
+              AND fmp.best_player = true
+            ORDER BY m.date ASC NULLS LAST, m.id ASC
+            LIMIT 1
+            """, nativeQuery = true)
     IMatchIdNumberOneNumberTwo findFirstBestPlayerMatch(@Param("playerId") Long playerId,
                                                         @Param("appTeamId") Long appTeamId);
 
 
     // Konzistence - gól ve třech týmových zápasech za sebou podle tabulky goal + match
     @Query(value = """
-        WITH ordered_matches AS (
-            SELECT m.id AS match_id,
-                   m.date,
-                   CAST(COALESCE(SUM(g.goal_number), 0) AS int) AS goals,
-                   CAST(COALESCE(SUM(g.assist_number), 0) AS int) AS assists
-            FROM match m
-            LEFT JOIN goal g
-                   ON g.match_id = m.id
-                  AND g.player_id = :playerId
-            WHERE m.app_team_id = :appTeamId
-              AND m.football_match_id IS NOT NULL
-            GROUP BY m.id, m.date
-        ), match_windows AS (
-            SELECT om.*,
-                   LEAD(match_id, 2) OVER (ORDER BY date ASC NULLS LAST, match_id ASC) AS third_match_id,
-                   LEAD(goals, 1) OVER (ORDER BY date ASC NULLS LAST, match_id ASC) AS second_goals,
-                   LEAD(goals, 2) OVER (ORDER BY date ASC NULLS LAST, match_id ASC) AS third_goals,
-                   LEAD(assists, 1) OVER (ORDER BY date ASC NULLS LAST, match_id ASC) AS second_assists,
-                   LEAD(assists, 2) OVER (ORDER BY date ASC NULLS LAST, match_id ASC) AS third_assists
-            FROM ordered_matches om
-        )
-        SELECT third_match_id AS matchId,
-               CAST((goals + second_goals + third_goals) AS int) AS firstNumber,
-               CAST((assists + second_assists + third_assists) AS int) AS secondNumber
-        FROM match_windows
-        WHERE goals > 0
-          AND second_goals > 0
-          AND third_goals > 0
-        ORDER BY date ASC NULLS LAST, match_id ASC
-        LIMIT 1
-        """, nativeQuery = true)
+            WITH ordered_matches AS (
+                SELECT m.id AS match_id,
+                       m.date,
+                       CAST(COALESCE(SUM(g.goal_number), 0) AS int) AS goals,
+                       CAST(COALESCE(SUM(g.assist_number), 0) AS int) AS assists
+                FROM match m
+                LEFT JOIN goal g
+                       ON g.match_id = m.id
+                      AND g.player_id = :playerId
+                WHERE m.app_team_id = :appTeamId
+                  AND m.football_match_id IS NOT NULL
+                GROUP BY m.id, m.date
+            ), match_windows AS (
+                SELECT om.*,
+                       LEAD(match_id, 2) OVER (ORDER BY date ASC NULLS LAST, match_id ASC) AS third_match_id,
+                       LEAD(goals, 1) OVER (ORDER BY date ASC NULLS LAST, match_id ASC) AS second_goals,
+                       LEAD(goals, 2) OVER (ORDER BY date ASC NULLS LAST, match_id ASC) AS third_goals,
+                       LEAD(assists, 1) OVER (ORDER BY date ASC NULLS LAST, match_id ASC) AS second_assists,
+                       LEAD(assists, 2) OVER (ORDER BY date ASC NULLS LAST, match_id ASC) AS third_assists
+                FROM ordered_matches om
+            )
+            SELECT third_match_id AS matchId,
+                   CAST((goals + second_goals + third_goals) AS int) AS firstNumber,
+                   CAST((assists + second_assists + third_assists) AS int) AS secondNumber
+            FROM match_windows
+            WHERE goals > 0
+              AND second_goals > 0
+              AND third_goals > 0
+            ORDER BY date ASC NULLS LAST, match_id ASC
+            LIMIT 1
+            """, nativeQuery = true)
     IMatchIdNumberOneNumberTwo findFirstThreeConsecutiveMatchesWithGoal(@Param("playerId") Long playerId,
                                                                         @Param("appTeamId") Long appTeamId);
 
     // Komplexní hráč
     @Query(value = """
-        SELECT g.match_id AS matchId,
-               CAST(g.goal_number AS int) AS firstNumber,
-               CAST(g.assist_number AS int) AS secondNumber
-        FROM goal g
-        JOIN match m ON m.id = g.match_id
-        WHERE g.player_id = :playerId
-          AND m.app_team_id = :appTeamId
-          AND g.goal_number > 0
-          AND g.assist_number > 0
-        ORDER BY m.date ASC NULLS LAST, m.id ASC
-        LIMIT 1
-        """, nativeQuery = true)
+            SELECT g.match_id AS matchId,
+                   CAST(g.goal_number AS int) AS firstNumber,
+                   CAST(g.assist_number AS int) AS secondNumber
+            FROM goal g
+            JOIN match m ON m.id = g.match_id
+            WHERE g.player_id = :playerId
+              AND m.app_team_id = :appTeamId
+              AND g.goal_number > 0
+              AND g.assist_number > 0
+            ORDER BY m.date ASC NULLS LAST, m.id ASC
+            LIMIT 1
+            """, nativeQuery = true)
     IMatchIdNumberOneNumberTwo findFirstMatchWithGoalAndAssist(@Param("playerId") Long playerId,
                                                                @Param("appTeamId") Long appTeamId);
 
     // Společný milník fanouškovských účastí
     @Query(value = """
-        WITH distinct_attendances AS (
-            SELECT DISTINCT mp.match_id, m.date
-            FROM match_players mp
-            JOIN match m ON m.id = mp.match_id
-            JOIN player p ON p.id = mp.player_id
-            WHERE mp.player_id = :playerId
-              AND p.fan = true
-              AND m.app_team_id = :appTeamId
-        ), attendances AS (
-            SELECT match_id,
-                   date,
-                   ROW_NUMBER() OVER (ORDER BY date ASC NULLS LAST, match_id ASC) AS attendance_number
-            FROM distinct_attendances
-        )
-        SELECT match_id AS matchId,
-               CAST(attendance_number AS int) AS firstNumber,
-               NULL AS secondNumber
-        FROM attendances
-        WHERE attendance_number = :attendanceThreshold
-        LIMIT 1
-        """, nativeQuery = true)
+            WITH distinct_attendances AS (
+                SELECT DISTINCT mp.match_id, m.date
+                FROM match_players mp
+                JOIN match m ON m.id = mp.match_id
+                JOIN player p ON p.id = mp.player_id
+                WHERE mp.player_id = :playerId
+                  AND p.fan = true
+                  AND m.app_team_id = :appTeamId
+            ), attendances AS (
+                SELECT match_id,
+                       date,
+                       ROW_NUMBER() OVER (ORDER BY date ASC NULLS LAST, match_id ASC) AS attendance_number
+                FROM distinct_attendances
+            ), attendance_totals AS (
+                SELECT COUNT(*) AS total_attendance_count
+                FROM distinct_attendances
+            )
+            SELECT a.match_id AS matchId,
+                   CAST(a.attendance_number AS int) AS firstNumber,
+                   CAST(at.total_attendance_count AS int) AS secondNumber
+            FROM attendances a
+            CROSS JOIN attendance_totals at
+            WHERE a.attendance_number = :attendanceThreshold
+            LIMIT 1
+            """, nativeQuery = true)
     IMatchIdNumberOneNumberTwo findFanAttendanceMilestone(@Param("playerId") Long playerId,
-                                                           @Param("appTeamId") Long appTeamId,
-                                                           @Param("attendanceThreshold") int attendanceThreshold);
+                                                          @Param("appTeamId") Long appTeamId,
+                                                          @Param("attendanceThreshold") int attendanceThreshold);
 
     // Do počtu
     @Query(value = """
-        WITH attended_matches AS (
-            SELECT m.id AS match_id,
-                   m.date,
-                   s.name AS season_name,
-                   COALESCE(SUM(g.goal_number), 0) AS goals,
-                   COALESCE(SUM(g.assist_number), 0) AS assists
-            FROM match_players mp
-            JOIN player p ON p.id = mp.player_id
-            JOIN match m ON m.id = mp.match_id
-            LEFT JOIN season s ON s.id = m.season_id
-            LEFT JOIN goal g ON g.match_id = m.id AND g.player_id = mp.player_id
-            WHERE mp.player_id = :playerId
-              AND p.fan = false
-              AND m.app_team_id = :appTeamId
-            GROUP BY m.id, m.date, s.name
-        ), grouped AS (
-            SELECT am.*,
-                   SUM(CASE WHEN goals + assists > 0 THEN 1 ELSE 0 END)
-                       OVER (ORDER BY date ASC NULLS LAST, match_id ASC) AS points_group
-            FROM attended_matches am
-        ), zero_point_streaks AS (
-            SELECT g.*,
-                   ROW_NUMBER() OVER (PARTITION BY points_group ORDER BY date ASC NULLS LAST, match_id ASC) AS streak_position,
-                   COUNT(*) OVER (PARTITION BY points_group) AS streak_length
-            FROM grouped g
-            WHERE goals + assists = 0
-        )
-        SELECT match_id AS matchId,
-               CAST(streak_length AS int) AS firstNumber,
-               CAST(goals AS int) AS secondNumber,
-               CAST(assists AS int) AS thirdNumber,
-               season_name AS text
-        FROM zero_point_streaks
-        WHERE streak_position = 5
-        ORDER BY date ASC NULLS LAST, match_id ASC
-        LIMIT 1
-        """, nativeQuery = true)
+            WITH attended_matches AS (
+                SELECT m.id AS match_id,
+                       m.date,
+                       s.name AS season_name,
+                       COALESCE(SUM(g.goal_number), 0) AS goals,
+                       COALESCE(SUM(g.assist_number), 0) AS assists
+                FROM match_players mp
+                JOIN player p ON p.id = mp.player_id
+                JOIN match m ON m.id = mp.match_id
+                LEFT JOIN season s ON s.id = m.season_id
+                LEFT JOIN goal g ON g.match_id = m.id AND g.player_id = mp.player_id
+                WHERE mp.player_id = :playerId
+                  AND p.fan = false
+                  AND m.app_team_id = :appTeamId
+                GROUP BY m.id, m.date, s.name
+            ), grouped AS (
+                SELECT am.*,
+                       SUM(CASE WHEN goals + assists > 0 THEN 1 ELSE 0 END)
+                           OVER (ORDER BY date ASC NULLS LAST, match_id ASC) AS points_group
+                FROM attended_matches am
+            ), zero_point_streaks AS (
+                SELECT g.*,
+                       ROW_NUMBER() OVER (PARTITION BY points_group ORDER BY date ASC NULLS LAST, match_id ASC) AS streak_position,
+                       COUNT(*) OVER (PARTITION BY points_group) AS streak_length
+                FROM grouped g
+                WHERE goals + assists = 0
+            )
+            SELECT match_id AS matchId,
+                   CAST(streak_length AS int) AS firstNumber,
+                   CAST(goals AS int) AS secondNumber,
+                   CAST(assists AS int) AS thirdNumber,
+                   season_name AS text
+            FROM zero_point_streaks
+            WHERE streak_position = 5
+            ORDER BY date ASC NULLS LAST, match_id ASC
+            LIMIT 1
+            """, nativeQuery = true)
     IMatchIdThreeNumbersAndText findDoPoctu(@Param("playerId") Long playerId,
                                             @Param("appTeamId") Long appTeamId);
 
     // Hattrick Gordieho Howa
     @Query(value = """
-        SELECT g.match_id AS matchId,
-               CAST(g.goal_number AS int) AS firstNumber,
-               CAST(g.assist_number AS int) AS secondNumber,
-               CAST(SUM(rf.fine_number) AS int) AS thirdNumber,
-               STRING_AGG(DISTINCT f.name, ', ') AS text
-        FROM goal g
-        JOIN match m ON m.id = g.match_id
-        JOIN received_fine rf ON rf.match_id = g.match_id AND rf.player_id = g.player_id
-        JOIN fine f ON f.id = rf.fine_id
-        WHERE g.player_id = :playerId
-          AND m.app_team_id = :appTeamId
-          AND g.goal_number > 0
-          AND g.assist_number > 0
-          AND rf.fine_number > 0
-          AND f.name IN ('Žlutá karta', 'Červená karta')
-        GROUP BY g.match_id, g.goal_number, g.assist_number, m.date
-        ORDER BY m.date ASC NULLS LAST, g.match_id ASC
-        LIMIT 1
-        """, nativeQuery = true)
+            SELECT g.match_id AS matchId,
+                   CAST(g.goal_number AS int) AS firstNumber,
+                   CAST(g.assist_number AS int) AS secondNumber,
+                   CAST(SUM(rf.fine_number) AS int) AS thirdNumber,
+                   STRING_AGG(DISTINCT f.name, ', ') AS text
+            FROM goal g
+            JOIN match m ON m.id = g.match_id
+            JOIN received_fine rf ON rf.match_id = g.match_id AND rf.player_id = g.player_id
+            JOIN fine f ON f.id = rf.fine_id
+            WHERE g.player_id = :playerId
+              AND m.app_team_id = :appTeamId
+              AND g.goal_number > 0
+              AND g.assist_number > 0
+              AND rf.fine_number > 0
+              AND f.name IN ('Žlutá karta', 'Červená karta')
+            GROUP BY g.match_id, g.goal_number, g.assist_number, m.date
+            ORDER BY m.date ASC NULLS LAST, g.match_id ASC
+            LIMIT 1
+            """, nativeQuery = true)
     IMatchIdThreeNumbersAndText findHattrickGordiehoHowa(@Param("playerId") Long playerId,
                                                          @Param("appTeamId") Long appTeamId);
 
     // Společný milník vybraných pokut
     @Query(value = """
-        WITH fines_per_match AS (
-            SELECT rf.match_id,
-                   m.date,
-                   SUM(rf.fine_number) AS fine_count
-            FROM received_fine rf
-            JOIN fine f ON f.id = rf.fine_id
-            JOIN match m ON m.id = rf.match_id
-            WHERE rf.player_id = :playerId
-              AND m.app_team_id = :appTeamId
-              AND f.name IN (:fineNames)
-              AND rf.fine_number > 0
-            GROUP BY rf.match_id, m.date
-        ), cumulative AS (
-            SELECT match_id,
-                   date,
-                   fine_count,
-                   SUM(fine_count) OVER (ORDER BY date ASC NULLS LAST, match_id ASC) AS cumulative_fines,
-                   SUM(fine_count) OVER () AS total_fines
-            FROM fines_per_match
-        )
-        SELECT match_id AS matchId,
-               CAST(total_fines AS int) AS firstNumber,
-               CAST(cumulative_fines AS int) AS secondNumber
-        FROM cumulative
-        WHERE cumulative_fines >= :threshold
-        ORDER BY date ASC NULLS LAST, match_id ASC
-        LIMIT 1
-        """, nativeQuery = true)
+            WITH fines_per_match AS (
+                SELECT rf.match_id,
+                       m.date,
+                       SUM(rf.fine_number) AS fine_count
+                FROM received_fine rf
+                JOIN fine f ON f.id = rf.fine_id
+                JOIN match m ON m.id = rf.match_id
+                WHERE rf.player_id = :playerId
+                  AND m.app_team_id = :appTeamId
+                  AND f.name IN (:fineNames)
+                  AND rf.fine_number > 0
+                GROUP BY rf.match_id, m.date
+            ), cumulative AS (
+                SELECT match_id,
+                       date,
+                       fine_count,
+                       SUM(fine_count) OVER (ORDER BY date ASC NULLS LAST, match_id ASC) AS cumulative_fines,
+                       SUM(fine_count) OVER () AS total_fines
+                FROM fines_per_match
+            )
+            SELECT match_id AS matchId,
+                   CAST(total_fines AS int) AS firstNumber,
+                   CAST(cumulative_fines AS int) AS secondNumber
+            FROM cumulative
+            WHERE cumulative_fines >= :threshold
+            ORDER BY date ASC NULLS LAST, match_id ASC
+            LIMIT 1
+            """, nativeQuery = true)
     IMatchIdNumberOneNumberTwo findFineMilestone(@Param("playerId") Long playerId,
-                                                  @Param("appTeamId") Long appTeamId,
-                                                  @Param("fineNames") List<String> fineNames,
-                                                  @Param("threshold") int threshold);
+                                                 @Param("appTeamId") Long appTeamId,
+                                                 @Param("fineNames") List<String> fineNames,
+                                                 @Param("threshold") int threshold);
 
     // Černé geny
     @Query(value = """
-        SELECT fs.match_id AS matchId,
-               CAST(MAX(fs.sprint_speed) * 3.6 AS double precision) AS firstNumber,
-               CAST(COALESCE(SUM(fs.sprint_count), 0) AS int) AS secondNumber
-        FROM footbar_session fs
-        JOIN match m ON m.id = fs.match_id
-        WHERE fs.player_id = :playerId
-          AND m.app_team_id = :appTeamId
-          AND fs.sprint_speed >= (25.0 / 3.6)
-        GROUP BY fs.match_id, m.date
-        ORDER BY m.date ASC NULLS LAST, fs.match_id ASC
-        LIMIT 1
-        """, nativeQuery = true)
+            SELECT fs.match_id AS matchId,
+                   CAST(MAX(fs.sprint_speed) * 3.6 AS double precision) AS firstNumber,
+                   CAST(COALESCE(SUM(fs.sprint_count), 0) AS int) AS secondNumber
+            FROM footbar_session fs
+            JOIN match m ON m.id = fs.match_id
+            WHERE fs.player_id = :playerId
+              AND m.app_team_id = :appTeamId
+              AND fs.sprint_speed >= (25.0 / 3.6)
+            GROUP BY fs.match_id, m.date
+            ORDER BY m.date ASC NULLS LAST, fs.match_id ASC
+            LIMIT 1
+            """, nativeQuery = true)
     IMatchIdDecimalAndNumber findCerneGeny(@Param("playerId") Long playerId,
                                            @Param("appTeamId") Long appTeamId);
 
