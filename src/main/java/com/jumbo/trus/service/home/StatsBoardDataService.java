@@ -29,6 +29,9 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static com.jumbo.trus.config.Config.ALL_SEASON_ID;
 
@@ -49,32 +52,38 @@ public class StatsBoardDataService {
 
         SeasonDTO currentSeason = seasonService.getCurrentSeason(true, appTeamEntity);
         SeasonDTO allSeason = seasonService.getAllSeason();
+        List<PlayerDTO> players = playerService.getAll(appTeamId);
+        List<Long> playerIds = players.stream()
+                .map(PlayerDTO::getId)
+                .toList();
+        Map<Long, PlayerDTO> playersById = players.stream()
+                .collect(Collectors.toMap(PlayerDTO::getId, Function.identity()));
 
         List<StatsBoardData> statsBoardDataList = new ArrayList<>();
 
-        statsBoardDataList.add(getPlayerAchievementData(appTeamId));
-        statsBoardDataList.add(getPlayerAchievementCountData(appTeamId));
+        statsBoardDataList.add(getPlayerAchievementData(playerIds));
+        statsBoardDataList.add(getPlayerAchievementCountData(appTeamId, playersById));
 
-        statsBoardDataList.add(getBeerData(currentSeason, appTeamId));
-        statsBoardDataList.add(getAverageBeerData(currentSeason, appTeamId));
-        statsBoardDataList.add(getFineData(currentSeason, appTeamId));
-        statsBoardDataList.add(getGoalData(currentSeason, appTeamId));
-        statsBoardDataList.add(getFootbarData(currentSeason, appTeamId));
+        statsBoardDataList.add(getBeerData(currentSeason, appTeamId, playersById));
+        statsBoardDataList.add(getAverageBeerData(currentSeason, appTeamId, playersById));
+        statsBoardDataList.add(getFineData(currentSeason, appTeamId, playersById));
+        statsBoardDataList.add(getGoalData(currentSeason, appTeamId, playersById));
+        statsBoardDataList.add(getFootbarData(currentSeason, appTeamId, playersById));
 
-        statsBoardDataList.add(getBeerData(allSeason, appTeamId));
-        statsBoardDataList.add(getAverageBeerData(allSeason, appTeamId));
-        statsBoardDataList.add(getFineData(allSeason, appTeamId));
-        statsBoardDataList.add(getGoalData(allSeason, appTeamId));
-        statsBoardDataList.add(getFootbarData(allSeason, appTeamId));
+        statsBoardDataList.add(getBeerData(allSeason, appTeamId, playersById));
+        statsBoardDataList.add(getAverageBeerData(allSeason, appTeamId, playersById));
+        statsBoardDataList.add(getFineData(allSeason, appTeamId, playersById));
+        statsBoardDataList.add(getGoalData(allSeason, appTeamId, playersById));
+        statsBoardDataList.add(getFootbarData(allSeason, appTeamId, playersById));
 
         return statsBoardDataList;
     }
 
-    private StatsBoardData getPlayerAchievementData(long appTeamId) {
+    private StatsBoardData getPlayerAchievementData(List<Long> playerIds) {
         List<PlayerAchievementDTO> playerAchievementDTOList =
                 playerAchievementService.getLastPlayerAchievements(
                         5,
-                        getPlayerIdList(appTeamId)
+                        playerIds
                 );
 
         if (playerAchievementDTOList.isEmpty()) {
@@ -106,7 +115,7 @@ public class StatsBoardDataService {
         return statsBoardData;
     }
 
-    private StatsBoardData getPlayerAchievementCountData(long appTeamId) {
+    private StatsBoardData getPlayerAchievementCountData(long appTeamId, Map<Long, PlayerDTO> playersById) {
         List<IPlayerAchievementStats> playerAchievementStatsList =
                 playerAchievementService.getListOfPlayersOrderAccomplishedAchievements(
                         appTeamId,
@@ -129,6 +138,7 @@ public class StatsBoardDataService {
         for (IPlayerAchievementStats playerAchievementStats : playerAchievementStatsList) {
             statsBoardRows.add(
                     createPlayerRow(
+                            playersById,
                             playerAchievementStats.getPlayerId(),
                             playerAchievementStats.getAccomplishedCount().toString(),
                             playerAchievementStats.getNotAccomplishedCount().toString()
@@ -140,7 +150,7 @@ public class StatsBoardDataService {
         return statsBoardData;
     }
 
-    private StatsBoardData getBeerData(SeasonDTO season, long appTeamId) {
+    private StatsBoardData getBeerData(SeasonDTO season, long appTeamId, Map<Long, PlayerDTO> playersById) {
         List<IPlayerDrinkStats> playerDrinkStatsList =
                 beerStatsService.getListOfPlayersOrderByBeerAndLiquorNumber(
                         season.getId(),
@@ -166,6 +176,7 @@ public class StatsBoardDataService {
         for (IPlayerDrinkStats playerDrinkStats : playerDrinkStatsList) {
             statsBoardRows.add(
                     createPlayerRow(
+                            playersById,
                             playerDrinkStats.getPlayerId(),
                             playerDrinkStats.getBeerNumber().toString(),
                             playerDrinkStats.getLiquorNumber().toString()
@@ -177,7 +188,7 @@ public class StatsBoardDataService {
         return statsBoardData;
     }
 
-    private StatsBoardData getAverageBeerData(SeasonDTO season, long appTeamId) {
+    private StatsBoardData getAverageBeerData(SeasonDTO season, long appTeamId, Map<Long, PlayerDTO> playersById) {
         List<IPlayerDrinkAverageStats> playerDrinkStatsList =
                 beerStatsService.getListOfPlayersOrderByAverageBeerAndLiquorNumber(
                         season.getId(),
@@ -204,6 +215,7 @@ public class StatsBoardDataService {
         for (IPlayerDrinkAverageStats playerDrinkAverageStats : playerDrinkStatsList) {
             statsBoardRows.add(
                     createPlayerRow(
+                            playersById,
                             playerDrinkAverageStats.getPlayerId(),
                             numberRounder.roundDoubleToString(
                                     2,
@@ -221,7 +233,7 @@ public class StatsBoardDataService {
         return statsBoardData;
     }
 
-    private StatsBoardData getFineData(SeasonDTO season, long appTeamId) {
+    private StatsBoardData getFineData(SeasonDTO season, long appTeamId, Map<Long, PlayerDTO> playersById) {
         List<IPlayerFineStats> playerFineStatsList =
                 receivedFineGetter.getListOfPlayersOrderByReceivedFineAmount(
                         season.getId(),
@@ -247,6 +259,7 @@ public class StatsBoardDataService {
         for (IPlayerFineStats playerFineStats : playerFineStatsList) {
             statsBoardRows.add(
                     createPlayerRow(
+                            playersById,
                             playerFineStats.getPlayerId(),
                             playerFineStats.getFineCount().toString(),
                             playerFineStats.getFineAmount() + " Kč"
@@ -258,7 +271,7 @@ public class StatsBoardDataService {
         return statsBoardData;
     }
 
-    private StatsBoardData getGoalData(SeasonDTO season, long appTeamId) {
+    private StatsBoardData getGoalData(SeasonDTO season, long appTeamId, Map<Long, PlayerDTO> playersById) {
         List<IPlayerGoalStats> playerGoalStatsList =
                 goalService.getListOfPlayersOrderByGoalAndAssistNumber(
                         season.getId(),
@@ -284,6 +297,7 @@ public class StatsBoardDataService {
         for (IPlayerGoalStats playerGoalStats : playerGoalStatsList) {
             statsBoardRows.add(
                     createPlayerRow(
+                            playersById,
                             playerGoalStats.getPlayerId(),
                             playerGoalStats.getGoalNumber().toString(),
                             playerGoalStats.getAssistNumber().toString()
@@ -295,7 +309,7 @@ public class StatsBoardDataService {
         return statsBoardData;
     }
 
-    private StatsBoardData getFootbarData(SeasonDTO season, long appTeamId) {
+    private StatsBoardData getFootbarData(SeasonDTO season, long appTeamId, Map<Long, PlayerDTO> playersById) {
         List<IPlayerRunningStats> playerRunningStatsList =
                 footbarSessionGetter.getListOfPlayersOrderByAverageTotalDistance(
                         season.getId(),
@@ -322,6 +336,7 @@ public class StatsBoardDataService {
         for (IPlayerRunningStats playerRunningStats : playerRunningStatsList) {
             statsBoardRows.add(
                     createPlayerRow(
+                            playersById,
                             playerRunningStats.getPlayerId(),
                             numberRounder.roundDoubleToString(
                                     2,
@@ -353,8 +368,11 @@ public class StatsBoardDataService {
         return statsBoardData;
     }
 
-    private StatsBoardRow createPlayerRow(Long playerId, String... values) {
-        PlayerDTO player = playerService.getPlayer(playerId);
+    private StatsBoardRow createPlayerRow(Map<Long, PlayerDTO> playersById, Long playerId, String... values) {
+        PlayerDTO player = playersById.get(playerId);
+        if (player == null) {
+            player = playerService.getPlayer(playerId);
+        }
         return createPlayerRow(player, values);
     }
 
@@ -370,11 +388,6 @@ public class StatsBoardDataService {
         return statsBoardRow;
     }
 
-    private List<Long> getPlayerIdList(long appTeamId) {
-        return playerService.convertPlayerListToPlayerIdList(
-                playerService.getAll(appTeamId)
-        );
-    }
 
     private RedirectDTO getPlayerRedirect(PlayerDTO playerDTO) {
         RedirectDTO redirectDTO = new RedirectDTO();

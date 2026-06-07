@@ -1,5 +1,6 @@
 package com.jumbo.trus.service.player;
 
+import com.jumbo.trus.dto.player.IPlayerBirthday;
 import com.jumbo.trus.dto.player.PlayerDTO;
 import com.jumbo.trus.entity.PlayerEntity;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
@@ -135,9 +136,22 @@ public class PlayerService {
     }
 
     public String returnNextPlayerBirthdayFromList(long appTeamId) {
-        List<PlayerDTO> players = playerRepository.getBirthdayPlayers(appTeamId).stream().map(playerMapper::toDTO).toList();
+        List<PlayerDTO> players = playerRepository.getUpcomingBirthdayPlayers(appTeamId)
+                .stream()
+                .map(this::toBirthdayPlayerDTO)
+                .toList();
         BirthdayCalculator birthdayCalculator = new BirthdayCalculator(players);
         return birthdayCalculator.returnNextPlayerBirthdayFromList();
+    }
+
+    private PlayerDTO toBirthdayPlayerDTO(IPlayerBirthday playerBirthday) {
+        PlayerDTO playerDTO = new PlayerDTO();
+        playerDTO.setId(playerBirthday.getId() == null ? 0L : playerBirthday.getId());
+        playerDTO.setName(playerBirthday.getName());
+        playerDTO.setBirthday(playerBirthday.getBirthday());
+        playerDTO.setFan(Boolean.TRUE.equals(playerBirthday.getFan()));
+        playerDTO.setActive(true);
+        return playerDTO;
     }
 
     public PlayerDTO noPlayer() {

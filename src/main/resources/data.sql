@@ -105,3 +105,15 @@ ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP NULL;
 ALTER TABLE match
     ADD COLUMN IF NOT EXISTS home_goal_number INTEGER,
     ADD COLUMN IF NOT EXISTS away_goal_number INTEGER;
+-- Výkonnostní indexy pro homeSetup / statistiky
+CREATE INDEX IF NOT EXISTS idx_beer_app_team_player_match
+    ON beer (app_team_id, player_id, match_id);
+
+CREATE INDEX IF NOT EXISTS idx_received_fine_app_team_player_match
+    ON received_fine (app_team_id, player_id, match_id);
+
+CREATE INDEX IF NOT EXISTS idx_match_app_team_date
+    ON match (app_team_id, date);
+
+CREATE INDEX IF NOT EXISTS idx_player_app_team_deleted
+    ON player (app_team_id, deleted);
