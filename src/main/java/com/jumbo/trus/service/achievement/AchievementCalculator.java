@@ -1335,7 +1335,7 @@ public class AchievementCalculator {
                 playerDTO.getId(), appTeam.getId(), attendanceThreshold);
         if (result != null) {
             return returnPlayerAchievement(achievement, playerDTO, result.getMatchId(),
-                    "Zatím tento skvělý fanoušek zvádl navštívit " + result.getFirstNumber() + " utkání");
+                    "Zatím tento skvělý fanoušek zvádl navštívit " + result.getSecondNumber() + " utkání");
         }
         return returnFailedPlayerAchievement(achievement, playerDTO);
     }
