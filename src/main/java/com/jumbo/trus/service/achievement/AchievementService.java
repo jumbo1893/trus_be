@@ -9,8 +9,10 @@ import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.lock.LockManager;
 import com.jumbo.trus.mapper.achievement.AchievementMapper;
 import com.jumbo.trus.mapper.achievement.PlayerAchievementMapper;
+import com.jumbo.trus.repository.MatchRepository;
 import com.jumbo.trus.repository.achievement.AchievementRepository;
 import com.jumbo.trus.repository.achievement.PlayerAchievementRepository;
+import com.jumbo.trus.service.achievement.helper.AchievementRecalculationContext;
 import com.jumbo.trus.service.achievement.helper.AchievementType;
 import com.jumbo.trus.service.order.OrderAchievementBySuccessRate;
 import com.jumbo.trus.service.player.PlayerService;
@@ -22,10 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.webjars.NotFoundException;
 
 import java.text.Collator;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
 @Service
@@ -42,37 +41,123 @@ public class AchievementService {
     private final LockManager lockManager;
     private final AchievementDetailService achievementDetailService;
     private final AchievementRarityService achievementRarityService;
+    private final MatchRepository matchRepository;
 
     @Transactional
     public void updateAllPlayerAchievements(AppTeamEntity appTeam, AchievementType achievementType) {
+        updatePlayerAchievements(appTeam, achievementType, AchievementRecalculationContext.full(null));
+    }
+
+    @Transactional
+    public void updatePlayerAchievements(
+            AppTeamEntity appTeam,
+            AchievementType achievementType,
+            AchievementRecalculationContext context
+    ) {
         if (appTeam == null) {
             throw new IllegalStateException("AppTeamId nebyl nastaven!");
         }
+
+        AchievementRecalculationContext safeContext = context == null
+                ? AchievementRecalculationContext.full(null)
+                : context;
+
+        executeWithAchievementLock(appTeam, () -> {
+            if (safeContext.shouldUseFullRecalculation()) {
+                log.info("Starting full achievement calculation. appTeamId={}, type={}, context={}",
+                        appTeam.getId(), achievementType, safeContext);
+                List<PlayerDTO> players = loadAllPlayers(appTeam);
+                achievementCalculator.calculateAllAchievements(players, appTeam, achievementType);
+                return;
+            }
+
+            AchievementRecalculationContext enrichedContext = enrichContext(appTeam, safeContext);
+            List<PlayerDTO> players = loadPlayersForContext(appTeam, enrichedContext);
+
+            if (players.isEmpty()) {
+                log.info("Skipping achievement calculation because no affected players were found. appTeamId={}, type={}, context={}",
+                        appTeam.getId(), achievementType, enrichedContext);
+                return;
+            }
+
+            log.info("Starting scoped achievement calculation. appTeamId={}, type={}, players={}, context={}",
+                    appTeam.getId(), achievementType, players.size(), enrichedContext);
+            achievementCalculator.calculateAchievementsByContext(players, appTeam, achievementType, enrichedContext);
+        });
+    }
+
+    private void executeWithAchievementLock(AppTeamEntity appTeam, Runnable runnable) {
         ReentrantLock lock = lockManager.getLock(appTeam.getId());
-        if (lock.tryLock()) { // Non-blocking pokus – pokud zamčené, počkáme (fair lock)
+        if (lock.tryLock()) {
             try {
-                log.info("Starting updateAllPlayerAchievements. appTeamId={}, type={}", appTeam.getId(), achievementType);
-                long playersLoadStart = System.nanoTime();
-                List<PlayerDTO> players = playerService.getAll(appTeam.getId());
-                log.info("Loaded players for achievement calculation in {} ms. appTeamId={}, players={}",
-                        (System.nanoTime() - playersLoadStart) / 1_000_000, appTeam.getId(), players.size());
-                achievementCalculator.calculateAllAchievements(players, appTeam, achievementType);
+                runnable.run();
             } finally {
                 lock.unlock();
             }
-        } else {
-            // Pokud nelze získat lock ihned, zařaď do fronty nebo retry – ale pro jednoduchost: čekej blokujícím způsobem
-            lock.lock(); // Blokující čekání
-            try {
-                log.info("Starting queued updateAllPlayerAchievements. appTeamId={}, type={}", appTeam.getId(), achievementType);
-                long playersLoadStart = System.nanoTime();
-                List<PlayerDTO> players = playerService.getAll(appTeam.getId());
-                log.info("Loaded players for queued achievement calculation in {} ms. appTeamId={}, players={}",
-                        (System.nanoTime() - playersLoadStart) / 1_000_000, appTeam.getId(), players.size());
-                achievementCalculator.calculateAllAchievements(players, appTeam, achievementType);
-            } finally {
-                lock.unlock();
-            }
+            return;
+        }
+
+        lock.lock();
+        try {
+            log.info("Starting queued achievement calculation. appTeamId={}", appTeam.getId());
+            runnable.run();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    private List<PlayerDTO> loadAllPlayers(AppTeamEntity appTeam) {
+        long playersLoadStart = System.nanoTime();
+        List<PlayerDTO> players = playerService.getAll(appTeam.getId());
+        log.info("Loaded all players for achievement calculation in {} ms. appTeamId={}, players={}",
+                (System.nanoTime() - playersLoadStart) / 1_000_000, appTeam.getId(), players.size());
+        return players;
+    }
+
+    private AchievementRecalculationContext enrichContext(AppTeamEntity appTeam, AchievementRecalculationContext context) {
+        Set<Long> affectedPlayerIds = new HashSet<>(context.affectedPlayerIds());
+        Set<Long> changedSeasonIds = new HashSet<>(context.changedSeasonIds());
+
+        if (context.hasChangedMatches()) {
+            affectedPlayerIds.addAll(matchRepository.findAffectedPlayerIdsByMatchIds(context.changedMatchIds()));
+            affectedPlayerIds.addAll(playerAchievementRepository.findPlayerIdsWithAccomplishedAchievementsOnMatchIds(
+                    appTeam.getId(),
+                    context.changedMatchIds()
+            ));
+            changedSeasonIds.addAll(matchRepository.findSeasonIdsByMatchIds(context.changedMatchIds()));
+        }
+
+        return AchievementRecalculationContext.scoped(
+                context.changedMatchIds(),
+                affectedPlayerIds,
+                changedSeasonIds,
+                context.changedDependencies()
+        );
+    }
+
+    private List<PlayerDTO> loadPlayersForContext(AppTeamEntity appTeam, AchievementRecalculationContext context) {
+        if (!context.hasAffectedPlayers()) {
+            return loadAllPlayers(appTeam);
+        }
+
+        long playersLoadStart = System.nanoTime();
+        List<PlayerDTO> players = context.affectedPlayerIds().stream()
+                .map(this::safeGetPlayer)
+                .filter(player -> player != null && player.getId() != 0)
+                .toList();
+        log.info("Loaded scoped players for achievement calculation in {} ms. appTeamId={}, players={}, requestedPlayerIds={}",
+                (System.nanoTime() - playersLoadStart) / 1_000_000, appTeam.getId(), players.size(), context.affectedPlayerIds().size());
+        return players;
+    }
+
+    private PlayerDTO safeGetPlayer(Long playerId) {
+        try {
+            return playerService.getPlayer(playerId);
+        } catch (RuntimeException exception) {
+            log.warn("Skipping player during scoped achievement calculation because player could not be loaded. playerId={}",
+                    playerId,
+                    exception);
+            return null;
         }
     }
 

@@ -24,6 +24,7 @@ import com.jumbo.trus.service.player.PlayerAchievementService;
 import com.jumbo.trus.service.player.PlayerService;
 import com.jumbo.trus.service.receivedFine.ReceivedFineGetter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -35,6 +36,7 @@ import java.util.stream.Collectors;
 
 import static com.jumbo.trus.config.Config.ALL_SEASON_ID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class StatsBoardDataService {
@@ -60,23 +62,27 @@ public class StatsBoardDataService {
                 .collect(Collectors.toMap(PlayerDTO::getId, Function.identity()));
 
         List<StatsBoardData> statsBoardDataList = new ArrayList<>();
+        addIfNotNull(statsBoardDataList, getPlayerAchievementData(playerIds));
+        addIfNotNull(statsBoardDataList, getPlayerAchievementCountData(appTeamId, playersById));
 
-        statsBoardDataList.add(getPlayerAchievementData(playerIds));
-        statsBoardDataList.add(getPlayerAchievementCountData(appTeamId, playersById));
+        addIfNotNull(statsBoardDataList, getBeerData(currentSeason, appTeamId, playersById));
+        addIfNotNull(statsBoardDataList, getAverageBeerData(currentSeason, appTeamId, playersById));
+        addIfNotNull(statsBoardDataList, getFineData(currentSeason, appTeamId, playersById));
+        addIfNotNull(statsBoardDataList, getGoalData(currentSeason, appTeamId, playersById));
+        addIfNotNull(statsBoardDataList, getFootbarData(currentSeason, appTeamId, playersById));
 
-        statsBoardDataList.add(getBeerData(currentSeason, appTeamId, playersById));
-        statsBoardDataList.add(getAverageBeerData(currentSeason, appTeamId, playersById));
-        statsBoardDataList.add(getFineData(currentSeason, appTeamId, playersById));
-        statsBoardDataList.add(getGoalData(currentSeason, appTeamId, playersById));
-        statsBoardDataList.add(getFootbarData(currentSeason, appTeamId, playersById));
-
-        statsBoardDataList.add(getBeerData(allSeason, appTeamId, playersById));
-        statsBoardDataList.add(getAverageBeerData(allSeason, appTeamId, playersById));
-        statsBoardDataList.add(getFineData(allSeason, appTeamId, playersById));
-        statsBoardDataList.add(getGoalData(allSeason, appTeamId, playersById));
-        statsBoardDataList.add(getFootbarData(allSeason, appTeamId, playersById));
-
+        addIfNotNull(statsBoardDataList, getBeerData(allSeason, appTeamId, playersById));
+        addIfNotNull(statsBoardDataList, getAverageBeerData(allSeason, appTeamId, playersById));
+        addIfNotNull(statsBoardDataList, getFineData(allSeason, appTeamId, playersById));
+        addIfNotNull(statsBoardDataList, getGoalData(allSeason, appTeamId, playersById));
+        addIfNotNull(statsBoardDataList, getFootbarData(allSeason, appTeamId, playersById));
         return statsBoardDataList;
+    }
+
+    private void addIfNotNull(List<StatsBoardData> list, StatsBoardData data) {
+        if (data != null) {
+            list.add(data);
+        }
     }
 
     private StatsBoardData getPlayerAchievementData(List<Long> playerIds) {

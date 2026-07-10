@@ -78,6 +78,9 @@ public class HomeService {
 
     private DashboardMatch getNextMatch(AppTeamEntity appTeamEntity) {
         FootballMatchDetail footballMatchDetail = footballMatchService.getNextAndLastFootballMatchDetail(appTeamEntity, true);
+        if (footballMatchDetail == null) {
+            return null;
+        }
         MatchDTO match = matchService.findMatchByFootballMatchIdOrNull(footballMatchDetail.getFootballMatch().getId(), appTeamEntity.getId());
 
         if (match != null && match.getHomeGoalNumber() != null && match.getAwayGoalNumber() != null) {
@@ -97,6 +100,9 @@ public class HomeService {
 
     private DashboardMatch getLastMatch(AppTeamEntity appTeamEntity, PlayerDTO player) {
         FootballMatchDetail footballMatchDetail = footballMatchService.getNextAndLastFootballMatchDetail(appTeamEntity, false);
+        if (footballMatchDetail == null) {
+            return null;
+        }
         MatchDTO match = matchService.findMatchByFootballMatchIdOrNull(footballMatchDetail.getFootballMatch().getId(), appTeamEntity.getId());
 
         if (match != null && match.getHomeGoalNumber() != null && match.getAwayGoalNumber() != null) {

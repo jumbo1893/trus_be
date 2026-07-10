@@ -65,4 +65,50 @@ public interface MatchRepository extends PagingAndSortingRepository<MatchEntity,
             @Param("from") Date from,
             @Param("to") Date to
     );
+
+    @Query(value = """
+            SELECT DISTINCT player_id
+            FROM (
+                SELECT mp.player_id
+                FROM match_players mp
+                WHERE mp.match_id IN (:matchIds)
+
+                UNION
+
+                SELECT b.player_id
+                FROM beer b
+                WHERE b.match_id IN (:matchIds)
+
+                UNION
+
+                SELECT g.player_id
+                FROM goal g
+                WHERE g.match_id IN (:matchIds)
+
+                UNION
+
+                SELECT rf.player_id
+                FROM received_fine rf
+                WHERE rf.match_id IN (:matchIds)
+
+                UNION
+
+                SELECT p.id AS player_id
+                FROM match m
+                JOIN football_match_player fmp ON fmp.match_id = m.football_match_id
+                JOIN player p ON p.football_player_id = fmp.player_id
+                WHERE m.id IN (:matchIds)
+            ) affected_players
+            WHERE player_id IS NOT NULL
+            """, nativeQuery = true)
+    List<Long> findAffectedPlayerIdsByMatchIds(@Param("matchIds") Iterable<Long> matchIds);
+
+    @Query(value = """
+            SELECT DISTINCT season_id
+            FROM match
+            WHERE id IN (:matchIds)
+              AND season_id IS NOT NULL
+            """, nativeQuery = true)
+    List<Long> findSeasonIdsByMatchIds(@Param("matchIds") Iterable<Long> matchIds);
+
 }

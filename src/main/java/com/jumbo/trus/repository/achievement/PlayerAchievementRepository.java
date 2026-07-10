@@ -1458,5 +1458,206 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
     IMatchIdDecimalAndNumber findCerneGeny(@Param("playerId") Long playerId,
                                            @Param("appTeamId") Long appTeamId);
 
+
+    @Query("""
+            SELECT DISTINCT pa.player.id
+            FROM PlayerAchievementEntity pa
+            WHERE pa.player.appTeam.id = :appTeamId
+              AND pa.accomplished = true
+              AND pa.match.id IN :matchIds
+            """)
+    List<Long> findPlayerIdsWithAccomplishedAchievementsOnMatchIds(
+            @Param("appTeamId") Long appTeamId,
+            @Param("matchIds") Iterable<Long> matchIds
+    );
+
+    @Query(value = """
+            SELECT b.match_id AS matchId,
+                   b.beer_number AS beerNumber,
+                   b.liquor_number AS liquorNumber,
+                   g.goal_number AS goalNumber
+            FROM beer b
+            JOIN goal g ON b.match_id = g.match_id AND b.player_id = g.player_id
+            WHERE b.player_id = :playerId
+              AND b.match_id = :matchId
+              AND b.beer_number + b.liquor_number = g.goal_number
+              AND g.goal_number > 0
+            LIMIT 1
+            """, nativeQuery = true)
+    IGoalBeerMatch getMatchWithSameGoalsAndBeers(@Param("playerId") Long playerId,
+                                                 @Param("matchId") Long matchId);
+
+    @Query(value = """
+            SELECT b.match_id AS matchId,
+                   b.beer_number AS beerNumber,
+                   b.liquor_number AS liquorNumber,
+                   g.goal_number AS goalNumber,
+                   r.fine_number AS fineNumber
+            FROM beer b
+            JOIN goal g ON b.match_id = g.match_id AND b.player_id = g.player_id
+            JOIN received_fine r ON b.match_id = r.match_id AND b.player_id = r.player_id
+            JOIN fine f ON r.fine_id = f.id
+            WHERE b.player_id = :playerId
+              AND b.match_id = :matchId
+              AND b.beer_number > 0
+              AND b.liquor_number > 0
+              AND g.goal_number > 0
+              AND f.name = :fineName
+              AND r.fine_number > 0
+            LIMIT 1
+            """, nativeQuery = true)
+    IGoalBeerFineMatch getMatchWithGoalYellowBeerAndLiquor(@Param("playerId") Long playerId,
+                                                           @Param("fineName") String fineName,
+                                                           @Param("matchId") Long matchId);
+
+    @Query(value = """
+            SELECT r.match_id
+            FROM player p
+            JOIN received_fine r ON p.id = r.player_id
+            JOIN fine f ON r.fine_id = f.id
+            JOIN match m ON m.id = r.match_id
+            JOIN football_match fm ON m.football_match_id = fm.id
+            JOIN football_match_player fmp ON fm.id = fmp.match_id AND p.football_player_id = fmp.player_id
+            WHERE r.player_id = :playerId
+              AND r.match_id = :matchId
+              AND (fmp.hattrick IS TRUE OR fmp.clean_sheet IS TRUE)
+              AND f.name = :fineName
+              AND r.fine_number > 0
+            LIMIT 1
+            """, nativeQuery = true)
+    Long getMatchWithHangoverAndHattrickOrCleanSheet(@Param("playerId") Long playerId,
+                                                     @Param("fineName") String fineName,
+                                                     @Param("matchId") Long matchId);
+
+    @Query(value = """
+            SELECT r.match_id AS matchId,
+                   SUM(CASE WHEN f.name = :firstFineName THEN r.fine_number ELSE 0 END) AS firstNumber,
+                   SUM(CASE WHEN f.name = :secondFineName THEN r.fine_number ELSE 0 END) AS secondNumber
+            FROM received_fine r
+            JOIN fine f ON r.fine_id = f.id
+            WHERE r.player_id = :playerId
+              AND r.match_id = :matchId
+            GROUP BY r.match_id
+            HAVING SUM(CASE WHEN f.name = :firstFineName THEN r.fine_number ELSE 0 END) >= :firstFineCount
+               AND SUM(CASE WHEN f.name = :secondFineName THEN r.fine_number ELSE 0 END) >= :secondFineCount
+            LIMIT 1
+            """, nativeQuery = true)
+    IMatchIdNumberOneNumberTwo getMatchWithAtLeastXFines(@Param("playerId") Long playerId,
+                                                         @Param("matchId") Long matchId,
+                                                         @Param("firstFineName") String firstFineName,
+                                                         @Param("secondFineName") String secondFineName,
+                                                         @Param("firstFineCount") int firstFineCount,
+                                                         @Param("secondFineCount") int secondFineCount);
+
+    @Query(value = """
+            SELECT r.match_id AS matchId,
+                   SUM(CASE WHEN f.name IN (:firstFineName, :firstFineName2, :firstFineName3) THEN r.fine_number ELSE 0 END) AS firstNumber,
+                   SUM(CASE WHEN f.name = :secondFineName THEN r.fine_number ELSE 0 END) AS secondNumber
+            FROM received_fine r
+            JOIN fine f ON r.fine_id = f.id
+            WHERE r.player_id = :playerId
+              AND r.match_id = :matchId
+            GROUP BY r.match_id
+            HAVING SUM(CASE WHEN f.name IN (:firstFineName, :firstFineName2, :firstFineName3) THEN r.fine_number ELSE 0 END) >= 1
+               AND SUM(CASE WHEN f.name = :secondFineName THEN r.fine_number ELSE 0 END) >= :secondFineCount
+            LIMIT 1
+            """, nativeQuery = true)
+    IMatchIdNumberOneNumberTwo getMatchWithAtLeastOneOfFinesAndXSecondFines(
+            @Param("playerId") Long playerId,
+            @Param("matchId") Long matchId,
+            @Param("firstFineName") String firstFineName,
+            @Param("firstFineName2") String firstFineName2,
+            @Param("firstFineName3") String firstFineName3,
+            @Param("secondFineName") String secondFineName,
+            @Param("secondFineCount") int secondFineCount
+    );
+
+    @Query(value = """
+            SELECT r.match_id AS matchId,
+                   CAST(SUM(r.fine_number) AS int) AS firstNumber,
+                   CAST(SUM(COALESCE(b.beer_number, 0)) AS int) AS secondNumber
+            FROM received_fine r
+            JOIN fine f ON r.fine_id = f.id
+            LEFT JOIN beer b ON b.match_id = r.match_id AND b.player_id = r.player_id
+            WHERE r.player_id = :playerId
+              AND r.match_id = :matchId
+              AND f.name = :fineName
+              AND r.fine_number > 0
+              AND COALESCE(b.beer_number, 0) > 0
+            GROUP BY r.match_id
+            LIMIT 1
+            """, nativeQuery = true)
+    IMatchIdNumberOneNumberTwo findMatchWhereFineExistsAndPlayerHasBeer(@Param("playerId") Long playerId,
+                                                                        @Param("fineName") String fineName,
+                                                                        @Param("matchId") Long matchId);
+
+    @Query(value = """
+            SELECT r.match_id AS matchId,
+                   CAST(SUM(r.fine_number) AS int) AS firstNumber,
+                   CAST(SUM(COALESCE(b.liquor_number, 0)) AS int) AS secondNumber
+            FROM received_fine r
+            JOIN fine f ON r.fine_id = f.id
+            LEFT JOIN beer b ON b.match_id = r.match_id AND b.player_id = r.player_id
+            WHERE r.player_id = :playerId
+              AND r.match_id = :matchId
+              AND f.name = :fineName
+              AND r.fine_number > 0
+              AND COALESCE(b.liquor_number, 0) > 0
+            GROUP BY r.match_id
+            LIMIT 1
+            """, nativeQuery = true)
+    IMatchIdNumberOneNumberTwo findMatchWhereFineExistsAndPlayerHasLiquor(@Param("playerId") Long playerId,
+                                                                          @Param("fineName") String fineName,
+                                                                          @Param("matchId") Long matchId);
+
+    @Query(value = """
+            SELECT r.match_id AS matchId,
+                   CAST(SUM(r.fine_number) AS int) AS firstNumber,
+                   CAST(SUM(r.fine_number) AS int) AS secondNumber
+            FROM received_fine r
+            JOIN fine f ON r.fine_id = f.id
+            WHERE r.player_id = :playerId
+              AND r.match_id = :matchId
+              AND f.name IN (:fineNames)
+              AND r.fine_number > 0
+            GROUP BY r.match_id
+            HAVING SUM(r.fine_number) >= :threshold
+            LIMIT 1
+            """, nativeQuery = true)
+    IMatchIdNumberOneNumberTwo findFineInMatch(@Param("playerId") Long playerId,
+                                               @Param("matchId") Long matchId,
+                                               @Param("fineNames") List<String> fineNames,
+                                               @Param("threshold") int threshold);
+
+    @Query(value = """
+            SELECT g.match_id AS matchId,
+                   CAST(COALESCE(g.goal_number, 0) AS int) AS firstNumber,
+                   CAST(COALESCE(g.assist_number, 0) AS int) AS secondNumber
+            FROM goal g
+            JOIN match m ON m.id = g.match_id
+            WHERE g.player_id = :playerId
+              AND g.match_id = :matchId
+              AND m.app_team_id = :appTeamId
+              AND COALESCE(g.goal_number, 0) > 0
+              AND COALESCE(g.assist_number, 0) > 0
+            LIMIT 1
+            """, nativeQuery = true)
+    IMatchIdNumberOneNumberTwo findMatchWithGoalAndAssist(@Param("playerId") Long playerId,
+                                                          @Param("matchId") Long matchId,
+                                                          @Param("appTeamId") Long appTeamId);
+
+
+    @Query(value = """
+            SELECT b.match_id AS matchId,
+                   CAST(b.beer_number AS int) AS firstNumber,
+                   CAST(b.liquor_number AS int) AS secondNumber
+            FROM beer b
+            WHERE b.player_id = :playerId
+              AND b.match_id = :matchId
+            LIMIT 1
+            """, nativeQuery = true)
+    IMatchIdNumberOneNumberTwo findBeerInMatch(@Param("playerId") Long playerId,
+                                               @Param("matchId") Long matchId);
+
 }
 
