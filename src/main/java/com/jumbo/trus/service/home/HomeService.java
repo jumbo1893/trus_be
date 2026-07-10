@@ -55,7 +55,7 @@ public class HomeService {
         // homeSetup.setCharts(chartMaker.setupChartsCoordinates(player.getId(), appTeamEntity));
 
         homeSetup.setNextAndLastFootballMatch(getNextAndLastMatch(appTeamEntity));
-        homeSetup.setNextMatch(getNextMatch(appTeamEntity));
+        homeSetup.setNextMatch(null);
         homeSetup.setLastMatch(getLastMatch(appTeamEntity, player));
         homeSetup.setStatsBoards(statsBoardDataService.getStatsBoardDataList(appTeamEntity));
 
