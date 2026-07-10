@@ -47,15 +47,8 @@ public class HomeService {
         PlayerDTO player = getCurrentPlayerId(userId);
 
         homeSetup.setNextBirthday(getUpcomingBirthday(appTeamEntity.getId()));
-        homeSetup.setRandomFacts(randomFactService.getRandomFacts(appTeamEntity));
-
-        // Grafy už frontend nepoužívá. Nechávám je záměrně nevypočítané,
-        // protože na produkci tvořily nejdražší část homeSetup requestu.
-        // homeSetup.setChart(chartMaker.setupChartCoordinatesForUser(player.getId(), appTeamEntity));
-        // homeSetup.setCharts(chartMaker.setupChartsCoordinates(player.getId(), appTeamEntity));
-
         homeSetup.setNextAndLastFootballMatch(getNextAndLastMatch(appTeamEntity));
-        homeSetup.setNextMatch(null);
+        homeSetup.setNextMatch(getNextMatch(appTeamEntity));
         homeSetup.setLastMatch(getLastMatch(appTeamEntity, player));
         homeSetup.setStatsBoards(statsBoardDataService.getStatsBoardDataList(appTeamEntity));
 
