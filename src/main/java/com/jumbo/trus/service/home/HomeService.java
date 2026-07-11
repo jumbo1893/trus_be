@@ -60,7 +60,7 @@ public class HomeService {
         homeSetup.setNextMatch(getNextMatch(appTeamEntity));
         homeSetup.setLastMatch(getLastMatch(appTeamEntity, player));
         homeSetup.setStatsBoards(statsBoardDataService.getStatsBoardDataList(appTeamEntity));
-        log.debug("zeme {}", getCountry(geoIpService.getCountryCode(headerManager.getClientIp())));
+        log.debug("zeme {}", getCountry(geoIpService.getCountryCode(headerManager.getClientIp())).getNameCs());
         return homeSetup;
     }
 
