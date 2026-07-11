@@ -39,6 +39,9 @@ public class MatchEntity {
 
     private Integer awayGoalNumber;
 
+    @OneToOne(mappedBy = "match", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private MatchWeatherEntity weather;
+
     @OneToMany(mappedBy = "match")
     private List<BeerEntity> beerList;
 

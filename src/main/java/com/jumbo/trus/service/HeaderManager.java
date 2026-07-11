@@ -35,6 +35,10 @@ public class HeaderManager {
     public String getAnotherHeader() {
         return request.getHeader("Another-Header");
     }
+
+    public String getCountry() {
+        return request.getRemoteAddr();
+    }
 }
 
 

@@ -15,6 +15,7 @@ import com.jumbo.trus.mapper.MatchMapper;
 import com.jumbo.trus.mapper.PlayerMapper;
 import com.jumbo.trus.mapper.football.FootballMatchMapper;
 import com.jumbo.trus.repository.*;
+import com.jumbo.trus.repository.achievement.PlayerAchievementRepository;
 import com.jumbo.trus.repository.specification.MatchSpecification;
 import com.jumbo.trus.service.SeasonService;
 import com.jumbo.trus.service.football.match.FootballMatchService;
@@ -23,6 +24,7 @@ import com.jumbo.trus.service.notification.NotificationService;
 import com.jumbo.trus.service.order.OrderMatchByDate;
 import com.jumbo.trus.service.order.OrderPlayerByName;
 import com.jumbo.trus.service.player.PlayerService;
+import com.jumbo.trus.service.weather.WeatherService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -59,6 +61,8 @@ public class MatchService {
     private final FootballMatchService footballMatchService;
     private final NotificationService notificationService;
     private final MatchResultFineService matchResultFineService;
+    private final WeatherService weatherService;
+    private final PlayerAchievementRepository playerAchievementRepository;
 
     public void pairAllFootballMatches(AppTeamEntity appTeam) {
         MatchFilter matchFilter = new MatchFilter();
@@ -83,6 +87,15 @@ public class MatchService {
         if (matchDTO.getFootballMatch() == null) {
             entity.setFootballMatch(null);
         }
+        Date weatherDate = null;
+        if (matchDTO.getFootballMatch() != null && matchDTO.getFootballMatch().getId() != null) {
+            weatherDate = footballMatchService
+                    .getFootballMatchById(matchDTO.getFootballMatch().getId())
+                    .getDate();
+        }
+        weatherService.createWeatherForMatch(entity, weatherDate)
+                .ifPresent(entity::setWeather);
+
         MatchEntity savedEntity = matchRepository.save(entity);
         matchResultFineService.rewriteAutomaticFines(savedEntity, appTeam);
 
@@ -182,14 +195,20 @@ public class MatchService {
      */
     @Transactional
     public void deleteMatch(Long matchId) {
-        matchRepository.deleteByPlayersInMatchByMatchId(matchId);
-        receivedFineRepository.deleteByMatchId(matchId);
-        goalRepository.deleteByMatchId(matchId);
-        beerRepository.deleteByMatchId(matchId);
-        MatchEntity matchEntity = matchRepository.getReferenceById(matchId);
-        MatchHelper matchHelper = new MatchHelper(matchMapper.toDTO(matchEntity));
-        notificationService.addNotification("Smazán zápas", matchHelper.getMatchWithOpponentNameAndDate());
-        matchRepository.deleteById(matchId);
+        MatchEntity matchEntity = matchRepository.findById(matchId)
+                .orElseThrow(() ->
+                        new EntityNotFoundException(String.valueOf(matchId))
+                );
+
+        MatchHelper matchHelper =
+                new MatchHelper(matchMapper.toDTO(matchEntity));
+
+        matchRepository.delete(matchEntity);
+
+        notificationService.addNotification(
+                "Smazán zápas",
+                matchHelper.getMatchWithOpponentNameAndDate()
+        );
     }
 
     /**

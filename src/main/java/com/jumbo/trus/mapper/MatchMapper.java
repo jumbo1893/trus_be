@@ -11,7 +11,7 @@ import org.mapstruct.Mappings;
 import java.util.ArrayList;
 import java.util.List;
 
-@Mapper(componentModel = "spring", uses = {BeerMapper.class, BeerDetailedMapper.class, ReceivedFineDetailedMapper.class, GoalMapper.class, FootballMatchMapper.class})
+@Mapper(componentModel = "spring", uses = {BeerMapper.class, BeerDetailedMapper.class, ReceivedFineDetailedMapper.class, GoalMapper.class, FootballMatchMapper.class, MatchWeatherMapper.class})
 public abstract class MatchMapper {
 
     @Mappings({
@@ -23,7 +23,8 @@ public abstract class MatchMapper {
             @Mapping(target = "appTeam", ignore = true),
             @Mapping(target = "pkflMatch", ignore = true),
             @Mapping(target = "playerAchievements", ignore = true),
-            @Mapping(target = "footbarSessions", ignore = true)
+            @Mapping(target = "footbarSessions", ignore = true),
+            @Mapping(target = "weather", ignore = true)
     })
     public abstract MatchEntity toEntity(MatchDTO source);
     @Mappings({

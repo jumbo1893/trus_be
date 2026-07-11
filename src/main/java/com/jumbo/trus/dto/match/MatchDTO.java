@@ -2,6 +2,7 @@ package com.jumbo.trus.dto.match;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.jumbo.trus.dto.football.FootballMatchDTO;
+import com.jumbo.trus.dto.weather.MatchWeatherDTO;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -42,6 +43,7 @@ public class MatchDTO {
     @Min(0)
     private Integer awayGoalNumber;
 
+    private MatchWeatherDTO weather;
 
     private FootballMatchDTO footballMatch;
 
