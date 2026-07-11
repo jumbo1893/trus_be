@@ -14,14 +14,17 @@ import com.jumbo.trus.dto.player.PlayerDTO;
 import com.jumbo.trus.dto.receivedfine.response.get.detailed.ReceivedFineDetailedResponse;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.filter.StatisticsFilter;
+import com.jumbo.trus.service.HeaderManager;
 import com.jumbo.trus.service.auth.AppTeamService;
 import com.jumbo.trus.service.fact.RandomFactService;
 import com.jumbo.trus.service.football.match.FootballMatchService;
+import com.jumbo.trus.service.ip.GeoIpService;
 import com.jumbo.trus.service.match.MatchService;
 import com.jumbo.trus.service.player.PlayerAchievementService;
 import com.jumbo.trus.service.player.PlayerService;
 import com.jumbo.trus.service.receivedFine.ReceivedFineService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -29,6 +32,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class HomeService {
@@ -41,6 +45,8 @@ public class HomeService {
     private final ReceivedFineService receivedFineService;
     private final StatsBoardDataService statsBoardDataService;
     private final PlayerAchievementService playerAchievementService;
+    private final GeoIpService geoIpService;
+    private final HeaderManager headerManager;
 
     public HomeSetup setup(Long userId, AppTeamEntity appTeamEntity) {
         HomeSetup homeSetup = new HomeSetup();
@@ -51,7 +57,7 @@ public class HomeService {
         homeSetup.setNextMatch(getNextMatch(appTeamEntity));
         homeSetup.setLastMatch(getLastMatch(appTeamEntity, player));
         homeSetup.setStatsBoards(statsBoardDataService.getStatsBoardDataList(appTeamEntity));
-
+        log.debug("zeme {}", geoIpService.getCountryCode(headerManager.getClientIp()));
         return homeSetup;
     }
 
