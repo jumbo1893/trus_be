@@ -13,7 +13,9 @@ import com.jumbo.trus.dto.match.MatchDTO;
 import com.jumbo.trus.dto.player.PlayerDTO;
 import com.jumbo.trus.dto.receivedfine.response.get.detailed.ReceivedFineDetailedResponse;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
+import com.jumbo.trus.entity.codebook.CountryEntity;
 import com.jumbo.trus.entity.filter.StatisticsFilter;
+import com.jumbo.trus.repository.codebook.CountryRepository;
 import com.jumbo.trus.service.HeaderManager;
 import com.jumbo.trus.service.auth.AppTeamService;
 import com.jumbo.trus.service.fact.RandomFactService;
@@ -47,6 +49,7 @@ public class HomeService {
     private final PlayerAchievementService playerAchievementService;
     private final GeoIpService geoIpService;
     private final HeaderManager headerManager;
+    private final CountryRepository countryRepository;
 
     public HomeSetup setup(Long userId, AppTeamEntity appTeamEntity) {
         HomeSetup homeSetup = new HomeSetup();
@@ -57,8 +60,14 @@ public class HomeService {
         homeSetup.setNextMatch(getNextMatch(appTeamEntity));
         homeSetup.setLastMatch(getLastMatch(appTeamEntity, player));
         homeSetup.setStatsBoards(statsBoardDataService.getStatsBoardDataList(appTeamEntity));
-        log.debug("zeme {}", geoIpService.getCountry(headerManager.getClientIp()).getNameCs());
+        log.debug("zeme {}", getCountry(geoIpService.getCountryCode(headerManager.getClientIp())));
         return homeSetup;
+    }
+
+    public CountryEntity getCountry(String countryCode) {
+        if (countryCode == null) return null;
+        return countryRepository.findById(countryCode)
+                .orElse(null);
     }
 
     private PlayerDTO getCurrentPlayerId(Long userId) {

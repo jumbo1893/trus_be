@@ -1,7 +1,5 @@
 package com.jumbo.trus.service.ip;
 
-import com.jumbo.trus.entity.codebook.CountryEntity;
-import com.jumbo.trus.repository.codebook.CountryRepository;
 import com.maxmind.geoip2.DatabaseReader;
 import com.maxmind.geoip2.model.CountryResponse;
 import jakarta.annotation.PostConstruct;
@@ -17,7 +15,6 @@ import java.net.InetAddress;
 public class GeoIpService {
 
     private DatabaseReader databaseReader;
-    private CountryRepository countryRepository;
 
     @PostConstruct
     public void init() throws IOException {
@@ -28,14 +25,11 @@ public class GeoIpService {
         }
     }
 
-    public CountryEntity getCountry(String ip) {
+    public String getCountryCode(String ip) {
         try {
             InetAddress address = InetAddress.getByName(ip);
             CountryResponse response = databaseReader.country(address);
-            String countryCode = response.getCountry().getIsoCode();
-
-            return countryRepository.findById(countryCode)
-                    .orElse(null);
+            return response.getCountry().getIsoCode();
         } catch (Exception e) {
             log.error("error ",e);
             return null;
