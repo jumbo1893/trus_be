@@ -31,7 +31,7 @@ public class GeoIpService {
             CountryResponse response = databaseReader.country(address);
             return response.getCountry().getIsoCode();
         } catch (Exception e) {
-            log.error("error",e);
+            log.error("error ",e);
             return null;
         }
     }
