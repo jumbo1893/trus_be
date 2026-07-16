@@ -1,4 +1,4 @@
-package com.jumbo.trus.service.achievement;
+package com.jumbo.trus.service.achievement.init;
 
 import com.jumbo.trus.entity.achievement.AchievementEntity;
 import com.jumbo.trus.repository.achievement.AchievementRepository;
@@ -7,6 +7,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+
+import static com.jumbo.trus.service.achievement.AchievementCodes.*;
 
 @Component
 @RequiredArgsConstructor
@@ -67,8 +69,6 @@ public class AchievementInitializer implements CommandLineRunner {
                 new AchievementEntity("Cirhóza", "CIRHOZA", false, "Jak jsem mohl vědět že si na ty roháče dá 5 rumů a selžou mu játra? Dej si aspoň 5 panáků a vynechej příští zápas", false),
                 new AchievementEntity("Ten to perfektně kope. Říkal", "TEN_TO_PERFEKTNE_KOPE", true, "Neproměněná penalta v zápase", false),
                 new AchievementEntity("Áda Větvička", "ADA_VETVICKA", false, "Osoulož spoluhráčovu družku", true),
-
-                // nové achievementy
                 new AchievementEntity("Klub sráčů", "KLUB_SRACU", true, "Celý tým po zápase vynechá třetí poločas", false),
                 new AchievementEntity("Osamělý držák", "OSAMELY_DRZAK", true, "Jako jediný z týmu nevynechej třetí poločas", false),
                 new AchievementEntity("Ve dvou se to lépe táhne", "VE_DVOU_SE_TO_LEPE_TAHNE", true, "Jako jediní dva nevynechejte třetí poločas a dejte si pivo", false),
@@ -105,8 +105,16 @@ public class AchievementInitializer implements CommandLineRunner {
                 new AchievementEntity("Americký fotbalista", "AMERICKY_FOTBALISTA", true, "Nasbírej alespoň 10 pokut za překop", false),
                 new AchievementEntity("Alzheimer", "ALZHEIMER", true, "Dostaň pokutu za zapomenutí věcí nebo nekompletní výbavu", false),
                 new AchievementEntity("Leo Beránek", "LEO_BERANEK", true, "Já mám nové boty, koupil jsem si nové boty. Konkrétně kopačky", false),
-                new AchievementEntity("Černé geny", "CERNE_GENY", true, "Dosáhni v zápase maximální rychlosti sprintu alespoň 25 km/h", false)
+                new AchievementEntity("Černé geny", "CERNE_GENY", true, "Dosáhni v zápase maximální rychlosti sprintu alespoň 25 km/h", false),
+                new AchievementEntity("Zahraniční pozorovatel", ZAHRANICNI_POZOROVATEL, false, "Připoj se k Trusí appce ze zahraničí", false),
+                new AchievementEntity("Do Afriky na černošky", DO_AFRIKY_NA_CERNOSKY, false, "Připoj se k Trusí appce z Afriky", false),
+                new AchievementEntity("Hedvábná stezka", HEDVABNA_STEZKA, false, "Následuj moderní trendy asijskou tour a připoj se k Trusí appce z Asie", false),
+                new AchievementEntity("Američan z Vysočan", AMERICAN_Z_VYSOCAN, false, "Do Ameriky jezděj parníky...připoj se k Trusí appce z Ameriky", false),
+                new AchievementEntity("Po stopách Diega", PO_STOPACH_DIEGA, false, "Byl to feťák nebo ne? Připoj se k Trusí appce z Jižní  Ameriky", false),
+                new AchievementEntity("Trusí Amundsen", TRUSI_AMUNDSEN, false, "V Anktartidě je nádherně... akorát na to připojit se na Trusí appku", false),
+                new AchievementEntity("Lišák a moře", LISAK_A_MORE, false, "Ano i Oceánie je kontinent a je vhodná k zapnutí Trusí appky", false)
 
-        );
+
+                );
     }
 }

@@ -146,7 +146,7 @@ public class AchievementCalculator {
             );
 
     private final Map<String, ScopedAchievementFunction> scopedAchievementCalculators =
-            Map.<String, ScopedAchievementFunction>ofEntries(
+            Map.ofEntries(
                     Map.entry("KAZDEMU_CO_MU_PATRI", this::calculateKAZDEMU_CO_MU_PATRIAchievementForMatch),
                     Map.entry("USPESNY_DEN", this::calculateUSPESNY_DENAchievementForMatch),
                     Map.entry("DOPING", this::calculateDOPINGAchievementForMatch),
@@ -165,7 +165,7 @@ public class AchievementCalculator {
             );
 
     private static final Map<String, AchievementDefinition> ACHIEVEMENT_DEFINITIONS =
-            Map.<String, AchievementDefinition>ofEntries(
+            Map.ofEntries(
                     matchPlayer("KAZDEMU_CO_MU_PATRI", AchievementDependency.MATCH, AchievementDependency.BEER, AchievementDependency.GOAL),
                     playerHistory("FOTBAL_JE_JEN_ZAMINKA", AchievementDependency.SEASON, AchievementDependency.RECEIVED_FINE, AchievementDependency.MATCH),
                     seasonTeam("TAHOUN", AchievementDependency.BEER),

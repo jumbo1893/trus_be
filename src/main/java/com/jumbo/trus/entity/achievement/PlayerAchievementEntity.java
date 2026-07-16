@@ -47,6 +47,12 @@ public class PlayerAchievementEntity {
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "Europe/Prague")
     private Date accomplishedDate;
 
+    public PlayerAchievementEntity(AchievementEntity achievement, PlayerEntity player, Boolean accomplished, Date accomplishedDate) {
+        this.achievement = achievement;
+        this.player = player;
+        this.accomplished = accomplished;
+        this.accomplishedDate = accomplishedDate;
+    }
 
     @Override
     public boolean equals(Object o) {

@@ -7,24 +7,13 @@ import com.jumbo.trus.entity.achievement.PlayerAchievementEntity;
 import com.jumbo.trus.service.achievement.helper.*;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 
 public interface PlayerAchievementRepository extends JpaRepository<PlayerAchievementEntity, Long> {
-
-    @Modifying
-    @Query("DELETE FROM PlayerAchievementEntity pa WHERE pa.match.id = :matchId")
-    int deleteByMatchId(@Param("matchId") Long matchId);
-
-    Optional<PlayerAchievementEntity> findByPlayerIdAndAchievementId(Long playerId, Long achievementId);
-
-    boolean existsByPlayerIdAndAchievementId(Long playerId, Long achievementId);
-
-    Optional<PlayerAchievementEntity> findByPlayerIdAndAchievementIdAndAccomplished(Long playerId, Long achievementId, boolean accomplished);
 
     @Query("""
             SELECT pa.achievement.id,
@@ -75,6 +64,43 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
     List<PlayerAchievementEntity> findAllByPlayerId(Long playerId);
 
     List<PlayerAchievementEntity> findAllByPlayerIdIn(List<Long> playerIds);
+
+    @Query("""
+    SELECT playerAchievement
+    FROM PlayerAchievementEntity playerAchievement
+    JOIN FETCH playerAchievement.achievement achievement
+    WHERE playerAchievement.player.id = :playerId
+      AND achievement.id IN :achievementIds
+    """)
+    List<PlayerAchievementEntity> findAllByPlayerIdAndAchievementIdIn(
+            @Param("playerId") Long playerId,
+            @Param("achievementIds") Collection<Long> achievementIds
+    );
+
+    @Query("""
+    SELECT playerAchievement.player.id AS playerId,
+           playerAchievement.achievement.id AS achievementId
+    FROM PlayerAchievementEntity playerAchievement
+    """)
+    List<PlayerAchievementKeyProjection> findAllPlayerAchievementKeys();
+
+    @Query("""
+    SELECT playerAchievement.player.id
+    FROM PlayerAchievementEntity playerAchievement
+    WHERE playerAchievement.achievement.id = :achievementId
+    """)
+    List<Long> findPlayerIdsByAchievementId(
+            @Param("achievementId") Long achievementId
+    );
+
+    @Query("""
+    SELECT playerAchievement.achievement.id
+    FROM PlayerAchievementEntity playerAchievement
+    WHERE playerAchievement.player.id = :playerId
+    """)
+    List<Long> findAchievementIdsByPlayerId(
+            @Param("playerId") Long playerId
+    );
 
     @Query("""
                 SELECT

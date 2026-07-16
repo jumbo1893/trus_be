@@ -1,9 +1,6 @@
 package com.jumbo.trus.entity.codebook;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -21,6 +18,14 @@ public class CountryEntity {
 
     @Column(name = "name_cs", nullable = false, unique = true, length = 100)
     private String nameCs;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(
+            name = "continent_code",
+            nullable = false,
+            foreignKey = @ForeignKey(name = "fk_country_continent")
+    )
+    private ContinentEntity continent;
 
     @Column(name = "active", nullable = false)
     private boolean active = true;

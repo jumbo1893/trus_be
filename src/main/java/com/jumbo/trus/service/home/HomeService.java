@@ -1,5 +1,6 @@
 package com.jumbo.trus.service.home;
 
+import com.jumbo.trus.dto.VisitedCountryResponse;
 import com.jumbo.trus.dto.achievement.PlayerAchievementDTO;
 import com.jumbo.trus.dto.football.FootballMatchDTO;
 import com.jumbo.trus.dto.football.detail.FootballMatchDetail;
@@ -13,12 +14,11 @@ import com.jumbo.trus.dto.match.MatchDTO;
 import com.jumbo.trus.dto.player.PlayerDTO;
 import com.jumbo.trus.dto.receivedfine.response.get.detailed.ReceivedFineDetailedResponse;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
-import com.jumbo.trus.entity.codebook.CountryEntity;
 import com.jumbo.trus.entity.filter.StatisticsFilter;
-import com.jumbo.trus.repository.codebook.CountryRepository;
 import com.jumbo.trus.service.HeaderManager;
+import com.jumbo.trus.service.UserVisitedCountryService;
+import com.jumbo.trus.service.achievement.country.CountryAchievementCalculator;
 import com.jumbo.trus.service.auth.AppTeamService;
-import com.jumbo.trus.service.fact.RandomFactService;
 import com.jumbo.trus.service.football.match.FootballMatchService;
 import com.jumbo.trus.service.ip.GeoIpService;
 import com.jumbo.trus.service.match.MatchService;
@@ -40,7 +40,6 @@ import java.util.Optional;
 public class HomeService {
 
     private final PlayerService playerService;
-    private final RandomFactService randomFactService;
     private final FootballMatchService footballMatchService;
     private final AppTeamService appTeamService;
     private final MatchService matchService;
@@ -49,7 +48,8 @@ public class HomeService {
     private final PlayerAchievementService playerAchievementService;
     private final GeoIpService geoIpService;
     private final HeaderManager headerManager;
-    private final CountryRepository countryRepository;
+    private final UserVisitedCountryService userVisitedCountryService;
+    private final CountryAchievementCalculator countryAchievementCalculator;
 
     public HomeSetup setup(Long userId, AppTeamEntity appTeamEntity) {
         HomeSetup homeSetup = new HomeSetup();
@@ -60,14 +60,11 @@ public class HomeService {
         homeSetup.setNextMatch(getNextMatch(appTeamEntity));
         homeSetup.setLastMatch(getLastMatch(appTeamEntity, player));
         homeSetup.setStatsBoards(statsBoardDataService.getStatsBoardDataList(appTeamEntity));
-        log.debug("zeme {}", getCountry(geoIpService.getCountryCode(headerManager.getClientIp())).getNameCs());
+        VisitedCountryResponse visitedCountryResponse = userVisitedCountryService.addVisitedCountry(userId, geoIpService.getCountryCode(headerManager.getClientIp()));
+        if (visitedCountryResponse != null) {
+            countryAchievementCalculator.calculateCountryAchievementsByPlayer(player, visitedCountryResponse, appTeamEntity);
+        }
         return homeSetup;
-    }
-
-    public CountryEntity getCountry(String countryCode) {
-        if (countryCode == null) return null;
-        return countryRepository.findById(countryCode)
-                .orElse(null);
     }
 
     private PlayerDTO getCurrentPlayerId(Long userId) {
