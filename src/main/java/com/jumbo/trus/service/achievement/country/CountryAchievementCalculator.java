@@ -34,7 +34,7 @@ public class CountryAchievementCalculator {
             new CountryAchievementRule(
                     ZAHRANICNI_POZOROVATEL,
                     VisitedCountryResponse::isForeignCountry,
-                    country -> "Hráč splnil výzvu a vydal se na zahraniční cestu do země "
+                    country -> "Hráč splnil výzvu a vydal na zahraniční cestu do země "
                             + country.nameCs()
                             + "."
             ),
@@ -48,37 +48,37 @@ public class CountryAchievementCalculator {
             new CountryAchievementRule(
                     HEDVABNA_STEZKA,
                     country -> country.isInContinent("AS"),
-                    country -> "První připojení hráče z Asie proběhlo v zemi "
+                    country -> "Rejžožrouti, šikmoočka či pouštní negři. Aspoň něco z toho se dá nalézt v zemi "
                             + country.nameCs()
-                            + "."
+                            + ", kde se hráč poprvé z Asie připojil."
             ),
             new CountryAchievementRule(
                     AMERICAN_Z_VYSOCAN,
                     country -> country.isInContinent("NA"),
-                    country -> "První zastávka hráče v Severní Americe byla v zemi "
+                    country -> "Kdo umí zahrát gé-á-há-cé, od přírody touží aspoň jednou podívat se za pořádnou louži. První Trusí zastávka v Americe hráče byla v zemi "
                             + country.nameCs()
                             + "."
             ),
             new CountryAchievementRule(
                     PO_STOPACH_DIEGA,
                     country -> country.isInContinent("SA"),
-                    country -> "První zastávka hráče v Jižní Americe byla v zemi "
+                    country -> "Pokus nabrat fyzičku? První zastávku v latinské americe si hráč udělal v zemi "
                             + country.nameCs()
                             + "."
             ),
             new CountryAchievementRule(
                     TRUSI_AMUNDSEN,
                     country -> country.isInContinent("AN"),
-                    country -> "První připojení hráče z Antarktidy proběhlo v území "
+                    country -> "Tady se dá dost pochybovat, že to nebylo nafingované VPN. Pokud ne, tak gratulujeme k návštěvě země "
                             + country.nameCs()
                             + "."
             ),
             new CountryAchievementRule(
                     LISAK_A_MORE,
                     country -> country.isInContinent("OC"),
-                    country -> "První zastávka hráče v Oceánii byla v zemi "
+                    country -> "Díky Trusu hráč rozšířil vědomí o tom, že součást Oceánie je země "
                             + country.nameCs()
-                            + "."
+                            + ", kde udělal první zastávku v rámci Trusí appky."
             )
     );
 
@@ -99,6 +99,11 @@ public class CountryAchievementCalculator {
             return;
         }
 
+        /*
+         * Načítáme všechny country achievementy, nejen právě splněné.
+         * Díky tomu vytvoříme chybějící PlayerAchievementEntity
+         * i s accomplished = false.
+         */
         Map<String, AchievementEntity> achievementsByCode =
                 loadAchievementsByCode(RULES);
 
@@ -115,13 +120,14 @@ public class CountryAchievementCalculator {
             return;
         }
 
-        List<AchievementEntity> eligibleAchievements =
+        Collection<AchievementEntity> eligibleAchievements =
                 eligibleRules.stream()
                         .map(CountryAchievementRule::achievementCode)
                         .map(achievementsByCode::get)
                         .toList();
 
-        Map<Long, PlayerAchievementEntity> existingAchievements =
+        Map<Long, PlayerAchievementEntity>
+                playerAchievementsByAchievementId =
                 loadPlayerAchievements(
                         player.getId(),
                         eligibleAchievements
@@ -129,25 +135,24 @@ public class CountryAchievementCalculator {
 
         Date now = new Date();
 
-        /*
-         * Mapa místo List.contains().
-         * Každý achievement může být uložen maximálně jednou.
-         */
-        Map<Long, PlayerAchievementEntity> achievementsToSave =
-                new LinkedHashMap<>();
+        List<PlayerAchievementEntity> achievementsToSave =
+                new ArrayList<>();
 
-        Set<Long> newlyAccomplishedAchievementIds =
-                new java.util.HashSet<>();
+        List<PlayerAchievementEntity> newlyAccomplishedAchievements =
+                new ArrayList<>();
 
         for (CountryAchievementRule rule : eligibleRules) {
             AchievementEntity achievement =
                     achievementsByCode.get(rule.achievementCode());
 
             PlayerAchievementEntity playerAchievement =
-                    existingAchievements.get(achievement.getId());
+                    playerAchievementsByAchievementId.get(
+                            achievement.getId()
+                    );
 
             /*
-             * Chybějící záznam vytvoříme jako nesplněný.
+             * Záznam dosud neexistuje:
+             * vytvoříme ho nejprve jako nesplněný.
              */
             if (playerAchievement == null) {
                 playerAchievement = createPlayerAchievement(
@@ -156,19 +161,17 @@ public class CountryAchievementCalculator {
                         now
                 );
 
-                existingAchievements.put(
+                playerAchievementsByAchievementId.put(
                         achievement.getId(),
                         playerAchievement
                 );
 
-                achievementsToSave.put(
-                        achievement.getId(),
-                        playerAchievement
-                );
+                achievementsToSave.add(playerAchievement);
             }
 
             /*
-             * Splněný achievement už neměníme.
+             * Už splněný achievement znovu neměníme
+             * a neposíláme další notifikaci.
              */
             if (Boolean.TRUE.equals(
                     playerAchievement.getAccomplished()
@@ -177,7 +180,8 @@ public class CountryAchievementCalculator {
             }
 
             /*
-             * Nesplněné pravidlo zůstane accomplished = false.
+             * Pravidlo není splněné:
+             * nový záznam zůstane accomplished = false.
              */
             if (!rule.isSatisfiedBy(visitedCountry)) {
                 continue;
@@ -189,13 +193,16 @@ public class CountryAchievementCalculator {
                     now
             );
 
-            achievementsToSave.put(
-                    achievement.getId(),
-                    playerAchievement
-            );
+            /*
+             * Pokud je entita nová, už v achievementsToSave je.
+             * Pokud existovala, musíme ji do seznamu přidat.
+             */
+            if (!achievementsToSave.contains(playerAchievement)) {
+                achievementsToSave.add(playerAchievement);
+            }
 
-            newlyAccomplishedAchievementIds.add(
-                    achievement.getId()
+            newlyAccomplishedAchievements.add(
+                    playerAchievement
             );
         }
 
@@ -205,17 +212,25 @@ public class CountryAchievementCalculator {
 
         List<PlayerAchievementEntity> savedAchievements =
                 playerAchievementRepository.saveAll(
-                        achievementsToSave.values()
+                        achievementsToSave
                 );
 
         /*
-         * Byly pouze vytvořeny nesplněné záznamy.
+         * Notifikaci posíláme pouze za achievementy,
+         * které byly během tohoto výpočtu nově splněné.
          */
-        if (newlyAccomplishedAchievementIds.isEmpty()) {
+        if (newlyAccomplishedAchievements.isEmpty()) {
             return;
         }
 
-        List<PlayerAchievementDTO> accomplishedAchievements =
+        Set<Long> newlyAccomplishedAchievementIds =
+                newlyAccomplishedAchievements.stream()
+                        .map(entity ->
+                                entity.getAchievement().getId()
+                        )
+                        .collect(Collectors.toSet());
+
+        List<PlayerAchievementDTO> accomplishedDTOs =
                 savedAchievements.stream()
                         .filter(entity ->
                                 newlyAccomplishedAchievementIds.contains(
@@ -225,20 +240,19 @@ public class CountryAchievementCalculator {
                         .map(playerAchievementMapper::toDTO)
                         .toList();
 
-        if (!accomplishedAchievements.isEmpty()) {
+        if (!accomplishedDTOs.isEmpty()) {
             achievementNotificationMaker.sendAchievementNotify(
-                    accomplishedAchievements,
+                    accomplishedDTOs,
                     appTeam
             );
         }
     }
-
     private List<CountryAchievementRule> filterEligibleRules(
-            List<CountryAchievementRule> rules,
+            List<CountryAchievementRule> satisfiedRules,
             Map<String, AchievementEntity> achievementsByCode,
             PlayerEntity player
     ) {
-        return rules.stream()
+        return satisfiedRules.stream()
                 .filter(rule -> {
                     AchievementEntity achievement =
                             achievementsByCode.get(
