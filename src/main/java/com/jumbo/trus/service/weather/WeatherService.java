@@ -1,10 +1,12 @@
 package com.jumbo.trus.service.weather;
 
+import com.jumbo.trus.dto.weather.MatchWeatherDTO;
 import com.jumbo.trus.dto.weather.OpenMeteoResponse;
 import com.jumbo.trus.dto.weather.WeatherSnapshot;
 import com.jumbo.trus.entity.MatchEntity;
 import com.jumbo.trus.entity.MatchWeatherEntity;
 import com.jumbo.trus.entity.weather.WeatherSourceType;
+import com.jumbo.trus.mapper.MatchWeatherMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -49,9 +51,18 @@ public class WeatherService {
     );
 
     private final RestTemplate restTemplate;
+    private final MatchWeatherMapper matchWeatherMapper;
 
     public Optional<MatchWeatherEntity> createWeatherForMatch(MatchEntity match, Date requestedDate) {
         return getWeather(requestedDate).map(snapshot -> toEntity(match, snapshot));
+    }
+
+    public MatchWeatherDTO getWeatherDtoWithoutMatch(Date requestedDate) {
+        MatchWeatherEntity matchWeatherEntity = createWeatherForMatch(null, requestedDate).orElse(null);
+        if (matchWeatherEntity == null) {
+            return null;
+        }
+        return matchWeatherMapper.toDTO(matchWeatherEntity);
     }
 
     public Optional<WeatherSnapshot> getWeather(Date requestedDate) {
@@ -170,7 +181,7 @@ public class WeatherService {
     private MatchWeatherEntity toEntity(MatchEntity match, WeatherSnapshot snapshot) {
         MatchWeatherEntity entity = new MatchWeatherEntity();
         entity.setMatch(match);
-        if (match.getFootballMatch() != null) {
+        if (match != null && match.getFootballMatch() != null) {
             entity.setFootballMatchId(match.getFootballMatch().getId());
         }
         entity.setTemperature(snapshot.temperature());

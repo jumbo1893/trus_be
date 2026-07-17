@@ -13,6 +13,7 @@ import com.jumbo.trus.dto.home.HomeSetup;
 import com.jumbo.trus.dto.match.MatchDTO;
 import com.jumbo.trus.dto.player.PlayerDTO;
 import com.jumbo.trus.dto.receivedfine.response.get.detailed.ReceivedFineDetailedResponse;
+import com.jumbo.trus.dto.weather.MatchWeatherDTO;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.filter.StatisticsFilter;
 import com.jumbo.trus.service.HeaderManager;
@@ -25,6 +26,7 @@ import com.jumbo.trus.service.match.MatchService;
 import com.jumbo.trus.service.player.PlayerAchievementService;
 import com.jumbo.trus.service.player.PlayerService;
 import com.jumbo.trus.service.receivedFine.ReceivedFineService;
+import com.jumbo.trus.service.weather.WeatherService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -50,6 +52,7 @@ public class HomeService {
     private final HeaderManager headerManager;
     private final UserVisitedCountryService userVisitedCountryService;
     private final CountryAchievementCalculator countryAchievementCalculator;
+    private final WeatherService weatherService;
 
     public HomeSetup setup(Long userId, AppTeamEntity appTeamEntity) {
         HomeSetup homeSetup = new HomeSetup();
@@ -95,8 +98,8 @@ public class HomeService {
 
         DashboardMatch dashboardMatch = new DashboardMatch();
         dashboardMatch.setMatch(footballMatchDetail);
-
         List<TextWithRedirect> matchInfoList = new ArrayList<>();
+        addTextRedirectToList(matchInfoList, getWeatherText(footballMatchDetail.getFootballMatch()));
         addTextRedirectToList(matchInfoList, getNumberOfPlayersText(footballMatchDetail, match, true));
         dashboardMatch.setMatchInfoList(matchInfoList);
 
@@ -179,6 +182,17 @@ public class HomeService {
         }
 
         text.setText(fineText);
+        return text;
+    }
+
+    private TextWithRedirect getWeatherText(FootballMatchDTO footballMatchDTO) {
+        TextWithRedirect text = new TextWithRedirect();
+        text.setWarningType(WarningType.INFO);
+        MatchWeatherDTO weatherDTO = weatherService.getWeatherDtoWithoutMatch(footballMatchDTO.getDate());
+        if (weatherDTO== null) {
+            return null;
+        }
+        text.setText("Očekává se " + weatherDTO.getTemperature() + " °C a " + weatherDTO.getWeatherCode().getCzechDescription());
         return text;
     }
 

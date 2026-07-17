@@ -2,6 +2,7 @@ package com.jumbo.trus.entity.weather;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import lombok.Getter;
 
 public enum WeatherCode {
 
@@ -51,16 +52,13 @@ public enum WeatherCode {
             "Bouřka se silným krupobitím"
     );
 
+    @Getter
     private final int code;
     private final String czechDescription;
 
     WeatherCode(int code, String czechDescription) {
         this.code = code;
         this.czechDescription = czechDescription;
-    }
-
-    public int getCode() {
-        return code;
     }
 
     /**
