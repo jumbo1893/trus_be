@@ -1,6 +1,7 @@
 package com.jumbo.trus.dto.football.detail;
 
 import com.jumbo.trus.dto.football.FootballMatchDTO;
+import com.jumbo.trus.dto.weather.MatchWeatherDTO;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -33,6 +34,8 @@ public class FootballMatchDetail {
     private BestScorer homeTeamBestScorer;
 
     private BestScorer awayTeamBestScorer;
+
+    private MatchWeatherDTO weather;
 
 
 }

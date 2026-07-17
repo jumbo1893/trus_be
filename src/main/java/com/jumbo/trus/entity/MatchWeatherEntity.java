@@ -20,8 +20,10 @@ public class MatchWeatherEntity {
     @Column(name = "match_id")
     private Long matchId;
 
+    private Long footballMatchId;
+
     @MapsId
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "match_id", nullable = false,
             foreignKey = @ForeignKey(name = "fk_match_weather_match"))
     private MatchEntity match;

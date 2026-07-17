@@ -7,7 +7,12 @@ import com.jumbo.trus.entity.footbar.FootbarSessionEntity;
 import com.jumbo.trus.entity.pkfl.PkflMatchEntity;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -39,8 +44,36 @@ public class MatchEntity {
 
     private Integer awayGoalNumber;
 
-    @OneToOne(mappedBy = "match", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private MatchWeatherEntity weather;
+    @OneToMany(
+            mappedBy = "match",
+            fetch = FetchType.EAGER,
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    @Fetch(FetchMode.SUBSELECT)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private List<MatchWeatherEntity> weatherEntries = new ArrayList<>();
+
+    @Transient
+    public MatchWeatherEntity getWeather() {
+        return weatherEntries == null || weatherEntries.isEmpty()
+                ? null
+                : weatherEntries.get(0);
+    }
+
+    public void setWeather(MatchWeatherEntity weather) {
+        if (weatherEntries == null) {
+            weatherEntries = new ArrayList<>();
+        }
+
+        weatherEntries.clear();
+
+        if (weather != null) {
+            weather.setMatch(this);
+            weatherEntries.add(weather);
+        }
+    }
 
     @OneToMany(mappedBy = "match")
     private List<BeerEntity> beerList;

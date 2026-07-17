@@ -30,9 +30,13 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.webjars.NotFoundException;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Date;
@@ -41,6 +45,7 @@ import java.util.stream.Collectors;
 
 import static com.jumbo.trus.config.Config.ALL_SEASON_ID;
 import static com.jumbo.trus.config.Config.AUTOMATIC_SEASON_ID;
+import static com.jumbo.trus.service.weather.WeatherService.PRAGUE_ZONE;
 
 @Slf4j
 @Service
@@ -87,21 +92,53 @@ public class MatchService {
         if (matchDTO.getFootballMatch() == null) {
             entity.setFootballMatch(null);
         }
-        Date weatherDate = null;
-        if (matchDTO.getFootballMatch() != null && matchDTO.getFootballMatch().getId() != null) {
-            weatherDate = footballMatchService
-                    .getFootballMatchById(matchDTO.getFootballMatch().getId())
-                    .getDate();
+        else {
+            entity.setFootballMatch(footballMatchMapper.toEntity(footballMatchService.getFootballMatchById(matchDTO.getFootballMatch().getId())));
         }
-        weatherService.createWeatherForMatch(entity, weatherDate)
-                .ifPresent(entity::setWeather);
-
+        weatherService.createWeatherForMatch(
+                entity,
+                resolveWeatherDate(entity)
+        ).ifPresent(entity::setWeather);
         MatchEntity savedEntity = matchRepository.save(entity);
-        matchResultFineService.rewriteAutomaticFines(savedEntity, appTeam);
-
+        matchResultFineService.rewriteAutomaticFines(
+                savedEntity,
+                appTeam
+        );
         MatchHelper matchHelper = new MatchHelper(matchDTO);
-        notificationService.addNotification("Přidán nový zápas", matchHelper.getMatchWithOpponentNameAndDate());
+        notificationService.addNotification(
+                "Přidán nový zápas",
+                matchHelper.getMatchWithOpponentNameAndDate()
+        );
         return matchMapper.toDTO(savedEntity);
+    }
+
+    private Date resolveWeatherDate(MatchEntity match) {
+        if (match.getFootballMatch() != null
+                && match.getFootballMatch().getDate() != null) {
+            return match.getFootballMatch().getDate();
+        }
+
+        if (match.getDate() == null) {
+            return null;
+        }
+
+        LocalDate matchDate = match.getDate()
+                .toInstant()
+                .atZone(PRAGUE_ZONE)
+                .toLocalDate();
+
+        LocalTime currentTime = LocalTime.now(PRAGUE_ZONE);
+
+        LocalDateTime weatherDateTime = LocalDateTime.of(
+                matchDate,
+                currentTime
+        );
+
+        return Date.from(
+                weatherDateTime
+                        .atZone(PRAGUE_ZONE)
+                        .toInstant()
+        );
     }
 
     /**
@@ -117,7 +154,7 @@ public class MatchService {
 
     public List<MatchEntity> getAllEntitiesBySeasonId(AppTeamEntity appTeam, Long seasonId) {
         if (seasonId == null || seasonId == ALL_SEASON_ID) {
-            return matchRepository.getMatchesOrderByDateDesc(1000, appTeam.getId());
+            return matchRepository.getMatchesOrderByDateDesc(appTeam.getId(), PageRequest.of(0, 1000));
         }
         return matchRepository.findAllBySeasonId(seasonId, appTeam.getId());
     }
@@ -129,10 +166,10 @@ public class MatchService {
      */
     public List<MatchDTO> getMatchesByDate(int limit, boolean desc, long appTeamId){
         if (desc) {
-            return matchRepository.getMatchesOrderByDateDesc(limit, appTeamId).stream().map(matchMapper::toDTO).collect(Collectors.toList());
+            return matchRepository.getMatchesOrderByDateDesc(appTeamId, PageRequest.of(0, limit)).stream().map(matchMapper::toDTO).collect(Collectors.toList());
         }
         else {
-            return matchRepository.getMatchesOrderByDateAsc(limit, appTeamId).stream().map(matchMapper::toDTO).collect(Collectors.toList());
+            return matchRepository.getMatchesOrderByDateAsc(appTeamId, PageRequest.of(0, limit)).stream().map(matchMapper::toDTO).collect(Collectors.toList());
         }
     }
 
@@ -173,20 +210,22 @@ public class MatchService {
      */
     @Transactional
     public MatchDTO editMatch(Long matchId, MatchDTO matchDTO, AppTeamEntity appTeam) throws NotFoundException {
-        if (!matchRepository.existsById(matchId)) {
-            throw new NotFoundException("Zápas s id " + matchId + " nenalezen v db");
-        }
-        MatchEntity entity = matchMapper.toEntity(matchDTO);
-        entity.setId(matchId);
+        MatchEntity entity = matchRepository.findById(matchId)
+                .orElseThrow(() ->
+                        new NotFoundException(
+                                "Zápas s id " + matchId + " nenalezen v db"
+                        )
+                );
+        matchMapper.updateEntity(matchDTO, entity);
         appTeamSetter(entity, appTeam);
         mapPlayersAndSeasonToMatch(entity, matchDTO, appTeam);
-        if (matchDTO.getFootballMatch() == null) {
-            entity.setFootballMatch(null);
-        }
         MatchEntity savedEntity = matchRepository.save(entity);
         matchResultFineService.rewriteAutomaticFines(savedEntity, appTeam);
         MatchHelper matchHelper = new MatchHelper(matchDTO);
-        notificationService.addNotification("Upraven zápas", matchHelper.getMatchWithOpponentNameAndDate());
+        notificationService.addNotification(
+                "Upraven zápas",
+                matchHelper.getMatchWithOpponentNameAndDate()
+        );
         return matchMapper.toDTO(savedEntity);
     }
 
@@ -250,7 +289,11 @@ public class MatchService {
     }
 
     public MatchDTO getFirstMatchWherePlayerAttends(PlayerDTO player) {
-        return matchRepository.findFirstMatchWherePlayerAttends(player.getId())
+        return matchRepository.findFirstMatchWherePlayerAttends(
+                        player.getId(),
+                        PageRequest.of(0, 1)
+                ).stream()
+                .findFirst()
                 .map(matchMapper::toDTO)
                 .orElse(null);
     }
@@ -260,22 +303,31 @@ public class MatchService {
      * @param seasonId Id sezony, ze které chceme zápas
      * @return poslední zápas v dané sezoně podle vstupu
      */
-    public MatchDTO getLatestMatchBySeasonId(long seasonId, long appTeamId) {
-        MatchEntity matchEntity;
+    public MatchDTO getLatestMatchBySeasonId(
+            long seasonId,
+            long appTeamId
+    ) {
+        Pageable firstResult = PageRequest.of(0, 1);
+
+        List<MatchEntity> matches;
+
         if (seasonId == ALL_SEASON_ID) {
-            List<MatchEntity> matchEntities = matchRepository.getMatchesOrderByDateDesc(1, appTeamId);
-            if (matchEntities.isEmpty()) {
-                return null;
-            }
-            matchEntity = matchEntities.get(0);
+            matches = matchRepository.findLastByAppTeamId(
+                    appTeamId,
+                    firstResult
+            );
+        } else {
+            matches = matchRepository.findLastBySeasonId(
+                    seasonId,
+                    appTeamId,
+                    firstResult
+            );
         }
-        else {
-            matchEntity = matchRepository.getLastMatchBySeasonId(seasonId, appTeamId);
-        }
-        if (matchEntity != null) {
-            return matchMapper.toDTO(matchEntity);
-        }
-        return null;
+
+        return matches.stream()
+                .findFirst()
+                .map(matchMapper::toDTO)
+                .orElse(null);
     }
 
     /**

@@ -32,7 +32,7 @@ public class WeatherService {
     private static final String PROVIDER = "OPEN_METEO";
     private static final BigDecimal PRAGUE_LATITUDE = new BigDecimal("50.0755");
     private static final BigDecimal PRAGUE_LONGITUDE = new BigDecimal("14.4378");
-    private static final ZoneId PRAGUE_ZONE = ZoneId.of("Europe/Prague");
+    public static final ZoneId PRAGUE_ZONE = ZoneId.of("Europe/Prague");
     private static final String WEATHER_VARIABLES = String.join(",",
             "temperature_2m",
             "apparent_temperature",
@@ -131,7 +131,6 @@ public class WeatherService {
                 .queryParam("timezone", PRAGUE_ZONE.getId())
                 .build()
                 .toUriString();
-
         OpenMeteoResponse response = restTemplate.getForObject(uri, OpenMeteoResponse.class);
         if (response == null || response.getHourly() == null || response.getHourly().getTime() == null
                 || response.getHourly().getTime().isEmpty()) {
@@ -171,6 +170,9 @@ public class WeatherService {
     private MatchWeatherEntity toEntity(MatchEntity match, WeatherSnapshot snapshot) {
         MatchWeatherEntity entity = new MatchWeatherEntity();
         entity.setMatch(match);
+        if (match.getFootballMatch() != null) {
+            entity.setFootballMatchId(match.getFootballMatch().getId());
+        }
         entity.setTemperature(snapshot.temperature());
         entity.setApparentTemperature(snapshot.apparentTemperature());
         entity.setRelativeHumidity(snapshot.relativeHumidity());

@@ -3,7 +3,10 @@ package com.jumbo.trus.service.football.match;
 import com.jumbo.trus.dto.football.FootballMatchDTO;
 import com.jumbo.trus.dto.football.detail.FootballMatchDetail;
 import com.jumbo.trus.dto.football.detail.FootballTableTeamDetail;
+import com.jumbo.trus.entity.MatchWeatherEntity;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
+import com.jumbo.trus.mapper.MatchWeatherMapper;
+import com.jumbo.trus.repository.MatchWeatherRepository;
 import com.jumbo.trus.service.football.helper.WinDrawLose;
 import com.jumbo.trus.service.football.player.FootballPlayerService;
 import com.jumbo.trus.service.helper.Pair;
@@ -22,6 +25,8 @@ public class FootballMatchDetailProcessor {
     private final FootballMatchProcessor footballMatchProcessor;
     private final FootballPlayerService footballPlayerService;
     private final PlayerProcessor playerProcessor;
+    private final MatchWeatherRepository matchWeatherRepository;
+    private final MatchWeatherMapper matchWeatherMapper;
 
     public FootballMatchDetail enhanceFootballMatchDetail(FootballMatchDetail footballMatchDetail, AppTeamEntity appTeam, boolean includeMutualMatches) {
         long homeTeamId = footballMatchDetail.getFootballMatch().getHomeTeam().getId();
@@ -33,6 +38,7 @@ public class FootballMatchDetailProcessor {
         footballMatchDetail.setAwayTeamAverageBirthYear(footballPlayerService.getAverageBirthYearOfTeam(awayTeamId));
         footballMatchDetail.setHomeTeamBestScorer(playerProcessor.findBestScorerByTeamIdAndLeagueId(homeTeamId, footballMatchDetail.getFootballMatch().getLeague().getId()));
         footballMatchDetail.setAwayTeamBestScorer(playerProcessor.findBestScorerByTeamIdAndLeagueId(awayTeamId, footballMatchDetail.getFootballMatch().getLeague().getId()));
+        enhanceWithWeather(footballMatchDetail);
         return footballMatchDetail;
     }
 
@@ -62,6 +68,13 @@ public class FootballMatchDetailProcessor {
         Pair<String, String> aggregateScoreAndMatch = setAggregateScoreAndMatches(footballMatchDetail.getMutualMatches(), appTeam);
         footballMatchDetail.setAggregateScore(aggregateScoreAndMatch.getFirst());
         footballMatchDetail.setAggregateMatches(aggregateScoreAndMatch.getSecond());
+    }
+
+    private void enhanceWithWeather(FootballMatchDetail footballMatchDetail) {
+        MatchWeatherEntity matchWeatherEntity = matchWeatherRepository.findByFootballMatchId(footballMatchDetail.getFootballMatch().getId()).orElse(null);
+        if (matchWeatherEntity != null) {
+            footballMatchDetail.setWeather(matchWeatherMapper.toDTO(matchWeatherEntity));
+        }
     }
 
     private Pair<String, String> setAggregateScoreAndMatches(List<FootballMatchDTO> mutualMatches, AppTeamEntity appTeam) {

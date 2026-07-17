@@ -9,8 +9,8 @@ import com.jumbo.trus.entity.filter.StatisticsFilter;
 import com.jumbo.trus.mapper.MatchMapper;
 import com.jumbo.trus.mapper.PlayerMapper;
 import com.jumbo.trus.repository.MatchRepository;
-import com.jumbo.trus.repository.PlayerRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -21,7 +21,6 @@ import java.util.stream.Collectors;
 public class AttendanceService {
 
     private final MatchRepository matchRepository;
-    private final PlayerRepository playerRepository;
     private final MatchMapper matchMapper;
     private final PlayerMapper playerMapper;
 
@@ -47,7 +46,7 @@ public class AttendanceService {
         Long appTeamId = filter.getAppTeam().getId();
 
         if (filter.getSeasonId() == null || filter.getSeasonId() == Config.ALL_SEASON_ID) {
-            return matchRepository.getMatchesOrderByDateDesc(1000, appTeamId);
+            return matchRepository.getMatchesOrderByDateDesc(appTeamId, PageRequest.of(0, 1000));
         }
 
         return matchRepository.findAllBySeasonId(filter.getSeasonId(), appTeamId);

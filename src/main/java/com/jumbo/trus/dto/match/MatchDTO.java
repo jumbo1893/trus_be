@@ -1,6 +1,7 @@
 package com.jumbo.trus.dto.match;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.jumbo.trus.dto.football.FootballMatchDTO;
 import com.jumbo.trus.dto.weather.MatchWeatherDTO;
 import jakarta.validation.constraints.Min;
@@ -43,6 +44,7 @@ public class MatchDTO {
     @Min(0)
     private Integer awayGoalNumber;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private MatchWeatherDTO weather;
 
     private FootballMatchDTO footballMatch;

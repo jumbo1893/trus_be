@@ -6,12 +6,23 @@ import com.jumbo.trus.entity.PlayerEntity;
 import com.jumbo.trus.mapper.football.FootballMatchMapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 import org.mapstruct.Mappings;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Mapper(componentModel = "spring", uses = {BeerMapper.class, BeerDetailedMapper.class, ReceivedFineDetailedMapper.class, GoalMapper.class, FootballMatchMapper.class, MatchWeatherMapper.class})
+@Mapper(
+        componentModel = "spring",
+        uses = {
+                BeerMapper.class,
+                BeerDetailedMapper.class,
+                ReceivedFineDetailedMapper.class,
+                GoalMapper.class,
+                FootballMatchMapper.class,
+                MatchWeatherMapper.class
+        }
+)
 public abstract class MatchMapper {
 
     @Mappings({
@@ -24,21 +35,46 @@ public abstract class MatchMapper {
             @Mapping(target = "pkflMatch", ignore = true),
             @Mapping(target = "playerAchievements", ignore = true),
             @Mapping(target = "footbarSessions", ignore = true),
-            @Mapping(target = "weather", ignore = true)
+            @Mapping(target = "weather", ignore = true),
+            @Mapping(target = "weatherEntries", ignore = true)
     })
     public abstract MatchEntity toEntity(MatchDTO source);
+
+    @Mappings({
+            @Mapping(target = "id", ignore = true),
+            @Mapping(target = "season", ignore = true),
+            @Mapping(target = "playerList", ignore = true),
+            @Mapping(target = "beerList", ignore = true),
+            @Mapping(target = "fineList", ignore = true),
+            @Mapping(target = "goalList", ignore = true),
+            @Mapping(target = "appTeam", ignore = true),
+            @Mapping(target = "pkflMatch", ignore = true),
+            @Mapping(target = "playerAchievements", ignore = true),
+            @Mapping(target = "footbarSessions", ignore = true),
+            @Mapping(target = "weather", ignore = true),
+            @Mapping(target = "weatherEntries", ignore = true)
+    })
+    public abstract void updateEntity(
+            MatchDTO source,
+            @MappingTarget MatchEntity target
+    );
+
     @Mappings({
             @Mapping(target = "seasonId", source = "season.id"),
-            @Mapping(target = "playerIdList", expression = "java(getPlayerIds(source))"),
-
+            @Mapping(
+                    target = "playerIdList",
+                    expression = "java(getPlayerIds(source))"
+            )
     })
     public abstract MatchDTO toDTO(MatchEntity source);
 
-    protected List<Long> getPlayerIds(MatchEntity source){
+    protected List<Long> getPlayerIds(MatchEntity source) {
         List<Long> result = new ArrayList<>();
-        for(PlayerEntity player : source.getPlayerList()){
+
+        for (PlayerEntity player : source.getPlayerList()) {
             result.add(player.getId());
         }
+
         return result;
     }
 }

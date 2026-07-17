@@ -1,5 +1,8 @@
 package com.jumbo.trus.entity.weather;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 public enum WeatherCode {
 
     CLEAR_SKY(0, "Jasno"),
@@ -39,8 +42,14 @@ public enum WeatherCode {
     HEAVY_SNOW_SHOWERS(86, "Silné sněhové přeháňky"),
 
     THUNDERSTORM(95, "Bouřka"),
-    THUNDERSTORM_WITH_SLIGHT_HAIL(96, "Bouřka se slabým krupobitím"),
-    THUNDERSTORM_WITH_HEAVY_HAIL(99, "Bouřka se silným krupobitím");
+    THUNDERSTORM_WITH_SLIGHT_HAIL(
+            96,
+            "Bouřka se slabým krupobitím"
+    ),
+    THUNDERSTORM_WITH_HEAVY_HAIL(
+            99,
+            "Bouřka se silným krupobitím"
+    );
 
     private final int code;
     private final String czechDescription;
@@ -54,54 +63,104 @@ public enum WeatherCode {
         return code;
     }
 
+    /**
+     * Jackson vrátí v JSON český text místo názvu enumu.
+     *
+     * PARTLY_CLOUDY -> "Polojasno"
+     */
+    @JsonValue
     public String getCzechDescription() {
         return czechDescription;
     }
 
-    public static String getDescription(Integer code) {
+    public static WeatherCode fromCode(Integer code) {
         if (code == null) {
             return null;
         }
 
         for (WeatherCode weatherCode : values()) {
             if (weatherCode.code == code) {
-                return weatherCode.czechDescription;
+                return weatherCode;
             }
         }
 
-        return "Neznámé počasí";
+        return null;
+    }
+
+    /**
+     * Použije se při případné deserializaci JSON.
+     * Podporuje český text i název enumu.
+     */
+    @JsonCreator
+    public static WeatherCode fromJson(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+
+        for (WeatherCode weatherCode : values()) {
+            if (weatherCode.czechDescription.equalsIgnoreCase(value)
+                    || weatherCode.name().equalsIgnoreCase(value)) {
+                return weatherCode;
+            }
+        }
+
+        throw new IllegalArgumentException(
+                "Neznámá hodnota WeatherCode: " + value
+        );
+    }
+
+    public static String getDescription(Integer code) {
+        WeatherCode weatherCode = fromCode(code);
+
+        return weatherCode == null
+                ? "Neznámé počasí"
+                : weatherCode.getCzechDescription();
     }
 
     public static boolean isRain(Integer code) {
         return code != null && (
-                code == 51 || code == 53 || code == 55 ||
-                code == 56 || code == 57 ||
-                code == 61 || code == 63 || code == 65 ||
-                code == 66 || code == 67 ||
-                code == 80 || code == 81 || code == 82 ||
-                code == 95 || code == 96 || code == 99
+                code == 51
+                        || code == 53
+                        || code == 55
+                        || code == 56
+                        || code == 57
+                        || code == 61
+                        || code == 63
+                        || code == 65
+                        || code == 66
+                        || code == 67
+                        || code == 80
+                        || code == 81
+                        || code == 82
+                        || code == 95
+                        || code == 96
+                        || code == 99
         );
     }
 
     public static boolean isSnow(Integer code) {
         return code != null && (
-                code == 71 || code == 73 || code == 75 ||
-                code == 77 ||
-                code == 85 || code == 86
+                code == 71
+                        || code == 73
+                        || code == 75
+                        || code == 77
+                        || code == 85
+                        || code == 86
         );
     }
 
     public static boolean isStorm(Integer code) {
         return code != null && (
-                code == 95 || code == 96 || code == 99
+                code == 95
+                        || code == 96
+                        || code == 99
         );
     }
 
     public static boolean isMist(Integer code) {
         return code != null && (
-                code == 45 || code == 48
-
-
+                code == 45
+                        || code == 48
         );
     }
 }

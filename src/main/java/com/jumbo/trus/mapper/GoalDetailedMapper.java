@@ -16,7 +16,7 @@ import org.mapstruct.Mappings;
 import java.util.ArrayList;
 import java.util.List;
 
-@Mapper(componentModel = "spring", uses = {PlayerMapper.class, MatchMapper.class, PkflIndividualStatsMapper.class, PkflMatchMapper.class, FootballMatchMapper.class})
+@Mapper(componentModel = "spring", uses = {PlayerMapper.class, MatchMapper.class, PkflIndividualStatsMapper.class, PkflMatchMapper.class, FootballMatchMapper.class, MatchWeatherMapper.class})
 public abstract class GoalDetailedMapper {
 
     @Mappings({
