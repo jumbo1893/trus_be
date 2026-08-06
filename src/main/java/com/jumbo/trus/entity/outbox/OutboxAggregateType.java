@@ -10,5 +10,8 @@ public enum OutboxAggregateType {
     GOAL,
     RECEIVED_FINE,
     FOOTBAR,
-    APP_TEAM
+    APP_TEAM,
+    FOOTBALL_MATCH,
+    OTHER,
+    ALL
 }

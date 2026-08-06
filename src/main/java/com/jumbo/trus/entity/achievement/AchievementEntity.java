@@ -1,12 +1,15 @@
 package com.jumbo.trus.entity.achievement;
 
+import com.jumbo.trus.entity.outbox.OutboxAggregateType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 @Entity
 @Table(name = "achievement")
@@ -36,21 +39,76 @@ public class AchievementEntity {
     @OneToMany(mappedBy = "achievement")
     private List<PlayerAchievementEntity> playerAchievements;
 
-    public AchievementEntity(String name, String code, Boolean onlyForPlayers, String description, String secondaryCondition, Boolean manually) {
-        this.code = code;
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(
+            name = "achievement_aggregate_type",
+            joinColumns = @JoinColumn(name = "achievement_id"),
+            uniqueConstraints = @UniqueConstraint(
+                    name = "uk_achievement_aggregate_type",
+                    columnNames = {"achievement_id", "aggregate_type"}
+            )
+    )
+    @Column(name = "aggregate_type", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private Set<OutboxAggregateType> achievementTypes =
+            EnumSet.noneOf(OutboxAggregateType.class);
+
+    /**
+     * Rozsah přepočítání achievementu.
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "calculation_scope", nullable = false)
+    private AchievementCalculationScope calculationScope;
+
+    public AchievementEntity(
+            String name,
+            String code,
+            Boolean onlyForPlayers,
+            String description,
+            String secondaryCondition,
+            Boolean manually,
+            Set<OutboxAggregateType> achievementTypes,
+            AchievementCalculationScope calculationScope
+    ) {
         this.name = name;
+        this.code = code;
         this.onlyForPlayers = onlyForPlayers;
         this.description = description;
         this.secondaryCondition = secondaryCondition;
         this.manually = manually;
+        this.achievementTypes = copyAchievementTypes(achievementTypes);
+        this.calculationScope = calculationScope;
     }
 
-    public AchievementEntity(String name, String code, Boolean onlyForPlayers, String description, Boolean manually) {
-        this.code = code;
-        this.name = name;
-        this.onlyForPlayers = onlyForPlayers;
-        this.description = description;
-        this.manually = manually;
+    public AchievementEntity(
+            String name,
+            String code,
+            Boolean onlyForPlayers,
+            String description,
+            Boolean manually,
+            Set<OutboxAggregateType> achievementTypes,
+            AchievementCalculationScope calculationScope
+    ) {
+        this(
+                name,
+                code,
+                onlyForPlayers,
+                description,
+                null,
+                manually,
+                achievementTypes,
+                calculationScope
+        );
+    }
+
+    private static Set<OutboxAggregateType> copyAchievementTypes(
+            Set<OutboxAggregateType> achievementTypes
+    ) {
+        if (achievementTypes == null || achievementTypes.isEmpty()) {
+            return EnumSet.noneOf(OutboxAggregateType.class);
+        }
+
+        return EnumSet.copyOf(achievementTypes);
     }
 
     @Override
