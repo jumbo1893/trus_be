@@ -13,10 +13,22 @@ import org.springframework.data.repository.query.Param;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static com.jumbo.trus.config.Config.OTHER_SEASON_ID;
 
 public interface MatchRepository extends PagingAndSortingRepository<MatchEntity, Long>, JpaRepository<MatchEntity, Long>, JpaSpecificationExecutor<MatchEntity> {
+
+    @Query("""
+            SELECT m
+            FROM match m
+            WHERE m.id = :matchId
+              AND m.appTeam.id = :appTeamId
+            """)
+    Optional<MatchEntity> findByIdAndAppTeamId(
+            @Param("matchId") Long matchId,
+            @Param("appTeamId") Long appTeamId
+    );
 
     @Query("""
             SELECT m
@@ -139,27 +151,27 @@ public interface MatchRepository extends PagingAndSortingRepository<MatchEntity,
                 SELECT mp.player_id
                 FROM match_players mp
                 WHERE mp.match_id IN (:matchIds)
-
+            
                 UNION
-
+            
                 SELECT b.player_id
                 FROM beer b
                 WHERE b.match_id IN (:matchIds)
-
+            
                 UNION
-
+            
                 SELECT g.player_id
                 FROM goal g
                 WHERE g.match_id IN (:matchIds)
-
+            
                 UNION
-
+            
                 SELECT rf.player_id
                 FROM received_fine rf
                 WHERE rf.match_id IN (:matchIds)
-
+            
                 UNION
-
+            
                 SELECT p.id AS player_id
                 FROM match m
                 JOIN football_match_player fmp ON fmp.match_id = m.football_match_id
@@ -177,5 +189,21 @@ public interface MatchRepository extends PagingAndSortingRepository<MatchEntity,
               AND season_id IS NOT NULL
             """, nativeQuery = true)
     List<Long> findSeasonIdsByMatchIds(@Param("matchIds") Iterable<Long> matchIds);
+
+    @Query("""
+            SELECT m.season.id
+            FROM match m
+            WHERE m.id = :matchId
+            """)
+    Long findSeasonIdByMatchId(@Param("matchId") Long matchId);
+
+    @Query("""
+            SELECT m.id
+            FROM match m
+            WHERE m.season.id = :seasonId
+            """)
+    Set<Long> findMatchIdsBySeason(
+            @Param("seasonId") Long seasonId
+    );
 
 }

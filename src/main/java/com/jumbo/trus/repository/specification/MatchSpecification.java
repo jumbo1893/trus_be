@@ -10,6 +10,7 @@ import org.springframework.data.jpa.domain.Specification;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @RequiredArgsConstructor
 public class MatchSpecification implements Specification<MatchEntity> {
@@ -33,7 +34,7 @@ public class MatchSpecification implements Specification<MatchEntity> {
         }
 
         if (filter.getSeasonId() != null) {
-            if (filter.getSeasonId() != Config.ALL_SEASON_ID) {
+            if (!Objects.equals(filter.getSeasonId(), Config.ALL_SEASON_ID)) {
                 Join<SeasonEntity, MatchEntity> seasonJoin = root.join(MatchEntity_.SEASON);
                 predicates.add(criteriaBuilder.equal(seasonJoin.get(SeasonEntity_.ID), filter.getSeasonId()));
             }

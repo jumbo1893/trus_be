@@ -25,7 +25,6 @@ public class NonEditableFineHandler {
             fineEntity.setName("Gól");
         }
         fineRepository.save(fineEntity);
-        fineNotificationService.notifyFineUpdated(fineDTO.getName(), fineDTO.getAmount());
         return fineMapper.toDTO(fineEntity);
     }
 

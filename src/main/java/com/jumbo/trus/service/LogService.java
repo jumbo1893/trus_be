@@ -4,6 +4,7 @@ import com.jumbo.trus.dto.log.LogDTO;
 import com.jumbo.trus.entity.log.LogEntity;
 import com.jumbo.trus.repository.log.LogRepository;
 import com.jumbo.trus.service.auth.UserService;
+import com.jumbo.trus.service.header.HeaderManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

@@ -6,9 +6,23 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 public interface PlayerRepository extends JpaRepository<PlayerEntity, Long> {
+
+    @Query("""
+            SELECT p
+            FROM PlayerEntity p
+            WHERE p.id IN :playerIds
+              AND p.appTeam.id = :appTeamId
+              AND p.deleted = false
+            """)
+    List<PlayerEntity> findAllByIdsAndAppTeam(
+            @Param("playerIds") Collection<Long> playerIds,
+            @Param("appTeamId") Long appTeamId
+    );
 
     @Query(value = """
             SELECT *
@@ -74,12 +88,21 @@ public interface PlayerRepository extends JpaRepository<PlayerEntity, Long> {
     List<IPlayerBirthday> getUpcomingBirthdayPlayers(@Param("appTeamId") Long appTeamId);
 
     @Query("""
-    SELECT p
-    FROM PlayerEntity p
-    WHERE p.appTeam.id = :appTeamId
-      AND p.deleted = false
-    ORDER BY p.name ASC
-""")
+                SELECT p
+                FROM PlayerEntity p
+                WHERE p.appTeam.id = :appTeamId
+                  AND p.deleted = false
+                ORDER BY p.name ASC
+            """)
     List<PlayerEntity> findAllNotDeletedByAppTeam(@Param("appTeamId") Long appTeamId);
 
+    @Query("""
+            SELECT DISTINCT m.id
+            FROM match m
+            JOIN m.playerList player
+            WHERE player.id = :playerId
+            """)
+    Set<Long> findMatchIdsWherePlayerAttends(
+            @Param("playerId") Long playerId
+    );
 }

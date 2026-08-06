@@ -112,9 +112,10 @@ public class AchievementInitializer implements CommandLineRunner {
                 new AchievementEntity("Američan z Vysočan", AMERICAN_Z_VYSOCAN, false, "Do Ameriky jezděj parníky...připoj se k Trusí appce z Ameriky", false),
                 new AchievementEntity("Po stopách Diega", PO_STOPACH_DIEGA, false, "Byl to feťák nebo ne? Připoj se k Trusí appce z Jižní  Ameriky", false),
                 new AchievementEntity("Trusí Amundsen", TRUSI_AMUNDSEN, false, "V Anktartidě je nádherně... akorát na to připojit se na Trusí appku", false),
-                new AchievementEntity("Lišák a moře", LISAK_A_MORE, false, "Ano i Oceánie je kontinent a je vhodná k zapnutí Trusí appky", false)
+                new AchievementEntity("Lišák a moře", LISAK_A_MORE, false, "Ano i Oceánie je kontinent a je vhodná k zapnutí Trusí appky", false),
+                new AchievementEntity("Návšteva Sahary", NAVSTEVA_SAHARY, true, "Zúčastni se zápasu, při kterém teplota překročí 35 °C", false),
+                new AchievementEntity("Ledový muž", LEDOVY_MUZ, true, "Zúčastni se zápasu, při kterém teplota kleska pod 0 °C", false)
 
-
-                );
+        );
     }
 }

@@ -26,13 +26,13 @@ import com.jumbo.trus.mapper.achievement.AchievementMapper;
 import com.jumbo.trus.mapper.achievement.PlayerAchievementMapper;
 import com.jumbo.trus.repository.achievement.AchievementRepository;
 import com.jumbo.trus.repository.achievement.PlayerAchievementRepository;
-import com.jumbo.trus.service.GoalService;
 import com.jumbo.trus.service.SeasonService;
 import com.jumbo.trus.service.achievement.helper.*;
 import com.jumbo.trus.service.beer.BeerService;
 import com.jumbo.trus.service.fine.FineService;
 import com.jumbo.trus.service.football.match.FootballMatchService;
 import com.jumbo.trus.service.football.stats.FootballPlayerStatsService;
+import com.jumbo.trus.service.goal.GoalService;
 import com.jumbo.trus.service.match.MatchService;
 import com.jumbo.trus.service.notification.push.maker.AchievementNotificationMaker;
 import com.jumbo.trus.service.order.OrderMatchByDate;
@@ -41,12 +41,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class AchievementCalculator {
+
+    private static final BigDecimal HOT_MATCH_TEMPERATURE_THRESHOLD = new BigDecimal("20.0");
 
     private final BeerService beerService;
     private final AchievementMapper achievementMapper;
@@ -143,6 +146,7 @@ public class AchievementCalculator {
                     Map.entry("CERNE_GENY", this::calculateCERNE_GENYAchievement)
 
 
+
             );
 
     private final Map<String, ScopedAchievementFunction> scopedAchievementCalculators =
@@ -161,8 +165,9 @@ public class AchievementCalculator {
                     Map.entry("TEN_TO_PERFEKTNE_KOPE", this::calculateTEN_TO_PERFEKTNE_KOPEAchievementForMatch),
                     Map.entry("KOMPLEXNI_HRAC", this::calculateKOMPLEXNI_HRACAchievementForMatch),
                     Map.entry("ALZHEIMER", (p, a, at, t, m) -> calculateFineInMatchAchievement(p, a, m, List.of("Zapomenutí věcí", "Nekompletní výbava"), 1, "Možná by to chtělo navštívit doktora.")),
-                    Map.entry("LEO_BERANEK", (p, a, at, t, m) -> calculateFineInMatchAchievement(p, a, m, List.of("Nový kopačky"), 1, "Hráč si pořídil nové kopačky."))
-            );
+                    Map.entry("LEO_BERANEK", (p, a, at, t, m) -> calculateFineInMatchAchievement(p, a, m, List.of("Nový kopačky"), 1, "Hráč si pořídil nové kopačky.")),
+                    Map.entry(AchievementCodes.NAVSTEVA_SAHARY, (p, a, at, t, m) -> calculateTROPICKY_ZAPASAchievementForMatch(p, a, at, t, m, HOT_MATCH_TEMPERATURE_THRESHOLD, true))
+                    );
 
     private static final Map<String, AchievementDefinition> ACHIEVEMENT_DEFINITIONS =
             Map.ofEntries(
@@ -242,7 +247,8 @@ public class AchievementCalculator {
                     playerHistory("AMERICKY_FOTBALISTA", AchievementDependency.RECEIVED_FINE),
                     matchPlayer("ALZHEIMER", AchievementDependency.RECEIVED_FINE),
                     matchPlayer("LEO_BERANEK", AchievementDependency.RECEIVED_FINE),
-                    matchPlayer("CERNE_GENY", AchievementDependency.FOOTBAR)
+                    matchPlayer("CERNE_GENY", AchievementDependency.FOOTBAR),
+                    matchPlayer(AchievementCodes.NAVSTEVA_SAHARY, AchievementDependency.MATCH)
             );
 
 
@@ -561,9 +567,21 @@ public class AchievementCalculator {
             if (existingMatchId == null || !context.changedMatchIds().contains(existingMatchId)) {
                 return null;
             }
-            return calculateSingleMatchScopedAchievement(
+
+            PlayerAchievementDTO recalculatedForChangedMatch = calculateSingleMatchScopedAchievement(
                     achievement, player, appTeam, achievementType, existingMatchId, fallbackCalculator
             );
+            if (recalculatedForChangedMatch != null
+                    && Boolean.TRUE.equals(recalculatedForChangedMatch.getAccomplished())) {
+                return recalculatedForChangedMatch;
+            }
+
+            // Původní zápas už podmínku nesplňuje. Teprve nyní jednorázově ověříme,
+            // zda hráč achievement nezískal v jiném historickém zápase.
+            PlayerAchievementDTO historicalFallback = fallbackCalculator.apply(
+                    player, achievement, appTeam, achievementType
+            );
+            return historicalFallback != null ? historicalFallback : recalculatedForChangedMatch;
         }
 
         for (Long matchId : context.changedMatchIds()) {
@@ -831,6 +849,43 @@ public class AchievementCalculator {
             return returnPlayerAchievement(achievement, playerDTO, result.getMatchId(), "Hráč si dal " + result.getSecondNumber() + " piv");
         }
         return returnFailedPlayerAchievement(achievement, playerDTO);
+    }
+
+    private PlayerAchievementDTO calculateTROPICKY_ZAPASAchievementForMatch(
+            PlayerDTO playerDTO,
+            AchievementDTO achievement,
+            AppTeamEntity appTeam,
+            AchievementType achievementType,
+            Long matchId,
+            BigDecimal temperatureThreshold,
+            boolean higherThanThreshold
+    ) {
+        IMatchIdDecimalAndNumber result =
+                playerAchievementRepository.findMatchAttendedByPlayerWithTemperatureThreshold(
+                        playerDTO.getId(),
+                        matchId,
+                        temperatureThreshold,
+                        higherThanThreshold
+                );
+
+        if (result == null) {
+            return returnFailedPlayerAchievement(achievement, playerDTO);
+        }
+
+        String comparisonText = higherThanThreshold
+                ? "vyšší než " + temperatureThreshold
+                : "nižší než " + temperatureThreshold;
+
+        return returnPlayerAchievement(
+                achievement,
+                playerDTO,
+                result.getMatchId(),
+                "Teplota při zápase byla "
+                        + roundDoubleToString(result.getFirstNumber())
+                        + " °C, tedy "
+                        + comparisonText
+                        + " °C."
+        );
     }
 
     private PlayerAchievementDTO calculatePROCAchievementForMatch(
@@ -1385,6 +1440,34 @@ public class AchievementCalculator {
         }
         return null;
     }
+
+    /*private PlayerAchievementDTO calculateTROPICKY_ZAPASAchievement(
+            PlayerDTO playerDTO,
+            AchievementDTO achievement,
+            AppTeamEntity appTeam,
+            AchievementType achievementType,
+            boolean over,
+            BigDecimal temperatureThreshold
+            ) {
+        if (!shouldCalculate(achievementType, AchievementType.MATCH)) {
+            return null;
+        }
+
+        IMatchIdDecimalAndNumber result = playerAchievementRepository.findFirstHotMatchAttendedByPlayer(
+                playerDTO.getId(),
+                appTeam.getId(),
+                HOT_MATCH_TEMPERATURE_THRESHOLD
+        );
+        if (result != null) {
+            return returnPlayerAchievement(
+                    achievement,
+                    playerDTO,
+                    result.getMatchId(),
+                    "Teplota při zápase byla " + roundDoubleToString(result.getFirstNumber()) + " °C."
+            );
+        }
+        return returnFailedPlayerAchievement(achievement, playerDTO);
+    }*/
 
     private PlayerAchievementDTO calculateSPORTOVECAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AppTeamEntity appTeam, AchievementType achievementType) {
         if (achievementType == AchievementType.ALL || achievementType == AchievementType.GOAL || achievementType == AchievementType.BEER) {

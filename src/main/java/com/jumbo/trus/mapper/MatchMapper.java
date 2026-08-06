@@ -9,7 +9,6 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.Mappings;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Mapper(
@@ -26,12 +25,13 @@ import java.util.List;
 public abstract class MatchMapper {
 
     @Mappings({
-            @Mapping(target = "season.id", source = "seasonId"),
+            @Mapping(target = "season", ignore = true),
             @Mapping(target = "playerList", ignore = true),
             @Mapping(target = "beerList", ignore = true),
             @Mapping(target = "fineList", ignore = true),
             @Mapping(target = "goalList", ignore = true),
             @Mapping(target = "appTeam", ignore = true),
+            @Mapping(target = "footballMatch", ignore = true),
             @Mapping(target = "pkflMatch", ignore = true),
             @Mapping(target = "playerAchievements", ignore = true),
             @Mapping(target = "footbarSessions", ignore = true),
@@ -48,6 +48,7 @@ public abstract class MatchMapper {
             @Mapping(target = "fineList", ignore = true),
             @Mapping(target = "goalList", ignore = true),
             @Mapping(target = "appTeam", ignore = true),
+            @Mapping(target = "footballMatch", ignore = true),
             @Mapping(target = "pkflMatch", ignore = true),
             @Mapping(target = "playerAchievements", ignore = true),
             @Mapping(target = "footbarSessions", ignore = true),
@@ -69,12 +70,12 @@ public abstract class MatchMapper {
     public abstract MatchDTO toDTO(MatchEntity source);
 
     protected List<Long> getPlayerIds(MatchEntity source) {
-        List<Long> result = new ArrayList<>();
-
-        for (PlayerEntity player : source.getPlayerList()) {
-            result.add(player.getId());
+        if (source.getPlayerList() == null) {
+            return List.of();
         }
 
-        return result;
+        return source.getPlayerList().stream()
+                .map(PlayerEntity::getId)
+                .toList();
     }
 }

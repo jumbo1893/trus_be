@@ -14,6 +14,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface ReceivedFineRepository extends PagingAndSortingRepository<ReceivedFineEntity, Long>, JpaRepository<ReceivedFineEntity, Long>, JpaSpecificationExecutor<ReceivedFineEntity> {
 
@@ -214,6 +215,19 @@ public interface ReceivedFineRepository extends PagingAndSortingRepository<Recei
             @Param("appTeamId") Long appTeamId,
             @Param("seasonId") Long seasonId
     );
+
+    @Query("""
+    SELECT DISTINCT rf.match.id
+    FROM received_fine rf
+    WHERE rf.fine.id = :fineId
+      AND rf.fineNumber > 0
+    """)
+    Set<Long> findMatchIdsByFineId(
+            @Param("fineId") Long fineId
+    );
+
+    @Query(value = "SELECT DISTINCT player_id from received_fine WHERE (fine_id=:#{#goalFineId} OR fine_id=:#{#hattrickFineId}) AND match_id=:#{#matchId}", nativeQuery = true)
+    Set<Long> findPlayersByFineIdsAndMatchId(@Param("matchId") long matchId, @Param("goalFineId") long goalFineId, @Param("hattrickFineId") long hattrickFineId);
 
 }
 

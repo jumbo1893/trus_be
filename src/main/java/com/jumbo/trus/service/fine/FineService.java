@@ -3,9 +3,13 @@ package com.jumbo.trus.service.fine;
 import com.jumbo.trus.dto.FineDTO;
 import com.jumbo.trus.entity.FineEntity;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
+import com.jumbo.trus.entity.outbox.OutboxAggregateType;
+import com.jumbo.trus.entity.outbox.OutboxEventType;
 import com.jumbo.trus.mapper.FineMapper;
 import com.jumbo.trus.repository.FineRepository;
 import com.jumbo.trus.repository.ReceivedFineRepository;
+import com.jumbo.trus.service.outbox.OutboxEventPayloadFactory;
+import com.jumbo.trus.service.outbox.OutboxEventService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.webjars.NotFoundException;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,17 +30,20 @@ public class FineService {
     private final NonEditableFineHandler nonEditableFineHandler;
     private final FineNotificationService fineNotificationService;
     private final FineValidator fineValidator;
+    private final OutboxEventService outboxEventService;
 
     /**
      * metoda uloží pokutu do db a založí notifikaci
      * @param fineDTO Pokuta z FE
      * @return Pokuta z DB
      */
+    @Transactional
     public FineDTO addFine(FineDTO fineDTO, AppTeamEntity appTeam) {
         FineEntity entity = fineMapper.toEntity(fineDTO);
         entity.setAppTeam(appTeam);
         FineEntity savedEntity = fineRepository.save(entity);
         fineNotificationService.notifyFineAdded(fineDTO.getName(), fineDTO.getAmount());
+        outboxEventService.createEvent(OutboxEventType.FINE_CREATED, OutboxAggregateType.FINE, savedEntity.getId(), null);
         return fineMapper.toDTO(savedEntity);
     }
 
@@ -74,6 +82,7 @@ public class FineService {
     @Transactional
     public FineDTO editFine(Long fineId, FineDTO fineDTO, AppTeamEntity appTeam) {
         fineValidator.validateExists(fineId);
+        Set<Long> affectedMatchIds = receivedFineRepository.findMatchIdsByFineId(fineId);
         if (fineDTO.isInactive()) {
             return processInactiveFine(fineId, fineDTO, appTeam);
         }
@@ -81,17 +90,22 @@ public class FineService {
         if (nonEditableFineHandler.isNonEditableFine(fineId)) {
             return processNonEditableFine(fineId, fineDTO);
         }
-
-        return processRegularFine(fineId, fineDTO, appTeam);
+        FineDTO updatedFine = processRegularFine(fineId, fineDTO, appTeam);
+        fineNotificationService.notifyFineUpdated(fineDTO.getName(), fineDTO.getAmount());
+        outboxEventService.createEvent(OutboxEventType.FINE_UPDATED, OutboxAggregateType.FINE, fineId, OutboxEventPayloadFactory.fineUpdated(affectedMatchIds));
+        return updatedFine;
     }
 
     @Transactional
     public void deleteFine(Long fineId) {
         fineValidator.validateNotNonEditable(fineId);
         FineEntity fineEntity = fineRepository.findById(fineId).orElseThrow(() -> new NotFoundException("Pokuta nenalezena v db"));
+        Set<Long> affectedMatchIds = receivedFineRepository.findMatchIdsByFineId(fineId);
         fineNotificationService.notifyFineDeleted(fineEntity.getName(), fineEntity.getAmount());
         receivedFineRepository.deleteByFineId(fineId);
         fineRepository.deleteById(fineId);
+        outboxEventService.createEvent(OutboxEventType.FINE_DELETED, OutboxAggregateType.FINE, fineId, OutboxEventPayloadFactory.fineDeleted(affectedMatchIds));
+
     }
 
     /**
@@ -118,7 +132,6 @@ public class FineService {
         newFine.setId(null);
         newFine.setInactive(false);
         newFine.setAppTeam(appTeam);
-        fineNotificationService.notifyFineUpdated(fineDTO.getName(), fineDTO.getAmount());
         return fineMapper.toDTO(fineRepository.save(newFine));
     }
 
@@ -134,7 +147,6 @@ public class FineService {
         FineEntity entity = fineMapper.toEntity(fineDTO);
         entity.setId(fineId);
         entity.setAppTeam(appTeam);
-        fineNotificationService.notifyFineUpdated(fineDTO.getName(), fineDTO.getAmount());
         return fineMapper.toDTO(fineRepository.save(entity));
     }
 }

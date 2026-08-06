@@ -61,7 +61,7 @@ public class MatchController {
     @PostCommitTask
     @StoreAppTeam
     public void deleteMatch(@PathVariable Long matchId) throws NotFoundException {
-        matchService.deleteMatch(matchId);
+        matchService.deleteMatch(matchId, appTeamService.getCurrentAppTeamOrThrow());
     }
 
     @RoleRequired("ADMIN")

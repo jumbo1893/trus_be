@@ -1,4 +1,4 @@
-package com.jumbo.trus.service;
+package com.jumbo.trus.service.header;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Component;
@@ -32,8 +32,8 @@ public class HeaderManager {
         return request.getHeader("device");
     }
 
-    public String getAnotherHeader() {
-        return request.getHeader("Another-Header");
+    public String getOperationId() {
+        return request.getHeader("X-Operation-Id");
     }
 
     public String getClientIp() {
@@ -45,6 +45,8 @@ public class HeaderManager {
 
         return request.getRemoteAddr();
     }
+
+
 }
 
 

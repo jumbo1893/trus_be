@@ -10,17 +10,18 @@ import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.auth.UserEntity;
 import com.jumbo.trus.entity.auth.UserTeamRole;
 import com.jumbo.trus.entity.football.TeamEntity;
-import com.jumbo.trus.mapper.PlayerMapper;
 import com.jumbo.trus.mapper.auth.AppTeamMapper;
 import com.jumbo.trus.mapper.auth.UserTeamRoleMapper;
+import com.jumbo.trus.repository.PlayerRepository;
 import com.jumbo.trus.repository.auth.AppTeamRepository;
 import com.jumbo.trus.repository.auth.UserTeamRoleRepository;
 import com.jumbo.trus.repository.football.TeamRepository;
-import com.jumbo.trus.service.HeaderManager;
 import com.jumbo.trus.service.exceptions.AuthException;
 import com.jumbo.trus.service.exceptions.FieldValidationException;
+import com.jumbo.trus.service.header.HeaderManager;
 import com.jumbo.trus.service.helper.ValidationField;
 import com.jumbo.trus.service.player.PlayerService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -41,8 +42,7 @@ public class AppTeamService implements AppTeamProvider {
     private final AppTeamMapper appTeamMapper;
     private final UserTeamRoleMapper userTeamRoleMapper;
     private final HeaderManager headerManager;
-    private final PlayerMapper playerMapper;
-    private final PlayerService playerService;
+    private final PlayerRepository playerRepository;
 
 
     public AppTeamEntity getCurrentAppTeamOrThrow() {
@@ -105,15 +105,19 @@ public class AppTeamService implements AppTeamProvider {
             throw new NotFoundException("Nenalezena role pro user " + userEntity.getUsername());
         }
         PlayerEntity playerEntity;
-        if (playerDTO.equals(playerService.noPlayer())) {
+        if (playerDTO.equals(PlayerService.noPlayer())) {
             playerEntity = null;
         }
         else {
-            playerEntity = playerService.getPlayerEntity(playerDTO.getId());
+            playerEntity = getPlayerEntity(playerDTO.getId());
         }
 
         userTeamRole.setPlayer(playerEntity);
         userTeamRoleRepository.save(userTeamRole);
+    }
+
+    public PlayerEntity getPlayerEntity(long playerId) {
+        return playerRepository.findById(playerId).orElseThrow(() -> new EntityNotFoundException(String.valueOf(playerId)));
     }
 
 

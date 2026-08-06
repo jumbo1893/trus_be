@@ -14,10 +14,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.math.BigDecimal;
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.*;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -52,6 +49,10 @@ public class WeatherService {
 
     private final RestTemplate restTemplate;
     private final MatchWeatherMapper matchWeatherMapper;
+
+    public Optional<MatchWeatherEntity> createWeatherForMatch(MatchEntity match) {
+        return getWeather(resolveWeatherDate(match)).map(snapshot -> toEntity(match, snapshot));
+    }
 
     public Optional<MatchWeatherEntity> createWeatherForMatch(MatchEntity match, Date requestedDate) {
         return getWeather(requestedDate).map(snapshot -> toEntity(match, snapshot));
@@ -176,6 +177,35 @@ public class WeatherService {
                 PROVIDER,
                 sourceType
         ));
+    }
+
+    private Date resolveWeatherDate(MatchEntity match) {
+        if (match.getFootballMatch() != null
+                && match.getFootballMatch().getDate() != null) {
+            return match.getFootballMatch().getDate();
+        }
+
+        if (match.getDate() == null) {
+            return null;
+        }
+
+        LocalDate matchDate = match.getDate()
+                .toInstant()
+                .atZone(PRAGUE_ZONE)
+                .toLocalDate();
+
+        LocalTime currentTime = LocalTime.now(PRAGUE_ZONE);
+
+        LocalDateTime weatherDateTime = LocalDateTime.of(
+                matchDate,
+                currentTime
+        );
+
+        return Date.from(
+                weatherDateTime
+                        .atZone(PRAGUE_ZONE)
+                        .toInstant()
+        );
     }
 
     private MatchWeatherEntity toEntity(MatchEntity match, WeatherSnapshot snapshot) {

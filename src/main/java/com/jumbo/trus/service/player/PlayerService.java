@@ -5,6 +5,8 @@ import com.jumbo.trus.dto.player.PlayerDTO;
 import com.jumbo.trus.entity.PlayerEntity;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.football.FootballPlayerEntity;
+import com.jumbo.trus.entity.outbox.OutboxAggregateType;
+import com.jumbo.trus.entity.outbox.OutboxEventType;
 import com.jumbo.trus.mapper.PlayerMapper;
 import com.jumbo.trus.repository.PlayerRepository;
 import com.jumbo.trus.repository.auth.UserTeamRoleRepository;
@@ -13,6 +15,8 @@ import com.jumbo.trus.service.football.player.FootballPlayerService;
 import com.jumbo.trus.service.helper.BirthdayCalculator;
 import com.jumbo.trus.service.helper.ValidationField;
 import com.jumbo.trus.service.notification.NotificationService;
+import com.jumbo.trus.service.outbox.OutboxEventPayloadFactory;
+import com.jumbo.trus.service.outbox.OutboxEventService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +26,7 @@ import org.webjars.NotFoundException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -32,12 +37,15 @@ public class PlayerService {
     private final NotificationService notificationService;
     private final FootballPlayerService footballPlayerService;
     private final UserTeamRoleRepository userTeamRoleRepository;
+    private final OutboxEventService outboxEventService;
 
+    @Transactional
     public PlayerDTO addPlayer(PlayerDTO playerDTO, AppTeamEntity appTeam) {
         PlayerEntity entity = playerMapper.toEntity(playerDTO);
         entity.setAppTeam(appTeam);
         PlayerEntity savedEntity = playerRepository.save(entity);
         notificationService.addNotification("Přidán " + (playerDTO.isFan() ? "fanoušek" : "hráč"), playerDTO.getName() + ", s narozeninami " + playerDTO.getBirthday());
+        outboxEventService.createEvent(OutboxEventType.PLAYER_CREATED, OutboxAggregateType.PLAYER, savedEntity.getId(), null);
         return playerMapper.toDTO(savedEntity);
     }
 
@@ -75,6 +83,7 @@ public class PlayerService {
         return players.toString();
     }
 
+    @Transactional
     public PlayerDTO editPlayer(Long playerId, PlayerDTO playerDTO)
             throws NotFoundException {
         PlayerEntity entity = playerRepository.findById(playerId)
@@ -103,6 +112,7 @@ public class PlayerService {
                 "Upraven " + (playerDTO.isFan() ? "fanoušek" : "hráč"),
                 playerDTO.getName() + ", s narozeninami " + playerDTO.getBirthday()
         );
+        outboxEventService.createEvent(OutboxEventType.PLAYER_UPDATED, OutboxAggregateType.PLAYER, savedEntity.getId(), null);
         return playerMapper.toDTO(savedEntity);
     }
 
@@ -115,6 +125,7 @@ public class PlayerService {
         if (playerEntity.isDeleted()) {
             return;
         }
+        Set<Long> affectedMatches = playerRepository.findMatchIdsWherePlayerAttends(playerId);
         notificationService.addNotification(
                 "Smazán " + (playerEntity.isFan() ? "fanoušek" : "hráč"),
                 playerEntity.getName() + ", s narozeninami " + playerEntity.getBirthday()
@@ -125,6 +136,8 @@ public class PlayerService {
         userTeamRoleRepository.findAllByPlayerId(playerId)
                 .forEach(userTeamRole -> userTeamRole.setPlayer(null));
         playerRepository.save(playerEntity);
+        outboxEventService.createEvent(OutboxEventType.PLAYER_DELETED, OutboxAggregateType.PLAYER, playerId, OutboxEventPayloadFactory.playerDeleted(affectedMatches));
+
     }
 
     public List<Long> convertPlayerListToPlayerIdList(List<PlayerDTO> players) {
@@ -154,7 +167,7 @@ public class PlayerService {
         return playerDTO;
     }
 
-    public PlayerDTO noPlayer() {
+    public static PlayerDTO noPlayer() {
         PlayerDTO playerDTO = new PlayerDTO();
         playerDTO.setId(0L);
         playerDTO.setFootballPlayer(null);

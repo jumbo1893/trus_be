@@ -6,7 +6,9 @@ import com.jumbo.trus.dto.auth.UserTeamRoleDTO;
 import com.jumbo.trus.dto.player.PlayerDTO;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.auth.UserEntity;
+import com.jumbo.trus.mapper.PlayerMapper;
 import com.jumbo.trus.mapper.auth.UserTeamRoleMapper;
+import com.jumbo.trus.repository.PlayerRepository;
 import com.jumbo.trus.repository.auth.UserRepository;
 import com.jumbo.trus.service.exceptions.AuthException;
 import com.jumbo.trus.service.exceptions.DuplicateEmailException;
@@ -36,15 +38,15 @@ public class UserService implements UserDetailsService {
     private final PasswordEncoder passwordEncoder;
     private final UserTeamRoleMapper userTeamRoleMapper;
     private final TeamProcessor teamProcessor;
-    private final PlayerService playerService;
     private final DeviceTokenCollector deviceTokenCollector;
-
+    private final PlayerRepository playerRepository;
+    private final PlayerMapper playerMapper;
 
     public UserSetup returnPlayerSetup(AppTeamEntity appTeamEntity) {
         UserSetup userSetup = new UserSetup();
-        PlayerDTO noPlayer = playerService.noPlayer();
+        PlayerDTO noPlayer = PlayerService.noPlayer();
         userSetup.setCurrentUser(getCurrentUser());
-        List<PlayerDTO> eligiblePlayers = new ArrayList<>(playerService.getAll(appTeamEntity.getId()));
+        List<PlayerDTO> eligiblePlayers = new ArrayList<>(playerRepository.getAll(appTeamEntity.getId()).stream().map(playerMapper::toDTO).toList());
         eligiblePlayers.add(0, noPlayer);
         userSetup.setEligiblePlayersToPairWith(eligiblePlayers);
         UserDTO userWithCurrentTeamRole = getCurrentUser();

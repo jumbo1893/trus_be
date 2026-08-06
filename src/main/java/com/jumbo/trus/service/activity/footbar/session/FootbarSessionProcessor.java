@@ -8,11 +8,16 @@ import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.auth.UserTeamRole;
 import com.jumbo.trus.entity.footbar.FootbarAccountEntity;
 import com.jumbo.trus.entity.footbar.FootbarSessionEntity;
+import com.jumbo.trus.entity.outbox.OutboxAggregateType;
+import com.jumbo.trus.entity.outbox.OutboxEventType;
 import com.jumbo.trus.mapper.footbar.FootbarRawSessionMapper;
 import com.jumbo.trus.repository.footbar.FootbarSessionRepository;
 import com.jumbo.trus.service.activity.footbar.FootbarProperties;
 import com.jumbo.trus.service.activity.footbar.connect.FootbarConnect;
 import com.jumbo.trus.service.match.MatchService;
+import com.jumbo.trus.service.outbox.OutboxEventPayloadFactory;
+import com.jumbo.trus.service.outbox.OutboxEventService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
@@ -26,10 +31,7 @@ import org.springframework.web.client.RestTemplate;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Component
 @RequiredArgsConstructor
@@ -43,6 +45,7 @@ public class FootbarSessionProcessor {
     private final ObjectMapper mapper;
     private final FootbarRawSessionMapper footbarRawSessionMapper;
     private final MatchService matchService;
+    private final OutboxEventService outboxEventService;
 
     public List<FootbarSessionDTO> fetchSessions(String accessToken) {
         List<FootbarSessionDTO> allSessions = new ArrayList<>();
@@ -76,24 +79,33 @@ public class FootbarSessionProcessor {
         return allSessions;
     }
 
+    @Transactional
     public void saveSessions(FootbarAccountEntity footbarAccount, AppTeamEntity appTeam) {
         String validAccessToken = footbarConnect.getValidAccessToken(footbarAccount);
         List<FootbarSessionDTO> sessions = fetchSessions(validAccessToken);
         for (FootbarSessionDTO session : sessions) {
             FootbarSessionEntity repoEntity = findByAccountAndSessionId(session, footbarAccount);
+            FootbarSessionEntity savedSession;
             if(repoEntity == null) {
                 FootbarSessionDTO detailedSession = fetchFootbarSessionDetail(session.getFootbarSessionId(), validAccessToken);
                 FootbarSessionEntity newSession = getFootbarSessionEntity(footbarAccount, detailedSession);
                 newSession.setId(null);
                 pairSessionWithMatch(newSession, appTeam);
                 pairSessionWithPlayer(footbarAccount, newSession, appTeam);
-                footbarSessionRepository.save(newSession);
+                savedSession = footbarSessionRepository.save(newSession);
             }
             else {
                 pairSessionWithMatch(repoEntity, appTeam);
                 pairSessionWithPlayer(footbarAccount, repoEntity, appTeam);
-                footbarSessionRepository.save(repoEntity);
+                savedSession = footbarSessionRepository.save(repoEntity);
             }
+            outboxEventService.createEvent(OutboxEventType.FOOTBAR_SESSION_SAVED, OutboxAggregateType.FOOTBAR, null,
+                    OutboxEventPayloadFactory.footbarUpdated(
+                            savedSession.getMatch().getId(),
+                            savedSession.getMatch().getSeason().getId(),
+                            Set.of(savedSession.getPlayer().getId()),
+                            Set.of(savedSession.getId())
+                            ));
         }
     }
 

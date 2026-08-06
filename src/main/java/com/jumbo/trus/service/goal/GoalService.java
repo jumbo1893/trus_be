@@ -1,4 +1,4 @@
-package com.jumbo.trus.service;
+package com.jumbo.trus.service.goal;
 
 import com.jumbo.trus.dto.goal.GoalDTO;
 import com.jumbo.trus.dto.goal.IPlayerGoalStats;
@@ -6,18 +6,22 @@ import com.jumbo.trus.dto.goal.multi.GoalListDTO;
 import com.jumbo.trus.dto.goal.response.GoalMultiAddResponse;
 import com.jumbo.trus.dto.goal.response.get.GoalDetailedResponse;
 import com.jumbo.trus.dto.goal.response.get.GoalSetupResponse;
+import com.jumbo.trus.dto.match.MatchDTO;
 import com.jumbo.trus.dto.player.PlayerDTO;
 import com.jumbo.trus.entity.GoalEntity;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.filter.GoalFilter;
 import com.jumbo.trus.entity.filter.StatisticsFilter;
+import com.jumbo.trus.entity.outbox.OutboxAggregateType;
+import com.jumbo.trus.entity.outbox.OutboxEventType;
 import com.jumbo.trus.mapper.GoalMapper;
 import com.jumbo.trus.mapper.GoalSetupMapper;
 import com.jumbo.trus.repository.GoalRepository;
 import com.jumbo.trus.repository.specification.GoalSpecification;
-import com.jumbo.trus.service.goal.GoalDetailedStatsService;
 import com.jumbo.trus.service.match.MatchService;
 import com.jumbo.trus.service.notification.NotificationService;
+import com.jumbo.trus.service.outbox.OutboxEventPayloadFactory;
+import com.jumbo.trus.service.outbox.OutboxEventService;
 import com.jumbo.trus.service.player.PlayerService;
 import com.jumbo.trus.service.receivedFine.ReceivedFineService;
 import jakarta.transaction.Transactional;
@@ -46,14 +50,19 @@ public class GoalService {
     private final ReceivedFineService receivedFineService;
     private final NotificationService notificationService;
     private final GoalDetailedStatsService goalDetailedStatsService;
+    private final OutboxEventService outboxEventService;
 
     /**
      * metoda napamuje hráče a zápas z přepravky ke gólu a uloží ho do DB
      * @param goalDTO Gól, který přijde z FE
      * @return Gól z DB
      */
+    @Transactional
     public GoalDTO addGoal(GoalDTO goalDTO, AppTeamEntity appTeam) {
-        return goalMapper.toDTO(saveGoalToRepository(goalDTO, appTeam));
+        GoalEntity goal = saveGoalToRepository(goalDTO, appTeam);
+        outboxEventService.createEvent(OutboxEventType.GOAL_CHANGED, OutboxAggregateType.GOAL, goal.getId(),
+                OutboxEventPayloadFactory.goalChanged(goal.getMatch().getId(), goal.getMatch().getSeason().getId(), Set.of(goal.getPlayer().getId()), Set.of(goal.getId())));
+        return goalMapper.toDTO(goal);
     }
 
     /**
@@ -66,32 +75,44 @@ public class GoalService {
         StringBuilder newGoalNotification = new StringBuilder();
         StringBuilder newAssistNotification = new StringBuilder();
         GoalMultiAddResponse goalMultiAddResponse = new GoalMultiAddResponse();
-        goalMultiAddResponse.setMatch(matchService.getMatch(goalListDTO.getMatchId()).getName());
+        MatchDTO matchDTO = matchService.getMatch(goalListDTO.getMatchId());
+        goalMultiAddResponse.setMatch(matchDTO.getName());
+        Set<Long> goalIds = new HashSet<>();
+        Set<Long> playerIds = new HashSet<>();
         for (GoalDTO goalDTO : goalListDTO.getGoalList()) {
-            processGoal(goalDTO, goalListDTO.getMatchId(), newGoalNotification, newAssistNotification, goalMultiAddResponse, appTeam);
+            Long id = processGoal(goalDTO, goalListDTO.getMatchId(), newGoalNotification, newAssistNotification, goalMultiAddResponse, appTeam);
+            if (id != null) {
+                goalIds.add(id);
+                playerIds.add(goalDTO.getPlayerId());
+            }
         }
         if (goalListDTO.isRewriteToFines()) {
             receivedFineService.rewriteFinesInDB(goalListDTO.getMatchId(), goalListDTO.getGoalList(), appTeam);
         }
+        outboxEventService.createEvent(OutboxEventType.GOAL_CHANGED, OutboxAggregateType.GOAL, null,
+                OutboxEventPayloadFactory.goalChanged(goalListDTO.getMatchId(), matchDTO.getSeasonId(), playerIds, goalIds));
         notificationService.addNotification("Přidány góly/asistence v zápase " + goalMultiAddResponse.getMatch(), newGoalNotification+newAssistNotification.toString());
         return goalMultiAddResponse;
     }
 
-    private void processGoal(GoalDTO goalDTO, Long matchId, StringBuilder newGoalNotification, StringBuilder newAssistNotification, GoalMultiAddResponse goalMultiAddResponse, AppTeamEntity appTeam) {
+    private Long processGoal(GoalDTO goalDTO, Long matchId, StringBuilder newGoalNotification, StringBuilder newAssistNotification, GoalMultiAddResponse goalMultiAddResponse, AppTeamEntity appTeam) {
         goalDTO.setMatchId(matchId);
         GoalDTO oldGoal = getGoalDtoByPlayerAndMatch(matchId, goalDTO.getPlayerId());
         int goalDiff = checkGoalDiff(oldGoal, goalDTO);
         int assistDiff = checkAssistDiff(oldGoal, goalDTO);
         if (isNeededToRewriteGoal(oldGoal, goalDiff, assistDiff)) {
             goalDTO.setId(oldGoal.getId());
-            saveGoalToRepository(goalDTO, appTeam);
+            GoalEntity goalEntity = saveGoalToRepository(goalDTO, appTeam);
             setMultiAddResponse(goalMultiAddResponse, goalDiff, assistDiff);
             setMultiGoalNotification(newGoalNotification, newAssistNotification, goalDiff, assistDiff, goalDTO);
+            return goalEntity.getId();
         } else if (isNeededToAddGoalFirstGoal(oldGoal, goalDTO)) {
-            saveGoalToRepository(goalDTO, appTeam);
+            GoalEntity goalEntity = saveGoalToRepository(goalDTO, appTeam);
             setMultiAddResponse(goalMultiAddResponse, goalDTO.getGoalNumber(), goalDTO.getAssistNumber());
             setMultiGoalNotification(newGoalNotification, newAssistNotification, goalDTO.getGoalNumber(), goalDTO.getAssistNumber(), goalDTO);
+            return goalEntity.getId();
         }
+        return null;
     }
 
     private boolean isNeededToRewriteGoal(GoalDTO oldGoal, int goalDiff, int assistDiff) {

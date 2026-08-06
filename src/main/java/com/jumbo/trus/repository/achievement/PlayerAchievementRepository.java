@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 
@@ -1488,6 +1489,76 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
             """, nativeQuery = true)
     IMatchIdDecimalAndNumber findCerneGeny(@Param("playerId") Long playerId,
                                            @Param("appTeamId") Long appTeamId);
+
+
+    @Query(value = """
+            SELECT m.id AS matchId,
+                   CAST(mw.temperature AS double precision) AS firstNumber,
+                   NULL::integer AS secondNumber
+            FROM match m
+            JOIN match_weather mw ON mw.match_id = m.id
+            JOIN match_players mp ON mp.match_id = m.id
+            WHERE mp.player_id = :playerId
+              AND m.app_team_id = :appTeamId
+              AND m.date <= CURRENT_TIMESTAMP
+              AND mw.temperature > :temperatureThreshold
+            ORDER BY m.date ASC NULLS LAST, m.id ASC
+            LIMIT 1
+            """, nativeQuery = true)
+    IMatchIdDecimalAndNumber findFirstHotMatchAttendedByPlayer(
+            @Param("playerId") Long playerId,
+            @Param("appTeamId") Long appTeamId,
+            @Param("temperatureThreshold") java.math.BigDecimal temperatureThreshold
+    );
+
+    @Query(value = """
+            SELECT m.id AS matchId,
+                   CAST(mw.temperature AS double precision) AS firstNumber,
+                   NULL::integer AS secondNumber
+            FROM match m
+            JOIN match_weather mw ON mw.match_id = m.id
+            JOIN match_players mp ON mp.match_id = m.id
+            WHERE m.id = :matchId
+              AND mp.player_id = :playerId
+              AND m.date <= CURRENT_TIMESTAMP
+              AND mw.temperature > :temperatureThreshold
+            LIMIT 1
+            """, nativeQuery = true)
+    IMatchIdDecimalAndNumber findHotMatchAttendedByPlayer(
+            @Param("playerId") Long playerId,
+            @Param("matchId") Long matchId,
+            @Param("temperatureThreshold") java.math.BigDecimal temperatureThreshold
+    );
+
+    @Query(value = """
+        SELECT m.id AS matchId,
+               CAST(mw.temperature AS double precision) AS firstNumber,
+               NULL::integer AS secondNumber
+        FROM match m
+        JOIN match_weather mw ON mw.match_id = m.id
+        JOIN match_players mp ON mp.match_id = m.id
+        WHERE m.id = :matchId
+          AND mp.player_id = :playerId
+          AND m.date <= CURRENT_TIMESTAMP
+          AND (
+                (
+                    :higherThanThreshold = TRUE
+                    AND mw.temperature > :temperatureThreshold
+                )
+                OR
+                (
+                    :higherThanThreshold = FALSE
+                    AND mw.temperature < :temperatureThreshold
+                )
+          )
+        LIMIT 1
+        """, nativeQuery = true)
+    IMatchIdDecimalAndNumber findMatchAttendedByPlayerWithTemperatureThreshold(
+            @Param("playerId") Long playerId,
+            @Param("matchId") Long matchId,
+            @Param("temperatureThreshold") BigDecimal temperatureThreshold,
+            @Param("higherThanThreshold") boolean higherThanThreshold
+    );
 
 
     @Query("""

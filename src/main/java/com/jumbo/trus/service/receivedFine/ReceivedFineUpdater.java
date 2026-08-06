@@ -10,6 +10,8 @@ import com.jumbo.trus.entity.MatchEntity;
 import com.jumbo.trus.entity.ReceivedFineEntity;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.filter.ReceivedFineFilter;
+import com.jumbo.trus.entity.outbox.OutboxAggregateType;
+import com.jumbo.trus.entity.outbox.OutboxEventType;
 import com.jumbo.trus.mapper.ReceivedFineMapper;
 import com.jumbo.trus.repository.MatchRepository;
 import com.jumbo.trus.repository.ReceivedFineRepository;
@@ -17,6 +19,8 @@ import com.jumbo.trus.repository.specification.ReceivedFineSpecification;
 import com.jumbo.trus.service.fine.FineService;
 import com.jumbo.trus.service.notification.NotificationService;
 import com.jumbo.trus.service.notification.push.maker.FineNotificationMaker;
+import com.jumbo.trus.service.outbox.OutboxEventPayloadFactory;
+import com.jumbo.trus.service.outbox.OutboxEventService;
 import com.jumbo.trus.service.player.PlayerService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -25,7 +29,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -40,24 +46,43 @@ public class ReceivedFineUpdater {
     private final NotificationService notificationService;
     private final FineNotificationMaker fineNotificationMaker;
     private final MatchRepository matchRepository;
+    private final OutboxEventService outboxEventService;
 
+    @Transactional
     public ReceivedFineDTO addFine(ReceivedFineDTO receivedFineDTO, AppTeamEntity appTeam) {
-        return receivedFineMapper.toDTO(saveFineToRepository(receivedFineDTO, null, appTeam));
+       ReceivedFineEntity receivedFine = saveFineToRepository(receivedFineDTO, null, appTeam);
+        return receivedFineMapper.toDTO(receivedFine);
     }
 
+    @Transactional
     public ReceivedFineResponse addFineToPlayer(ReceivedFineListDTO receivedFineListDTO, AppTeamEntity appTeam) {
         StringBuilder notificationText = new StringBuilder();
         ReceivedFineResponse receivedFineResponse = initializeReceivedFineResponse(receivedFineListDTO.getMatchId());
         receivedFineResponse.setPlayer(playerService.getPlayer(receivedFineListDTO.getPlayerId()).getName());
+        Set<Long> receivedFineIds = new HashSet<>();
+        Set<Long> fineIds = new HashSet<>();
         for (ReceivedFineDTO receivedFineDTO : receivedFineListDTO.getFineList()) {
             receivedFineDTO.setMatchId(receivedFineListDTO.getMatchId());
             receivedFineDTO.setPlayerId(receivedFineListDTO.getPlayerId());
-            notificationText.append(processAndSaveFine(receivedFineDTO, receivedFineResponse, false, appTeam));
+            ReceivedFineDTO processedReceivedFine = processAndSaveFine(receivedFineDTO, receivedFineResponse, false, appTeam);
+            if (processedReceivedFine != null) {
+                notificationText.append(generateFineNotification(processedReceivedFine));
+                receivedFineIds.add(processedReceivedFine.getId());
+                fineIds.add(processedReceivedFine.getFine().getId());
+            }
         }
         notificationService.addNotification("V zápase " + receivedFineResponse.getMatch() + " byly přidány pokuty hráči " + receivedFineResponse.getPlayer(), notificationText.toString());
+        outboxEventService.createEvent(OutboxEventType.RECEIVED_FINE_CHANGED, OutboxAggregateType.RECEIVED_FINE, null,
+                OutboxEventPayloadFactory.receivedFinesChanged(
+                        receivedFineListDTO.getMatchId(),
+                        matchRepository.findSeasonIdByMatchId(receivedFineListDTO.getMatchId()),
+                        Set.of(receivedFineListDTO.getPlayerId()),
+                        receivedFineIds,
+                        fineIds));
         return receivedFineResponse;
     }
 
+    @Transactional
     public ReceivedFineResponse addMultipleFines(ReceivedFineListDTO receivedFineListDTO, AppTeamEntity appTeam) {
         ReceivedFineResponse receivedFineResponse = initializeReceivedFineResponse(receivedFineListDTO.getMatchId());
         String notificationText = iterateMultiListOfReceivedFines(receivedFineListDTO, receivedFineResponse, appTeam);
@@ -72,15 +97,31 @@ public class ReceivedFineUpdater {
      */
     @Transactional
     public void rewriteFinesInDB(Long matchId, List<GoalDTO> goalList, AppTeamEntity appTeam) {
+        Set<Long> playersWithFines = receivedFineRepository.findPlayersByFineIdsAndMatchId(matchId, Config.GOAL_FINE_ID, Config.HATTRICK_FINE_ID);
+        Set<Long> playersWithNewFines = new HashSet<>();
+        Set<Long> receivedFineIds = new HashSet<>();
+        Set<Long> fineIds = new HashSet<>();
         receivedFineRepository.deleteGoalAndHattrickFinesFromMatch(matchId, Config.GOAL_FINE_ID, Config.HATTRICK_FINE_ID);
         for (GoalDTO goalDTO : goalList) {
             if (goalDTO.getGoalNumber() > 0) {
-                addGoalFine(goalDTO.getGoalNumber(), goalDTO.getPlayerId(), matchId, appTeam);
+                receivedFineIds.add(addGoalFine(goalDTO.getGoalNumber(), goalDTO.getPlayerId(), matchId, appTeam));
+                playersWithNewFines.add(goalDTO.getPlayerId());
+                fineIds.add(Config.GOAL_FINE_ID);
                 if (goalDTO.getGoalNumber() > 2) {
-                    setAndAddHattrickFines(matchId, goalDTO.getGoalNumber()/3, goalDTO.getPlayerId(), appTeam);
+                    receivedFineIds.addAll(setAndAddHattrickFines(matchId, goalDTO.getGoalNumber()/3, goalDTO.getPlayerId(), appTeam));
+                    playersWithNewFines.addAll(playerService.convertPlayerListToPlayerIdList(playerService.getAllActive(true, appTeam.getId())));
+                    fineIds.add(Config.HATTRICK_FINE_ID);
                 }
             }
         }
+        playersWithFines.addAll(playersWithNewFines);
+        outboxEventService.createEvent(OutboxEventType.RECEIVED_FINE_CHANGED, OutboxAggregateType.RECEIVED_FINE, null,
+                OutboxEventPayloadFactory.receivedFinesChanged(
+                        matchId,
+                        matchRepository.findSeasonIdByMatchId(matchId),
+                        playersWithFines,
+                        receivedFineIds,
+                       fineIds));
     }
 
     /**
@@ -89,10 +130,10 @@ public class ReceivedFineUpdater {
      * @param playerId id hráče
      * @param matchId id zápasu
      */
-    private void addGoalFine(int number, long playerId, long matchId, AppTeamEntity appTeam) {
+    private Long addGoalFine(int number, long playerId, long matchId, AppTeamEntity appTeam) {
         FineDTO goalFine = new FineDTO(Config.GOAL_FINE_ID, "", 0, false);
         ReceivedFineDTO receivedFine = new ReceivedFineDTO(number, goalFine, playerId, matchId);
-        addFine(receivedFine, appTeam);
+        return addFine(receivedFine, appTeam).getId();
     }
 
     /**
@@ -101,10 +142,10 @@ public class ReceivedFineUpdater {
      * @param playerId id hráče,
      * @param matchId id zápasu
      */
-    private void addHattrickFine(int number, long playerId, long matchId, AppTeamEntity appTeam) {
+    private Long addHattrickFine(int number, long playerId, long matchId, AppTeamEntity appTeam) {
         FineDTO hattrickFine = new FineDTO(Config.HATTRICK_FINE_ID, "", 0, false);
         ReceivedFineDTO receivedFine = new ReceivedFineDTO(number, hattrickFine, playerId, matchId);
-        addFine(receivedFine, appTeam);
+        return addFine(receivedFine, appTeam).getId();
     }
 
     /**
@@ -113,13 +154,15 @@ public class ReceivedFineUpdater {
      * @param hattrickPlayerId id hráče, který dal hattrick
      * @param matchId id zápasu
      */
-    private void setAndAddHattrickFines(long matchId, int numberOfHattricks, long hattrickPlayerId, AppTeamEntity appTeam) {
+    private Set<Long> setAndAddHattrickFines(long matchId, int numberOfHattricks, long hattrickPlayerId, AppTeamEntity appTeam) {
         List<Long> playerIds = playerService.convertPlayerListToPlayerIdList(playerService.getAllActive(true, appTeam.getId()));
+        Set<Long> ids = new HashSet<>();
         for (Long playerId : playerIds) {
             if (playerId != hattrickPlayerId) {
-                addHattrickFine(numberOfHattricks, playerId, matchId, appTeam);
+                ids.add(addHattrickFine(numberOfHattricks, playerId, matchId, appTeam));
             }
         }
+        return ids;
     }
 
     /**
@@ -127,12 +170,15 @@ public class ReceivedFineUpdater {
      * @param receivedFineResponse instance objektu response, který pak vracíme
      *                                     metoda projde všechny hráče, kteří přišli v requestu a zároveň všechny pokuty, uloží je a obohatí response o výsledek
      */
+    @Transactional
     private String iterateMultiListOfReceivedFines(ReceivedFineListDTO receivedFineListDTO, ReceivedFineResponse receivedFineResponse, AppTeamEntity appTeam) {
         StringBuilder notificationPlayer = new StringBuilder("Byly navýšeny pokuty hráčům ");
         StringBuilder notificationFine = new StringBuilder();
+        Set<Long> receivedFineIds = new HashSet<>();
+        Set<Long> fineIds = new HashSet<>();
         boolean firstFineProcessed = false;
         for (Long playerId : receivedFineListDTO.getPlayerIdList()) {
-            processPlayerFines(receivedFineListDTO, receivedFineResponse, notificationFine, playerId, firstFineProcessed, appTeam);
+            processPlayerFines(receivedFineListDTO, receivedFineResponse, notificationFine, playerId, firstFineProcessed, appTeam, receivedFineIds, fineIds);
             firstFineProcessed = true;
         }
         String players = receivedFineListDTO.getPlayerIdList().stream()
@@ -141,6 +187,13 @@ public class ReceivedFineUpdater {
         notificationPlayer.append(players);
         receivedFineResponse.addEditedPlayer();
         notificationPlayer.append(" o:");
+        outboxEventService.createEvent(OutboxEventType.RECEIVED_FINE_CHANGED, OutboxAggregateType.RECEIVED_FINE, null,
+                OutboxEventPayloadFactory.receivedFinesChanged(
+                        receivedFineListDTO.getMatchId(),
+                        matchRepository.findSeasonIdByMatchId(receivedFineListDTO.getMatchId()),
+                        new HashSet<>(receivedFineListDTO.getPlayerIdList()),
+                        receivedFineIds,
+                        fineIds));
         return notificationPlayer + "\n" + notificationFine;
     }
 
@@ -154,28 +207,33 @@ public class ReceivedFineUpdater {
     }
 
     private void processPlayerFines(ReceivedFineListDTO receivedFineListDTO, ReceivedFineResponse receivedFineResponse,
-                                    StringBuilder notificationFine, Long playerId, boolean firstFineProcessed, AppTeamEntity appTeam) {
+                                   StringBuilder notificationFine, Long playerId, boolean firstFineProcessed, AppTeamEntity appTeam, Set<Long> receivedFineIds, Set<Long> fineIds) {
         for (ReceivedFineDTO receivedFineDTO : receivedFineListDTO.getFineList()) {
             ReceivedFineDTO newReceivedFineDTO = createReceivedFineDTO(receivedFineListDTO, playerId, receivedFineDTO);
-            String fineNotification = processAndSaveFine(newReceivedFineDTO, receivedFineResponse, true, appTeam);
+            ReceivedFineDTO processedReceivedFine = processAndSaveFine(newReceivedFineDTO, receivedFineResponse, true, appTeam);
+            String fineNotification = "";
+            if (processedReceivedFine != null) {
+                fineNotification = generateFineNotification(processedReceivedFine);
+                receivedFineIds.add(processedReceivedFine.getId());
+                fineIds.add(processedReceivedFine.getFine().getId());
+            }
             if (!firstFineProcessed) {
                 notificationFine.append(fineNotification);
             }
         }
     }
 
-    private String processAndSaveFine(ReceivedFineDTO receivedFineDTO, ReceivedFineResponse receivedFineResponse, boolean multi, AppTeamEntity appTeam) {
+    private ReceivedFineDTO processAndSaveFine(ReceivedFineDTO receivedFineDTO, ReceivedFineResponse receivedFineResponse, boolean multi, AppTeamEntity appTeam) {
         ReceivedFineDTO oldFine = getReceivedFineDtoByPlayerAndMatchAndFine(receivedFineDTO);
         if (shouldProcessFine(multi, receivedFineDTO, oldFine)) {
             receivedFineResponse.addFine(receivedFineDTO.getFineNumber());
             if (multi && oldFine != null) {
                 receivedFineDTO.addFinesToFineNumber(oldFine.getFineNumber());
             }
-            chooseIfRewriteDBOrCreateNewRow(receivedFineDTO, oldFine, appTeam);
-            return generateFineNotification(receivedFineDTO);
+            return receivedFineMapper.toDTO(chooseIfRewriteDBOrCreateNewRow(receivedFineDTO, oldFine, appTeam));
         }
 
-        return "";
+        return null;
     }
 
     private String generateFineNotification(ReceivedFineDTO receivedFineDTO) {
@@ -186,11 +244,11 @@ public class ReceivedFineUpdater {
         return (oldFine != null && (newFine.getFineNumber() != oldFine.getFineNumber())) || (oldFine == null && (newFine.getFineNumber() != 0));
     }
 
-    private void chooseIfRewriteDBOrCreateNewRow(ReceivedFineDTO receivedFineDTO, ReceivedFineDTO oldFine, AppTeamEntity appTeam) {
+    private ReceivedFineEntity chooseIfRewriteDBOrCreateNewRow(ReceivedFineDTO receivedFineDTO, ReceivedFineDTO oldFine, AppTeamEntity appTeam) {
         if (oldFine != null) { //pokud existuje pokuta, musíme zapisovat pod jejím ID
             receivedFineDTO.setId(oldFine.getId());
         }
-        saveFineToRepository(receivedFineDTO, oldFine, appTeam);
+        return saveFineToRepository(receivedFineDTO, oldFine, appTeam);
     }
 
     /**

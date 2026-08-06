@@ -1,8 +1,8 @@
 package com.jumbo.trus.config.security;
 
 import com.jumbo.trus.entity.auth.UserEntity;
-import com.jumbo.trus.service.HeaderManager;
 import com.jumbo.trus.service.exceptions.AuthException;
+import com.jumbo.trus.service.header.HeaderManager;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;

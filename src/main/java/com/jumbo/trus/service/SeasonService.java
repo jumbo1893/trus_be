@@ -5,6 +5,8 @@ import com.jumbo.trus.dto.SeasonDTO;
 import com.jumbo.trus.entity.SeasonEntity;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.filter.SeasonFilter;
+import com.jumbo.trus.entity.outbox.OutboxAggregateType;
+import com.jumbo.trus.entity.outbox.OutboxEventType;
 import com.jumbo.trus.mapper.SeasonMapper;
 import com.jumbo.trus.repository.MatchRepository;
 import com.jumbo.trus.repository.SeasonRepository;
@@ -12,6 +14,8 @@ import com.jumbo.trus.service.exceptions.FieldValidationException;
 import com.jumbo.trus.service.helper.ValidationField;
 import com.jumbo.trus.service.notification.NotificationService;
 import com.jumbo.trus.service.order.OrderSeasonByDate;
+import com.jumbo.trus.service.outbox.OutboxEventPayloadFactory;
+import com.jumbo.trus.service.outbox.OutboxEventService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +25,7 @@ import org.webjars.NotFoundException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import static com.jumbo.trus.config.Config.*;
 
@@ -32,13 +37,16 @@ public class SeasonService {
     private final MatchRepository matchRepository;
     private final SeasonMapper seasonMapper;
     private final NotificationService notificationService;
+    private final OutboxEventService outboxEventService;
 
+    @Transactional
     public SeasonDTO addSeason(SeasonDTO seasonDTO, AppTeamEntity appTeam) {
         validateSeason(seasonDTO.getFromDate(), seasonDTO.getFromDate(), null, appTeam);
         SeasonEntity entity = seasonMapper.toEntity(seasonDTO);
         entity.setAppTeam(appTeam);
         SeasonEntity savedEntity = seasonRepository.save(entity);
         notificationService.addNotification("Přidána nová sezona", seasonDTO.getName() + " se začátkem " + seasonDTO.getFromDate() + " a koncem " + seasonDTO.getToDate());
+        outboxEventService.createEvent(OutboxEventType.SEASON_CREATED, OutboxAggregateType.SEASON, savedEntity.getId(), null);
         return seasonMapper.toDTO(savedEntity);
     }
 
@@ -104,6 +112,7 @@ public class SeasonService {
         return null;
     }
 
+    @Transactional
     public SeasonDTO editSeason(Long seasonId, SeasonDTO seasonDTO, AppTeamEntity appTeam) throws NotFoundException {
         if (!seasonRepository.existsById(seasonId)) {
             throw new NotFoundException("Sezona s id " + seasonId + " nenalezena v db");
@@ -114,6 +123,7 @@ public class SeasonService {
         entity.setAppTeam(appTeam);
         SeasonEntity savedEntity = seasonRepository.save(entity);
         notificationService.addNotification("Upravena sezona", seasonDTO.getName() + " se začátkem " + seasonDTO.getFromDate() + " a koncem " + seasonDTO.getToDate());
+        outboxEventService.createEvent(OutboxEventType.SEASON_UPDATED, OutboxAggregateType.SEASON, savedEntity.getId(), null);
         return seasonMapper.toDTO(savedEntity);
     }
 
@@ -121,8 +131,10 @@ public class SeasonService {
     public void deleteSeason(Long seasonId) {
         matchRepository.updateSeasonId(seasonId);
         SeasonEntity seasonEntity = seasonRepository.getReferenceById(seasonId);
+        Set<Long> affectedMatchIds = matchRepository.findMatchIdsBySeason(seasonId);
         notificationService.addNotification("Přidána nová sezona", seasonEntity.getName() + " se začátkem " + seasonEntity.getFromDate() + " a koncem " + seasonEntity.getToDate());
         seasonRepository.deleteById(seasonId);
+        outboxEventService.createEvent(OutboxEventType.SEASON_CREATED, OutboxAggregateType.SEASON, seasonId, OutboxEventPayloadFactory.seasonDeleted(affectedMatchIds));
     }
 
     private void validateSeason(Date fromDate, Date toDate, SeasonDTO currentSeason, AppTeamEntity appTeam) {

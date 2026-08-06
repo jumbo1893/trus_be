@@ -23,6 +23,12 @@ public final class AchievementCodes {
     public static final String LISAK_A_MORE =
             "LISAK_A_MORE";
 
+    public static final String NAVSTEVA_SAHARY =
+            "NAVSTEVA_SAHARY";
+
+    public static final String LEDOVY_MUZ =
+            "LEDOVY_MUZ";
+
     private AchievementCodes() {
     }
 }

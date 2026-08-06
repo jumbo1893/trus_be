@@ -6,8 +6,20 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface SeasonRepository extends JpaRepository<SeasonEntity, Long> {
+
+    @Query("""
+            SELECT s
+            FROM season s
+            WHERE s.id = :seasonId
+              AND s.appTeam.id = :appTeamId
+            """)
+    Optional<SeasonEntity> findByIdAndAppTeamId(
+            @Param("seasonId") Long seasonId,
+            @Param("appTeamId") Long appTeamId
+    );
 
     @Query(value = "SELECT * from season WHERE app_team_id=:#{#appTeamId} LIMIT :limit", nativeQuery = true)
     List<SeasonEntity> getAll(@Param("limit") int limit, @Param("appTeamId") Long appTeamId);
