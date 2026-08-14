@@ -51,8 +51,7 @@ public final class OutboxEventPayloadFactory {
             Set<Long> addedPlayerIds,
             Set<Long> removedPlayerIds
     ) {
-        Set<Long> affectedPlayerIds = new HashSet<>();
-        affectedPlayerIds.addAll(addedPlayerIds);
+        Set<Long> affectedPlayerIds = new HashSet<>(addedPlayerIds);
         affectedPlayerIds.addAll(removedPlayerIds);
 
         return new OutboxEventPayload(
@@ -66,20 +65,60 @@ public final class OutboxEventPayloadFactory {
     }
 
     public static OutboxEventPayload playerDeleted(Set<Long> affectedMatches) {
-        return new OutboxEventPayload(
-                null,
-                null,
-                null,
-                null,
-                null,
-                Map.of(
-                        OutboxRelatedEntityType.MATCH,
-                        affectedMatches
-                )
-        );
+        return affectedMatches(affectedMatches);
+    }
+
+    public static OutboxEventPayload playerCreated(Set<Long> affectedMatches) {
+        return affectedMatches(affectedMatches);
+    }
+
+    public static OutboxEventPayload playerUpdated(Set<Long> affectedMatches) {
+        return affectedMatches(affectedMatches);
+    }
+
+    public static OutboxEventPayload seasonCreated(Set<Long> affectedMatches) {
+        return affectedMatches(affectedMatches);
+    }
+
+    public static OutboxEventPayload seasonUpdated(Set<Long> affectedMatches) {
+        return affectedMatches(affectedMatches);
     }
 
     public static OutboxEventPayload seasonDeleted(Set<Long> affectedMatches) {
+        return affectedMatches(affectedMatches);
+    }
+
+    public static OutboxEventPayload fineCreated(Set<Long> affectedMatches) {
+        return affectedMatches(affectedMatches);
+    }
+
+    public static OutboxEventPayload fineUpdated(Set<Long> affectedMatches, Set<Long> affectedPlayerIds) {
+        return affectedMatchesAndPlayers(affectedMatches, affectedPlayerIds);
+    }
+
+    public static OutboxEventPayload fineDeleted(Set<Long> affectedMatches, Set<Long> affectedPlayerIds) {
+        return affectedMatchesAndPlayers(affectedMatches, affectedPlayerIds);
+    }
+
+    public static OutboxEventPayload footballMatchUpdated(
+            Set<Long> affectedMatches,
+            Set<Long> affectedFootballPlayerIds
+    ) {
+        Map<OutboxRelatedEntityType, Set<Long>> relatedEntityIds = new HashMap<>();
+        relatedEntityIds.put(OutboxRelatedEntityType.MATCH, affectedMatches);
+        relatedEntityIds.put(OutboxRelatedEntityType.FOOTBALL_PLAYER, affectedFootballPlayerIds);
+
+        return new OutboxEventPayload(
+                null,
+                null,
+                null,
+                null,
+                null,
+                relatedEntityIds
+        );
+    }
+
+    private static OutboxEventPayload affectedMatches(Set<Long> affectedMatches) {
         return new OutboxEventPayload(
                 null,
                 null,
@@ -93,31 +132,17 @@ public final class OutboxEventPayloadFactory {
         );
     }
 
-    public static OutboxEventPayload fineUpdated(Set<Long> affectedMatches) {
+    private static OutboxEventPayload affectedMatchesAndPlayers(
+            Set<Long> affectedMatches,
+            Set<Long> affectedPlayerIds
+    ) {
         return new OutboxEventPayload(
                 null,
                 null,
+                affectedPlayerIds,
                 null,
                 null,
-                null,
-                Map.of(
-                        OutboxRelatedEntityType.MATCH,
-                        affectedMatches
-                )
-        );
-    }
-
-    public static OutboxEventPayload fineDeleted(Set<Long> affectedMatches) {
-        return new OutboxEventPayload(
-                null,
-                null,
-                null,
-                null,
-                null,
-                Map.of(
-                        OutboxRelatedEntityType.MATCH,
-                        affectedMatches
-                )
+                Map.of(OutboxRelatedEntityType.MATCH, affectedMatches)
         );
     }
 
@@ -191,7 +216,10 @@ public final class OutboxEventPayloadFactory {
                 affectedPlayerIds,
                 Set.of(),
                 Set.of(),
-                Map.of()
+                Map.of(
+                        OutboxRelatedEntityType.FOOTBAR,
+                        footbarSessionIds
+                )
         );
     }
 }

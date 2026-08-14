@@ -89,8 +89,10 @@ public class GoalService {
         if (goalListDTO.isRewriteToFines()) {
             receivedFineService.rewriteFinesInDB(goalListDTO.getMatchId(), goalListDTO.getGoalList(), appTeam);
         }
-        outboxEventService.createEvent(OutboxEventType.GOAL_CHANGED, OutboxAggregateType.GOAL, null,
-                OutboxEventPayloadFactory.goalChanged(goalListDTO.getMatchId(), matchDTO.getSeasonId(), playerIds, goalIds));
+        if (!goalIds.isEmpty()) {
+            outboxEventService.createEvent(OutboxEventType.GOAL_CHANGED, OutboxAggregateType.GOAL, null,
+                    OutboxEventPayloadFactory.goalChanged(goalListDTO.getMatchId(), matchDTO.getSeasonId(), playerIds, goalIds));
+        }
         notificationService.addNotification("Přidány góly/asistence v zápase " + goalMultiAddResponse.getMatch(), newGoalNotification+newAssistNotification.toString());
         return goalMultiAddResponse;
     }

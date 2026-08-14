@@ -40,8 +40,6 @@ public class PlayerAchievementInitializationService {
 
         Set<PlayerAchievementKey> existingKeys = loadExistingKeys();
 
-        Date createdAt = new Date();
-
         List<PlayerAchievementEntity> missingAchievements =
                 new ArrayList<>();
 
@@ -69,7 +67,7 @@ public class PlayerAchievementInitializationService {
                                 achievement,
                                 player,
                                 false,
-                                createdAt
+                                null
                         )
                 );
 
@@ -117,8 +115,6 @@ public class PlayerAchievementInitializationService {
                                 )
                 );
 
-        Date createdAt = new Date();
-
         List<PlayerAchievementEntity> missingAchievements =
                 playerRepository.findAll()
                         .stream()
@@ -139,7 +135,7 @@ public class PlayerAchievementInitializationService {
                                         achievement,
                                         player,
                                         false,
-                                        createdAt
+                                        null
                                 )
                         )
                         .toList();
@@ -176,8 +172,6 @@ public class PlayerAchievementInitializationService {
                                 .findAchievementIdsByPlayerId(playerId)
                 );
 
-        Date createdAt = new Date();
-
         List<PlayerAchievementEntity> missingAchievements =
                 achievementRepository.findAll()
                         .stream()
@@ -198,7 +192,7 @@ public class PlayerAchievementInitializationService {
                                         achievement,
                                         player,
                                         false,
-                                        createdAt
+                                        null
                                 )
                         )
                         .toList();

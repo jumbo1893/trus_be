@@ -28,6 +28,8 @@ public class PlayerAchievementDTO {
 
     private FootballMatchDTO footballMatch;
 
+    private Long seasonId;
+
     private String detail;
 
     private Boolean accomplished;

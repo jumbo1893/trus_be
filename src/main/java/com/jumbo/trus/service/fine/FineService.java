@@ -43,7 +43,7 @@ public class FineService {
         entity.setAppTeam(appTeam);
         FineEntity savedEntity = fineRepository.save(entity);
         fineNotificationService.notifyFineAdded(fineDTO.getName(), fineDTO.getAmount());
-        outboxEventService.createEvent(OutboxEventType.FINE_CREATED, OutboxAggregateType.FINE, savedEntity.getId(), null);
+        outboxEventService.createEvent(OutboxEventType.FINE_CREATED, OutboxAggregateType.FINE, savedEntity.getId(), OutboxEventPayloadFactory.fineCreated(Set.of()));
         return fineMapper.toDTO(savedEntity);
     }
 
@@ -83,16 +83,17 @@ public class FineService {
     public FineDTO editFine(Long fineId, FineDTO fineDTO, AppTeamEntity appTeam) {
         fineValidator.validateExists(fineId);
         Set<Long> affectedMatchIds = receivedFineRepository.findMatchIdsByFineId(fineId);
+        Set<Long> affectedPlayerIds = receivedFineRepository.findPlayerIdsByFineId(fineId);
+        FineDTO updatedFine;
         if (fineDTO.isInactive()) {
-            return processInactiveFine(fineId, fineDTO, appTeam);
+            updatedFine = processInactiveFine(fineId, fineDTO, appTeam);
+        } else if (nonEditableFineHandler.isNonEditableFine(fineId)) {
+            updatedFine = processNonEditableFine(fineId, fineDTO);
+        } else {
+            updatedFine = processRegularFine(fineId, fineDTO, appTeam);
+            fineNotificationService.notifyFineUpdated(fineDTO.getName(), fineDTO.getAmount());
         }
-
-        if (nonEditableFineHandler.isNonEditableFine(fineId)) {
-            return processNonEditableFine(fineId, fineDTO);
-        }
-        FineDTO updatedFine = processRegularFine(fineId, fineDTO, appTeam);
-        fineNotificationService.notifyFineUpdated(fineDTO.getName(), fineDTO.getAmount());
-        outboxEventService.createEvent(OutboxEventType.FINE_UPDATED, OutboxAggregateType.FINE, fineId, OutboxEventPayloadFactory.fineUpdated(affectedMatchIds));
+        outboxEventService.createEvent(OutboxEventType.FINE_UPDATED, OutboxAggregateType.FINE, fineId, OutboxEventPayloadFactory.fineUpdated(affectedMatchIds, affectedPlayerIds));
         return updatedFine;
     }
 
@@ -101,10 +102,11 @@ public class FineService {
         fineValidator.validateNotNonEditable(fineId);
         FineEntity fineEntity = fineRepository.findById(fineId).orElseThrow(() -> new NotFoundException("Pokuta nenalezena v db"));
         Set<Long> affectedMatchIds = receivedFineRepository.findMatchIdsByFineId(fineId);
+        Set<Long> affectedPlayerIds = receivedFineRepository.findPlayerIdsByFineId(fineId);
         fineNotificationService.notifyFineDeleted(fineEntity.getName(), fineEntity.getAmount());
         receivedFineRepository.deleteByFineId(fineId);
         fineRepository.deleteById(fineId);
-        outboxEventService.createEvent(OutboxEventType.FINE_DELETED, OutboxAggregateType.FINE, fineId, OutboxEventPayloadFactory.fineDeleted(affectedMatchIds));
+        outboxEventService.createEvent(OutboxEventType.FINE_DELETED, OutboxAggregateType.FINE, fineId, OutboxEventPayloadFactory.fineDeleted(affectedMatchIds, affectedPlayerIds));
 
     }
 

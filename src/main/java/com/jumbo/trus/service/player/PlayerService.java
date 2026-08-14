@@ -10,6 +10,7 @@ import com.jumbo.trus.entity.outbox.OutboxEventType;
 import com.jumbo.trus.mapper.PlayerMapper;
 import com.jumbo.trus.repository.PlayerRepository;
 import com.jumbo.trus.repository.auth.UserTeamRoleRepository;
+import com.jumbo.trus.service.achievement.init.PlayerAchievementInitializationService;
 import com.jumbo.trus.service.exceptions.FieldValidationException;
 import com.jumbo.trus.service.football.player.FootballPlayerService;
 import com.jumbo.trus.service.helper.BirthdayCalculator;
@@ -38,14 +39,17 @@ public class PlayerService {
     private final FootballPlayerService footballPlayerService;
     private final UserTeamRoleRepository userTeamRoleRepository;
     private final OutboxEventService outboxEventService;
+    private final PlayerAchievementInitializationService playerAchievementInitializationService;
 
     @Transactional
     public PlayerDTO addPlayer(PlayerDTO playerDTO, AppTeamEntity appTeam) {
         PlayerEntity entity = playerMapper.toEntity(playerDTO);
         entity.setAppTeam(appTeam);
         PlayerEntity savedEntity = playerRepository.save(entity);
+        playerAchievementInitializationService.initializeAchievementsForPlayer(savedEntity.getId());
+        Set<Long> affectedMatches = playerRepository.findMatchIdsWherePlayerAttends(savedEntity.getId());
         notificationService.addNotification("Přidán " + (playerDTO.isFan() ? "fanoušek" : "hráč"), playerDTO.getName() + ", s narozeninami " + playerDTO.getBirthday());
-        outboxEventService.createEvent(OutboxEventType.PLAYER_CREATED, OutboxAggregateType.PLAYER, savedEntity.getId(), null);
+        outboxEventService.createEvent(OutboxEventType.PLAYER_CREATED, OutboxAggregateType.PLAYER, savedEntity.getId(), OutboxEventPayloadFactory.playerCreated(affectedMatches));
         return playerMapper.toDTO(savedEntity);
     }
 
@@ -62,6 +66,15 @@ public class PlayerService {
     public List<PlayerDTO> getAll(long appTeamId){
         List<PlayerEntity> playerEntities = playerRepository.getAll(appTeamId);
         return playerEntities.stream().map(playerMapper::toDTO).toList();
+    }
+
+    public List<PlayerDTO> getAllByIds(Set<Long> playerIds, long appTeamId) {
+        if (playerIds == null || playerIds.isEmpty()) {
+            return List.of();
+        }
+        return playerRepository.findAllByIdsAndAppTeam(playerIds, appTeamId).stream()
+                .map(playerMapper::toDTO)
+                .toList();
     }
 
     public PlayerDTO getPlayer(long playerId) {
@@ -93,6 +106,8 @@ public class PlayerService {
         if (entity.isDeleted()) {
             throw new NotFoundException("Smazaného hráče nelze upravit");
         }
+        boolean wasFan = entity.isFan();
+        Set<Long> affectedMatches = new java.util.HashSet<>(playerRepository.findMatchIdsWherePlayerAttends(playerId));
         validatePlayer(playerDTO);
         entity.setName(playerDTO.getName());
         entity.setBirthday(playerDTO.getBirthday());
@@ -108,11 +123,15 @@ public class PlayerService {
             );
         }
         PlayerEntity savedEntity = playerRepository.save(entity);
+        if (wasFan && !savedEntity.isFan()) {
+            playerAchievementInitializationService.initializeAchievementsForPlayer(savedEntity.getId());
+        }
+        affectedMatches.addAll(playerRepository.findMatchIdsWherePlayerAttends(savedEntity.getId()));
         notificationService.addNotification(
                 "Upraven " + (playerDTO.isFan() ? "fanoušek" : "hráč"),
                 playerDTO.getName() + ", s narozeninami " + playerDTO.getBirthday()
         );
-        outboxEventService.createEvent(OutboxEventType.PLAYER_UPDATED, OutboxAggregateType.PLAYER, savedEntity.getId(), null);
+        outboxEventService.createEvent(OutboxEventType.PLAYER_UPDATED, OutboxAggregateType.PLAYER, savedEntity.getId(), OutboxEventPayloadFactory.playerUpdated(affectedMatches));
         return playerMapper.toDTO(savedEntity);
     }
 

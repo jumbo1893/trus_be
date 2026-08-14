@@ -96,12 +96,22 @@ public interface PlayerRepository extends JpaRepository<PlayerEntity, Long> {
             """)
     List<PlayerEntity> findAllNotDeletedByAppTeam(@Param("appTeamId") Long appTeamId);
 
-    @Query("""
-            SELECT DISTINCT m.id
-            FROM match m
-            JOIN m.playerList player
-            WHERE player.id = :playerId
-            """)
+    @Query(value = """
+            SELECT DISTINCT match_id
+            FROM (
+                SELECT mp.match_id
+                FROM match_players mp
+                WHERE mp.player_id = :playerId
+
+                UNION
+
+                SELECT m.id AS match_id
+                FROM player p
+                JOIN football_match_player fmp ON fmp.player_id = p.football_player_id
+                JOIN match m ON m.football_match_id = fmp.match_id
+                WHERE p.id = :playerId
+            ) affected_matches
+            """, nativeQuery = true)
     Set<Long> findMatchIdsWherePlayerAttends(
             @Param("playerId") Long playerId
     );

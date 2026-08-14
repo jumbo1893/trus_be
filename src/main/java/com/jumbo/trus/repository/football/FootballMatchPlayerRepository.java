@@ -10,8 +10,12 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface FootballMatchPlayerRepository extends JpaRepository<FootballMatchPlayerEntity, Long> {
+
+    @Query("SELECT DISTINCT fmp.player.id FROM football_match_player fmp WHERE fmp.match.id = :matchId")
+    Set<Long> findPlayerIdsByMatchId(@Param("matchId") Long matchId);
 
     @Query("SELECT f.id " +
             "FROM football_match_player f " +

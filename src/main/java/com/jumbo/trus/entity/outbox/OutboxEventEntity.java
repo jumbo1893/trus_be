@@ -174,6 +174,7 @@ public class OutboxEventEntity {
 
     public void markAsDone() {
         this.status = OutboxEventStatus.DONE;
+        this.processingStartedAt = null;
         this.processedAt = Instant.now();
         this.nextAttemptAt = null;
         this.lastError = null;

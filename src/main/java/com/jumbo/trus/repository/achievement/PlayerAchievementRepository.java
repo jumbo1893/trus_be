@@ -475,13 +475,19 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
             WHERE mp.player_id = :playerId
               AND p.fan = false
               AND m.app_team_id = :appTeamId
+              AND (:matchId IS NULL OR m.id = :matchId)
               AND a.player_count > 0
               AND a.player_count = COALESCE(th.fined_count, 0)
             ORDER BY m.date ASC
             LIMIT 1
             """, nativeQuery = true)
     IMatchIdNumberOneNumberTwo findKlubSracu(@Param("playerId") Long playerId,
-                                             @Param("appTeamId") Long appTeamId);
+                                             @Param("appTeamId") Long appTeamId,
+                                             @Param("matchId") Long matchId);
+
+    default IMatchIdNumberOneNumberTwo findKlubSracu(Long playerId, Long appTeamId) {
+        return findKlubSracu(playerId, appTeamId, null);
+    }
 
     @Query(value = """
             WITH attendees AS (
@@ -515,6 +521,7 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
             WHERE mp.player_id = :playerId
               AND p.fan = false
               AND m.app_team_id = :appTeamId
+              AND (:matchId IS NULL OR m.id = :matchId)
               AND a.player_count - COALESCE(th.fined_count, 0) = 1
               AND NOT EXISTS (
                   SELECT 1
@@ -529,7 +536,12 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
             LIMIT 1
             """, nativeQuery = true)
     IMatchIdNumberOneNumberTwo findOsamelyDrzak(@Param("playerId") Long playerId,
-                                                @Param("appTeamId") Long appTeamId);
+                                                @Param("appTeamId") Long appTeamId,
+                                                @Param("matchId") Long matchId);
+
+    default IMatchIdNumberOneNumberTwo findOsamelyDrzak(Long playerId, Long appTeamId) {
+        return findOsamelyDrzak(playerId, appTeamId, null);
+    }
 
     // Ve dvou se to lépe táhne
     @Query(value = """
@@ -607,6 +619,7 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
                                   AND pd.player_id = nf.player_id
             JOIN second_player sp ON sp.match_id = nf.match_id
             WHERE nf.player_id = :playerId
+              AND (:matchId IS NULL OR m.id = :matchId)
               AND mc.not_fined_count = 2
               AND mc.not_fined_with_beer_count = 2
               AND COALESCE(pd.beer_number, 0) > 0
@@ -615,8 +628,13 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
             """, nativeQuery = true)
     IMatchIdThreeNumbersAndText findVeDvouSeToLepeTahne(
             @Param("playerId") Long playerId,
-            @Param("appTeamId") Long appTeamId
+            @Param("appTeamId") Long appTeamId,
+            @Param("matchId") Long matchId
     );
+
+    default IMatchIdThreeNumbersAndText findVeDvouSeToLepeTahne(Long playerId, Long appTeamId) {
+        return findVeDvouSeToLepeTahne(playerId, appTeamId, null);
+    }
 
     @Query(value = """
             WITH goal_stats AS (
@@ -845,10 +863,16 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
             JOIN goal g ON g.match_id = fam.match_id
                        AND g.player_id = fam.player_id
                        AND g.goal_number > 0
+            WHERE (:matchId IS NULL OR fam.match_id = :matchId)
             LIMIT 1
             """, nativeQuery = true)
     IMatchIdNumberOneNumberTwo findNastupJakoHromGoal(@Param("playerId") Long playerId,
-                                                      @Param("appTeamId") Long appTeamId);
+                                                      @Param("appTeamId") Long appTeamId,
+                                                      @Param("matchId") Long matchId);
+
+    default IMatchIdNumberOneNumberTwo findNastupJakoHromGoal(Long playerId, Long appTeamId) {
+        return findNastupJakoHromGoal(playerId, appTeamId, null);
+    }
 
     // Když leju tak pořádně - volat pro každou sezonu
     @Query(value = """
@@ -946,6 +970,7 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
             JOIN counts c ON c.match_id = a.match_id
             JOIN match m ON m.id = a.match_id
             WHERE a.player_id = :playerId
+              AND (:matchId IS NULL OR a.match_id = :matchId)
               AND c.players_count > 1
               AND c.rabona_fined_count = c.players_count - 1
               AND NOT EXISTS (
@@ -958,7 +983,12 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
             LIMIT 1
             """, nativeQuery = true)
     IMatchIdNumberOneNumberTwo findMachyrek(@Param("playerId") Long playerId,
-                                            @Param("appTeamId") Long appTeamId);
+                                            @Param("appTeamId") Long appTeamId,
+                                            @Param("matchId") Long matchId);
+
+    default IMatchIdNumberOneNumberTwo findMachyrek(Long playerId, Long appTeamId) {
+        return findMachyrek(playerId, appTeamId, null);
+    }
 
     // Sdílený střelec
     @Query(value = """
@@ -1072,7 +1102,8 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
             ), candidate_matches AS (
                 SELECT om.*
                 FROM ordered_matches om
-                WHERE EXISTS (
+                WHERE (:matchId IS NULL OR om.match_id = :matchId)
+                  AND EXISTS (
                     SELECT 1
                     FROM match_players mp
                     WHERE mp.match_id = om.match_id
@@ -1125,7 +1156,12 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
             LIMIT 1
             """, nativeQuery = true)
     IMatchIdNumberOneNumberTwo findJardaKuzel(@Param("playerId") Long playerId,
-                                              @Param("appTeamId") Long appTeamId);
+                                              @Param("appTeamId") Long appTeamId,
+                                              @Param("matchId") Long matchId);
+
+    default IMatchIdNumberOneNumberTwo findJardaKuzel(Long playerId, Long appTeamId) {
+        return findJardaKuzel(playerId, appTeamId, null);
+    }
 
     // Moderní gólmanská škola
     @Query(value = """
@@ -1318,11 +1354,17 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
             WHERE goals > 0
               AND second_goals > 0
               AND third_goals > 0
+              AND (:matchId IS NULL OR third_match_id = :matchId)
             ORDER BY date ASC NULLS LAST, match_id ASC
             LIMIT 1
             """, nativeQuery = true)
     IMatchIdNumberOneNumberTwo findFirstThreeConsecutiveMatchesWithGoal(@Param("playerId") Long playerId,
-                                                                        @Param("appTeamId") Long appTeamId);
+                                                                        @Param("appTeamId") Long appTeamId,
+                                                                        @Param("matchId") Long matchId);
+
+    default IMatchIdNumberOneNumberTwo findFirstThreeConsecutiveMatchesWithGoal(Long playerId, Long appTeamId) {
+        return findFirstThreeConsecutiveMatchesWithGoal(playerId, appTeamId, null);
+    }
 
     // Komplexní hráč
     @Query(value = """
@@ -1408,11 +1450,17 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
                    season_name AS text
             FROM zero_point_streaks
             WHERE streak_position = 5
+              AND (:matchId IS NULL OR match_id = :matchId)
             ORDER BY date ASC NULLS LAST, match_id ASC
             LIMIT 1
             """, nativeQuery = true)
     IMatchIdThreeNumbersAndText findDoPoctu(@Param("playerId") Long playerId,
-                                            @Param("appTeamId") Long appTeamId);
+                                            @Param("appTeamId") Long appTeamId,
+                                            @Param("matchId") Long matchId);
+
+    default IMatchIdThreeNumbersAndText findDoPoctu(Long playerId, Long appTeamId) {
+        return findDoPoctu(playerId, appTeamId, null);
+    }
 
     // Hattrick Gordieho Howa
     @Query(value = """
@@ -1494,7 +1542,7 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
     @Query(value = """
             SELECT m.id AS matchId,
                    CAST(mw.temperature AS double precision) AS firstNumber,
-                   NULL::integer AS secondNumber
+                   CAST(NULL AS integer) AS secondNumber
             FROM match m
             JOIN match_weather mw ON mw.match_id = m.id
             JOIN match_players mp ON mp.match_id = m.id
@@ -1514,7 +1562,7 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
     @Query(value = """
             SELECT m.id AS matchId,
                    CAST(mw.temperature AS double precision) AS firstNumber,
-                   NULL::integer AS secondNumber
+                   CAST(NULL AS integer) AS secondNumber
             FROM match m
             JOIN match_weather mw ON mw.match_id = m.id
             JOIN match_players mp ON mp.match_id = m.id
@@ -1533,7 +1581,7 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
     @Query(value = """
         SELECT m.id AS matchId,
                CAST(mw.temperature AS double precision) AS firstNumber,
-               NULL::integer AS secondNumber
+               CAST(NULL AS integer) AS secondNumber
         FROM match m
         JOIN match_weather mw ON mw.match_id = m.id
         JOIN match_players mp ON mp.match_id = m.id
@@ -1760,6 +1808,422 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
             """, nativeQuery = true)
     IMatchIdNumberOneNumberTwo findBeerInMatch(@Param("playerId") Long playerId,
                                                @Param("matchId") Long matchId);
+
+    @Query(value = """
+            SELECT b.match_id AS matchId,
+                   CAST(b.beer_number + b.liquor_number AS int) AS firstNumber,
+                   CAST(t.total_drinks AS int) AS secondNumber
+            FROM beer b
+            JOIN (
+                SELECT match_id, SUM(beer_number + liquor_number) AS total_drinks
+                FROM beer
+                WHERE match_id = :matchId
+                GROUP BY match_id
+            ) t ON t.match_id = b.match_id
+            WHERE b.player_id = :playerId
+              AND b.match_id = :matchId
+            LIMIT 1
+            """, nativeQuery = true)
+    IMatchIdNumberOneNumberTwo findPlayerAndTotalDrinksInMatch(
+            @Param("playerId") Long playerId,
+            @Param("matchId") Long matchId
+    );
+
+    @Query(value = """
+            SELECT m.id AS matchId,
+                   CAST(1 AS int) AS firstNumber,
+                   CAST(SUM(rf.fine_number) AS int) AS secondNumber
+            FROM match m
+            JOIN player p ON p.id = :playerId
+            JOIN football_match_player fmp ON fmp.match_id = m.football_match_id
+                                             AND fmp.player_id = p.football_player_id
+            JOIN received_fine rf ON rf.match_id = m.id AND rf.player_id = p.id
+            JOIN fine f ON f.id = rf.fine_id
+            WHERE m.id = :matchId
+              AND fmp.best_player = true
+              AND f.name IN (:fineNames)
+              AND rf.fine_number > 0
+            GROUP BY m.id
+            LIMIT 1
+            """, nativeQuery = true)
+    IMatchIdNumberOneNumberTwo findBestPlayerWithFineInMatch(
+            @Param("playerId") Long playerId,
+            @Param("matchId") Long matchId,
+            @Param("fineNames") List<String> fineNames
+    );
+
+    @Query(value = """
+            SELECT m.id
+            FROM match m
+            JOIN football_match fm ON fm.id = m.football_match_id
+            JOIN received_fine rf ON rf.match_id = m.id
+            JOIN fine f ON f.id = rf.fine_id
+            WHERE m.id = :matchId
+              AND rf.player_id = :playerId
+              AND f.name = :fineName
+              AND rf.fine_number > 0
+              AND ((fm.home_team_id = :teamId AND fm.home_goal_number > fm.away_goal_number)
+                OR (fm.away_team_id = :teamId AND fm.away_goal_number > fm.home_goal_number))
+            LIMIT 1
+            """, nativeQuery = true)
+    Long findWinningMatchWithFine(
+            @Param("playerId") Long playerId,
+            @Param("matchId") Long matchId,
+            @Param("fineName") String fineName,
+            @Param("teamId") Long teamId
+    );
+
+    @Query(value = """
+            SELECT rf.match_id
+            FROM received_fine rf
+            JOIN fine f ON f.id = rf.fine_id
+            WHERE rf.player_id = :playerId
+              AND rf.match_id = :matchId
+              AND rf.fine_number > 0
+              AND f.name IN (
+                  'Pozdní příchod do začátku',
+                  'Pozdní příchod po 10. minutě',
+                  'Pozdní příchod po začátku',
+                  'Nepříchod'
+              )
+            GROUP BY rf.match_id
+            HAVING COUNT(DISTINCT f.id) >= 3
+            LIMIT 1
+            """, nativeQuery = true)
+    Long findMatchWherePlayerReceivedAtLeastXFines(
+            @Param("playerId") Long playerId,
+            @Param("matchId") Long matchId
+    );
+
+    @Query("""
+            SELECT pa
+            FROM PlayerAchievementEntity pa
+            WHERE pa.player.id = :playerId
+              AND pa.match.id = :matchId
+              AND pa.accomplished = true
+            ORDER BY pa.id
+            """)
+    List<PlayerAchievementEntity> findAccomplishedByPlayerAndMatch(
+            @Param("playerId") Long playerId,
+            @Param("matchId") Long matchId
+    );
+
+    @Query(value = """
+            SELECT fs.match_id AS matchId,
+                   CAST(ROUND(MAX(fs.shot_speed) * 3.6) AS int) AS firstNumber,
+                   CAST(MAX(g.goal_number) AS int) AS secondNumber
+            FROM footbar_session fs
+            JOIN goal g ON g.match_id = fs.match_id AND g.player_id = fs.player_id
+            WHERE fs.player_id = :playerId
+              AND fs.match_id = :matchId
+              AND fs.shot_speed > (80.0 / 3.6)
+              AND g.goal_number > 0
+            GROUP BY fs.match_id
+            LIMIT 1
+            """, nativeQuery = true)
+    IMatchIdNumberOneNumberTwo findRobertoCarlosInMatch(@Param("playerId") Long playerId,
+                                                         @Param("matchId") Long matchId);
+
+    @Query(value = """
+            SELECT fs.match_id AS matchId,
+                   CAST(MAX(fs.pass_count) AS int) AS firstNumber,
+                   CAST(COALESCE(MAX(g.assist_number), 0) AS int) AS secondNumber
+            FROM footbar_session fs
+            LEFT JOIN goal g ON g.match_id = fs.match_id AND g.player_id = fs.player_id
+            WHERE fs.player_id = :playerId
+              AND fs.match_id = :matchId
+              AND fs.pass_count >= 40
+            GROUP BY fs.match_id
+            LIMIT 1
+            """, nativeQuery = true)
+    IMatchIdNumberOneNumberTwo findSpilmachrInMatch(@Param("playerId") Long playerId,
+                                                    @Param("matchId") Long matchId);
+
+    @Query(value = """
+            WITH distances AS (
+                SELECT player_id, SUM(COALESCE(distance, 0)) AS distance
+                FROM footbar_session
+                WHERE match_id = :matchId
+                GROUP BY player_id
+            ), ranked AS (
+                SELECT d.*,
+                       COUNT(*) OVER () AS player_count,
+                       RANK() OVER (ORDER BY distance DESC) AS position
+                FROM distances d
+            )
+            SELECT :matchId AS matchId,
+                   CAST(distance / 1000.0 AS double precision) AS firstNumber,
+                   CAST(player_count AS int) AS secondNumber
+            FROM ranked
+            WHERE player_id = :playerId
+              AND player_count >= 2
+              AND position = 1
+            LIMIT 1
+            """, nativeQuery = true)
+    IMatchIdDecimalAndNumber findJaToZaVasObehalInMatch(@Param("playerId") Long playerId,
+                                                        @Param("matchId") Long matchId);
+
+    @Query(value = """
+            SELECT fs.match_id AS matchId,
+                   CAST(MAX(fs.distance) / 1000.0 AS double precision) AS firstNumber,
+                   CAST(MAX(b.beer_number) AS int) AS secondNumber
+            FROM footbar_session fs
+            JOIN beer b ON b.match_id = fs.match_id AND b.player_id = fs.player_id
+            WHERE fs.player_id = :playerId
+              AND fs.match_id = :matchId
+              AND fs.distance >= 3000
+              AND b.beer_number >= (fs.distance / 1000.0)
+            GROUP BY fs.match_id
+            LIMIT 1
+            """, nativeQuery = true)
+    IMatchIdDecimalAndNumber findDoplneniTekutinInMatch(@Param("playerId") Long playerId,
+                                                        @Param("matchId") Long matchId);
+
+    @Query(value = """
+            SELECT fs.match_id AS matchId,
+                   CAST(MAX(fs.sprint_speed) * 3.6 AS double precision) AS firstNumber,
+                   CAST(COALESCE(SUM(fs.sprint_count), 0) AS int) AS secondNumber
+            FROM footbar_session fs
+            WHERE fs.player_id = :playerId
+              AND fs.match_id = :matchId
+              AND fs.sprint_speed >= (25.0 / 3.6)
+            GROUP BY fs.match_id
+            LIMIT 1
+            """, nativeQuery = true)
+    IMatchIdDecimalAndNumber findCerneGenyInMatch(@Param("playerId") Long playerId,
+                                                  @Param("matchId") Long matchId);
+
+    @Query(value = """
+            WITH hattricks AS (
+                SELECT player_id, goal_number
+                FROM goal
+                WHERE match_id = :matchId AND goal_number >= 3
+            )
+            SELECT :matchId AS matchId,
+                   CAST(h.goal_number AS int) AS firstNumber,
+                   CAST((SELECT COUNT(*) FROM hattricks) AS int) AS secondNumber
+            FROM hattricks h
+            WHERE h.player_id = :playerId
+              AND (SELECT COUNT(*) FROM hattricks) >= 2
+            LIMIT 1
+            """, nativeQuery = true)
+    IMatchIdNumberOneNumberTwo findSdilenyStrelecInMatch(@Param("playerId") Long playerId,
+                                                         @Param("matchId") Long matchId);
+
+    @Query(value = """
+            SELECT g.match_id AS matchId,
+                   CAST(g.assist_number AS int) AS firstNumber,
+                   CAST(g.goal_number AS int) AS secondNumber
+            FROM goal g
+            WHERE g.player_id = :playerId
+              AND g.match_id = :matchId
+              AND g.assist_number >= 3
+            LIMIT 1
+            """, nativeQuery = true)
+    IMatchIdNumberOneNumberTwo findNesobeckyHrdinaInMatch(@Param("playerId") Long playerId,
+                                                          @Param("matchId") Long matchId);
+
+    @Query(value = """
+            SELECT g.match_id AS matchId,
+                   CAST(g.assist_number AS int) AS firstNumber,
+                   CAST(fmp.goalkeeping_minutes AS int) AS secondNumber
+            FROM goal g
+            JOIN match m ON m.id = g.match_id
+            JOIN player p ON p.id = g.player_id
+            JOIN football_match_player fmp ON fmp.match_id = m.football_match_id
+                                          AND fmp.player_id = p.football_player_id
+            WHERE g.player_id = :playerId
+              AND g.match_id = :matchId
+              AND g.assist_number > 0
+              AND fmp.goalkeeping_minutes > 0
+            LIMIT 1
+            """, nativeQuery = true)
+    IMatchIdNumberOneNumberTwo findModerniGolmanskaSkolaInMatch(@Param("playerId") Long playerId,
+                                                                @Param("matchId") Long matchId);
+
+    @Query(value = """
+            SELECT m.id AS matchId,
+                   CAST(COALESCE(SUM(b.beer_number), 0) AS int) AS firstNumber,
+                   CAST(COALESCE(SUM(b.liquor_number), 0) AS int) AS secondNumber
+            FROM match m
+            JOIN match_players mp ON mp.match_id = m.id AND mp.player_id = :playerId
+            JOIN player p ON p.id = mp.player_id
+            LEFT JOIN beer b ON b.match_id = m.id AND b.player_id = p.id
+            WHERE m.id = :matchId
+              AND p.fan = false
+              AND p.football_player_id IS NOT NULL
+              AND m.football_match_id IS NOT NULL
+              AND NOT EXISTS (
+                  SELECT 1 FROM football_match_player fmp
+                  WHERE fmp.match_id = m.football_match_id
+                    AND fmp.player_id = p.football_player_id
+              )
+            GROUP BY m.id
+            LIMIT 1
+            """, nativeQuery = true)
+    IMatchIdNumberOneNumberTwo findMoralniPodporaInMatch(@Param("playerId") Long playerId,
+                                                         @Param("matchId") Long matchId);
+
+    @Query(value = """
+            SELECT g.match_id AS matchId,
+                   CAST(g.goal_number AS int) AS firstNumber,
+                   CAST(g.assist_number AS int) AS secondNumber,
+                   CAST(SUM(rf.fine_number) AS int) AS thirdNumber,
+                   STRING_AGG(DISTINCT f.name, ', ') AS text
+            FROM goal g
+            JOIN received_fine rf ON rf.match_id = g.match_id AND rf.player_id = g.player_id
+            JOIN fine f ON f.id = rf.fine_id
+            WHERE g.player_id = :playerId
+              AND g.match_id = :matchId
+              AND g.goal_number > 0
+              AND g.assist_number > 0
+              AND rf.fine_number > 0
+              AND f.name IN ('Žlutá karta', 'Červená karta')
+            GROUP BY g.match_id, g.goal_number, g.assist_number
+            LIMIT 1
+            """, nativeQuery = true)
+    IMatchIdThreeNumbersAndText findHattrickGordiehoHowaInMatch(@Param("playerId") Long playerId,
+                                                                @Param("matchId") Long matchId);
+
+    @Query(value = """
+            SELECT m.id AS matchId,
+                   CAST(0 AS int) AS firstNumber,
+                   CAST(COALESCE(g.goal_number, 0) AS int) AS secondNumber
+            FROM match m
+            JOIN player p ON p.id = :playerId
+            JOIN football_match_player fmp ON fmp.match_id = m.football_match_id
+                                             AND fmp.player_id = p.football_player_id
+            LEFT JOIN goal g ON g.match_id = m.id AND g.player_id = p.id
+            WHERE m.id = :matchId
+              AND fmp.best_player = true
+              AND COALESCE(g.goal_number, 0) = 0
+            LIMIT 1
+            """, nativeQuery = true)
+    IMatchIdNumberOneNumberTwo findCernaPraceInMatch(@Param("playerId") Long playerId,
+                                                      @Param("matchId") Long matchId);
+
+    @Query(value = """
+            WITH goalkeeper_points AS (
+                SELECT p.id AS player_id,
+                       COALESCE(g.goal_number, 0) AS goals,
+                       COALESCE(g.assist_number, 0) AS assists,
+                       COALESCE(g.goal_number, 0) + COALESCE(g.assist_number, 0) AS points
+                FROM match m
+                JOIN player p ON p.football_player_id IS NOT NULL
+                JOIN football_match_player fmp ON fmp.match_id = m.football_match_id
+                                                 AND fmp.player_id = p.football_player_id
+                LEFT JOIN goal g ON g.match_id = m.id AND g.player_id = p.id
+                WHERE m.id = :matchId
+                  AND fmp.goalkeeping_minutes > 0
+            )
+            SELECT :matchId AS matchId,
+                   CAST(goals AS int) AS firstNumber,
+                   CAST(assists AS int) AS secondNumber
+            FROM goalkeeper_points
+            WHERE player_id = :playerId
+              AND points = (SELECT MAX(points) FROM goalkeeper_points)
+            LIMIT 1
+            """, nativeQuery = true)
+    IMatchIdNumberOneNumberTwo findAutickoInMatch(@Param("playerId") Long playerId,
+                                                  @Param("matchId") Long matchId);
+
+    @Query(value = """
+            SELECT :matchId AS matchId,
+                   CAST(SUM(rf.fine_number) AS int) AS firstNumber,
+                   CAST(SUM(rf.fine_number) AS int) AS secondNumber
+            FROM received_fine rf
+            JOIN fine f ON f.id = rf.fine_id
+            JOIN match m ON m.id = rf.match_id
+            JOIN match changed ON changed.id = :matchId
+            WHERE rf.player_id = :playerId
+              AND f.name = 'Svatba'
+              AND rf.fine_number > 0
+              AND (m.date < changed.date OR (m.date = changed.date AND m.id <= changed.id))
+            HAVING SUM(rf.fine_number) >= 3
+            """, nativeQuery = true)
+    IMatchIdNumberOneNumberTwo findRossGellerAtMatch(@Param("playerId") Long playerId,
+                                                     @Param("matchId") Long matchId);
+
+    @Query(value = """
+            SELECT m.id
+            FROM match m
+            JOIN match_players mp ON mp.match_id = m.id
+            WHERE mp.player_id = :playerId
+              AND m.id = :matchId
+              AND m.id = (
+                  SELECT m2.id
+                  FROM match m2
+                  JOIN match_players mp2 ON mp2.match_id = m2.id
+                  WHERE mp2.player_id = :playerId
+                  ORDER BY m2.date ASC, m2.id ASC
+                  LIMIT 1
+              )
+            LIMIT 1
+            """, nativeQuery = true)
+    Long findFirstAttendanceIfMatch(@Param("playerId") Long playerId,
+                                    @Param("matchId") Long matchId);
+
+    @Query(value = """
+            WITH ordered_matches AS (
+                SELECT m.id,
+                       LEAD(m.id) OVER (ORDER BY m.date ASC, m.id ASC) AS next_match_id
+                FROM match m
+                WHERE m.app_team_id = :appTeamId
+            )
+            SELECT b.match_id AS matchId,
+                   CAST(b.beer_number AS int) AS firstNumber,
+                   CAST(b.liquor_number AS int) AS secondNumber
+            FROM beer b
+            JOIN ordered_matches om ON om.id = b.match_id
+            WHERE b.player_id = :playerId
+              AND b.match_id = :matchId
+              AND b.liquor_number >= 5
+              AND om.next_match_id IS NOT NULL
+              AND NOT EXISTS (
+                  SELECT 1 FROM match_players mp
+                  WHERE mp.match_id = om.next_match_id AND mp.player_id = :playerId
+              )
+            LIMIT 1
+            """, nativeQuery = true)
+    IMatchIdNumberOneNumberTwo findCirhozaAtMatch(@Param("playerId") Long playerId,
+                                                  @Param("appTeamId") Long appTeamId,
+                                                  @Param("matchId") Long matchId);
+
+    @Query(value = """
+            WITH ordered_matches AS (
+                SELECT m.id,
+                       m.date,
+                       LAG(m.id, 1) OVER (ORDER BY m.date ASC, m.id ASC) AS previous_id,
+                       LAG(m.id, 2) OVER (ORDER BY m.date ASC, m.id ASC) AS previous_two_id
+                FROM match m
+                WHERE m.app_team_id = :appTeamId
+            ), drinkers AS (
+                SELECT b.match_id,
+                       b.player_id,
+                       b.beer_number,
+                       b.liquor_number,
+                       RANK() OVER (PARTITION BY b.match_id ORDER BY b.beer_number + b.liquor_number DESC) AS position
+                FROM beer b
+            )
+            SELECT current_drinker.match_id AS matchId,
+                   CAST(current_drinker.beer_number AS int) AS firstNumber,
+                   CAST(current_drinker.liquor_number AS int) AS secondNumber
+            FROM ordered_matches om
+            JOIN drinkers current_drinker ON current_drinker.match_id = om.id
+                                           AND current_drinker.player_id = :playerId
+                                           AND current_drinker.position = 1
+            JOIN drinkers previous_drinker ON previous_drinker.match_id = om.previous_id
+                                            AND previous_drinker.player_id = :playerId
+                                            AND previous_drinker.position = 1
+            JOIN drinkers previous_two_drinker ON previous_two_drinker.match_id = om.previous_two_id
+                                                AND previous_two_drinker.player_id = :playerId
+                                                AND previous_two_drinker.position = 1
+            WHERE om.id = :matchId
+            LIMIT 1
+            """, nativeQuery = true)
+    IMatchIdNumberOneNumberTwo findTahounAtMatch(@Param("playerId") Long playerId,
+                                                 @Param("appTeamId") Long appTeamId,
+                                                 @Param("matchId") Long matchId);
 
 }
 

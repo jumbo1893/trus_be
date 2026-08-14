@@ -39,6 +39,8 @@ public class PlayerAchievementEntity {
     @ManyToOne
     private FootballMatchEntity footballMatch;
 
+    private Long seasonId;
+
     @Column(columnDefinition = "TEXT")
     private String detail;
 

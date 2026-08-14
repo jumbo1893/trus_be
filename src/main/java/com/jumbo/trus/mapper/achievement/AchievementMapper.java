@@ -9,8 +9,6 @@ import org.mapstruct.Mapping;
 public abstract class AchievementMapper {
 
     @Mapping(target = "playerAchievements", ignore = true)
-    @Mapping(target = "achievementTypes", ignore = true)
-    @Mapping(target = "calculationScope", ignore = true)
     public abstract AchievementEntity toEntity(AchievementDTO source);
 
     @Mapping(target = "teamSuccessRate", ignore = true)

@@ -183,6 +183,45 @@ public interface MatchRepository extends PagingAndSortingRepository<MatchEntity,
     List<Long> findAffectedPlayerIdsByMatchIds(@Param("matchIds") Iterable<Long> matchIds);
 
     @Query(value = """
+            SELECT DISTINCT match_id AS "matchId", player_id AS "playerId"
+            FROM (
+                SELECT mp.match_id, mp.player_id
+                FROM match_players mp
+                WHERE mp.match_id IN (:matchIds)
+
+                UNION
+
+                SELECT b.match_id, b.player_id
+                FROM beer b
+                WHERE b.match_id IN (:matchIds)
+
+                UNION
+
+                SELECT g.match_id, g.player_id
+                FROM goal g
+                WHERE g.match_id IN (:matchIds)
+
+                UNION
+
+                SELECT rf.match_id, rf.player_id
+                FROM received_fine rf
+                WHERE rf.match_id IN (:matchIds)
+
+                UNION
+
+                SELECT m.id AS match_id, p.id AS player_id
+                FROM match m
+                JOIN football_match_player fmp ON fmp.match_id = m.football_match_id
+                JOIN player p ON p.football_player_id = fmp.player_id
+                WHERE m.id IN (:matchIds)
+            ) affected_players
+            WHERE player_id IS NOT NULL
+            """, nativeQuery = true)
+    List<MatchPlayerIdProjection> findAffectedPlayersByMatchIds(
+            @Param("matchIds") Iterable<Long> matchIds
+    );
+
+    @Query(value = """
             SELECT DISTINCT season_id
             FROM match
             WHERE id IN (:matchIds)
@@ -205,5 +244,12 @@ public interface MatchRepository extends PagingAndSortingRepository<MatchEntity,
     Set<Long> findMatchIdsBySeason(
             @Param("seasonId") Long seasonId
     );
+
+    @Query("""
+            SELECT m.id
+            FROM match m
+            WHERE m.footballMatch.id = :footballMatchId
+            """)
+    Set<Long> findIdsByFootballMatchId(@Param("footballMatchId") Long footballMatchId);
 
 }

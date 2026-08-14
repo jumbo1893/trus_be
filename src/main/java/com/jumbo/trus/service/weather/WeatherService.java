@@ -31,6 +31,7 @@ public class WeatherService {
     private static final String PROVIDER = "OPEN_METEO";
     private static final BigDecimal PRAGUE_LATITUDE = new BigDecimal("50.0755");
     private static final BigDecimal PRAGUE_LONGITUDE = new BigDecimal("14.4378");
+    private static final int MAX_FORECAST_DAYS_AHEAD = 15;
     public static final ZoneId PRAGUE_ZONE = ZoneId.of("Europe/Prague");
     private static final String WEATHER_VARIABLES = String.join(",",
             "temperature_2m",
@@ -75,6 +76,11 @@ public class WeatherService {
             LocalDateTime requestedDateTime = LocalDateTime.ofInstant(requestedDate.toInstant(), PRAGUE_ZONE);
             LocalDate requestedDay = requestedDateTime.toLocalDate();
             LocalDate today = LocalDate.now(PRAGUE_ZONE);
+
+            if (requestedDay.isAfter(today.plusDays(MAX_FORECAST_DAYS_AHEAD))) {
+                log.debug("Předpověď ještě není dostupná pro datum {}", requestedDate);
+                return Optional.empty();
+            }
 
             if (requestedDay.isBefore(today)) {
                 return getHourlyWeather(ARCHIVE_URL, requestedDateTime, WeatherSourceType.HISTORICAL, false);

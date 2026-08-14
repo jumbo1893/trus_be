@@ -5,6 +5,12 @@ import com.jumbo.trus.dto.football.FootballMatchPlayerDTO;
 import com.jumbo.trus.entity.football.FootballMatchEntity;
 import com.jumbo.trus.mapper.football.FootballMatchMapper;
 import com.jumbo.trus.repository.football.FootballMatchRepository;
+import com.jumbo.trus.repository.MatchRepository;
+import com.jumbo.trus.repository.football.FootballMatchPlayerRepository;
+import com.jumbo.trus.entity.outbox.OutboxAggregateType;
+import com.jumbo.trus.entity.outbox.OutboxEventType;
+import com.jumbo.trus.service.outbox.OutboxEventPayloadFactory;
+import com.jumbo.trus.service.outbox.OutboxEventService;
 import com.jumbo.trus.service.football.pkfl.task.RetrievePkflMatchDetail;
 import com.jumbo.trus.service.football.pkfl.task.helper.FootballMatchDetailTaskHelper;
 import com.jumbo.trus.service.helper.Pair;
@@ -27,6 +33,9 @@ public class FootballMatchProcessor {
     private final FootballMatchRepository footballMatchRepository;
     private final PlayerProcessor playerProcessor;
     private final RetrievePkflMatchDetail retrievePkflMatchDetail;
+    private final MatchRepository matchRepository;
+    private final FootballMatchPlayerRepository footballMatchPlayerRepository;
+    private final OutboxEventService outboxEventService;
 
     public List<FootballMatchDTO> getAllMatches() {
         return footballMatchRepository.findAll().stream()
@@ -74,15 +83,34 @@ public class FootballMatchProcessor {
             if (isNeededToGetMatchDetails(repositoryMatch, footballMatchDTO)) {
                 //logger.debug("procesuji úplný zápas");
 
-                return new Pair<>(MatchProcessingResult.FULLY_PROCESSED, enhanceFootballMatchWithDetailsAndSave(footballMatchDTO, repositoryMatch));
+                long savedMatchId = enhanceFootballMatchWithDetailsAndSave(footballMatchDTO, repositoryMatch);
+                createUpdatedEvent(repositoryMatch, savedMatchId);
+                return new Pair<>(MatchProcessingResult.FULLY_PROCESSED, savedMatchId);
             }
             else if (isNeededToSaveSimpleMatch(repositoryMatch, footballMatchDTO)) {
                 //logger.debug("procesuji neúplný zápas");
                 setFootballMatchId(repositoryMatch, footballMatchDTO);
 
-                return new Pair<>(MatchProcessingResult.PARTIALLY_PROCESSED, saveMatchToRepository(footballMatchDTO).getId());
+                long savedMatchId = saveMatchToRepository(footballMatchDTO).getId();
+                createUpdatedEvent(repositoryMatch, savedMatchId);
+                return new Pair<>(MatchProcessingResult.PARTIALLY_PROCESSED, savedMatchId);
             }
         return new Pair<>(MatchProcessingResult.UNPROCESSED, repositoryMatch.getId());
+    }
+
+    private void createUpdatedEvent(FootballMatchDTO repositoryMatch, Long footballMatchId) {
+        if (repositoryMatch == null) {
+            return;
+        }
+        outboxEventService.createEvent(
+                OutboxEventType.FOOTBALL_MATCH_UPDATED,
+                OutboxAggregateType.FOOTBALL_MATCH,
+                footballMatchId,
+                OutboxEventPayloadFactory.footballMatchUpdated(
+                        matchRepository.findIdsByFootballMatchId(footballMatchId),
+                        footballMatchPlayerRepository.findPlayerIdsByMatchId(footballMatchId)
+                )
+        );
     }
 
     private void setFootballMatchId(FootballMatchDTO repositoryMatch, FootballMatchDTO newMatch) {

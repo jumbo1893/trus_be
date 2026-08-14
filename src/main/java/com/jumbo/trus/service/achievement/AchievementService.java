@@ -16,6 +16,8 @@ import com.jumbo.trus.service.achievement.helper.AchievementRecalculationContext
 import com.jumbo.trus.service.achievement.helper.AchievementType;
 import com.jumbo.trus.service.order.OrderAchievementBySuccessRate;
 import com.jumbo.trus.service.player.PlayerService;
+import com.jumbo.trus.service.auth.AppTeamService;
+import com.jumbo.trus.service.outbox.AchievementEventBatch;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,6 +44,34 @@ public class AchievementService {
     private final AchievementDetailService achievementDetailService;
     private final AchievementRarityService achievementRarityService;
     private final MatchRepository matchRepository;
+    private final AppTeamService appTeamService;
+
+    @Transactional
+    public void calculateEventBatch(AchievementEventBatch batch) {
+        batch.workByTeamAndPlayer().forEach((appTeamId, workByPlayer) -> {
+            AppTeamEntity appTeam = appTeamService.findAppTeamByIdOrThrow(appTeamId);
+            executeWithAchievementLock(appTeam, () -> {
+                List<PlayerDTO> players = playerService.getAllByIds(workByPlayer.keySet(), appTeamId);
+                if (players.isEmpty()) {
+                    log.debug("No active players found for achievement event batch. appTeamId={}", appTeamId);
+                    return;
+                }
+                Set<Long> changedMatchIds = workByPlayer.values().stream()
+                        .map(work -> work.changesByMatch().keySet())
+                        .flatMap(Collection::stream)
+                        .collect(java.util.stream.Collectors.toSet());
+                Set<Long> changedSeasonIds = changedMatchIds.isEmpty()
+                        ? Set.of()
+                        : new HashSet<>(matchRepository.findSeasonIdsByMatchIds(changedMatchIds));
+                achievementCalculator.calculateEventAchievements(
+                        players,
+                        appTeam,
+                        workByPlayer,
+                        changedSeasonIds
+                );
+            });
+        });
+    }
 
     @Transactional
     public void updateAllPlayerAchievements(AppTeamEntity appTeam, AchievementType achievementType) {

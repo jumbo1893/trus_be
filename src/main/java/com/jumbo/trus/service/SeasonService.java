@@ -46,7 +46,7 @@ public class SeasonService {
         entity.setAppTeam(appTeam);
         SeasonEntity savedEntity = seasonRepository.save(entity);
         notificationService.addNotification("Přidána nová sezona", seasonDTO.getName() + " se začátkem " + seasonDTO.getFromDate() + " a koncem " + seasonDTO.getToDate());
-        outboxEventService.createEvent(OutboxEventType.SEASON_CREATED, OutboxAggregateType.SEASON, savedEntity.getId(), null);
+        outboxEventService.createEvent(OutboxEventType.SEASON_CREATED, OutboxAggregateType.SEASON, savedEntity.getId(), OutboxEventPayloadFactory.seasonCreated(Set.of()));
         return seasonMapper.toDTO(savedEntity);
     }
 
@@ -117,24 +117,25 @@ public class SeasonService {
         if (!seasonRepository.existsById(seasonId)) {
             throw new NotFoundException("Sezona s id " + seasonId + " nenalezena v db");
         }
+        Set<Long> affectedMatchIds = matchRepository.findMatchIdsBySeason(seasonId);
         validateSeason(seasonDTO.getFromDate(), seasonDTO.getFromDate(), seasonDTO, appTeam);
         SeasonEntity entity = seasonMapper.toEntity(seasonDTO);
         entity.setId(seasonId);
         entity.setAppTeam(appTeam);
         SeasonEntity savedEntity = seasonRepository.save(entity);
         notificationService.addNotification("Upravena sezona", seasonDTO.getName() + " se začátkem " + seasonDTO.getFromDate() + " a koncem " + seasonDTO.getToDate());
-        outboxEventService.createEvent(OutboxEventType.SEASON_UPDATED, OutboxAggregateType.SEASON, savedEntity.getId(), null);
+        outboxEventService.createEvent(OutboxEventType.SEASON_UPDATED, OutboxAggregateType.SEASON, savedEntity.getId(), OutboxEventPayloadFactory.seasonUpdated(affectedMatchIds));
         return seasonMapper.toDTO(savedEntity);
     }
 
     @Transactional
     public void deleteSeason(Long seasonId) {
-        matchRepository.updateSeasonId(seasonId);
         SeasonEntity seasonEntity = seasonRepository.getReferenceById(seasonId);
         Set<Long> affectedMatchIds = matchRepository.findMatchIdsBySeason(seasonId);
+        matchRepository.updateSeasonId(seasonId);
         notificationService.addNotification("Přidána nová sezona", seasonEntity.getName() + " se začátkem " + seasonEntity.getFromDate() + " a koncem " + seasonEntity.getToDate());
         seasonRepository.deleteById(seasonId);
-        outboxEventService.createEvent(OutboxEventType.SEASON_CREATED, OutboxAggregateType.SEASON, seasonId, OutboxEventPayloadFactory.seasonDeleted(affectedMatchIds));
+        outboxEventService.createEvent(OutboxEventType.SEASON_DELETED, OutboxAggregateType.SEASON, seasonId, OutboxEventPayloadFactory.seasonDeleted(affectedMatchIds));
     }
 
     private void validateSeason(Date fromDate, Date toDate, SeasonDTO currentSeason, AppTeamEntity appTeam) {

@@ -226,8 +226,10 @@ public interface ReceivedFineRepository extends PagingAndSortingRepository<Recei
             @Param("fineId") Long fineId
     );
 
+    @Query("SELECT DISTINCT receivedFine.player.id FROM received_fine receivedFine WHERE receivedFine.fine.id = :fineId")
+    Set<Long> findPlayerIdsByFineId(@Param("fineId") Long fineId);
+
     @Query(value = "SELECT DISTINCT player_id from received_fine WHERE (fine_id=:#{#goalFineId} OR fine_id=:#{#hattrickFineId}) AND match_id=:#{#matchId}", nativeQuery = true)
     Set<Long> findPlayersByFineIdsAndMatchId(@Param("matchId") long matchId, @Param("goalFineId") long goalFineId, @Param("hattrickFineId") long hattrickFineId);
 
 }
-
