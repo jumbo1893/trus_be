@@ -72,6 +72,25 @@ public interface MatchRepository extends PagingAndSortingRepository<MatchEntity,
     );
 
     @Query("""
+            SELECT DISTINCT m
+            FROM match m
+            WHERE m.appTeam.id = :appTeamId
+              AND (:seasonId IS NULL OR :seasonId = -3 OR m.season.id = :seasonId)
+              AND (:fromDate IS NULL OR m.date >= :fromDate)
+              AND (:toDate IS NULL OR m.date < :toDate)
+              AND (:opponent IS NULL OR LOWER(m.name) LIKE LOWER(CONCAT('%', :opponent, '%')))
+            ORDER BY m.date DESC
+            """)
+    List<MatchEntity> findForAi(
+            @Param("appTeamId") Long appTeamId,
+            @Param("seasonId") Long seasonId,
+            @Param("fromDate") Date fromDate,
+            @Param("toDate") Date toDate,
+            @Param("opponent") String opponent,
+            Pageable pageable
+    );
+
+    @Query("""
             SELECT m
             FROM match m
             WHERE m.footballMatch.id = :footballMatchId
