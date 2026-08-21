@@ -14,6 +14,9 @@ import com.jumbo.trus.entity.StepConsentEntity;
 import com.jumbo.trus.entity.MatchEntity;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.auth.UserEntity;
+import com.jumbo.trus.entity.auth.UserTeamRole;
+import com.jumbo.trus.entity.outbox.OutboxAggregateType;
+import com.jumbo.trus.entity.outbox.OutboxEventType;
 import com.jumbo.trus.repository.StepUpdateRepository;
 import com.jumbo.trus.repository.StepConsentRepository;
 import com.jumbo.trus.repository.MatchRepository;
@@ -22,6 +25,8 @@ import com.jumbo.trus.repository.auth.UserTeamRoleRepository;
 import com.jumbo.trus.service.auth.AppTeamService;
 import com.jumbo.trus.service.auth.UserService;
 import com.jumbo.trus.service.exceptions.StepValidationException;
+import com.jumbo.trus.service.outbox.OutboxEventPayloadFactory;
+import com.jumbo.trus.service.outbox.OutboxEventService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -32,7 +37,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -49,6 +56,7 @@ public class StepService {
     private final UserRepository userRepository;
     private final UserTeamRoleRepository userTeamRoleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final OutboxEventService outboxEventService;
 
     @Transactional
     public List<StepDailyDTO> sync(StepSyncRequestDTO request) {
@@ -61,10 +69,14 @@ public class StepService {
         if (!consentEnabled) {
             throw new StepValidationException("Pro synchronizaci kroků je nutný souhlas uživatele");
         }
-        return request.getDays().stream()
+        UserTeamRole role = userTeamRoleRepository
+                .findByUserIdAndAppTeamId(user.getId(), appTeam.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN));
+        List<StepUpsertResult> results = request.getDays().stream()
                 .map(item -> upsert(user, item))
-                .map(this::toDTO)
                 .toList();
+        publishStepEvent(user, appTeam.getId(), role, results);
+        return results.stream().map(StepUpsertResult::entity).map(this::toDTO).toList();
     }
 
     @Transactional
@@ -72,7 +84,7 @@ public class StepService {
         UserEntity user = userRepository.findByMail(request.mail().toLowerCase().trim())
                 .filter(candidate -> passwordEncoder.matches(request.password(), candidate.getPassword()))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
-        userTeamRoleRepository.findByUserIdAndAppTeamId(user.getId(), request.appTeamId())
+        UserTeamRole role = userTeamRoleRepository.findByUserIdAndAppTeamId(user.getId(), request.appTeamId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN));
 
         StepConsentEntity consent = stepConsentRepository
@@ -87,7 +99,11 @@ public class StepService {
         if (!consent.isEnabled()) {
             throw new StepValidationException("Souhlas s kroky nebyl udělen");
         }
-        return request.days().stream().map(item -> upsert(user, item)).map(this::toDTO).toList();
+        List<StepUpsertResult> results = request.days().stream()
+                .map(item -> upsert(user, item))
+                .toList();
+        publishStepEvent(user, request.appTeamId(), role, results);
+        return results.stream().map(StepUpsertResult::entity).map(this::toDTO).toList();
     }
 
     @Transactional(readOnly = true)
@@ -188,7 +204,7 @@ public class StepService {
                 .toLocalDate();
     }
 
-    private StepUpdateEntity upsert(UserEntity user, StepSyncItemDTO item) {
+    private StepUpsertResult upsert(UserEntity user, StepSyncItemDTO item) {
         validateItem(item);
         StepUpdateEntity entity = stepUpdateRepository
                 .findByUserIdAndDate(user.getId(), item.getDate())
@@ -198,12 +214,12 @@ public class StepService {
         // HealthKit/Health Connect can retrospectively correct their aggregation.
         if (entity.getMeasuredUntil() != null
                 && item.getMeasuredUntil().isBefore(entity.getMeasuredUntil())) {
-            return entity;
+            return new StepUpsertResult(entity, false);
         }
         if (entity.getMeasuredUntil() != null
                 && item.getMeasuredUntil().isEqual(entity.getMeasuredUntil())
                 && item.getStepCount() <= entity.getStepNumber()) {
-            return entity;
+            return new StepUpsertResult(entity, false);
         }
 
         entity.setStepNumber(item.getStepCount());
@@ -211,7 +227,51 @@ public class StepService {
         entity.setTimezone(item.getTimezone());
         entity.setMeasuredUntil(item.getMeasuredUntil());
         entity.setUpdateTime(Instant.now());
-        return stepUpdateRepository.save(entity);
+        return new StepUpsertResult(stepUpdateRepository.save(entity), true);
+    }
+
+    private void publishStepEvent(
+            UserEntity user,
+            Long appTeamId,
+            UserTeamRole role,
+            List<StepUpsertResult> results
+    ) {
+        if (role.getPlayer() == null) {
+            return;
+        }
+        List<LocalDate> changedDates = results.stream()
+                .filter(StepUpsertResult::changed)
+                .map(result -> result.entity().getDate())
+                .toList();
+        if (changedDates.isEmpty()) {
+            return;
+        }
+
+        LocalDate earliestChangedDate = changedDates.stream().min(LocalDate::compareTo).orElseThrow();
+        Instant now = Instant.now();
+        Date startOfChangedRange = Date.from(earliestChangedDate.atStartOfDay(ZoneId.of("Europe/Prague")).toInstant());
+        Set<Long> affectedMatchIds = new LinkedHashSet<>(
+                matchRepository.findIdsByAppTeamAndDateBetween(appTeamId, startOfChangedRange, Date.from(now)));
+
+        Date startOfToday = Date.from(LocalDate.now(ZoneId.of("Europe/Prague"))
+                .atStartOfDay(ZoneId.of("Europe/Prague"))
+                .toInstant());
+        matchRepository.findFirstByAppTeamIdAndDateLessThanOrderByDateDesc(appTeamId, startOfToday)
+                .map(MatchEntity::getId)
+                .ifPresent(affectedMatchIds::add);
+
+        Set<Long> affectedPlayerIds = new LinkedHashSet<>(
+                userTeamRoleRepository.findConsentingPlayerIdsByAppTeamId(appTeamId));
+        affectedPlayerIds.add(role.getPlayer().getId());
+
+        outboxEventService.createEventForTeam(
+                OutboxEventType.STEP_SYNCED,
+                OutboxAggregateType.STEP,
+                user.getId(),
+                OutboxEventPayloadFactory.stepsUpdated(affectedPlayerIds, affectedMatchIds),
+                appTeamId,
+                user.getId()
+        );
     }
 
     private StepUpdateEntity newEntity(UserEntity user, LocalDate date) {
@@ -249,5 +309,8 @@ public class StepService {
     private StepDailyDTO toDTO(StepUpdateEntity entity) {
         return new StepDailyDTO(entity.getId(), entity.getDate(), entity.getStepNumber(),
                 entity.getSource(), entity.getTimezone(), entity.getMeasuredUntil(), entity.getUpdateTime());
+    }
+
+    private record StepUpsertResult(StepUpdateEntity entity, boolean changed) {
     }
 }

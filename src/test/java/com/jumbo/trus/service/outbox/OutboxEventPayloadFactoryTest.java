@@ -1,6 +1,7 @@
 package com.jumbo.trus.service.outbox;
 
 import com.jumbo.trus.entity.outbox.OutboxEventPayload;
+import com.jumbo.trus.entity.outbox.OutboxRelatedEntityType;
 import org.junit.jupiter.api.Test;
 
 import java.util.Set;
@@ -29,5 +30,16 @@ class OutboxEventPayloadFactoryTest {
         assertThat(payload.affectedPlayerIds()).containsExactlyInAnyOrder(1L, 2L, 3L, 4L);
         assertThat(payload.addedPlayerIds()).containsExactlyInAnyOrder(1L, 2L);
         assertThat(payload.removedPlayerIds()).containsExactlyInAnyOrder(3L, 4L);
+    }
+
+    @Test
+    void stepsUpdatedCarriesConsentingPlayersAndAffectedMatches() {
+        OutboxEventPayload payload = OutboxEventPayloadFactory.stepsUpdated(
+                Set.of(1L, 2L, 3L), Set.of(10L, 11L)
+        );
+
+        assertThat(payload.affectedPlayerIds()).containsExactlyInAnyOrder(1L, 2L, 3L);
+        assertThat(payload.relatedEntityIds().get(OutboxRelatedEntityType.MATCH))
+                .containsExactlyInAnyOrder(10L, 11L);
     }
 }

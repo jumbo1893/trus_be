@@ -235,7 +235,25 @@ public class AchievementInitializer implements CommandLineRunner {
                 new AchievementEntity("Návštěva Sahary", NAVSTEVA_SAHARY, true, "Zúčastni se zápasu, při kterém teplota překročí 35 °C",
                         false, EnumSet.of(OutboxAggregateType.MATCH), AchievementCalculationScope.MATCH),
                 new AchievementEntity("Ledový muž", LEDOVY_MUZ, true, "Zúčastni se zápasu, při kterém teplota klesla pod 0 °C",
-                        false, EnumSet.of(OutboxAggregateType.MATCH), AchievementCalculationScope.MATCH)
+                        false, EnumSet.of(OutboxAggregateType.MATCH), AchievementCalculationScope.MATCH),
+                new AchievementEntity("Pošetření sil", POSETRENI_SIL, false, "Uběhni v zápase více kilometrů, než si ušel za poslední 2 dny", "Alespoň 2 km v zápase",
+                        false, EnumSet.of(OutboxAggregateType.FOOTBAR, OutboxAggregateType.STEP), AchievementCalculationScope.MATCH),
+                new AchievementEntity("Chodec", CHODEC, false, "Měj nachozeno nejvíce kroků ze všech mezi posledními zápasy", "Alespoň 3 chodci",
+                        false, EnumSet.of(OutboxAggregateType.MATCH, OutboxAggregateType.STEP), AchievementCalculationScope.MATCH),
+                new AchievementEntity("Okolo Hradce", OKOLO_HRADCE, false, "... v malé zahrádce... Ujdi vzdálenost jakoby to bylo okolo hradce (65 000 kroků)",
+                        false, EnumSet.of(OutboxAggregateType.STEP), AchievementCalculationScope.ALL),
+                new AchievementEntity("Pražák", PRAZAK, false, "Prahu musíš znáš skrz naskrz.Dokaž ji projít celou po jejím obvodu (160 000 kroků)",
+                        false, EnumSet.of(OutboxAggregateType.STEP), AchievementCalculationScope.ALL),
+                new AchievementEntity("Od severu k jihu", OD_SEVERU_K_JIHU, false, "Projdi se z malebného Šluknova až do Vyššího brodu na lodičky. To je úctyhodných 341 000 kroků",
+                        false, EnumSet.of(OutboxAggregateType.STEP), AchievementCalculationScope.ALL),
+                new AchievementEntity("Od východu na západ", OD_VYCHODU_NA_ZAPAD, false, "Kdyby ještě existovalo Československo, tak by to byl lepší výkon. Ale i tak musíš zvládnout ujít vzdálenost mezi Jablunkovem a Ašem - 612 000 kroků",
+                        false, EnumSet.of(OutboxAggregateType.STEP), AchievementCalculationScope.ALL),
+                new AchievementEntity("Všechny cesty vedou do Říma", VSECHNY_CESTY_VEDOU_DO_RIMA, false, "Ujdi cestu z Prahy až do Říma (1,6 milionu kroků)",
+                        false, EnumSet.of(OutboxAggregateType.STEP), AchievementCalculationScope.ALL),
+                new AchievementEntity("Evropský pochůzkář", EVROPSKY_POCHUZKAR, false, "Dokaž si spojit 2 nejvzálenější body Evropy. Ze Španělska až na Ural. 7,2 milionu kroků",
+                        false, EnumSet.of(OutboxAggregateType.STEP), AchievementCalculationScope.ALL),
+                new AchievementEntity("Cesta kolem světa", CESTA_KOLEM_SVETA, false, "Pro splnění stačí ujít 51,38 milionu kroků. Někteří to jiště zvládnou za rok 2x",
+                        false, EnumSet.of(OutboxAggregateType.STEP), AchievementCalculationScope.ALL)
 
         );
     }

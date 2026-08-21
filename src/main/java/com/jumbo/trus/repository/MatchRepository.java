@@ -223,6 +223,31 @@ public interface MatchRepository extends PagingAndSortingRepository<MatchEntity,
 
     List<MatchEntity> findFirst2ByAppTeamIdAndDateLessThanEqualOrderByDateDesc(Long appTeamId, Date date);
 
+    Optional<MatchEntity> findFirstByAppTeamIdAndDateLessThanOrderByDateDesc(Long appTeamId, Date date);
+
+    @Query("""
+            SELECT m.id
+            FROM match m
+            WHERE m.appTeam.id = :appTeamId
+              AND m.date <= :completedBefore
+            ORDER BY m.date DESC
+            """)
+    List<Long> findCompletedMatchIds(
+            @Param("appTeamId") Long appTeamId,
+            @Param("completedBefore") Date completedBefore);
+
+    @Query("""
+            SELECT m.id
+            FROM match m
+            WHERE m.appTeam.id = :appTeamId
+              AND m.date BETWEEN :from AND :to
+            ORDER BY m.date ASC
+            """)
+    List<Long> findIdsByAppTeamAndDateBetween(
+            @Param("appTeamId") Long appTeamId,
+            @Param("from") Date from,
+            @Param("to") Date to);
+
     @Query(value = """
             SELECT DISTINCT season_id
             FROM match

@@ -68,6 +68,7 @@ public class AchievementCalculator {
     private final FineService fineService;
     private final GoalService goalService;
     private final AchievementNotificationMaker achievementNotificationMaker;
+    private final StepAchievementCalculator stepAchievementCalculator;
     private final ThreadLocal<Long> eventSeasonId = new ThreadLocal<>();
     private final Map<String, AchievementFunction> achievementCalculators =
             Map.<String, AchievementFunction>ofEntries(
@@ -150,7 +151,16 @@ public class AchievementCalculator {
                     Map.entry("LEO_BERANEK", (p, a, at, t) -> calculateFineMilestoneAchievement(p, a, at, t, List.of("Nový kopačky"), 1)),
                     Map.entry("CERNE_GENY", this::calculateCERNE_GENYAchievement),
                     Map.entry(AchievementCodes.NAVSTEVA_SAHARY, (p, a, at, t) -> returnFailedPlayerAchievement(a, p)),
-                    Map.entry(AchievementCodes.LEDOVY_MUZ, (p, a, at, t) -> returnFailedPlayerAchievement(a, p))
+                    Map.entry(AchievementCodes.LEDOVY_MUZ, (p, a, at, t) -> returnFailedPlayerAchievement(a, p)),
+                    Map.entry(AchievementCodes.POSETRENI_SIL, this::calculatePOSETRENI_SILAchievement),
+                    Map.entry(AchievementCodes.CHODEC, this::calculateCHODECAchievement),
+                    Map.entry(AchievementCodes.OKOLO_HRADCE, (p, a, at, t) -> calculateStepMilestoneAchievement(p, a, at, 65_000)),
+                    Map.entry(AchievementCodes.PRAZAK, (p, a, at, t) -> calculateStepMilestoneAchievement(p, a, at, 160_000)),
+                    Map.entry(AchievementCodes.OD_SEVERU_K_JIHU, (p, a, at, t) -> calculateStepMilestoneAchievement(p, a, at, 341_000)),
+                    Map.entry(AchievementCodes.OD_VYCHODU_NA_ZAPAD, (p, a, at, t) -> calculateStepMilestoneAchievement(p, a, at, 612_000)),
+                    Map.entry(AchievementCodes.VSECHNY_CESTY_VEDOU_DO_RIMA, (p, a, at, t) -> calculateStepMilestoneAchievement(p, a, at, 1_600_000)),
+                    Map.entry(AchievementCodes.EVROPSKY_POCHUZKAR, (p, a, at, t) -> calculateStepMilestoneAchievement(p, a, at, 7_200_000)),
+                    Map.entry(AchievementCodes.CESTA_KOLEM_SVETA, (p, a, at, t) -> calculateStepMilestoneAchievement(p, a, at, 51_380_000))
 
 
 
@@ -207,7 +217,9 @@ public class AchievementCalculator {
                     Map.entry("ALZHEIMER", (p, a, at, t, m) -> calculateFineInMatchAchievement(p, a, m, List.of("Zapomenutí věcí", "Nekompletní výbava"), 1, "Možná by to chtělo navštívit doktora.")),
                     Map.entry("LEO_BERANEK", (p, a, at, t, m) -> calculateFineInMatchAchievement(p, a, m, List.of("Nový kopačky"), 1, "Hráč si pořídil nové kopačky.")),
                     Map.entry(AchievementCodes.NAVSTEVA_SAHARY, (p, a, at, t, m) -> calculateTROPICKY_ZAPASAchievementForMatch(p, a, at, t, m, HOT_MATCH_TEMPERATURE_THRESHOLD, true)),
-                    Map.entry(AchievementCodes.LEDOVY_MUZ, (p, a, at, t, m) -> calculateTROPICKY_ZAPASAchievementForMatch(p, a, at, t, m, COLD_MATCH_TEMPERATURE_THRESHOLD, false))
+                    Map.entry(AchievementCodes.LEDOVY_MUZ, (p, a, at, t, m) -> calculateTROPICKY_ZAPASAchievementForMatch(p, a, at, t, m, COLD_MATCH_TEMPERATURE_THRESHOLD, false)),
+                    Map.entry(AchievementCodes.POSETRENI_SIL, this::calculatePOSETRENI_SILAchievementForMatch),
+                    Map.entry(AchievementCodes.CHODEC, this::calculateCHODECAchievementForMatch)
                     );
 
     private final Map<String, ScopedSeasonAchievementFunction> scopedSeasonAchievementCalculators =
@@ -231,7 +243,12 @@ public class AchievementCalculator {
 
 
     public void calculateAllAchievements(List<PlayerDTO> playerList, AppTeamEntity appTeam, AchievementType achievementType) {
-        calculateAchievementsInternal(playerList, appTeam, achievementType, null);
+        stepAchievementCalculator.beginCalculationBatch();
+        try {
+            calculateAchievementsInternal(playerList, appTeam, achievementType, null);
+        } finally {
+            stepAchievementCalculator.endCalculationBatch();
+        }
     }
 
     public void calculateAchievementsByContext(
@@ -240,10 +257,29 @@ public class AchievementCalculator {
             AchievementType achievementType,
             AchievementRecalculationContext context
     ) {
-        calculateAchievementsInternal(playerList, appTeam, achievementType, context);
+        stepAchievementCalculator.beginCalculationBatch();
+        try {
+            calculateAchievementsInternal(playerList, appTeam, achievementType, context);
+        } finally {
+            stepAchievementCalculator.endCalculationBatch();
+        }
     }
 
     public void calculateEventAchievements(
+            List<PlayerDTO> players,
+            AppTeamEntity appTeam,
+            Map<Long, AchievementPlayerWork> workByPlayer,
+            Set<Long> changedSeasonIds
+    ) {
+        stepAchievementCalculator.beginCalculationBatch();
+        try {
+            calculateEventAchievementsInternal(players, appTeam, workByPlayer, changedSeasonIds);
+        } finally {
+            stepAchievementCalculator.endCalculationBatch();
+        }
+    }
+
+    private void calculateEventAchievementsInternal(
             List<PlayerDTO> players,
             AppTeamEntity appTeam,
             Map<Long, AchievementPlayerWork> workByPlayer,
@@ -2551,6 +2587,94 @@ public class AchievementCalculator {
                     "Maximální rychlost sprintu v zápase byla " + roundDoubleToString(result.getFirstNumber()) + " km/h.");
         }
         return returnFailedPlayerAchievement(achievement, playerDTO);
+    }
+
+    private PlayerAchievementDTO calculatePOSETRENI_SILAchievement(
+            PlayerDTO player,
+            AchievementDTO achievement,
+            AppTeamEntity appTeam,
+            AchievementType achievementType
+    ) {
+        return stepMatchAchievement(
+                player,
+                achievement,
+                stepAchievementCalculator.findStrengthSaving(player.getId(), appTeam.getId())
+        );
+    }
+
+    private PlayerAchievementDTO calculatePOSETRENI_SILAchievementForMatch(
+            PlayerDTO player,
+            AchievementDTO achievement,
+            AppTeamEntity appTeam,
+            AchievementType achievementType,
+            Long matchId
+    ) {
+        return stepMatchAchievement(
+                player,
+                achievement,
+                stepAchievementCalculator.calculateStrengthSaving(player.getId(), appTeam.getId(), matchId)
+        );
+    }
+
+    private PlayerAchievementDTO calculateCHODECAchievement(
+            PlayerDTO player,
+            AchievementDTO achievement,
+            AppTeamEntity appTeam,
+            AchievementType achievementType
+    ) {
+        return stepMatchAchievement(
+                player,
+                achievement,
+                stepAchievementCalculator.findWalker(player.getId(), appTeam.getId())
+        );
+    }
+
+    private PlayerAchievementDTO calculateCHODECAchievementForMatch(
+            PlayerDTO player,
+            AchievementDTO achievement,
+            AppTeamEntity appTeam,
+            AchievementType achievementType,
+            Long matchId
+    ) {
+        return stepMatchAchievement(
+                player,
+                achievement,
+                stepAchievementCalculator.calculateWalker(player.getId(), appTeam.getId(), matchId)
+        );
+    }
+
+    private PlayerAchievementDTO stepMatchAchievement(
+            PlayerDTO player,
+            AchievementDTO achievement,
+            Optional<StepAchievementCalculator.MatchResult> result
+    ) {
+        return result
+                .map(matchResult -> returnPlayerAchievement(
+                        achievement,
+                        player,
+                        matchResult.matchId(),
+                        matchResult.detail()))
+                .orElseGet(() -> returnFailedPlayerAchievement(achievement, player));
+    }
+
+    private PlayerAchievementDTO calculateStepMilestoneAchievement(
+            PlayerDTO player,
+            AchievementDTO achievement,
+            AppTeamEntity appTeam,
+            long threshold
+    ) {
+        Optional<StepAchievementCalculator.MilestoneResult> result =
+                stepAchievementCalculator.milestoneResult(player.getId(), appTeam.getId(), threshold);
+        if (result.isEmpty()) {
+            return returnFailedPlayerAchievement(achievement, player);
+        }
+        StepAchievementCalculator.MilestoneResult milestone = result.orElseThrow();
+        return returnPlayerAchievement(
+                achievement,
+                player,
+                null,
+                milestone.detail()
+        );
     }
 
     private String roundDoubleToString(Double number) {

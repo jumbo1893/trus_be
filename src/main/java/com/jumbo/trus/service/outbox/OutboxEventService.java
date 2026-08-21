@@ -27,14 +27,32 @@ public class OutboxEventService {
             Long aggregateId,
             OutboxEventPayload payload
     ) {
+        createEventForTeam(
+                eventType,
+                aggregateType,
+                aggregateId,
+                payload,
+                appTeamService.getCurrentAppTeamOrThrow().getId(),
+                getCurrentUserId()
+        );
+    }
+
+    public void createEventForTeam(
+            OutboxEventType eventType,
+            OutboxAggregateType aggregateType,
+            Long aggregateId,
+            OutboxEventPayload payload,
+            Long appTeamId,
+            Long actorUserId
+    ) {
         OutboxEventEntity event = new OutboxEventEntity();
 
         event.setOperationId(operationContext.getOperationId());
         event.setEventType(eventType);
         event.setAggregateType(aggregateType);
         event.setAggregateId(aggregateId);
-        event.setAppTeamId(appTeamService.getCurrentAppTeamOrThrow().getId());
-        event.setActorUserId(getCurrentUserId());
+        event.setAppTeamId(appTeamId);
+        event.setActorUserId(actorUserId);
         event.setPayload(payload);
         event.setSchemaVersion(1);
         event.setStatus(OutboxEventStatus.NEW);

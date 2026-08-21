@@ -222,4 +222,18 @@ public final class OutboxEventPayloadFactory {
                 )
         );
     }
+
+    public static OutboxEventPayload stepsUpdated(
+            Set<Long> affectedPlayerIds,
+            Set<Long> affectedMatchIds
+    ) {
+        return new OutboxEventPayload(
+                null,
+                null,
+                affectedPlayerIds,
+                Set.of(),
+                Set.of(),
+                Map.of(OutboxRelatedEntityType.MATCH, affectedMatchIds)
+        );
+    }
 }

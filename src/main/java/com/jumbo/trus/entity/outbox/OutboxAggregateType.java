@@ -13,5 +13,6 @@ public enum OutboxAggregateType {
     APP_TEAM,
     FOOTBALL_MATCH,
     OTHER,
+    STEP,
     ALL
 }

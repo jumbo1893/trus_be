@@ -8,12 +8,16 @@ import com.jumbo.trus.dto.step.StepLeaderboardDTO;
 import com.jumbo.trus.dto.step.StepLeaderboardResponseDTO;
 import com.jumbo.trus.dto.step.StepPeriod;
 import com.jumbo.trus.entity.MatchEntity;
+import com.jumbo.trus.entity.PlayerEntity;
 import com.jumbo.trus.entity.StepSource;
 import com.jumbo.trus.entity.StepConsentEntity;
 import com.jumbo.trus.entity.StepUpdateEntity;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.auth.UserTeamRole;
 import com.jumbo.trus.entity.auth.UserEntity;
+import com.jumbo.trus.entity.outbox.OutboxAggregateType;
+import com.jumbo.trus.entity.outbox.OutboxEventPayload;
+import com.jumbo.trus.entity.outbox.OutboxEventType;
 import com.jumbo.trus.repository.StepUpdateRepository;
 import com.jumbo.trus.repository.StepConsentRepository;
 import com.jumbo.trus.repository.MatchRepository;
@@ -22,6 +26,7 @@ import com.jumbo.trus.repository.auth.UserTeamRoleRepository;
 import com.jumbo.trus.service.auth.AppTeamService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import com.jumbo.trus.service.auth.UserService;
+import com.jumbo.trus.service.outbox.OutboxEventService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.ArgumentCaptor;
@@ -29,6 +34,7 @@ import org.mockito.ArgumentCaptor;
 import java.time.*;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -46,9 +52,10 @@ class StepServiceTest {
     private final UserRepository userRepository = mock(UserRepository.class);
     private final UserTeamRoleRepository userTeamRoleRepository = mock(UserTeamRoleRepository.class);
     private final PasswordEncoder passwordEncoder = mock(PasswordEncoder.class);
+    private final OutboxEventService outboxEventService = mock(OutboxEventService.class);
     private final StepService service = new StepService(
             repository, consentRepository, matchRepository, userService, appTeamService,
-            userRepository, userTeamRoleRepository, passwordEncoder);
+            userRepository, userTeamRoleRepository, passwordEncoder, outboxEventService);
 
     @BeforeEach
     void allowStepSharing() {
@@ -59,6 +66,18 @@ class StepServiceTest {
         when(appTeamService.getCurrentAppTeamOrThrow()).thenReturn(appTeam);
         when(consentRepository.findByUserIdAndAppTeamId(anyLong(), eq(3L)))
                 .thenReturn(Optional.of(consent));
+        PlayerEntity player = new PlayerEntity();
+        player.setId(70L);
+        UserTeamRole role = new UserTeamRole();
+        role.setPlayer(player);
+        when(userTeamRoleRepository.findByUserIdAndAppTeamId(anyLong(), eq(3L)))
+                .thenReturn(Optional.of(role));
+        when(userTeamRoleRepository.findConsentingPlayerIdsByAppTeamId(3L))
+                .thenReturn(List.of(70L));
+        when(matchRepository.findIdsByAppTeamAndDateBetween(eq(3L), any(Date.class), any(Date.class)))
+                .thenReturn(List.of());
+        when(matchRepository.findFirstByAppTeamIdAndDateLessThanOrderByDateDesc(eq(3L), any(Date.class)))
+                .thenReturn(Optional.empty());
     }
 
     @Test
@@ -79,6 +98,16 @@ class StepServiceTest {
         assertEquals(4_000, result.get(0).stepCount());
         assertEquals(7_500, result.get(1).stepCount());
         verify(repository, times(2)).save(any(StepUpdateEntity.class));
+
+        ArgumentCaptor<OutboxEventPayload> payloadCaptor = ArgumentCaptor.forClass(OutboxEventPayload.class);
+        verify(outboxEventService).createEventForTeam(
+                eq(OutboxEventType.STEP_SYNCED),
+                eq(OutboxAggregateType.STEP),
+                eq(7L),
+                payloadCaptor.capture(),
+                eq(3L),
+                eq(7L));
+        assertEquals(Set.of(70L), payloadCaptor.getValue().affectedPlayerIds());
     }
 
     @Test
@@ -93,6 +122,7 @@ class StepServiceTest {
 
         assertEquals(8_000, result.get(0).stepCount());
         verify(repository, never()).save(any());
+        verifyNoInteractions(outboxEventService);
     }
 
     @Test

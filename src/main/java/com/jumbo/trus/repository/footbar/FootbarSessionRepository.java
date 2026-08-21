@@ -60,6 +60,18 @@ public interface FootbarSessionRepository extends JpaRepository<FootbarSessionEn
     );
 
     @Query("""
+            SELECT COALESCE(SUM(fs.distance), 0.0)
+            FROM FootbarSessionEntity fs
+            WHERE fs.player.id = :playerId
+              AND fs.match.id = :matchId
+              AND fs.match.appTeam.id = :appTeamId
+            """)
+    Double findDistanceByPlayerAndMatch(
+            @Param("playerId") Long playerId,
+            @Param("matchId") Long matchId,
+            @Param("appTeamId") Long appTeamId);
+
+    @Query("""
     SELECT
         fs.player.id AS playerId,
         COALESCE(AVG(fs.distance), 0.0) / 1000.0 AS averageDistance,

@@ -259,6 +259,24 @@ public final class AchievementCodes {
 
     public static final String LEDOVY_MUZ =
             "LEDOVY_MUZ";
+    public static final String POSETRENI_SIL =
+            "POSETRENI_SIL";
+    public static final String CHODEC =
+            "CHODEC";
+    public static final String OKOLO_HRADCE =
+            "OKOLO_HRADCE";
+    public static final String PRAZAK =
+            "PRAZAK";
+    public static final String OD_SEVERU_K_JIHU =
+            "OD_SEVERU_K_JIHU";
+    public static final String OD_VYCHODU_NA_ZAPAD =
+            "OD_VYCHODU_NA_ZAPAD";
+    public static final String VSECHNY_CESTY_VEDOU_DO_RIMA =
+            "VSECHNY_CESTY_VEDOU_DO_RIMA";
+    public static final String EVROPSKY_POCHUZKAR =
+            "EVROPSKY_POCHUZKAR";
+    public static final String CESTA_KOLEM_SVETA =
+            "CESTA_KOLEM_SVETA";
 
     private AchievementCodes() {
     }
