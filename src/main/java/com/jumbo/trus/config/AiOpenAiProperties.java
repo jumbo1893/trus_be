@@ -15,5 +15,5 @@ public class AiOpenAiProperties {
     private String reasoningEffort = "low";
     private int maxOutputTokens = 1200;
     private int timeoutSeconds = 90;
-    private int maxToolRounds = 6;
+    private int maxToolRounds = 14;
 }

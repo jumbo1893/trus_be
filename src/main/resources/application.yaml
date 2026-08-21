@@ -41,7 +41,7 @@ ai:
     reasoning-effort: ${OPENAI_REASONING_EFFORT:low}
     max-output-tokens: ${OPENAI_MAX_OUTPUT_TOKENS:1200}
     timeout-seconds: ${OPENAI_TIMEOUT_SECONDS:90}
-    max-tool-rounds: ${OPENAI_MAX_TOOL_ROUNDS:6}
+    max-tool-rounds: ${OPENAI_MAX_TOOL_ROUNDS:14}
 pkfl:
   trus: ${TEAM_URL:https://pkfl.cz/tym/s1128}
   table: ${TABLE_URL:https://pkfl.cz/liga/s179/s2vse/s37?t=prubez}

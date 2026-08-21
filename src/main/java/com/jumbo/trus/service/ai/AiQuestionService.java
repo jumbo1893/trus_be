@@ -50,7 +50,11 @@ public class AiQuestionService {
         AiQuestionEntity reservedQuestion = decision.question();
         try {
             AiToolContext context = createToolContext(user, appTeam);
-            OpenAiAnswer answer = openAiClient.answer(reservedQuestion.getQuestion(), context);
+            OpenAiAnswer answer = openAiClient.answer(
+                    reservedQuestion.getQuestion(),
+                    context,
+                    decision.usage().getTier()
+            );
             AiQuestionEntity completed = quotaService.complete(reservedQuestion.getId(), answer);
             return toResponse(completed, decision.usage());
         } catch (RuntimeException exception) {

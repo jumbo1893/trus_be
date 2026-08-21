@@ -1,6 +1,7 @@
 package com.jumbo.trus.repository;
 
 import com.jumbo.trus.dto.receivedfine.IPlayerFineStats;
+import com.jumbo.trus.dto.ai.AiFineSummaryProjection;
 import com.jumbo.trus.dto.receivedfine.response.stats.projection.IMatchReceivedFineDetail;
 import com.jumbo.trus.dto.receivedfine.response.stats.projection.IPlayerReceivedFineDetail;
 import com.jumbo.trus.entity.ReceivedFineEntity;
@@ -17,6 +18,34 @@ import java.util.Optional;
 import java.util.Set;
 
 public interface ReceivedFineRepository extends PagingAndSortingRepository<ReceivedFineEntity, Long>, JpaRepository<ReceivedFineEntity, Long>, JpaSpecificationExecutor<ReceivedFineEntity> {
+
+    @Query("""
+        SELECT
+            rf.fine.id AS fineId,
+            rf.fine.name AS fineName,
+            rf.match.season.id AS seasonId,
+            rf.match.season.name AS seasonName,
+            rf.match.season.fromDate AS seasonFrom,
+            rf.match.season.toDate AS seasonTo,
+            COALESCE(SUM(rf.fineNumber), 0) AS fineCount,
+            COALESCE(SUM(rf.fine.amount * rf.fineNumber), 0) AS totalAmount
+        FROM received_fine rf
+        WHERE rf.appTeam.id = :appTeamId
+          AND rf.fineNumber > 0
+          AND LOWER(rf.fine.name) LIKE LOWER(CONCAT('%', :fineName, '%'))
+        GROUP BY
+            rf.fine.id,
+            rf.fine.name,
+            rf.match.season.id,
+            rf.match.season.name,
+            rf.match.season.fromDate,
+            rf.match.season.toDate
+        ORDER BY rf.match.season.fromDate DESC, rf.fine.name ASC
+        """)
+    List<AiFineSummaryProjection> findAiFineSummaryByName(
+            @Param("appTeamId") Long appTeamId,
+            @Param("fineName") String fineName
+    );
 
     @Query(value = "SELECT * from received_fine LIMIT :limit", nativeQuery = true)
     List<ReceivedFineEntity> getAll(@Param("limit") int limit);

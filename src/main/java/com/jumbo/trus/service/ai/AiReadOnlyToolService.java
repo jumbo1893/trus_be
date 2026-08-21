@@ -5,12 +5,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.jumbo.trus.dto.SeasonDTO;
+import com.jumbo.trus.dto.ai.AiFineSummaryProjection;
 import com.jumbo.trus.dto.match.MatchDTO;
 import com.jumbo.trus.dto.player.PlayerDTO;
 import com.jumbo.trus.entity.MatchEntity;
 import com.jumbo.trus.entity.filter.SeasonFilter;
 import com.jumbo.trus.entity.filter.StatisticsFilter;
 import com.jumbo.trus.repository.MatchRepository;
+import com.jumbo.trus.repository.ReceivedFineRepository;
 import com.jumbo.trus.service.AttendanceService;
 import com.jumbo.trus.service.SeasonService;
 import com.jumbo.trus.service.beer.BeerService;
@@ -40,6 +42,7 @@ public class AiReadOnlyToolService {
 
     private final ObjectMapper objectMapper;
     private final MatchRepository matchRepository;
+    private final ReceivedFineRepository receivedFineRepository;
     private final PlayerService playerService;
     private final SeasonService seasonService;
     private final GoalService goalService;
@@ -65,6 +68,7 @@ public class AiReadOnlyToolService {
             Object result = switch (toolName) {
                 case "find_matches" -> findMatches(arguments, context);
                 case "read_team_statistics" -> readTeamStatistics(arguments, context);
+                case "read_fine_summary" -> readFineSummary(arguments, context);
                 case "read_team_directory" -> readTeamDirectory(arguments, context);
                 case "read_official_football" -> readOfficialFootball(arguments, context);
                 case "read_player_profile" -> readPlayerProfile(arguments, context);
@@ -136,6 +140,100 @@ public class AiReadOnlyToolService {
             case "attendance" -> attendanceService.getAllDetailed(filter);
             default -> Map.of("error", "Neznámá kategorie statistik: " + category);
         };
+    }
+
+    private Object readFineSummary(JsonNode arguments, AiToolContext context) {
+        String fineName = requiredText(arguments, "fine_name");
+        List<AiFineSummaryProjection> rows = receivedFineRepository.findAiFineSummaryByName(
+                context.appTeam().getId(),
+                fineName
+        );
+
+        SeasonFilter seasonFilter = new SeasonFilter(false, false, false);
+        seasonFilter.setAppTeam(context.appTeam());
+        List<SeasonDTO> seasons = seasonService.getAll(seasonFilter);
+        SeasonWindow seasonWindow = findSeasonWindow(seasons, new Date());
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("query", fineName);
+        result.put("matched_fine_count", rows.stream().map(AiFineSummaryProjection::getFineId).distinct().count());
+        result.put("all_time", aggregateFineRows(rows));
+        result.put("current_season", seasonSummary(seasonWindow.current(), rows));
+        result.put("previous_season", seasonSummary(seasonWindow.previous(), rows));
+
+        Map<Long, List<AiFineSummaryProjection>> rowsByFine = new LinkedHashMap<>();
+        for (AiFineSummaryProjection row : rows) {
+            rowsByFine.computeIfAbsent(row.getFineId(), ignored -> new ArrayList<>()).add(row);
+        }
+
+        List<Map<String, Object>> matchedFines = new ArrayList<>();
+        for (List<AiFineSummaryProjection> fineRows : rowsByFine.values()) {
+            AiFineSummaryProjection firstRow = fineRows.get(0);
+            Map<String, Object> fine = new LinkedHashMap<>();
+            fine.put("fine_id", firstRow.getFineId());
+            fine.put("fine_name", firstRow.getFineName());
+            fine.put("exact_name_match", firstRow.getFineName().equalsIgnoreCase(fineName));
+            fine.put("all_time", aggregateFineRows(fineRows));
+            fine.put("current_season", seasonSummary(seasonWindow.current(), fineRows));
+            fine.put("previous_season", seasonSummary(seasonWindow.previous(), fineRows));
+            fine.put("by_season", fineRows.stream().map(this::fineSeasonRow).toList());
+            matchedFines.add(fine);
+        }
+        result.put("matched_fines", matchedFines);
+        if (rows.isEmpty()) {
+            result.put("message", "Nebyla nalezena žádná udělená pokuta odpovídající názvu.");
+        }
+        return result;
+    }
+
+    private SeasonWindow findSeasonWindow(List<SeasonDTO> seasons, Date now) {
+        for (int index = 0; index < seasons.size(); index++) {
+            SeasonDTO season = seasons.get(index);
+            if (!season.getFromDate().after(now) && !season.getToDate().before(now)) {
+                SeasonDTO previous = index + 1 < seasons.size() ? seasons.get(index + 1) : null;
+                return new SeasonWindow(season, previous);
+            }
+        }
+
+        SeasonDTO latestCompleted = seasons.stream()
+                .filter(season -> season.getToDate().before(now))
+                .findFirst()
+                .orElse(null);
+        return new SeasonWindow(null, latestCompleted);
+    }
+
+    private Map<String, Object> aggregateFineRows(List<AiFineSummaryProjection> rows) {
+        Map<String, Object> aggregate = new LinkedHashMap<>();
+        aggregate.put("fine_count", rows.stream().mapToLong(row -> nullableLong(row.getFineCount())).sum());
+        aggregate.put("total_amount", rows.stream().mapToLong(row -> nullableLong(row.getTotalAmount())).sum());
+        return aggregate;
+    }
+
+    private Map<String, Object> seasonSummary(SeasonDTO season, List<AiFineSummaryProjection> rows) {
+        if (season == null) {
+            return null;
+        }
+        List<AiFineSummaryProjection> seasonRows = rows.stream()
+                .filter(row -> Objects.equals(row.getSeasonId(), season.getId()))
+                .toList();
+        Map<String, Object> result = seasonDirectoryRow(season);
+        result.putAll(aggregateFineRows(seasonRows));
+        return result;
+    }
+
+    private Map<String, Object> fineSeasonRow(AiFineSummaryProjection row) {
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("id", row.getSeasonId());
+        result.put("name", row.getSeasonName());
+        result.put("from", formatDateTime(row.getSeasonFrom()));
+        result.put("to", formatDateTime(row.getSeasonTo()));
+        result.put("fine_count", nullableLong(row.getFineCount()));
+        result.put("total_amount", nullableLong(row.getTotalAmount()));
+        return result;
+    }
+
+    private long nullableLong(Long value) {
+        return value == null ? 0 : value;
     }
 
     private Object readTeamDirectory(JsonNode arguments, AiToolContext context) {
@@ -311,6 +409,20 @@ public class AiReadOnlyToolService {
               },
               {
                 "type": "function",
+                "name": "read_fine_summary",
+                "description": "Jedním krokem vrátí přesný počet udělených pokut podle názvu, celkem, v aktuální a minulé sezoně i po sezonách. Použij vždy pro dotazy typu kolikrát byla udělena pokuta Překop v minulé sezoně a celkem; nepoužívej pro ně obecné read_team_statistics.",
+                "strict": true,
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "fine_name": {"type": "string", "description": "Celý název pokuty nebo jeho část, například Překop."}
+                  },
+                  "required": ["fine_name"],
+                  "additionalProperties": false
+                }
+              },
+              {
+                "type": "function",
                 "name": "read_team_directory",
                 "description": "Vrátí ID a názvy hráčů nebo sezon aktuálního týmu.",
                 "strict": true,
@@ -355,4 +467,7 @@ public class AiReadOnlyToolService {
               }
             ]
             """;
+
+    private record SeasonWindow(SeasonDTO current, SeasonDTO previous) {
+    }
 }
