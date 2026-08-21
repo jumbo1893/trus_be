@@ -1,55 +1,253 @@
 package com.jumbo.trus.service;
 
-import com.jumbo.trus.dto.StepDTO;
-import com.jumbo.trus.dto.StepUpdateDTO;
+import com.jumbo.trus.dto.step.StepDailyDTO;
+import com.jumbo.trus.dto.step.StepConsentDTO;
+import com.jumbo.trus.dto.step.StepBackgroundSyncRequestDTO;
+import com.jumbo.trus.dto.step.StepLeaderboardDTO;
+import com.jumbo.trus.dto.step.StepLeaderboardResponseDTO;
+import com.jumbo.trus.dto.step.StepMatchDTO;
+import com.jumbo.trus.dto.step.StepPeriod;
+import com.jumbo.trus.dto.step.StepSyncItemDTO;
+import com.jumbo.trus.dto.step.StepSyncRequestDTO;
 import com.jumbo.trus.entity.StepUpdateEntity;
+import com.jumbo.trus.entity.StepConsentEntity;
+import com.jumbo.trus.entity.MatchEntity;
+import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.auth.UserEntity;
-import com.jumbo.trus.entity.filter.StepFilter;
-import com.jumbo.trus.mapper.StepUpdateMapper;
 import com.jumbo.trus.repository.StepUpdateRepository;
-import com.jumbo.trus.repository.specification.StepSpecification;
-import com.jumbo.trus.service.exceptions.AuthException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.security.core.context.SecurityContextHolder;
+import com.jumbo.trus.repository.StepConsentRepository;
+import com.jumbo.trus.repository.MatchRepository;
+import com.jumbo.trus.repository.auth.UserRepository;
+import com.jumbo.trus.repository.auth.UserTeamRoleRepository;
+import com.jumbo.trus.service.auth.AppTeamService;
+import com.jumbo.trus.service.auth.UserService;
+import com.jumbo.trus.service.exceptions.StepValidationException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
+import java.time.*;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
 
-
 @Service
+@RequiredArgsConstructor
 public class StepService {
 
-    @Autowired
-    private StepUpdateRepository stepUpdateRepository;
+    private static final int DEFAULT_HISTORY_DAYS = 7;
+    private static final int MAX_RANGE_DAYS = 366;
 
-    @Autowired
-    private StepUpdateMapper stepUpdateMapper;
+    private final StepUpdateRepository stepUpdateRepository;
+    private final StepConsentRepository stepConsentRepository;
+    private final MatchRepository matchRepository;
+    private final UserService userService;
+    private final AppTeamService appTeamService;
+    private final UserRepository userRepository;
+    private final UserTeamRoleRepository userTeamRoleRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public List<StepUpdateDTO> getAllStepUpdates(StepFilter stepFilter){
-        StepSpecification stepSpecification = new StepSpecification(stepFilter);
-        return new ArrayList<>(stepUpdateRepository.findAll(stepSpecification, PageRequest.of(0, stepFilter.getLimit())).stream().map(stepUpdateMapper::toDTO).toList());
-    }
-
-    public StepDTO addStepUpdate(StepDTO stepDTO) {
-        Long userId = getCurrentUser().getId();
-        StepUpdateEntity stepUpdateEntity = stepUpdateRepository.findByUserId(userId).orElse(new StepUpdateEntity());
-        stepUpdateEntity.setUpdateTime(new Date());
-        stepUpdateEntity.setUserId(userId);
-        stepUpdateEntity.setStepNumber(stepDTO.getStepNumber());
-        StepUpdateEntity savedEntity = stepUpdateRepository.save(stepUpdateEntity);
-        System.out.println(stepUpdateMapper.toDTO(savedEntity));
-        return stepDTO;
-        //return stepUpdateMapper.toDTO(savedEntity);
-    }
-
-    private UserEntity getCurrentUser() {
-        try {
-            return (UserEntity) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        } catch (ClassCastException e) {
-            throw new AuthException("Uživatel je odhlášen", AuthException.NOT_LOGGED_IN);
+    @Transactional
+    public List<StepDailyDTO> sync(StepSyncRequestDTO request) {
+        UserEntity user = userService.getCurrentUserEntity();
+        AppTeamEntity appTeam = appTeamService.getCurrentAppTeamOrThrow();
+        boolean consentEnabled = stepConsentRepository
+                .findByUserIdAndAppTeamId(user.getId(), appTeam.getId())
+                .map(StepConsentEntity::isEnabled)
+                .orElse(false);
+        if (!consentEnabled) {
+            throw new StepValidationException("Pro synchronizaci kroků je nutný souhlas uživatele");
         }
+        return request.getDays().stream()
+                .map(item -> upsert(user, item))
+                .map(this::toDTO)
+                .toList();
+    }
+
+    @Transactional
+    public List<StepDailyDTO> backgroundSync(StepBackgroundSyncRequestDTO request) {
+        UserEntity user = userRepository.findByMail(request.mail().toLowerCase().trim())
+                .filter(candidate -> passwordEncoder.matches(request.password(), candidate.getPassword()))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+        userTeamRoleRepository.findByUserIdAndAppTeamId(user.getId(), request.appTeamId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN));
+
+        StepConsentEntity consent = stepConsentRepository
+                .findByUserIdAndAppTeamId(user.getId(), request.appTeamId())
+                .orElseThrow(() -> new StepValidationException("Souhlas s kroky nebyl udělen"));
+        if (!request.permissionGranted()) {
+            consent.setEnabled(false);
+            consent.setUpdatedAt(Instant.now());
+            stepConsentRepository.save(consent);
+            return List.of();
+        }
+        if (!consent.isEnabled()) {
+            throw new StepValidationException("Souhlas s kroky nebyl udělen");
+        }
+        return request.days().stream().map(item -> upsert(user, item)).map(this::toDTO).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<StepDailyDTO> getMySteps(LocalDate from, LocalDate to) {
+        UserEntity user = userService.getCurrentUserEntity();
+        LocalDate effectiveTo = to == null ? LocalDate.now() : to;
+        LocalDate effectiveFrom = from == null ? effectiveTo.minusDays(DEFAULT_HISTORY_DAYS - 1L) : from;
+        validateRange(effectiveFrom, effectiveTo);
+        return stepUpdateRepository
+                .findAllByUserIdAndDateBetweenOrderByDateAsc(user.getId(), effectiveFrom, effectiveTo)
+                .stream()
+                .map(this::toDTO)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public StepConsentDTO getConsent() {
+        UserEntity user = userService.getCurrentUserEntity();
+        AppTeamEntity appTeam = appTeamService.getCurrentAppTeamOrThrow();
+        boolean enabled = stepConsentRepository.findByUserIdAndAppTeamId(user.getId(), appTeam.getId())
+                .map(StepConsentEntity::isEnabled)
+                .orElse(false);
+        return new StepConsentDTO(enabled);
+    }
+
+    @Transactional
+    public StepConsentDTO setConsent(StepConsentDTO request) {
+        UserEntity user = userService.getCurrentUserEntity();
+        AppTeamEntity appTeam = appTeamService.getCurrentAppTeamOrThrow();
+        StepConsentEntity consent = stepConsentRepository
+                .findByUserIdAndAppTeamId(user.getId(), appTeam.getId())
+                .orElseGet(StepConsentEntity::new);
+        consent.setUser(user);
+        consent.setAppTeam(appTeam);
+        consent.setEnabled(request.enabled());
+        consent.setUpdatedAt(Instant.now());
+        stepConsentRepository.save(consent);
+        return new StepConsentDTO(consent.isEnabled());
+    }
+
+    @Transactional(readOnly = true)
+    public StepLeaderboardResponseDTO getLeaderboard(StepPeriod period) {
+        AppTeamEntity appTeam = appTeamService.getCurrentAppTeamOrThrow();
+        LocalDate today = LocalDate.now(ZoneId.of("Europe/Prague"));
+        List<MatchEntity> matches = findLastMatches(appTeam.getId());
+        MatchEntity lastMatch = matches.isEmpty() ? null : matches.get(0);
+        MatchEntity previousMatch = matches.size() < 2 ? null : matches.get(1);
+        StepMatchDTO lastMatchDTO = toMatchDTO(lastMatch);
+        StepMatchDTO previousMatchDTO = toMatchDTO(previousMatch);
+
+        if (period == StepPeriod.BETWEEN_MATCHES && previousMatch == null) {
+            return new StepLeaderboardResponseDTO(
+                    period, null, null, previousMatchDTO, lastMatchDTO, List.of());
+        }
+
+        LocalDate from;
+        LocalDate to;
+        switch (period) {
+            case TODAY -> {
+                from = today;
+                to = today;
+            }
+            case BETWEEN_MATCHES -> {
+                from = toPragueDate(previousMatch);
+                to = toPragueDate(lastMatch);
+            }
+            case SINCE_LAST_MATCH -> {
+                from = lastMatch == null ? today : toPragueDate(lastMatch);
+                to = today;
+            }
+            case ALL_TIME -> {
+                from = LocalDate.of(1970, 1, 1);
+                to = today;
+            }
+            default -> throw new IllegalStateException("Nepodporované období kroků: " + period);
+        }
+        List<StepLeaderboardDTO> entries = stepUpdateRepository
+                .leaderboard(appTeam.getId(), from, to);
+        return new StepLeaderboardResponseDTO(
+                period, from, to, previousMatchDTO, lastMatchDTO, entries);
+    }
+
+    private List<MatchEntity> findLastMatches(Long appTeamId) {
+        return matchRepository
+                .findFirst2ByAppTeamIdAndDateLessThanEqualOrderByDateDesc(appTeamId, new Date());
+    }
+
+    private StepMatchDTO toMatchDTO(MatchEntity match) {
+        if (match == null) {
+            return null;
+        }
+        return new StepMatchDTO(match.getId(), match.getName(), toPragueDate(match));
+    }
+
+    private LocalDate toPragueDate(MatchEntity match) {
+        return match.getDate().toInstant()
+                .atZone(ZoneId.of("Europe/Prague"))
+                .toLocalDate();
+    }
+
+    private StepUpdateEntity upsert(UserEntity user, StepSyncItemDTO item) {
+        validateItem(item);
+        StepUpdateEntity entity = stepUpdateRepository
+                .findByUserIdAndDate(user.getId(), item.getDate())
+                .orElseGet(() -> newEntity(user, item.getDate()));
+
+        // Ignore an older snapshot. A newer snapshot may lower the value because
+        // HealthKit/Health Connect can retrospectively correct their aggregation.
+        if (entity.getMeasuredUntil() != null
+                && item.getMeasuredUntil().isBefore(entity.getMeasuredUntil())) {
+            return entity;
+        }
+        if (entity.getMeasuredUntil() != null
+                && item.getMeasuredUntil().isEqual(entity.getMeasuredUntil())
+                && item.getStepCount() <= entity.getStepNumber()) {
+            return entity;
+        }
+
+        entity.setStepNumber(item.getStepCount());
+        entity.setSource(item.getSource());
+        entity.setTimezone(item.getTimezone());
+        entity.setMeasuredUntil(item.getMeasuredUntil());
+        entity.setUpdateTime(Instant.now());
+        return stepUpdateRepository.save(entity);
+    }
+
+    private StepUpdateEntity newEntity(UserEntity user, LocalDate date) {
+        StepUpdateEntity entity = new StepUpdateEntity();
+        entity.setUser(user);
+        entity.setDate(date);
+        return entity;
+    }
+
+    private void validateItem(StepSyncItemDTO item) {
+        ZoneId zone;
+        try {
+            zone = ZoneId.of(item.getTimezone());
+        } catch (DateTimeException ex) {
+            throw new StepValidationException("Neplatná časová zóna: " + item.getTimezone());
+        }
+        LocalDate measuredDate = item.getMeasuredUntil().atZoneSameInstant(zone).toLocalDate();
+        if (!measuredDate.equals(item.getDate())) {
+            throw new StepValidationException("Datum neodpovídá measuredUntil v uvedené časové zóně");
+        }
+        if (item.getDate().isAfter(LocalDate.now(zone))) {
+            throw new StepValidationException("Nelze synchronizovat kroky z budoucnosti");
+        }
+    }
+
+    private void validateRange(LocalDate from, LocalDate to) {
+        if (from.isAfter(to)) {
+            throw new StepValidationException("Datum od nesmí být po datu do");
+        }
+        if (ChronoUnit.DAYS.between(from, to) >= MAX_RANGE_DAYS) {
+            throw new StepValidationException("Najednou lze načíst nejvýše 366 dní");
+        }
+    }
+
+    private StepDailyDTO toDTO(StepUpdateEntity entity) {
+        return new StepDailyDTO(entity.getId(), entity.getDate(), entity.getStepNumber(),
+                entity.getSource(), entity.getTimezone(), entity.getMeasuredUntil(), entity.getUpdateTime());
     }
 }

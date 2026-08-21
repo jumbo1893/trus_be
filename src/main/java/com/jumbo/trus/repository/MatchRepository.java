@@ -221,6 +221,8 @@ public interface MatchRepository extends PagingAndSortingRepository<MatchEntity,
             @Param("matchIds") Iterable<Long> matchIds
     );
 
+    List<MatchEntity> findFirst2ByAppTeamIdAndDateLessThanEqualOrderByDateDesc(Long appTeamId, Date date);
+
     @Query(value = """
             SELECT DISTINCT season_id
             FROM match
