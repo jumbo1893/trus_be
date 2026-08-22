@@ -21,6 +21,11 @@ public class TrusBotQuoteService {
 
     private static final String QUOTES_RESOURCE = "/ai/trusbot-quotes.json";
 
+    private static final Map<String, List<String>> SOURCE_SIGNALS = Map.of(
+            "HOSPODA", List.of("hospod"),
+            "OKRESNI_PREBOR", List.of("prebor", "okresn")
+    );
+
     private static final Map<String, List<String>> CATEGORY_SIGNALS = Map.of(
             "BEER", List.of(
                     "piv", "panak"
@@ -52,24 +57,28 @@ public class TrusBotQuoteService {
     }
 
     public Optional<QuoteCandidate> selectFor(String question, List<String> toolSignals) {
-        if (!hasQuoteTrigger(question)) {
+        String normalizedQuestion = normalize(question);
+        Set<String> requestedSources = detectSources(normalizedQuestion);
+        if (requestedSources.isEmpty()) {
             return Optional.empty();
         }
 
         String normalizedContext = normalize(String.join(
                 " ",
-                question == null ? "" : question,
+                normalizedQuestion,
                 toolSignals == null ? "" : String.join(" ", toolSignals)
         ));
         Set<String> relevantCategories = detectCategories(normalizedContext);
-        List<QuoteDefinition> generalQuotes = enabledQuotesWithCategory("GENERAL");
+        List<QuoteDefinition> sourceQuotes = enabledQuotes(requestedSources);
+        List<QuoteDefinition> generalQuotes = sourceQuotes.stream()
+                .filter(quote -> safeList(quote.categories()).contains("GENERAL"))
+                .toList();
 
         List<QuoteDefinition> selectionPool;
         if (relevantCategories.isEmpty()) {
             selectionPool = generalQuotes;
         } else if (random.nextBoolean()) {
-            selectionPool = quotes.stream()
-                    .filter(QuoteDefinition::enabled)
+            selectionPool = sourceQuotes.stream()
                     .filter(quote -> intersects(quote.categories(), relevantCategories))
                     .toList();
             if (selectionPool.isEmpty()) {
@@ -100,11 +109,16 @@ public class TrusBotQuoteService {
                 throw new IllegalStateException("Soubor s hláškami TrusBota je prázdný.");
             }
             List<QuoteDefinition> loadedQuotes = List.copyOf(document.quotes());
-            boolean hasEnabledGeneral = loadedQuotes.stream()
-                    .filter(QuoteDefinition::enabled)
-                    .anyMatch(quote -> safeList(quote.categories()).contains("GENERAL"));
-            if (!hasEnabledGeneral) {
-                throw new IllegalStateException("TrusBot potřebuje alespoň jednu aktivní hlášku GENERAL.");
+            for (String source : SOURCE_SIGNALS.keySet()) {
+                boolean hasEnabledGeneral = loadedQuotes.stream()
+                        .filter(QuoteDefinition::enabled)
+                        .filter(quote -> source.equals(quote.source()))
+                        .anyMatch(quote -> safeList(quote.categories()).contains("GENERAL"));
+                if (!hasEnabledGeneral) {
+                    throw new IllegalStateException(
+                            "TrusBot potřebuje alespoň jednu aktivní hlášku GENERAL pro zdroj " + source + "."
+                    );
+                }
             }
             return loadedQuotes;
         } catch (IOException exception) {
@@ -112,16 +126,14 @@ public class TrusBotQuoteService {
         }
     }
 
-    private boolean hasQuoteTrigger(String question) {
-        if (question == null) {
-            return false;
-        }
-        String trimmedQuestion = question.stripTrailing();
-        if (trimmedQuestion.isEmpty()) {
-            return false;
-        }
-        char lastCharacter = trimmedQuestion.charAt(trimmedQuestion.length() - 1);
-        return lastCharacter == '.' || lastCharacter == '!';
+    private Set<String> detectSources(String normalizedQuestion) {
+        Set<String> result = new LinkedHashSet<>();
+        SOURCE_SIGNALS.forEach((source, signals) -> {
+            if (signals.stream().anyMatch(signal -> containsSignal(normalizedQuestion, signal))) {
+                result.add(source);
+            }
+        });
+        return result;
     }
 
     private Set<String> detectCategories(String normalizedContext) {
@@ -134,10 +146,10 @@ public class TrusBotQuoteService {
         return result;
     }
 
-    private List<QuoteDefinition> enabledQuotesWithCategory(String category) {
+    private List<QuoteDefinition> enabledQuotes(Set<String> requestedSources) {
         return quotes.stream()
                 .filter(QuoteDefinition::enabled)
-                .filter(quote -> safeList(quote.categories()).contains(category))
+                .filter(quote -> requestedSources.contains(quote.source()))
                 .toList();
     }
 

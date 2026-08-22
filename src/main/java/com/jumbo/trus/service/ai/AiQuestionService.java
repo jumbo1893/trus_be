@@ -101,11 +101,14 @@ public class AiQuestionService {
                 .findByUserIdAndAppTeamId(user.getId(), appTeam.getId())
                 .map(UserTeamRole::getPlayer)
                 .orElse(null);
+        boolean aiExpertAccomplished = player != null
+                && trusBotAchievementService.hasAiExpertAchievement(player.getId(), appTeam);
         return new AiToolContext(
                 user,
                 appTeam,
                 player == null ? null : player.getId(),
-                player == null ? null : player.getName()
+                player == null ? null : player.getName(),
+                aiExpertAccomplished
         );
     }
 

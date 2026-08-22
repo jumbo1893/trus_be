@@ -281,6 +281,9 @@ public final class AchievementCodes {
     public static final String TRUSBOT =
             "TRUSBOT";
 
+    public static final String AI_EXPERT =
+            "AI_EXPERT";
+
     private AchievementCodes() {
     }
 }

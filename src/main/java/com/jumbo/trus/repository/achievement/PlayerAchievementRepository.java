@@ -96,6 +96,19 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
     );
 
     @Query("""
+            SELECT playerAchievement
+            FROM PlayerAchievementEntity playerAchievement
+            JOIN FETCH playerAchievement.achievement achievement
+            JOIN FETCH playerAchievement.player player
+            WHERE player.id = :playerId
+              AND achievement.code = :achievementCode
+            """)
+    Optional<PlayerAchievementEntity> findByPlayerIdAndAchievementCode(
+            @Param("playerId") Long playerId,
+            @Param("achievementCode") String achievementCode
+    );
+
+    @Query("""
     SELECT playerAchievement.player.id AS playerId,
            playerAchievement.achievement.id AS achievementId
     FROM PlayerAchievementEntity playerAchievement

@@ -22,63 +22,93 @@ class TrusBotQuoteServiceTest {
     }
 
     @Test
-    void doesNotSelectQuoteWithoutTerminalPunctuation() {
+    void punctuationAloneNoLongerTriggersQuote() {
         TrusBotQuoteService service = serviceChoosing(true);
 
-        assertTrue(service.selectFor("Kdo letos vypil nejvíc piv", List.of()).isEmpty());
-        assertTrue(service.selectFor("Kdo dal nejvíc gólů   ", List.of("find_matches {}"))
-                .isEmpty());
-    }
-
-    @Test
-    void allConfiguredTerminalCharactersTriggerQuote() {
-        TrusBotQuoteService service = serviceChoosing(false);
-
-        for (String question : List.of("Dotaz.", "Dotaz!", "Dotaz!   ")) {
-            assertTrue(service.selectFor(question, List.of()).isPresent(), question);
+        for (String question : List.of("Dotaz.", "Dotaz!", "Dotaz?", "Kolik se vypilo piv!")) {
+            assertTrue(service.selectFor(question, List.of()).isEmpty(), question);
         }
     }
 
     @Test
-    void questionMarkDoesNotTriggerQuote() {
-        TrusBotQuoteService service = serviceChoosing(true);
+    void inflectedHospodaWordsSelectOnlyHospodaQuotes() {
+        TrusBotQuoteService service = serviceChoosing(false);
 
-        assertTrue(service.selectFor("Dotaz?", List.of()).isEmpty());
+        for (String question : List.of("hospoda", "hospody", "hospodě", "hospodu", "hospodou")) {
+            TrusBotQuoteService.QuoteCandidate candidate = service.selectFor(question, List.of())
+                    .orElseThrow();
+            assertEquals("HOSPODA", candidate.source(), question);
+        }
     }
 
     @Test
-    void thematicHalfCanSelectBeerQuote() {
+    void inflectedPreborWordsSelectOnlyOkresniPreborQuotes() {
+        TrusBotQuoteService service = serviceChoosing(false);
+
+        for (String question : List.of("přebor", "přeboru", "přeborem", "přebory")) {
+            TrusBotQuoteService.QuoteCandidate candidate = service.selectFor(question, List.of())
+                    .orElseThrow();
+            assertEquals("OKRESNI_PREBOR", candidate.source(), question);
+        }
+    }
+
+    @Test
+    void inflectedOkresniWordsSelectOnlyOkresniPreborQuotes() {
+        TrusBotQuoteService service = serviceChoosing(false);
+
+        for (String question : List.of("okresní", "okresního", "okresním", "okresními")) {
+            TrusBotQuoteService.QuoteCandidate candidate = service.selectFor(question, List.of())
+                    .orElseThrow();
+            assertEquals("OKRESNI_PREBOR", candidate.source(), question);
+        }
+    }
+
+    @Test
+    void sourceTriggerMustBePresentInQuestionNotOnlyInToolOutput() {
+        TrusBotQuoteService service = serviceChoosing(true);
+
+        assertTrue(service.selectFor(
+                "Jak to vypadá?",
+                List.of("find_matches {opponent: Hospoda FC}")
+        ).isEmpty());
+    }
+
+    @Test
+    void thematicHalfCanSelectBeerQuoteFromRequestedSeries() {
         TrusBotQuoteService service = serviceChoosing(true);
 
         TrusBotQuoteService.QuoteCandidate candidate = service.selectFor(
-                "Kdo vypil nejvíc piv v sezoně.",
+                "Kdo vypil nejvíc piv v hospodě?",
                 List.of()
         ).orElseThrow();
 
+        assertEquals("HOSPODA", candidate.source());
         assertTrue(candidate.categories().contains("BEER"));
     }
 
     @Test
-    void generalHalfCanSelectGeneralQuoteForRelevantQuestion() {
+    void generalHalfStaysWithinRequestedSeries() {
         TrusBotQuoteService service = serviceChoosing(false);
 
         TrusBotQuoteService.QuoteCandidate candidate = service.selectFor(
-                "Kdo letos vypil nejvíc piv!",
+                "Kdo letos vypil nejvíc piv v hospodě?",
                 List.of()
         ).orElseThrow();
 
+        assertEquals("HOSPODA", candidate.source());
         assertTrue(candidate.categories().contains("GENERAL"));
     }
 
     @Test
-    void toolUsageCanProvideFootballContext() {
+    void toolUsageCanProvideFootballContextWithinOkresniPrebor() {
         TrusBotQuoteService service = serviceChoosing(true);
 
         TrusBotQuoteService.QuoteCandidate candidate = service.selectFor(
-                "Jak to tedy vypadá.",
+                "Jak to tedy vypadá v okresním?",
                 List.of("find_matches {}")
         ).orElseThrow();
 
+        assertEquals("OKRESNI_PREBOR", candidate.source());
         assertTrue(candidate.categories().contains("MATCH"));
     }
 
@@ -87,10 +117,11 @@ class TrusBotQuoteServiceTest {
         TrusBotQuoteService service = serviceChoosing(true);
 
         TrusBotQuoteService.QuoteCandidate candidate = service.selectFor(
-                "Kdo vypil nejvíc alkoholu.",
+                "Kdo vypil nejvíc alkoholu v hospodě?",
                 List.of()
         ).orElseThrow();
 
+        assertEquals("HOSPODA", candidate.source());
         assertTrue(candidate.categories().contains("GENERAL"));
     }
 
@@ -99,10 +130,11 @@ class TrusBotQuoteServiceTest {
         TrusBotQuoteService service = serviceChoosing(true);
 
         TrusBotQuoteService.QuoteCandidate candidate = service.selectFor(
-                "Kolik peněz jsme zaplatili!",
+                "Kolik peněz jsme zaplatili v hospodě?",
                 List.of()
         ).orElseThrow();
 
+        assertEquals("HOSPODA", candidate.source());
         assertTrue(candidate.categories().contains("FINE"));
     }
 
@@ -111,10 +143,11 @@ class TrusBotQuoteServiceTest {
         TrusBotQuoteService service = serviceChoosing(true);
 
         TrusBotQuoteService.QuoteCandidate candidate = service.selectFor(
-                "Jaký byl výsledek zápasu.",
+                "Jaký byl výsledek okresního přeboru?",
                 List.of()
         ).orElseThrow();
 
+        assertEquals("OKRESNI_PREBOR", candidate.source());
         assertTrue(candidate.categories().contains("MATCH"));
     }
 
@@ -123,10 +156,11 @@ class TrusBotQuoteServiceTest {
         TrusBotQuoteService service = serviceChoosing(true);
 
         TrusBotQuoteService.QuoteCandidate candidate = service.selectFor(
-                "Jaké mám achievementy!",
+                "Jaké mám achievementy z hospody?",
                 List.of("read_achievements {}")
         ).orElseThrow();
 
+        assertEquals("HOSPODA", candidate.source());
         assertTrue(candidate.categories().contains("GENERAL"));
     }
 

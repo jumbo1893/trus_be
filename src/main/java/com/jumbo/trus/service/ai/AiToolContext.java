@@ -7,6 +7,15 @@ public record AiToolContext(
         UserEntity user,
         AppTeamEntity appTeam,
         Long currentPlayerId,
-        String currentPlayerName
+        String currentPlayerName,
+        boolean aiExpertAccomplished
 ) {
+    public AiToolContext(
+            UserEntity user,
+            AppTeamEntity appTeam,
+            Long currentPlayerId,
+            String currentPlayerName
+    ) {
+        this(user, appTeam, currentPlayerId, currentPlayerName, false);
+    }
 }

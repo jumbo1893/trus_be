@@ -2,12 +2,16 @@ package com.jumbo.trus.service.ai;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jumbo.trus.config.AiOpenAiProperties;
+import com.jumbo.trus.entity.auth.AppTeamEntity;
+import com.jumbo.trus.entity.auth.UserEntity;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -17,13 +21,13 @@ class OpenAiClientQuoteTest {
     private final OpenAiClient client = new OpenAiClient(
             new AiOpenAiProperties(),
             new ObjectMapper(),
-            mock(AiReadOnlyToolService.class),
+            mock(AiToolService.class),
             quoteService
     );
 
     @Test
     void appendsSelectedQuoteAsSeparateParagraph() {
-        when(quoteService.selectFor("Dotaz!", List.of("find_matches {}")))
+        when(quoteService.selectFor("Dotaz z hospody", List.of("find_matches {}")))
                 .thenReturn(Optional.of(new TrusBotQuoteService.QuoteCandidate(
                         "quote-1",
                         "První řádek\nDruhý řádek",
@@ -33,7 +37,7 @@ class OpenAiClientQuoteTest {
 
         String result = client.appendSelectedQuote(
                 "Věcná odpověď.",
-                "Dotaz!",
+                "Dotaz z hospody",
                 List.of("find_matches {}")
         );
 
@@ -42,10 +46,62 @@ class OpenAiClientQuoteTest {
 
     @Test
     void leavesAnswerUntouchedWhenQuestionHasNoQuote() {
-        when(quoteService.selectFor("Dotaz", List.of())).thenReturn(Optional.empty());
+        when(quoteService.selectFor("Dotaz.", List.of())).thenReturn(Optional.empty());
 
-        String result = client.appendSelectedQuote("Věcná odpověď.", "Dotaz", List.of());
+        String result = client.appendSelectedQuote("Věcná odpověď.", "Dotaz.", List.of());
 
         assertEquals("Věcná odpověď.", result);
+    }
+
+    @Test
+    void instructionsExplainHowToEarnAiExpertWithoutCallingWriteToolForGuidance() {
+        UserEntity user = new UserEntity();
+        user.setId(5L);
+        user.setName("Matěj");
+        AppTeamEntity appTeam = new AppTeamEntity();
+        appTeam.setId(6L);
+        appTeam.setName("Trus");
+
+        String instructions = client.instructions(new AiToolContext(
+                user,
+                appTeam,
+                7L,
+                "Matěj"
+        ));
+
+        assertTrue(instructions.contains("jak získat achievement"));
+        assertTrue(instructions.contains("hezky poprosit"));
+        assertTrue(instructions.contains("award_ai_expert zavolej pouze tehdy"));
+        assertTrue(instructions.contains("samostatné slovo „prosím“"));
+        assertTrue(instructions.contains("Aktuální uživatel achievement AI expert ještě nemá."));
+        assertTrue(instructions.contains("slovo ‚hospoda‘"));
+        assertTrue(instructions.contains("slovem ‚přebor‘ nebo"));
+        assertTrue(instructions.contains("‚okresní‘"));
+        assertFalse(instructions.contains("dotaz zakončíš tečkou"));
+    }
+
+    @Test
+    void instructionsHideAiExpertHintAndRequireRudeRefusalAfterAccomplishment() {
+        UserEntity user = new UserEntity();
+        user.setId(5L);
+        user.setName("Matěj");
+        AppTeamEntity appTeam = new AppTeamEntity();
+        appTeam.setId(6L);
+        appTeam.setName("Trus");
+
+        String instructions = client.instructions(new AiToolContext(
+                user,
+                appTeam,
+                7L,
+                "Matěj",
+                true
+        ));
+
+        assertTrue(instructions.contains("Aktuální uživatel už achievement AI expert má."));
+        assertTrue(instructions.contains("neprozrazuj znovu podmínku získání"));
+        assertTrue(instructions.contains(
+                "Neotravuj, achievement AI expert už dávno máš."
+        ));
+        assertTrue(instructions.contains("Podruhý ti ho dávat nebudu."));
     }
 }

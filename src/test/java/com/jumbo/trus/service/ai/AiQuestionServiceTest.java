@@ -22,6 +22,7 @@ import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -85,10 +86,18 @@ class AiQuestionServiceTest {
         when(openAiClient.answer(eq(reserved.getQuestion()), any(AiToolContext.class), eq(AiAccessTier.STANDARD)))
                 .thenReturn(answer);
         when(quotaService.complete(21L, answer)).thenReturn(completed);
+        when(achievementService.hasAiExpertAchievement(7L, appTeam)).thenReturn(true);
 
         AiQuestionResponse response = service.ask(request(reserved.getQuestion()));
 
         assertEquals("Sedm piv.", response.getAnswer());
+        var contextCaptor = org.mockito.ArgumentCaptor.forClass(AiToolContext.class);
+        verify(openAiClient).answer(
+                eq(reserved.getQuestion()),
+                contextCaptor.capture(),
+                eq(AiAccessTier.STANDARD)
+        );
+        assertTrue(contextCaptor.getValue().aiExpertAccomplished());
         verify(achievementService).awardForSuccessfulQuestion(7L, appTeam);
     }
 
