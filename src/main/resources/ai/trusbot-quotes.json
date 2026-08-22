@@ -73,14 +73,9 @@
       "source": "HOSPODA",
       "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda/",
       "categories": [
-        "FINE"
+        "GENERAL"
       ],
-      "keywords": [
-        "pokuta",
-        "policie",
-        "trest",
-        "řidičák"
-      ],
+      "keywords": [],
       "characterCount": 147,
       "weight": 1,
       "enabled": true
@@ -91,9 +86,12 @@
       "source": "HOSPODA",
       "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda/",
       "categories": [
-        "GENERAL"
+        "FINE"
       ],
-      "keywords": [],
+      "keywords": [
+        "pokuta",
+        "peníze"
+      ],
       "characterCount": 121,
       "weight": 1,
       "enabled": true
@@ -104,17 +102,9 @@
       "source": "HOSPODA",
       "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda/",
       "categories": [
-        "FOOD",
-        "WORK"
+        "GENERAL"
       ],
-      "keywords": [
-        "jídlo",
-        "kuchař",
-        "oběd",
-        "práce",
-        "šéf",
-        "zaměstnání"
-      ],
+      "keywords": [],
       "characterCount": 139,
       "weight": 1,
       "enabled": true
@@ -151,18 +141,9 @@
       "source": "HOSPODA",
       "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda/",
       "categories": [
-        "FINE",
-        "RELATIONSHIP"
+        "GENERAL"
       ],
-      "keywords": [
-        "pokuta",
-        "policie",
-        "trest",
-        "řidičák",
-        "vztah",
-        "manželství",
-        "rande"
-      ],
+      "keywords": [],
       "characterCount": 205,
       "weight": 1,
       "enabled": true
@@ -238,15 +219,9 @@
       "source": "HOSPODA",
       "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda/",
       "categories": [
-        "BEER"
+        "GENERAL"
       ],
-      "keywords": [
-        "pivo",
-        "alkohol",
-        "pití",
-        "nápoj",
-        "hospoda"
-      ],
+      "keywords": [],
       "characterCount": 179,
       "weight": 1,
       "enabled": true
@@ -257,13 +232,9 @@
       "source": "HOSPODA",
       "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda/",
       "categories": [
-        "FOOD"
+        "GENERAL"
       ],
-      "keywords": [
-        "jídlo",
-        "kuchař",
-        "oběd"
-      ],
+      "keywords": [],
       "characterCount": 73,
       "weight": 1,
       "enabled": true
@@ -274,15 +245,9 @@
       "source": "HOSPODA",
       "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda/",
       "categories": [
-        "BEER"
+        "GENERAL"
       ],
-      "keywords": [
-        "pivo",
-        "alkohol",
-        "pití",
-        "nápoj",
-        "hospoda"
-      ],
+      "keywords": [],
       "characterCount": 65,
       "weight": 1,
       "enabled": true
@@ -310,10 +275,7 @@
       ],
       "keywords": [
         "pivo",
-        "alkohol",
-        "pití",
-        "nápoj",
-        "hospoda"
+        "panák"
       ],
       "characterCount": 236,
       "weight": 1,
@@ -325,23 +287,11 @@
       "source": "HOSPODA",
       "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-2/",
       "categories": [
-        "BEER",
-        "FINE",
-        "RELATIONSHIP"
+        "BEER"
       ],
       "keywords": [
         "pivo",
-        "alkohol",
-        "pití",
-        "nápoj",
-        "hospoda",
-        "pokuta",
-        "policie",
-        "trest",
-        "řidičák",
-        "vztah",
-        "manželství",
-        "rande"
+        "panák"
       ],
       "characterCount": 458,
       "weight": 1,
@@ -353,22 +303,11 @@
       "source": "HOSPODA",
       "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-2/",
       "categories": [
-        "BEER",
-        "FOOD",
-        "RELATIONSHIP"
+        "BEER"
       ],
       "keywords": [
         "pivo",
-        "alkohol",
-        "pití",
-        "nápoj",
-        "hospoda",
-        "jídlo",
-        "kuchař",
-        "oběd",
-        "vztah",
-        "manželství",
-        "rande"
+        "panák"
       ],
       "characterCount": 187,
       "weight": 1,
@@ -384,10 +323,7 @@
       ],
       "keywords": [
         "pivo",
-        "alkohol",
-        "pití",
-        "nápoj",
-        "hospoda"
+        "panák"
       ],
       "characterCount": 127,
       "weight": 1,
@@ -399,17 +335,9 @@
       "source": "HOSPODA",
       "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-2/",
       "categories": [
-        "WORK",
-        "RELATIONSHIP"
+        "GENERAL"
       ],
-      "keywords": [
-        "práce",
-        "šéf",
-        "zaměstnání",
-        "vztah",
-        "manželství",
-        "rande"
-      ],
+      "keywords": [],
       "characterCount": 562,
       "weight": 1,
       "enabled": true
@@ -420,12 +348,11 @@
       "source": "HOSPODA",
       "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-2/",
       "categories": [
-        "MONEY"
+        "FINE"
       ],
       "keywords": [
-        "peníze",
-        "účet",
-        "dluh"
+        "pokuta",
+        "peníze"
       ],
       "characterCount": 159,
       "weight": 1,
@@ -463,13 +390,9 @@
       "source": "HOSPODA",
       "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-2/",
       "categories": [
-        "FOOD"
+        "GENERAL"
       ],
-      "keywords": [
-        "jídlo",
-        "kuchař",
-        "oběd"
-      ],
+      "keywords": [],
       "characterCount": 242,
       "weight": 1,
       "enabled": true
@@ -497,10 +420,7 @@
       ],
       "keywords": [
         "pivo",
-        "alkohol",
-        "pití",
-        "nápoj",
-        "hospoda"
+        "panák"
       ],
       "characterCount": 46,
       "weight": 1,
@@ -603,16 +523,11 @@
       "source": "HOSPODA",
       "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-3/",
       "categories": [
-        "MONEY",
-        "RELATIONSHIP"
+        "FINE"
       ],
       "keywords": [
-        "peníze",
-        "účet",
-        "dluh",
-        "vztah",
-        "manželství",
-        "rande"
+        "pokuta",
+        "peníze"
       ],
       "characterCount": 912,
       "weight": 1,
@@ -624,13 +539,9 @@
       "source": "HOSPODA",
       "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-3/",
       "categories": [
-        "WORK"
+        "GENERAL"
       ],
-      "keywords": [
-        "práce",
-        "šéf",
-        "zaměstnání"
-      ],
+      "keywords": [],
       "characterCount": 109,
       "weight": 1,
       "enabled": true
@@ -654,12 +565,13 @@
       "source": "HOSPODA",
       "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-3/",
       "categories": [
-        "RELATIONSHIP"
+        "MATCH"
       ],
       "keywords": [
-        "vztah",
-        "manželství",
-        "rande"
+        "fotbal",
+        "zápas",
+        "výsledek",
+        "gól"
       ],
       "characterCount": 147,
       "weight": 1,
@@ -671,15 +583,9 @@
       "source": "HOSPODA",
       "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-3/",
       "categories": [
-        "BEER"
+        "GENERAL"
       ],
-      "keywords": [
-        "pivo",
-        "alkohol",
-        "pití",
-        "nápoj",
-        "hospoda"
-      ],
+      "keywords": [],
       "characterCount": 62,
       "weight": 1,
       "enabled": true
@@ -716,13 +622,9 @@
       "source": "HOSPODA",
       "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-3/",
       "categories": [
-        "RELATIONSHIP"
+        "GENERAL"
       ],
-      "keywords": [
-        "vztah",
-        "manželství",
-        "rande"
-      ],
+      "keywords": [],
       "characterCount": 190,
       "weight": 1,
       "enabled": true
@@ -733,18 +635,11 @@
       "source": "HOSPODA",
       "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-3/",
       "categories": [
-        "BEER",
-        "RELATIONSHIP"
+        "BEER"
       ],
       "keywords": [
         "pivo",
-        "alkohol",
-        "pití",
-        "nápoj",
-        "hospoda",
-        "vztah",
-        "manželství",
-        "rande"
+        "panák"
       ],
       "characterCount": 98,
       "weight": 1,
@@ -769,13 +664,9 @@
       "source": "HOSPODA",
       "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-3/",
       "categories": [
-        "WORK"
+        "GENERAL"
       ],
-      "keywords": [
-        "práce",
-        "šéf",
-        "zaměstnání"
-      ],
+      "keywords": [],
       "characterCount": 529,
       "weight": 1,
       "enabled": true
@@ -786,15 +677,9 @@
       "source": "HOSPODA",
       "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-3/",
       "categories": [
-        "BEER"
+        "GENERAL"
       ],
-      "keywords": [
-        "pivo",
-        "alkohol",
-        "pití",
-        "nápoj",
-        "hospoda"
-      ],
+      "keywords": [],
       "characterCount": 88,
       "weight": 1,
       "enabled": true
@@ -883,14 +768,9 @@
       "source": "HOSPODA",
       "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-4/",
       "categories": [
-        "FINE"
+        "GENERAL"
       ],
-      "keywords": [
-        "pokuta",
-        "policie",
-        "trest",
-        "řidičák"
-      ],
+      "keywords": [],
       "characterCount": 138,
       "weight": 1,
       "enabled": true
@@ -940,15 +820,9 @@
       "source": "HOSPODA",
       "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-4/",
       "categories": [
-        "BEER"
+        "GENERAL"
       ],
-      "keywords": [
-        "pivo",
-        "alkohol",
-        "pití",
-        "nápoj",
-        "hospoda"
-      ],
+      "keywords": [],
       "characterCount": 177,
       "weight": 1,
       "enabled": true
@@ -959,13 +833,9 @@
       "source": "HOSPODA",
       "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-4/",
       "categories": [
-        "FOOD"
+        "GENERAL"
       ],
-      "keywords": [
-        "jídlo",
-        "kuchař",
-        "oběd"
-      ],
+      "keywords": [],
       "characterCount": 108,
       "weight": 1,
       "enabled": true
@@ -1032,10 +902,7 @@
       ],
       "keywords": [
         "pivo",
-        "alkohol",
-        "pití",
-        "nápoj",
-        "hospoda"
+        "panák"
       ],
       "characterCount": 156,
       "weight": 1,
@@ -1086,22 +953,11 @@
       "source": "HOSPODA",
       "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-5/",
       "categories": [
-        "BEER",
-        "WORK",
-        "RELATIONSHIP"
+        "BEER"
       ],
       "keywords": [
         "pivo",
-        "alkohol",
-        "pití",
-        "nápoj",
-        "hospoda",
-        "práce",
-        "šéf",
-        "zaměstnání",
-        "vztah",
-        "manželství",
-        "rande"
+        "panák"
       ],
       "characterCount": 379,
       "weight": 1,
@@ -1113,13 +969,9 @@
       "source": "HOSPODA",
       "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-5/",
       "categories": [
-        "RELATIONSHIP"
+        "GENERAL"
       ],
-      "keywords": [
-        "vztah",
-        "manželství",
-        "rande"
-      ],
+      "keywords": [],
       "characterCount": 468,
       "weight": 1,
       "enabled": true
@@ -1130,16 +982,11 @@
       "source": "HOSPODA",
       "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-5/",
       "categories": [
-        "MONEY",
-        "WORK"
+        "FINE"
       ],
       "keywords": [
-        "peníze",
-        "účet",
-        "dluh",
-        "práce",
-        "šéf",
-        "zaměstnání"
+        "pokuta",
+        "peníze"
       ],
       "characterCount": 156,
       "weight": 1,
@@ -1151,12 +998,11 @@
       "source": "HOSPODA",
       "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-5/",
       "categories": [
-        "MONEY"
+        "FINE"
       ],
       "keywords": [
-        "peníze",
-        "účet",
-        "dluh"
+        "pokuta",
+        "peníze"
       ],
       "characterCount": 124,
       "weight": 1,
@@ -1168,12 +1014,11 @@
       "source": "HOSPODA",
       "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-5/",
       "categories": [
-        "MONEY"
+        "FINE"
       ],
       "keywords": [
-        "peníze",
-        "účet",
-        "dluh"
+        "pokuta",
+        "peníze"
       ],
       "characterCount": 399,
       "weight": 1,
@@ -1185,14 +1030,9 @@
       "source": "HOSPODA",
       "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-5/",
       "categories": [
-        "FINE"
+        "GENERAL"
       ],
-      "keywords": [
-        "pokuta",
-        "policie",
-        "trest",
-        "řidičák"
-      ],
+      "keywords": [],
       "characterCount": 221,
       "weight": 1,
       "enabled": true
@@ -1216,9 +1056,12 @@
       "source": "HOSPODA",
       "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-5/",
       "categories": [
-        "GENERAL"
+        "FINE"
       ],
-      "keywords": [],
+      "keywords": [
+        "pokuta",
+        "peníze"
+      ],
       "characterCount": 157,
       "weight": 1,
       "enabled": true
@@ -1229,14 +1072,16 @@
       "source": "HOSPODA",
       "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-5/",
       "categories": [
-        "BEER"
+        "BEER",
+        "MATCH"
       ],
       "keywords": [
         "pivo",
-        "alkohol",
-        "pití",
-        "nápoj",
-        "hospoda"
+        "panák",
+        "fotbal",
+        "zápas",
+        "výsledek",
+        "gól"
       ],
       "characterCount": 506,
       "weight": 1,
@@ -1274,13 +1119,9 @@
       "source": "HOSPODA",
       "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-6/",
       "categories": [
-        "RELATIONSHIP"
+        "GENERAL"
       ],
-      "keywords": [
-        "vztah",
-        "manželství",
-        "rande"
-      ],
+      "keywords": [],
       "characterCount": 118,
       "weight": 1,
       "enabled": true
@@ -1291,14 +1132,9 @@
       "source": "HOSPODA",
       "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-6/",
       "categories": [
-        "FINE"
+        "GENERAL"
       ],
-      "keywords": [
-        "pokuta",
-        "policie",
-        "trest",
-        "řidičák"
-      ],
+      "keywords": [],
       "characterCount": 165,
       "weight": 1,
       "enabled": true
@@ -1352,10 +1188,7 @@
       ],
       "keywords": [
         "pivo",
-        "alkohol",
-        "pití",
-        "nápoj",
-        "hospoda"
+        "panák"
       ],
       "characterCount": 80,
       "weight": 1,
@@ -1380,15 +1213,9 @@
       "source": "HOSPODA",
       "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-6/",
       "categories": [
-        "BEER"
+        "GENERAL"
       ],
-      "keywords": [
-        "pivo",
-        "alkohol",
-        "pití",
-        "nápoj",
-        "hospoda"
-      ],
+      "keywords": [],
       "characterCount": 419,
       "weight": 1,
       "enabled": true
@@ -1403,10 +1230,7 @@
       ],
       "keywords": [
         "pivo",
-        "alkohol",
-        "pití",
-        "nápoj",
-        "hospoda"
+        "panák"
       ],
       "characterCount": 268,
       "weight": 1,
@@ -1431,13 +1255,9 @@
       "source": "HOSPODA",
       "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-6/",
       "categories": [
-        "RELATIONSHIP"
+        "GENERAL"
       ],
-      "keywords": [
-        "vztah",
-        "manželství",
-        "rande"
-      ],
+      "keywords": [],
       "characterCount": 65,
       "weight": 1,
       "enabled": true
@@ -1461,18 +1281,11 @@
       "source": "HOSPODA",
       "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-6/",
       "categories": [
-        "BEER",
-        "FOOD"
+        "BEER"
       ],
       "keywords": [
         "pivo",
-        "alkohol",
-        "pití",
-        "nápoj",
-        "hospoda",
-        "jídlo",
-        "kuchař",
-        "oběd"
+        "panák"
       ],
       "characterCount": 40,
       "weight": 1,
@@ -1484,13 +1297,9 @@
       "source": "HOSPODA",
       "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-6/",
       "categories": [
-        "RELATIONSHIP"
+        "GENERAL"
       ],
-      "keywords": [
-        "vztah",
-        "manželství",
-        "rande"
-      ],
+      "keywords": [],
       "characterCount": 808,
       "weight": 1,
       "enabled": true
@@ -1540,12 +1349,13 @@
       "source": "HOSPODA",
       "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-7/",
       "categories": [
-        "RELATIONSHIP"
+        "MATCH"
       ],
       "keywords": [
-        "vztah",
-        "manželství",
-        "rande"
+        "fotbal",
+        "zápas",
+        "výsledek",
+        "gól"
       ],
       "characterCount": 241,
       "weight": 1,
@@ -1570,14 +1380,11 @@
       "source": "HOSPODA",
       "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-7/",
       "categories": [
-        "BEER"
+        "FINE"
       ],
       "keywords": [
-        "pivo",
-        "alkohol",
-        "pití",
-        "nápoj",
-        "hospoda"
+        "pokuta",
+        "peníze"
       ],
       "characterCount": 120,
       "weight": 1,
@@ -1589,16 +1396,11 @@
       "source": "HOSPODA",
       "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-7/",
       "categories": [
-        "MONEY",
-        "WORK"
+        "FINE"
       ],
       "keywords": [
-        "peníze",
-        "účet",
-        "dluh",
-        "práce",
-        "šéf",
-        "zaměstnání"
+        "pokuta",
+        "peníze"
       ],
       "characterCount": 105,
       "weight": 1,
@@ -1623,13 +1425,9 @@
       "source": "HOSPODA",
       "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-7/",
       "categories": [
-        "RELATIONSHIP"
+        "GENERAL"
       ],
-      "keywords": [
-        "vztah",
-        "manželství",
-        "rande"
-      ],
+      "keywords": [],
       "characterCount": 268,
       "weight": 1,
       "enabled": true
@@ -1657,10 +1455,7 @@
       ],
       "keywords": [
         "pivo",
-        "alkohol",
-        "pití",
-        "nápoj",
-        "hospoda"
+        "panák"
       ],
       "characterCount": 167,
       "weight": 1,
@@ -1672,13 +1467,9 @@
       "source": "HOSPODA",
       "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-7/",
       "categories": [
-        "RELATIONSHIP"
+        "GENERAL"
       ],
-      "keywords": [
-        "vztah",
-        "manželství",
-        "rande"
-      ],
+      "keywords": [],
       "characterCount": 141,
       "weight": 1,
       "enabled": true
@@ -1754,13 +1545,9 @@
       "source": "HOSPODA",
       "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-8/",
       "categories": [
-        "RELATIONSHIP"
+        "GENERAL"
       ],
-      "keywords": [
-        "vztah",
-        "manželství",
-        "rande"
-      ],
+      "keywords": [],
       "characterCount": 58,
       "weight": 1,
       "enabled": true
@@ -1810,13 +1597,9 @@
       "source": "HOSPODA",
       "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-8/",
       "categories": [
-        "WORK"
+        "GENERAL"
       ],
-      "keywords": [
-        "práce",
-        "šéf",
-        "zaměstnání"
-      ],
+      "keywords": [],
       "characterCount": 83,
       "weight": 1,
       "enabled": true
@@ -1827,17 +1610,9 @@
       "source": "HOSPODA",
       "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-8/",
       "categories": [
-        "WORK",
-        "RELATIONSHIP"
+        "GENERAL"
       ],
-      "keywords": [
-        "práce",
-        "šéf",
-        "zaměstnání",
-        "vztah",
-        "manželství",
-        "rande"
-      ],
+      "keywords": [],
       "characterCount": 66,
       "weight": 1,
       "enabled": true
@@ -1861,18 +1636,9 @@
       "source": "HOSPODA",
       "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-8/",
       "categories": [
-        "FINE",
-        "RELATIONSHIP"
+        "GENERAL"
       ],
-      "keywords": [
-        "pokuta",
-        "policie",
-        "trest",
-        "řidičák",
-        "vztah",
-        "manželství",
-        "rande"
-      ],
+      "keywords": [],
       "characterCount": 141,
       "weight": 1,
       "enabled": true
@@ -1909,9 +1675,12 @@
       "source": "HOSPODA",
       "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-8/",
       "categories": [
-        "GENERAL"
+        "FINE"
       ],
-      "keywords": [],
+      "keywords": [
+        "pokuta",
+        "peníze"
+      ],
       "characterCount": 161,
       "weight": 1,
       "enabled": true
@@ -1922,13 +1691,9 @@
       "source": "HOSPODA",
       "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-8/",
       "categories": [
-        "RELATIONSHIP"
+        "GENERAL"
       ],
-      "keywords": [
-        "vztah",
-        "manželství",
-        "rande"
-      ],
+      "keywords": [],
       "characterCount": 289,
       "weight": 1,
       "enabled": true
@@ -2008,10 +1773,7 @@
       ],
       "keywords": [
         "pivo",
-        "alkohol",
-        "pití",
-        "nápoj",
-        "hospoda"
+        "panák"
       ],
       "characterCount": 214,
       "weight": 1,
@@ -2101,13 +1863,9 @@
       "source": "HOSPODA",
       "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-9/",
       "categories": [
-        "WORK"
+        "GENERAL"
       ],
-      "keywords": [
-        "práce",
-        "šéf",
-        "zaměstnání"
-      ],
+      "keywords": [],
       "characterCount": 145,
       "weight": 1,
       "enabled": true
@@ -2131,13 +1889,9 @@
       "source": "HOSPODA",
       "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-9/",
       "categories": [
-        "RELATIONSHIP"
+        "GENERAL"
       ],
-      "keywords": [
-        "vztah",
-        "manželství",
-        "rande"
-      ],
+      "keywords": [],
       "characterCount": 47,
       "weight": 1,
       "enabled": true
@@ -2148,13 +1902,9 @@
       "source": "HOSPODA",
       "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-9/",
       "categories": [
-        "FOOD"
+        "GENERAL"
       ],
-      "keywords": [
-        "jídlo",
-        "kuchař",
-        "oběd"
-      ],
+      "keywords": [],
       "characterCount": 149,
       "weight": 1,
       "enabled": true
@@ -2191,16 +1941,9 @@
       "source": "OKRESNI_PREBOR",
       "sourcePage": "https://www.hlaskyzfilmu.cz/okresni-prebor/",
       "categories": [
-        "FOOTBALL"
+        "GENERAL"
       ],
-      "keywords": [
-        "fotbal",
-        "zápas",
-        "gól",
-        "hráč",
-        "trenér",
-        "okresní přebor"
-      ],
+      "keywords": [],
       "characterCount": 44,
       "weight": 1,
       "enabled": true
@@ -2211,20 +1954,9 @@
       "source": "OKRESNI_PREBOR",
       "sourcePage": "https://www.hlaskyzfilmu.cz/okresni-prebor/",
       "categories": [
-        "FOOTBALL",
-        "RELATIONSHIP"
+        "GENERAL"
       ],
-      "keywords": [
-        "fotbal",
-        "zápas",
-        "gól",
-        "hráč",
-        "trenér",
-        "okresní přebor",
-        "vztah",
-        "manželství",
-        "rande"
-      ],
+      "keywords": [],
       "characterCount": 76,
       "weight": 1,
       "enabled": true
@@ -2235,16 +1967,9 @@
       "source": "OKRESNI_PREBOR",
       "sourcePage": "https://www.hlaskyzfilmu.cz/okresni-prebor/",
       "categories": [
-        "FOOTBALL"
+        "GENERAL"
       ],
-      "keywords": [
-        "fotbal",
-        "zápas",
-        "gól",
-        "hráč",
-        "trenér",
-        "okresní přebor"
-      ],
+      "keywords": [],
       "characterCount": 134,
       "weight": 1,
       "enabled": true
@@ -2255,16 +1980,9 @@
       "source": "OKRESNI_PREBOR",
       "sourcePage": "https://www.hlaskyzfilmu.cz/okresni-prebor/",
       "categories": [
-        "FOOTBALL"
+        "GENERAL"
       ],
-      "keywords": [
-        "fotbal",
-        "zápas",
-        "gól",
-        "hráč",
-        "trenér",
-        "okresní přebor"
-      ],
+      "keywords": [],
       "characterCount": 40,
       "weight": 1,
       "enabled": true
@@ -2275,16 +1993,9 @@
       "source": "OKRESNI_PREBOR",
       "sourcePage": "https://www.hlaskyzfilmu.cz/okresni-prebor/",
       "categories": [
-        "FOOTBALL"
+        "GENERAL"
       ],
-      "keywords": [
-        "fotbal",
-        "zápas",
-        "gól",
-        "hráč",
-        "trenér",
-        "okresní přebor"
-      ],
+      "keywords": [],
       "characterCount": 33,
       "weight": 1,
       "enabled": true
@@ -2295,15 +2006,13 @@
       "source": "OKRESNI_PREBOR",
       "sourcePage": "https://www.hlaskyzfilmu.cz/okresni-prebor/",
       "categories": [
-        "FOOTBALL"
+        "MATCH"
       ],
       "keywords": [
         "fotbal",
         "zápas",
-        "gól",
-        "hráč",
-        "trenér",
-        "okresní přebor"
+        "výsledek",
+        "gól"
       ],
       "characterCount": 35,
       "weight": 1,
@@ -2315,16 +2024,9 @@
       "source": "OKRESNI_PREBOR",
       "sourcePage": "https://www.hlaskyzfilmu.cz/okresni-prebor/",
       "categories": [
-        "FOOTBALL"
+        "GENERAL"
       ],
-      "keywords": [
-        "fotbal",
-        "zápas",
-        "gól",
-        "hráč",
-        "trenér",
-        "okresní přebor"
-      ],
+      "keywords": [],
       "characterCount": 222,
       "weight": 1,
       "enabled": true
@@ -2335,20 +2037,9 @@
       "source": "OKRESNI_PREBOR",
       "sourcePage": "https://www.hlaskyzfilmu.cz/okresni-prebor/",
       "categories": [
-        "FOOTBALL",
-        "WORK"
+        "GENERAL"
       ],
-      "keywords": [
-        "fotbal",
-        "zápas",
-        "gól",
-        "hráč",
-        "trenér",
-        "okresní přebor",
-        "práce",
-        "šéf",
-        "zaměstnání"
-      ],
+      "keywords": [],
       "characterCount": 187,
       "weight": 1,
       "enabled": true
@@ -2359,16 +2050,9 @@
       "source": "OKRESNI_PREBOR",
       "sourcePage": "https://www.hlaskyzfilmu.cz/okresni-prebor/",
       "categories": [
-        "FOOTBALL"
+        "GENERAL"
       ],
-      "keywords": [
-        "fotbal",
-        "zápas",
-        "gól",
-        "hráč",
-        "trenér",
-        "okresní přebor"
-      ],
+      "keywords": [],
       "characterCount": 13,
       "weight": 1,
       "enabled": true
@@ -2379,16 +2063,9 @@
       "source": "OKRESNI_PREBOR",
       "sourcePage": "https://www.hlaskyzfilmu.cz/okresni-prebor/",
       "categories": [
-        "FOOTBALL"
+        "GENERAL"
       ],
-      "keywords": [
-        "fotbal",
-        "zápas",
-        "gól",
-        "hráč",
-        "trenér",
-        "okresní přebor"
-      ],
+      "keywords": [],
       "characterCount": 39,
       "weight": 1,
       "enabled": true
@@ -2399,15 +2076,13 @@
       "source": "OKRESNI_PREBOR",
       "sourcePage": "https://www.hlaskyzfilmu.cz/okresni-prebor/",
       "categories": [
-        "FOOTBALL"
+        "MATCH"
       ],
       "keywords": [
         "fotbal",
         "zápas",
-        "gól",
-        "hráč",
-        "trenér",
-        "okresní přebor"
+        "výsledek",
+        "gól"
       ],
       "characterCount": 132,
       "weight": 1,
@@ -2419,16 +2094,9 @@
       "source": "OKRESNI_PREBOR",
       "sourcePage": "https://www.hlaskyzfilmu.cz/okresni-prebor/",
       "categories": [
-        "FOOTBALL"
+        "GENERAL"
       ],
-      "keywords": [
-        "fotbal",
-        "zápas",
-        "gól",
-        "hráč",
-        "trenér",
-        "okresní přebor"
-      ],
+      "keywords": [],
       "characterCount": 32,
       "weight": 1,
       "enabled": true
@@ -2439,16 +2107,9 @@
       "source": "OKRESNI_PREBOR",
       "sourcePage": "https://www.hlaskyzfilmu.cz/okresni-prebor/",
       "categories": [
-        "FOOTBALL"
+        "GENERAL"
       ],
-      "keywords": [
-        "fotbal",
-        "zápas",
-        "gól",
-        "hráč",
-        "trenér",
-        "okresní přebor"
-      ],
+      "keywords": [],
       "characterCount": 117,
       "weight": 1,
       "enabled": true
@@ -2459,21 +2120,11 @@
       "source": "OKRESNI_PREBOR",
       "sourcePage": "https://www.hlaskyzfilmu.cz/okresni-prebor/",
       "categories": [
-        "FOOTBALL",
         "BEER"
       ],
       "keywords": [
-        "fotbal",
-        "zápas",
-        "gól",
-        "hráč",
-        "trenér",
-        "okresní přebor",
         "pivo",
-        "alkohol",
-        "pití",
-        "nápoj",
-        "hospoda"
+        "panák"
       ],
       "characterCount": 112,
       "weight": 1,
@@ -2485,16 +2136,9 @@
       "source": "OKRESNI_PREBOR",
       "sourcePage": "https://www.hlaskyzfilmu.cz/okresni-prebor/",
       "categories": [
-        "FOOTBALL"
+        "GENERAL"
       ],
-      "keywords": [
-        "fotbal",
-        "zápas",
-        "gól",
-        "hráč",
-        "trenér",
-        "okresní přebor"
-      ],
+      "keywords": [],
       "characterCount": 22,
       "weight": 1,
       "enabled": true
@@ -2505,15 +2149,13 @@
       "source": "OKRESNI_PREBOR",
       "sourcePage": "https://www.hlaskyzfilmu.cz/okresni-prebor-2/",
       "categories": [
-        "FOOTBALL"
+        "MATCH"
       ],
       "keywords": [
         "fotbal",
         "zápas",
-        "gól",
-        "hráč",
-        "trenér",
-        "okresní přebor"
+        "výsledek",
+        "gól"
       ],
       "characterCount": 100,
       "weight": 1,
@@ -2525,16 +2167,9 @@
       "source": "OKRESNI_PREBOR",
       "sourcePage": "https://www.hlaskyzfilmu.cz/okresni-prebor-2/",
       "categories": [
-        "FOOTBALL"
+        "GENERAL"
       ],
-      "keywords": [
-        "fotbal",
-        "zápas",
-        "gól",
-        "hráč",
-        "trenér",
-        "okresní přebor"
-      ],
+      "keywords": [],
       "characterCount": 39,
       "weight": 1,
       "enabled": true
@@ -2545,15 +2180,13 @@
       "source": "OKRESNI_PREBOR",
       "sourcePage": "https://www.hlaskyzfilmu.cz/okresni-prebor-2/",
       "categories": [
-        "FOOTBALL"
+        "MATCH"
       ],
       "keywords": [
         "fotbal",
         "zápas",
-        "gól",
-        "hráč",
-        "trenér",
-        "okresní přebor"
+        "výsledek",
+        "gól"
       ],
       "characterCount": 97,
       "weight": 1,
@@ -2565,16 +2198,9 @@
       "source": "OKRESNI_PREBOR",
       "sourcePage": "https://www.hlaskyzfilmu.cz/okresni-prebor-2/",
       "categories": [
-        "FOOTBALL"
+        "GENERAL"
       ],
-      "keywords": [
-        "fotbal",
-        "zápas",
-        "gól",
-        "hráč",
-        "trenér",
-        "okresní přebor"
-      ],
+      "keywords": [],
       "characterCount": 31,
       "weight": 1,
       "enabled": true
@@ -2585,15 +2211,13 @@
       "source": "OKRESNI_PREBOR",
       "sourcePage": "https://www.hlaskyzfilmu.cz/okresni-prebor-2/",
       "categories": [
-        "FOOTBALL"
+        "MATCH"
       ],
       "keywords": [
         "fotbal",
         "zápas",
-        "gól",
-        "hráč",
-        "trenér",
-        "okresní přebor"
+        "výsledek",
+        "gól"
       ],
       "characterCount": 49,
       "weight": 1,
@@ -2605,16 +2229,9 @@
       "source": "OKRESNI_PREBOR",
       "sourcePage": "https://www.hlaskyzfilmu.cz/okresni-prebor-2/",
       "categories": [
-        "FOOTBALL"
+        "GENERAL"
       ],
-      "keywords": [
-        "fotbal",
-        "zápas",
-        "gól",
-        "hráč",
-        "trenér",
-        "okresní přebor"
-      ],
+      "keywords": [],
       "characterCount": 40,
       "weight": 1,
       "enabled": true
@@ -2625,16 +2242,9 @@
       "source": "OKRESNI_PREBOR",
       "sourcePage": "https://www.hlaskyzfilmu.cz/okresni-prebor-2/",
       "categories": [
-        "FOOTBALL"
+        "GENERAL"
       ],
-      "keywords": [
-        "fotbal",
-        "zápas",
-        "gól",
-        "hráč",
-        "trenér",
-        "okresní přebor"
-      ],
+      "keywords": [],
       "characterCount": 36,
       "weight": 1,
       "enabled": true
@@ -2645,16 +2255,9 @@
       "source": "OKRESNI_PREBOR",
       "sourcePage": "https://www.hlaskyzfilmu.cz/okresni-prebor-2/",
       "categories": [
-        "FOOTBALL"
+        "GENERAL"
       ],
-      "keywords": [
-        "fotbal",
-        "zápas",
-        "gól",
-        "hráč",
-        "trenér",
-        "okresní přebor"
-      ],
+      "keywords": [],
       "characterCount": 108,
       "weight": 1,
       "enabled": true

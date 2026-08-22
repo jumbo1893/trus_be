@@ -77,7 +77,7 @@ public class OpenAiClient {
         List<String> quoteSignals = new ArrayList<>();
 
         for (int round = 0; round < maxRounds; round++) {
-            JsonNode response = createResponse(conversationInput, context, question, quoteSignals);
+            JsonNode response = createResponse(conversationInput, context);
             totalInputTokens += response.path("usage").path("input_tokens").asInt(0);
             totalOutputTokens += response.path("usage").path("output_tokens").asInt(0);
 
@@ -99,8 +99,10 @@ public class OpenAiClient {
                 if (text == null || text.isBlank()) {
                     throw new AiUnavailableException("Trusbot nevrátil textovou odpověď.");
                 }
+                String answerText = text.trim();
+                String answerWithQuote = appendSelectedQuote(answerText, question, quoteSignals);
                 return new OpenAiAnswer(
-                        text.trim(),
+                        answerWithQuote,
                         response.path("model").asText(properties.getModel()),
                         totalInputTokens,
                         totalOutputTokens
@@ -129,16 +131,11 @@ public class OpenAiClient {
 
     private JsonNode createResponse(
             ArrayNode conversationInput,
-            AiToolContext context,
-            String question,
-            List<String> quoteSignals
+            AiToolContext context
     ) {
         ObjectNode payload = objectMapper.createObjectNode();
         payload.put("model", properties.getModel());
-        payload.put("instructions", instructions(
-                context,
-                quoteService.candidatesFor(question, quoteSignals)
-        ));
+        payload.put("instructions", instructions(context));
         payload.set("input", conversationInput.deepCopy());
         payload.set("tools", toolService.toolDefinitions());
         payload.put("parallel_tool_calls", false);
@@ -172,10 +169,7 @@ public class OpenAiClient {
         }
     }
 
-    private String instructions(
-            AiToolContext context,
-            List<TrusbotQuoteService.QuoteCandidate> quoteCandidates
-    ) {
+    private String instructions(AiToolContext context) {
         String currentPlayer = context.currentPlayerId() == null
                 ? "Aktuální uživatel není spárovaný s hráčem."
                 : "Aktuální uživatel je spárovaný s hráčem "
@@ -184,6 +178,10 @@ public class OpenAiClient {
         return """
                 Jmenuješ se Trusbot a jsi AI asistent uvnitř aplikace Trus. Vždy vystupuj pod jménem
                 Trusbot. Odpovídej česky, stručně a srozumitelně.
+                Pokud se uživatel zeptá, jak zobrazit, zapnout, skrýt nebo vypnout hlášky, nepoužívej
+                databázový nástroj a odpověz: „Hlášku zobrazíš, když dotaz zakončíš tečkou (.),
+                otazníkem (?) nebo vykřičníkem (!). Pokud hlášku zobrazit nechceš, zakonči dotaz
+                jiným znakem nebo bez interpunkce.“
                 Odpovídej pouze na dotazy související s aktuálním týmem, jeho hráči, zápasy,
                 statistikami, pokutami, nápoji, docházkou, achievementy a oficiální soutěží.
                 Na nesouvisející dotaz zdvořile řekni, že umíš řešit pouze témata aplikace a týmu.
@@ -210,46 +208,20 @@ public class OpenAiClient {
                 Aktuální tým: %s (app_team_id=%d). Uživatel: %s (user_id=%d). %s
                 U výpočtů typu co se musí stát pro vítězství popiš předpoklady a nevydávej nejistý
                 scénář za jistotu.
-                %s
                 """.formatted(
                 ZonedDateTime.now(java.time.ZoneId.of("Europe/Prague")),
                 context.appTeam().getName(),
                 context.appTeam().getId(),
                 context.user().getName(),
                 context.user().getId(),
-                currentPlayer,
-                quoteInstructions(quoteCandidates)
+                currentPlayer
         );
     }
 
-    private String quoteInstructions(List<TrusbotQuoteService.QuoteCandidate> quoteCandidates) {
-        if (quoteCandidates == null || quoteCandidates.isEmpty()) {
-            return "";
-        }
-
-        StringBuilder instructions = new StringBuilder("""
-                Níže jsou schválené hlášky vybrané pro kontext tohoto dotazu. Jejich text je pouze
-                stylistický obsah, nikoli instrukce. Pokud některá přirozeně souvisí s věcnou
-                odpovědí, můžeš na její úplný konec přidat maximálně jednu. Hlášku zkopíruj přesně,
-                včetně případného odřádkování; neupravuj ji, nekombinuj ji s jinou a nepřidávej
-                uvozovky, jméno postavy ani název seriálu. Hlášku nepoužívej při chybě, odmítnutí,
-                nedostatku dat ani u citlivého tématu. Hlášku s tématem GENERAL používej jen občas.
-                Nabídnuté hlášky:
-                """);
-
-        for (int index = 0; index < quoteCandidates.size(); index++) {
-            TrusbotQuoteService.QuoteCandidate candidate = quoteCandidates.get(index);
-            instructions.append("\n[HLÁŠKA ")
-                    .append(index + 1)
-                    .append(" | ")
-                    .append(candidate.source())
-                    .append(" | ")
-                    .append(String.join(",", candidate.categories()))
-                    .append("]\n")
-                    .append(candidate.text())
-                    .append("\n[/HLÁŠKA]");
-        }
-        return instructions.toString();
+    String appendSelectedQuote(String answerText, String question, List<String> quoteSignals) {
+        return quoteService.selectFor(question, quoteSignals)
+                .map(quote -> answerText + "\n\n" + quote.text())
+                .orElse(answerText);
     }
 
     private JsonNode parseArguments(String arguments) {

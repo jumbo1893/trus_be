@@ -4,56 +4,145 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.stream.IntStream;
+import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TrusbotQuoteServiceTest {
 
-    private final TrusbotQuoteService service = new TrusbotQuoteService(new ObjectMapper());
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
     void loadsAndEnablesAllApprovedQuotes() {
+        TrusbotQuoteService service = serviceChoosing(true);
+
         assertEquals(160, service.quoteCount());
         assertEquals(160, service.enabledQuoteCount());
     }
 
     @Test
-    void offersPubQuoteForBeerQuestion() {
-        List<TrusbotQuoteService.QuoteCandidate> candidates = service.candidatesFor(
+    void doesNotSelectQuoteWithoutTerminalPunctuation() {
+        TrusbotQuoteService service = serviceChoosing(true);
+
+        assertTrue(service.selectFor("Kdo letos vypil nejvíc piv", List.of()).isEmpty());
+        assertTrue(service.selectFor("Kdo dal nejvíc gólů   ", List.of("find_matches {}"))
+                .isEmpty());
+    }
+
+    @Test
+    void allConfiguredTerminalCharactersTriggerQuote() {
+        TrusbotQuoteService service = serviceChoosing(false);
+
+        for (String question : List.of("Dotaz.", "Dotaz?", "Dotaz!", "Dotaz?   ")) {
+            assertTrue(service.selectFor(question, List.of()).isPresent(), question);
+        }
+    }
+
+    @Test
+    void thematicHalfCanSelectBeerQuote() {
+        TrusbotQuoteService service = serviceChoosing(true);
+
+        TrusbotQuoteService.QuoteCandidate candidate = service.selectFor(
+                "Kdo vypil nejvíc piv v sezoně?",
+                List.of()
+        ).orElseThrow();
+
+        assertTrue(candidate.categories().contains("BEER"));
+    }
+
+    @Test
+    void generalHalfCanSelectGeneralQuoteForRelevantQuestion() {
+        TrusbotQuoteService service = serviceChoosing(false);
+
+        TrusbotQuoteService.QuoteCandidate candidate = service.selectFor(
                 "Kdo letos vypil nejvíc piv?",
                 List.of()
-        );
+        ).orElseThrow();
 
-        assertFalse(candidates.isEmpty());
-        assertTrue(candidates.size() <= 3);
-        assertTrue(candidates.stream().anyMatch(candidate ->
-                "HOSPODA".equals(candidate.source()) && candidate.categories().contains("BEER")
-        ));
+        assertTrue(candidate.categories().contains("GENERAL"));
     }
 
     @Test
-    void toolUsageCanAddFootballContext() {
-        List<TrusbotQuoteService.QuoteCandidate> candidates = service.candidatesFor(
+    void toolUsageCanProvideFootballContext() {
+        TrusbotQuoteService service = serviceChoosing(true);
+
+        TrusbotQuoteService.QuoteCandidate candidate = service.selectFor(
                 "Jak to tedy vypadá?",
                 List.of("find_matches {}")
-        );
+        ).orElseThrow();
 
-        assertTrue(candidates.stream().anyMatch(candidate ->
-                "OKRESNI_PREBOR".equals(candidate.source())
-                        && candidate.categories().contains("FOOTBALL")
-        ));
+        assertTrue(candidate.categories().contains("MATCH"));
     }
 
     @Test
-    void occasionallyOffersGeneralQuoteWithoutSpecificCategory() {
-        boolean generalWasOffered = IntStream.range(0, 100)
-                .mapToObj(index -> service.candidatesFor("achievement " + index, List.of()))
-                .flatMap(List::stream)
-                .anyMatch(candidate -> candidate.categories().contains("GENERAL"));
+    void alcoholWithoutBeerOrShotKeywordUsesGeneral() {
+        TrusbotQuoteService service = serviceChoosing(true);
 
-        assertTrue(generalWasOffered);
+        TrusbotQuoteService.QuoteCandidate candidate = service.selectFor(
+                "Kdo vypil nejvíc alkoholu?",
+                List.of()
+        ).orElseThrow();
+
+        assertTrue(candidate.categories().contains("GENERAL"));
+    }
+
+    @Test
+    void moneyQuestionCanSelectFineQuote() {
+        TrusbotQuoteService service = serviceChoosing(true);
+
+        TrusbotQuoteService.QuoteCandidate candidate = service.selectFor(
+                "Kolik peněz jsme zaplatili?",
+                List.of()
+        ).orElseThrow();
+
+        assertTrue(candidate.categories().contains("FINE"));
+    }
+
+    @Test
+    void resultQuestionCanSelectMatchQuote() {
+        TrusbotQuoteService service = serviceChoosing(true);
+
+        TrusbotQuoteService.QuoteCandidate candidate = service.selectFor(
+                "Jaký byl výsledek zápasu?",
+                List.of()
+        ).orElseThrow();
+
+        assertTrue(candidate.categories().contains("MATCH"));
+    }
+
+    @Test
+    void questionWithoutKnownCategoryAlwaysSelectsGeneral() {
+        TrusbotQuoteService service = serviceChoosing(true);
+
+        TrusbotQuoteService.QuoteCandidate candidate = service.selectFor(
+                "Jaké mám achievementy?",
+                List.of("read_achievements {}")
+        ).orElseThrow();
+
+        assertTrue(candidate.categories().contains("GENERAL"));
+    }
+
+    private TrusbotQuoteService serviceChoosing(boolean thematicQuote) {
+        return new TrusbotQuoteService(objectMapper, new FixedRandom(thematicQuote));
+    }
+
+    private static final class FixedRandom extends Random {
+
+        private final boolean thematicQuote;
+
+        private FixedRandom(boolean thematicQuote) {
+            this.thematicQuote = thematicQuote;
+        }
+
+        @Override
+        public boolean nextBoolean() {
+            return thematicQuote;
+        }
+
+        @Override
+        public int nextInt(int bound) {
+            return 0;
+        }
     }
 }

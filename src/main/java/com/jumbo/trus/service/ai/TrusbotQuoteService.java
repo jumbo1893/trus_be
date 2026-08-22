@@ -2,95 +2,84 @@ package com.jumbo.trus.service.ai;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.Normalizer;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
+import java.util.Optional;
+import java.util.Random;
 import java.util.Set;
 
 @Component
 public class TrusbotQuoteService {
 
     private static final String QUOTES_RESOURCE = "/ai/trusbot-quotes.json";
-    private static final int MAX_RELEVANT_CANDIDATES = 2;
-    private static final int MAX_TOTAL_CANDIDATES = 3;
 
     private static final Map<String, List<String>> CATEGORY_SIGNALS = Map.of(
-            "FOOTBALL", List.of(
-                    "fotbal", "zapas", "utkani", "gol", "brank", "bod", "tabulk", "liga",
-                    "souper", "hrac", "trener", "strel", "vyhr", "prohr", "remiz", "sezon",
-                    "match", "matches", "fixture", "official football", "repeat opponents"
-            ),
             "BEER", List.of(
-                    "piv", "vypil", "vypito", "napoj", "pitny", "alkohol", "rum", "vodk",
-                    "panak", "beer", "drink", "drinks"
+                    "piv", "panak"
             ),
             "FINE", List.of(
-                    "pokut", "prekop", "trest", "sazebnik", "fine", "fines"
+                    "pokut", "penez", "peniz", "penezi", "korun", "kc", "zaplat", "platim",
+                    "platil", "platit", "ucet", "dluh", "vyplat", "pujc", "utrat", "cena",
+                    "stoji", "stalo", "hotovost", "castk", "fine", "fines"
             ),
-            "FOOD", List.of(
-                    "jid", "kuchar", "gulas", "maso", "burt", "klobas", "obed", "vecer"
-            ),
-            "MONEY", List.of(
-                    "peniz", "korun", "zaplat", "ucet", "dluh", "vyplat"
-            ),
-            "WORK", List.of(
-                    "prac", "sef", "zamest", "smena", "vypoved"
-            ),
-            "RELATIONSHIP", List.of(
-                    "vztah", "manzel", "rozvod", "svatb", "rande", "zensk", "chlap"
+            "MATCH", List.of(
+                    "fotbal", "zapas", "utkani", "vysled", "gol", "goal", "brank", "skore",
+                    "vyhr", "prohr", "remiz", "bod", "tabulk", "souper", "strel", "liga",
+                    "rozhodc", "trener", "hrist", "dres", "penalt", "ofs", "match", "matches",
+                    "fixture", "official football", "repeat opponents"
             )
     );
 
     private final List<QuoteDefinition> quotes;
+    private final Random random;
 
+    @Autowired
     public TrusbotQuoteService(ObjectMapper objectMapper) {
-        this.quotes = loadQuotes(objectMapper);
+        this(objectMapper, new Random());
     }
 
-    public List<QuoteCandidate> candidatesFor(String question, List<String> toolSignals) {
+    TrusbotQuoteService(ObjectMapper objectMapper, Random random) {
+        this.quotes = loadQuotes(objectMapper);
+        this.random = random;
+    }
+
+    public Optional<QuoteCandidate> selectFor(String question, List<String> toolSignals) {
+        if (!hasQuoteTrigger(question)) {
+            return Optional.empty();
+        }
+
         String normalizedContext = normalize(String.join(
                 " ",
                 question == null ? "" : question,
                 toolSignals == null ? "" : String.join(" ", toolSignals)
         ));
         Set<String> relevantCategories = detectCategories(normalizedContext);
-        List<QuoteCandidate> result = new ArrayList<>();
+        List<QuoteDefinition> generalQuotes = enabledQuotesWithCategory("GENERAL");
 
-        if (!relevantCategories.isEmpty()) {
-            quotes.stream()
+        List<QuoteDefinition> selectionPool;
+        if (relevantCategories.isEmpty()) {
+            selectionPool = generalQuotes;
+        } else if (random.nextBoolean()) {
+            selectionPool = quotes.stream()
                     .filter(QuoteDefinition::enabled)
                     .filter(quote -> intersects(quote.categories(), relevantCategories))
-                    .map(quote -> new RankedQuote(quote, score(quote, relevantCategories, normalizedContext)))
-                    .sorted(Comparator.comparingInt(RankedQuote::score).reversed())
-                    .limit(MAX_RELEVANT_CANDIDATES)
-                    .map(RankedQuote::quote)
-                    .map(this::toCandidate)
-                    .forEach(result::add);
+                    .toList();
+            if (selectionPool.isEmpty()) {
+                selectionPool = generalQuotes;
+            }
+        } else {
+            selectionPool = generalQuotes;
         }
 
-        if (shouldOfferGeneral(normalizedContext)) {
-            quotes.stream()
-                    .filter(QuoteDefinition::enabled)
-                    .filter(quote -> safeList(quote.categories()).contains("GENERAL"))
-                    .map(quote -> new RankedQuote(quote, stableTieBreak(quote, normalizedContext)))
-                    .sorted(Comparator.comparingInt(RankedQuote::score).reversed())
-                    .map(RankedQuote::quote)
-                    .map(this::toCandidate)
-                    .filter(candidate -> result.stream().noneMatch(existing -> existing.id().equals(candidate.id())))
-                    .findFirst()
-                    .ifPresent(result::add);
-        }
-
-        return List.copyOf(result.subList(0, Math.min(result.size(), MAX_TOTAL_CANDIDATES)));
+        return selectWeighted(selectionPool).map(this::toCandidate);
     }
 
     int quoteCount() {
@@ -110,10 +99,29 @@ public class TrusbotQuoteService {
             if (document.quotes() == null || document.quotes().isEmpty()) {
                 throw new IllegalStateException("Soubor s hláškami Trusbota je prázdný.");
             }
-            return List.copyOf(document.quotes());
+            List<QuoteDefinition> loadedQuotes = List.copyOf(document.quotes());
+            boolean hasEnabledGeneral = loadedQuotes.stream()
+                    .filter(QuoteDefinition::enabled)
+                    .anyMatch(quote -> safeList(quote.categories()).contains("GENERAL"));
+            if (!hasEnabledGeneral) {
+                throw new IllegalStateException("Trusbot potřebuje alespoň jednu aktivní hlášku GENERAL.");
+            }
+            return loadedQuotes;
         } catch (IOException exception) {
             throw new IllegalStateException("Nelze načíst hlášky Trusbota.", exception);
         }
+    }
+
+    private boolean hasQuoteTrigger(String question) {
+        if (question == null) {
+            return false;
+        }
+        String trimmedQuestion = question.stripTrailing();
+        if (trimmedQuestion.isEmpty()) {
+            return false;
+        }
+        char lastCharacter = trimmedQuestion.charAt(trimmedQuestion.length() - 1);
+        return lastCharacter == '.' || lastCharacter == '?' || lastCharacter == '!';
     }
 
     private Set<String> detectCategories(String normalizedContext) {
@@ -126,42 +134,28 @@ public class TrusbotQuoteService {
         return result;
     }
 
-    private int score(
-            QuoteDefinition quote,
-            Set<String> relevantCategories,
-            String normalizedContext
-    ) {
-        int categoryScore = (int) safeList(quote.categories()).stream()
-                .filter(relevantCategories::contains)
-                .count() * 1_000;
-        int keywordScore = (int) safeList(quote.keywords()).stream()
-                .map(TrusbotQuoteService::normalize)
-                .filter(keyword -> !keyword.isBlank() && containsSignal(normalizedContext, keyword))
-                .count() * 120;
-        int sourceScore = sourceMatches(quote.source(), relevantCategories) ? 80 : 0;
-        int lengthScore = Math.max(0, 100 - quote.text().length() / 4);
-        int weightScore = Math.max(1, quote.weight()) * 5;
-        return categoryScore
-                + keywordScore
-                + sourceScore
-                + lengthScore
-                + weightScore
-                + stableTieBreak(quote, normalizedContext);
+    private List<QuoteDefinition> enabledQuotesWithCategory(String category) {
+        return quotes.stream()
+                .filter(QuoteDefinition::enabled)
+                .filter(quote -> safeList(quote.categories()).contains(category))
+                .toList();
     }
 
-    private boolean sourceMatches(String source, Set<String> categories) {
-        return "OKRESNI_PREBOR".equals(source) && categories.contains("FOOTBALL")
-                || "HOSPODA".equals(source) && categories.stream()
-                .anyMatch(category -> Set.of("BEER", "FINE", "FOOD", "MONEY", "WORK", "RELATIONSHIP")
-                        .contains(category));
-    }
-
-    private boolean shouldOfferGeneral(String normalizedContext) {
-        return !normalizedContext.isBlank() && Math.floorMod(normalizedContext.hashCode(), 4) == 0;
-    }
-
-    private int stableTieBreak(QuoteDefinition quote, String normalizedContext) {
-        return Math.floorMod(Objects.hash(quote.id(), normalizedContext), 100);
+    private Optional<QuoteDefinition> selectWeighted(List<QuoteDefinition> selectionPool) {
+        if (selectionPool.isEmpty()) {
+            return Optional.empty();
+        }
+        int totalWeight = selectionPool.stream()
+                .mapToInt(quote -> Math.max(1, quote.weight()))
+                .sum();
+        int selectedWeight = random.nextInt(totalWeight);
+        for (QuoteDefinition quote : selectionPool) {
+            selectedWeight -= Math.max(1, quote.weight());
+            if (selectedWeight < 0) {
+                return Optional.of(quote);
+            }
+        }
+        return Optional.of(selectionPool.get(selectionPool.size() - 1));
     }
 
     private QuoteCandidate toCandidate(QuoteDefinition quote) {
@@ -204,9 +198,6 @@ public class TrusbotQuoteService {
             String source,
             List<String> categories
     ) {
-    }
-
-    private record RankedQuote(QuoteDefinition quote, int score) {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
