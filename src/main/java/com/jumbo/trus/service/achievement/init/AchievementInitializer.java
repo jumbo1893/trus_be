@@ -253,7 +253,9 @@ public class AchievementInitializer implements CommandLineRunner {
                 new AchievementEntity("Evropský pochůzkář", EVROPSKY_POCHUZKAR, false, "Dokaž si spojit 2 nejvzálenější body Evropy. Ze Španělska až na Ural. 7,2 milionu kroků",
                         false, EnumSet.of(OutboxAggregateType.STEP), AchievementCalculationScope.ALL),
                 new AchievementEntity("Cesta kolem světa", CESTA_KOLEM_SVETA, false, "Pro splnění stačí ujít 51,38 milionu kroků. Někteří to jiště zvládnou za rok 2x",
-                        false, EnumSet.of(OutboxAggregateType.STEP), AchievementCalculationScope.ALL)
+                        false, EnumSet.of(OutboxAggregateType.STEP), AchievementCalculationScope.ALL),
+                new AchievementEntity("TrusBot", TRUSBOT, false, "Trus na Botě? Ne - pokecej si s AI!",
+                        false, EnumSet.of(OutboxAggregateType.OTHER), AchievementCalculationScope.OTHER)
 
         );
     }

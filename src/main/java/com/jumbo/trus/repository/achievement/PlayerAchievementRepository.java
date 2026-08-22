@@ -5,14 +5,17 @@ import com.jumbo.trus.dto.player.stats.projection.IPlayerAchievementCountProject
 import com.jumbo.trus.entity.PlayerEntity;
 import com.jumbo.trus.entity.achievement.PlayerAchievementEntity;
 import com.jumbo.trus.service.achievement.helper.*;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 public interface PlayerAchievementRepository extends JpaRepository<PlayerAchievementEntity, Long> {
 
@@ -76,6 +79,20 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
     List<PlayerAchievementEntity> findAllByPlayerIdAndAchievementIdIn(
             @Param("playerId") Long playerId,
             @Param("achievementIds") Collection<Long> achievementIds
+    );
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+            SELECT playerAchievement
+            FROM PlayerAchievementEntity playerAchievement
+            JOIN FETCH playerAchievement.achievement achievement
+            JOIN FETCH playerAchievement.player player
+            WHERE player.id = :playerId
+              AND achievement.code = :achievementCode
+            """)
+    Optional<PlayerAchievementEntity> findByPlayerIdAndAchievementCodeForUpdate(
+            @Param("playerId") Long playerId,
+            @Param("achievementCode") String achievementCode
     );
 
     @Query("""

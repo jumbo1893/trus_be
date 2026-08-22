@@ -25,14 +25,14 @@ public class OpenAiClient {
     private final AiOpenAiProperties properties;
     private final ObjectMapper objectMapper;
     private final AiReadOnlyToolService toolService;
-    private final TrusbotQuoteService quoteService;
+    private final TrusBotQuoteService quoteService;
     private final OkHttpClient httpClient;
 
     public OpenAiClient(
             AiOpenAiProperties properties,
             ObjectMapper objectMapper,
             AiReadOnlyToolService toolService,
-            TrusbotQuoteService quoteService
+            TrusBotQuoteService quoteService
     ) {
         this.properties = properties;
         this.objectMapper = objectMapper;
@@ -56,7 +56,7 @@ public class OpenAiClient {
     public void requireConfigured() {
         if (!isConfigured()) {
             throw new AiUnavailableException(
-                    "Trusbot zatím není na serveru aktivovaný. Chybí konfigurace OPENAI_API_KEY nebo AI_ENABLED."
+                    "TrusBot zatím není na serveru aktivovaný. Chybí konfigurace OPENAI_API_KEY nebo AI_ENABLED."
             );
         }
     }
@@ -83,7 +83,7 @@ public class OpenAiClient {
 
             JsonNode output = response.path("output");
             if (!output.isArray()) {
-                throw new AiUnavailableException("Trusbot vrátil neúplnou odpověď.");
+                throw new AiUnavailableException("TrusBot vrátil neúplnou odpověď.");
             }
 
             List<JsonNode> functionCalls = new ArrayList<>();
@@ -97,7 +97,7 @@ public class OpenAiClient {
             if (functionCalls.isEmpty()) {
                 String text = extractOutputText(output);
                 if (text == null || text.isBlank()) {
-                    throw new AiUnavailableException("Trusbot nevrátil textovou odpověď.");
+                    throw new AiUnavailableException("TrusBot nevrátil textovou odpověď.");
                 }
                 String answerText = text.trim();
                 String answerWithQuote = appendSelectedQuote(answerText, question, quoteSignals);
@@ -123,7 +123,7 @@ public class OpenAiClient {
         }
 
         throw new AiUnavailableException(
-                "Trusbot využil všech %d povolených kroků pro načtení dat. "
+                "TrusBot využil všech %d povolených kroků pro načtení dat. "
                         .formatted(maxRounds)
                         + "Zkuste dotaz položit konkrétněji."
         );
@@ -165,7 +165,7 @@ public class OpenAiClient {
             }
             return objectMapper.readTree(responseJson);
         } catch (IOException exception) {
-            throw new AiUnavailableException("Trusbot je momentálně nedostupný. Zkuste to prosím později.", exception);
+            throw new AiUnavailableException("TrusBot je momentálně nedostupný. Zkuste to prosím později.", exception);
         }
     }
 
@@ -176,12 +176,12 @@ public class OpenAiClient {
                 + context.currentPlayerName() + " (player_id=" + context.currentPlayerId() + ").";
 
         return """
-                Jmenuješ se Trusbot a jsi AI asistent uvnitř aplikace Trus. Vždy vystupuj pod jménem
-                Trusbot. Odpovídej česky, stručně a srozumitelně.
+                Jmenuješ se TrusBot a jsi AI asistent uvnitř aplikace Trus. Vždy vystupuj pod jménem
+                TrusBot. Odpovídej česky, stručně a srozumitelně.
                 Pokud se uživatel zeptá, jak zobrazit, zapnout, skrýt nebo vypnout hlášky, nepoužívej
-                databázový nástroj a odpověz: „Hlášku zobrazíš, když dotaz zakončíš tečkou (.),
-                otazníkem (?) nebo vykřičníkem (!). Pokud hlášku zobrazit nechceš, zakonči dotaz
-                jiným znakem nebo bez interpunkce.“
+                databázový nástroj a odpověz: „Hlášku zobrazíš, když dotaz zakončíš tečkou (.)
+                nebo vykřičníkem (!). Pokud hlášku zobrazit nechceš, zakonči dotaz jiným znakem
+                nebo bez interpunkce.“
                 Odpovídej pouze na dotazy související s aktuálním týmem, jeho hráči, zápasy,
                 statistikami, pokutami, nápoji, docházkou, achievementy a oficiální soutěží.
                 Na nesouvisející dotaz zdvořile řekni, že umíš řešit pouze témata aplikace a týmu.
@@ -257,12 +257,12 @@ public class OpenAiClient {
                     .path("message")
                     .asText();
             if (!message.isBlank()) {
-                return "Služba Trusbota odmítla požadavek (" + statusCode + "): " + truncate(message, 500);
+                return "Služba TrusBota odmítla požadavek (" + statusCode + "): " + truncate(message, 500);
             }
         } catch (JsonProcessingException ignored) {
             // Bezpečný obecný text níže je vhodnější než vracet celé tělo odpovědi.
         }
-        return "Služba Trusbota odmítla požadavek se stavem " + statusCode + ".";
+        return "Služba TrusBota odmítla požadavek se stavem " + statusCode + ".";
     }
 
     private String baseUrl() {

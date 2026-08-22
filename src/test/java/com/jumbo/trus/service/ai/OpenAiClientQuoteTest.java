@@ -13,7 +13,7 @@ import static org.mockito.Mockito.when;
 
 class OpenAiClientQuoteTest {
 
-    private final TrusbotQuoteService quoteService = mock(TrusbotQuoteService.class);
+    private final TrusBotQuoteService quoteService = mock(TrusBotQuoteService.class);
     private final OpenAiClient client = new OpenAiClient(
             new AiOpenAiProperties(),
             new ObjectMapper(),
@@ -23,8 +23,8 @@ class OpenAiClientQuoteTest {
 
     @Test
     void appendsSelectedQuoteAsSeparateParagraph() {
-        when(quoteService.selectFor("Dotaz?", List.of("find_matches {}")))
-                .thenReturn(Optional.of(new TrusbotQuoteService.QuoteCandidate(
+        when(quoteService.selectFor("Dotaz!", List.of("find_matches {}")))
+                .thenReturn(Optional.of(new TrusBotQuoteService.QuoteCandidate(
                         "quote-1",
                         "První řádek\nDruhý řádek",
                         "OKRESNI_PREBOR",
@@ -33,7 +33,7 @@ class OpenAiClientQuoteTest {
 
         String result = client.appendSelectedQuote(
                 "Věcná odpověď.",
-                "Dotaz?",
+                "Dotaz!",
                 List.of("find_matches {}")
         );
 

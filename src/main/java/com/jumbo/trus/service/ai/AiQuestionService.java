@@ -8,10 +8,12 @@ import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.auth.UserEntity;
 import com.jumbo.trus.entity.auth.UserTeamRole;
 import com.jumbo.trus.repository.auth.UserTeamRoleRepository;
+import com.jumbo.trus.service.achievement.TrusBotAchievementService;
 import com.jumbo.trus.service.auth.AppTeamService;
 import com.jumbo.trus.service.auth.AuthService;
 import com.jumbo.trus.service.exceptions.AuthException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -19,6 +21,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AiQuestionService {
 
     private final AuthService authService;
@@ -26,6 +29,7 @@ public class AiQuestionService {
     private final UserTeamRoleRepository userTeamRoleRepository;
     private final AiQuotaService quotaService;
     private final OpenAiClient openAiClient;
+    private final TrusBotAchievementService trusBotAchievementService;
 
     public AiQuestionResponse ask(AiAskRequest request) {
         // Konfigurační chyba nesmí uživateli spotřebovat denní dotaz.
@@ -56,6 +60,7 @@ public class AiQuestionService {
                     decision.usage().getTier()
             );
             AiQuestionEntity completed = quotaService.complete(reservedQuestion.getId(), answer);
+            awardTrusBotAchievement(context.currentPlayerId(), appTeam);
             return toResponse(completed, decision.usage());
         } catch (RuntimeException exception) {
             try {
@@ -102,6 +107,20 @@ public class AiQuestionService {
                 player == null ? null : player.getId(),
                 player == null ? null : player.getName()
         );
+    }
+
+    private void awardTrusBotAchievement(Long playerId, AppTeamEntity appTeam) {
+        try {
+            trusBotAchievementService.awardForSuccessfulQuestion(playerId, appTeam);
+        } catch (RuntimeException exception) {
+            // Chyba doprovodného achievementu nesmí změnit již uloženou AI odpověď na neúspěšnou.
+            log.error(
+                    "TrusBot achievement could not be awarded. playerId={}, appTeamId={}",
+                    playerId,
+                    appTeam == null ? null : appTeam.getId(),
+                    exception
+            );
+        }
     }
 
     private AiQuestionResponse toResponse(AiQuestionEntity question, AiUsageDTO usage) {

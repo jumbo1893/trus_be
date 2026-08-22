@@ -9,13 +9,13 @@ import java.util.Random;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class TrusbotQuoteServiceTest {
+class TrusBotQuoteServiceTest {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
     void loadsAndEnablesAllApprovedQuotes() {
-        TrusbotQuoteService service = serviceChoosing(true);
+        TrusBotQuoteService service = serviceChoosing(true);
 
         assertEquals(160, service.quoteCount());
         assertEquals(160, service.enabledQuoteCount());
@@ -23,7 +23,7 @@ class TrusbotQuoteServiceTest {
 
     @Test
     void doesNotSelectQuoteWithoutTerminalPunctuation() {
-        TrusbotQuoteService service = serviceChoosing(true);
+        TrusBotQuoteService service = serviceChoosing(true);
 
         assertTrue(service.selectFor("Kdo letos vypil nejvíc piv", List.of()).isEmpty());
         assertTrue(service.selectFor("Kdo dal nejvíc gólů   ", List.of("find_matches {}"))
@@ -32,19 +32,26 @@ class TrusbotQuoteServiceTest {
 
     @Test
     void allConfiguredTerminalCharactersTriggerQuote() {
-        TrusbotQuoteService service = serviceChoosing(false);
+        TrusBotQuoteService service = serviceChoosing(false);
 
-        for (String question : List.of("Dotaz.", "Dotaz?", "Dotaz!", "Dotaz?   ")) {
+        for (String question : List.of("Dotaz.", "Dotaz!", "Dotaz!   ")) {
             assertTrue(service.selectFor(question, List.of()).isPresent(), question);
         }
     }
 
     @Test
-    void thematicHalfCanSelectBeerQuote() {
-        TrusbotQuoteService service = serviceChoosing(true);
+    void questionMarkDoesNotTriggerQuote() {
+        TrusBotQuoteService service = serviceChoosing(true);
 
-        TrusbotQuoteService.QuoteCandidate candidate = service.selectFor(
-                "Kdo vypil nejvíc piv v sezoně?",
+        assertTrue(service.selectFor("Dotaz?", List.of()).isEmpty());
+    }
+
+    @Test
+    void thematicHalfCanSelectBeerQuote() {
+        TrusBotQuoteService service = serviceChoosing(true);
+
+        TrusBotQuoteService.QuoteCandidate candidate = service.selectFor(
+                "Kdo vypil nejvíc piv v sezoně.",
                 List.of()
         ).orElseThrow();
 
@@ -53,10 +60,10 @@ class TrusbotQuoteServiceTest {
 
     @Test
     void generalHalfCanSelectGeneralQuoteForRelevantQuestion() {
-        TrusbotQuoteService service = serviceChoosing(false);
+        TrusBotQuoteService service = serviceChoosing(false);
 
-        TrusbotQuoteService.QuoteCandidate candidate = service.selectFor(
-                "Kdo letos vypil nejvíc piv?",
+        TrusBotQuoteService.QuoteCandidate candidate = service.selectFor(
+                "Kdo letos vypil nejvíc piv!",
                 List.of()
         ).orElseThrow();
 
@@ -65,10 +72,10 @@ class TrusbotQuoteServiceTest {
 
     @Test
     void toolUsageCanProvideFootballContext() {
-        TrusbotQuoteService service = serviceChoosing(true);
+        TrusBotQuoteService service = serviceChoosing(true);
 
-        TrusbotQuoteService.QuoteCandidate candidate = service.selectFor(
-                "Jak to tedy vypadá?",
+        TrusBotQuoteService.QuoteCandidate candidate = service.selectFor(
+                "Jak to tedy vypadá.",
                 List.of("find_matches {}")
         ).orElseThrow();
 
@@ -77,10 +84,10 @@ class TrusbotQuoteServiceTest {
 
     @Test
     void alcoholWithoutBeerOrShotKeywordUsesGeneral() {
-        TrusbotQuoteService service = serviceChoosing(true);
+        TrusBotQuoteService service = serviceChoosing(true);
 
-        TrusbotQuoteService.QuoteCandidate candidate = service.selectFor(
-                "Kdo vypil nejvíc alkoholu?",
+        TrusBotQuoteService.QuoteCandidate candidate = service.selectFor(
+                "Kdo vypil nejvíc alkoholu.",
                 List.of()
         ).orElseThrow();
 
@@ -89,10 +96,10 @@ class TrusbotQuoteServiceTest {
 
     @Test
     void moneyQuestionCanSelectFineQuote() {
-        TrusbotQuoteService service = serviceChoosing(true);
+        TrusBotQuoteService service = serviceChoosing(true);
 
-        TrusbotQuoteService.QuoteCandidate candidate = service.selectFor(
-                "Kolik peněz jsme zaplatili?",
+        TrusBotQuoteService.QuoteCandidate candidate = service.selectFor(
+                "Kolik peněz jsme zaplatili!",
                 List.of()
         ).orElseThrow();
 
@@ -101,10 +108,10 @@ class TrusbotQuoteServiceTest {
 
     @Test
     void resultQuestionCanSelectMatchQuote() {
-        TrusbotQuoteService service = serviceChoosing(true);
+        TrusBotQuoteService service = serviceChoosing(true);
 
-        TrusbotQuoteService.QuoteCandidate candidate = service.selectFor(
-                "Jaký byl výsledek zápasu?",
+        TrusBotQuoteService.QuoteCandidate candidate = service.selectFor(
+                "Jaký byl výsledek zápasu.",
                 List.of()
         ).orElseThrow();
 
@@ -113,18 +120,18 @@ class TrusbotQuoteServiceTest {
 
     @Test
     void questionWithoutKnownCategoryAlwaysSelectsGeneral() {
-        TrusbotQuoteService service = serviceChoosing(true);
+        TrusBotQuoteService service = serviceChoosing(true);
 
-        TrusbotQuoteService.QuoteCandidate candidate = service.selectFor(
-                "Jaké mám achievementy?",
+        TrusBotQuoteService.QuoteCandidate candidate = service.selectFor(
+                "Jaké mám achievementy!",
                 List.of("read_achievements {}")
         ).orElseThrow();
 
         assertTrue(candidate.categories().contains("GENERAL"));
     }
 
-    private TrusbotQuoteService serviceChoosing(boolean thematicQuote) {
-        return new TrusbotQuoteService(objectMapper, new FixedRandom(thematicQuote));
+    private TrusBotQuoteService serviceChoosing(boolean thematicQuote) {
+        return new TrusBotQuoteService(objectMapper, new FixedRandom(thematicQuote));
     }
 
     private static final class FixedRandom extends Random {

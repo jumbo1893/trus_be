@@ -17,7 +17,7 @@ import java.util.Random;
 import java.util.Set;
 
 @Component
-public class TrusbotQuoteService {
+public class TrusBotQuoteService {
 
     private static final String QUOTES_RESOURCE = "/ai/trusbot-quotes.json";
 
@@ -42,11 +42,11 @@ public class TrusbotQuoteService {
     private final Random random;
 
     @Autowired
-    public TrusbotQuoteService(ObjectMapper objectMapper) {
+    public TrusBotQuoteService(ObjectMapper objectMapper) {
         this(objectMapper, new Random());
     }
 
-    TrusbotQuoteService(ObjectMapper objectMapper, Random random) {
+    TrusBotQuoteService(ObjectMapper objectMapper, Random random) {
         this.quotes = loadQuotes(objectMapper);
         this.random = random;
     }
@@ -91,24 +91,24 @@ public class TrusbotQuoteService {
     }
 
     private List<QuoteDefinition> loadQuotes(ObjectMapper objectMapper) {
-        try (InputStream inputStream = TrusbotQuoteService.class.getResourceAsStream(QUOTES_RESOURCE)) {
+        try (InputStream inputStream = TrusBotQuoteService.class.getResourceAsStream(QUOTES_RESOURCE)) {
             if (inputStream == null) {
-                throw new IllegalStateException("Chybí soubor s hláškami Trusbota: " + QUOTES_RESOURCE);
+                throw new IllegalStateException("Chybí soubor s hláškami TrusBota: " + QUOTES_RESOURCE);
             }
             QuoteDocument document = objectMapper.readValue(inputStream, QuoteDocument.class);
             if (document.quotes() == null || document.quotes().isEmpty()) {
-                throw new IllegalStateException("Soubor s hláškami Trusbota je prázdný.");
+                throw new IllegalStateException("Soubor s hláškami TrusBota je prázdný.");
             }
             List<QuoteDefinition> loadedQuotes = List.copyOf(document.quotes());
             boolean hasEnabledGeneral = loadedQuotes.stream()
                     .filter(QuoteDefinition::enabled)
                     .anyMatch(quote -> safeList(quote.categories()).contains("GENERAL"));
             if (!hasEnabledGeneral) {
-                throw new IllegalStateException("Trusbot potřebuje alespoň jednu aktivní hlášku GENERAL.");
+                throw new IllegalStateException("TrusBot potřebuje alespoň jednu aktivní hlášku GENERAL.");
             }
             return loadedQuotes;
         } catch (IOException exception) {
-            throw new IllegalStateException("Nelze načíst hlášky Trusbota.", exception);
+            throw new IllegalStateException("Nelze načíst hlášky TrusBota.", exception);
         }
     }
 
@@ -121,7 +121,7 @@ public class TrusbotQuoteService {
             return false;
         }
         char lastCharacter = trimmedQuestion.charAt(trimmedQuestion.length() - 1);
-        return lastCharacter == '.' || lastCharacter == '?' || lastCharacter == '!';
+        return lastCharacter == '.' || lastCharacter == '!';
     }
 
     private Set<String> detectCategories(String normalizedContext) {

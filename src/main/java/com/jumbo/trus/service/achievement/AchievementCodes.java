@@ -278,6 +278,9 @@ public final class AchievementCodes {
     public static final String CESTA_KOLEM_SVETA =
             "CESTA_KOLEM_SVETA";
 
+    public static final String TRUSBOT =
+            "TRUSBOT";
+
     private AchievementCodes() {
     }
 }

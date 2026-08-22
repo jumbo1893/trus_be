@@ -47,7 +47,7 @@ public class AiQuotaService {
             return AiQuotaDecision.denied(
                     currentUsage,
                     AiQuestionStatus.DISABLED,
-                    "Trusbot není pro váš účet povolen."
+                    "TrusBot není pro váš účet povolen."
             );
         }
 
