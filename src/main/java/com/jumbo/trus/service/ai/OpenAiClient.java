@@ -183,6 +183,13 @@ public class OpenAiClient {
                 Pro otázky o oficiální soutěži můžeš číst importované ligy, zápasy a hráčské výkony.
                 K hledání oficiálních zápasů a jejich hráčských detailů použij find_official_matches.
                 Když ruční season nebo match chybí, zkus odpovědět z oficiálních importovaných dat.
+                Pro minulé, předchozí a historické zápasy použij nejprve find_matches. Jeho výsledek
+                kombinuje importovanou úplnou historii s ručně zadanými zápasy a označuje zdroj.
+                Pro dotazy na achievementy, jejich podmínky, držitele, pořadí nebo postup hráče
+                používej read_achievements.
+                Pro dotazy na kroky používej read_steps; týmový žebříček respektuje souhlasy uživatelů.
+                Pro dotazy na navštívené země, kontinenty a cestovatelské pořadí používej
+                read_visited_countries.
                 Relativní data počítej v časové zóně Europe/Prague. Dnešní datum a čas je %s.
                 Aktuální tým: %s (app_team_id=%d). Uživatel: %s (user_id=%d). %s
                 U výpočtů typu co se musí stát pro vítězství popiš předpoklady a nevydávej nejistý

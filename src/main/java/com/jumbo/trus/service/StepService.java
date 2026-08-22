@@ -109,11 +109,16 @@ public class StepService {
     @Transactional(readOnly = true)
     public List<StepDailyDTO> getMySteps(LocalDate from, LocalDate to) {
         UserEntity user = userService.getCurrentUserEntity();
+        return getStepsForUser(user.getId(), from, to);
+    }
+
+    @Transactional(readOnly = true)
+    public List<StepDailyDTO> getStepsForUser(Long userId, LocalDate from, LocalDate to) {
         LocalDate effectiveTo = to == null ? LocalDate.now() : to;
         LocalDate effectiveFrom = from == null ? effectiveTo.minusDays(DEFAULT_HISTORY_DAYS - 1L) : from;
         validateRange(effectiveFrom, effectiveTo);
         return stepUpdateRepository
-                .findAllByUserIdAndDateBetweenOrderByDateAsc(user.getId(), effectiveFrom, effectiveTo)
+                .findAllByUserIdAndDateBetweenOrderByDateAsc(userId, effectiveFrom, effectiveTo)
                 .stream()
                 .map(this::toDTO)
                 .toList();
@@ -147,6 +152,11 @@ public class StepService {
     @Transactional(readOnly = true)
     public StepLeaderboardResponseDTO getLeaderboard(StepPeriod period) {
         AppTeamEntity appTeam = appTeamService.getCurrentAppTeamOrThrow();
+        return getLeaderboardForTeam(period, appTeam);
+    }
+
+    @Transactional(readOnly = true)
+    public StepLeaderboardResponseDTO getLeaderboardForTeam(StepPeriod period, AppTeamEntity appTeam) {
         LocalDate today = LocalDate.now(ZoneId.of("Europe/Prague"));
         List<MatchEntity> matches = findLastMatches(appTeam.getId());
         MatchEntity lastMatch = matches.isEmpty() ? null : matches.get(0);

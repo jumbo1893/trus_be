@@ -5,9 +5,16 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.jumbo.trus.dto.SeasonDTO;
+import com.jumbo.trus.dto.VisitedCountryResponse;
+import com.jumbo.trus.dto.achievement.AchievementDTO;
+import com.jumbo.trus.dto.achievement.AchievementDetail;
+import com.jumbo.trus.dto.achievement.AchievementPlayerDetail;
+import com.jumbo.trus.dto.achievement.IPlayerAchievementStats;
+import com.jumbo.trus.dto.achievement.PlayerAchievementDTO;
 import com.jumbo.trus.dto.ai.AiFineSummaryProjection;
 import com.jumbo.trus.dto.ai.AiRepeatOpponentProjection;
 import com.jumbo.trus.dto.player.PlayerDTO;
+import com.jumbo.trus.dto.step.StepPeriod;
 import com.jumbo.trus.entity.MatchEntity;
 import com.jumbo.trus.entity.football.FootballMatchEntity;
 import com.jumbo.trus.entity.football.FootballMatchPlayerEntity;
@@ -17,15 +24,20 @@ import com.jumbo.trus.entity.filter.SeasonFilter;
 import com.jumbo.trus.entity.filter.StatisticsFilter;
 import com.jumbo.trus.repository.MatchRepository;
 import com.jumbo.trus.repository.ReceivedFineRepository;
+import com.jumbo.trus.repository.TeamVisitedCountryProjection;
 import com.jumbo.trus.repository.football.FootballMatchRepository;
 import com.jumbo.trus.service.AttendanceService;
 import com.jumbo.trus.service.SeasonService;
+import com.jumbo.trus.service.StepService;
+import com.jumbo.trus.service.UserVisitedCountryService;
+import com.jumbo.trus.service.achievement.AchievementService;
 import com.jumbo.trus.service.beer.BeerService;
 import com.jumbo.trus.service.football.match.FootballMatchService;
 import com.jumbo.trus.service.football.stats.FootballPlayerStatsService;
 import com.jumbo.trus.service.football.team.TeamService;
 import com.jumbo.trus.service.goal.GoalService;
 import com.jumbo.trus.service.player.PlayerService;
+import com.jumbo.trus.service.player.PlayerAchievementService;
 import com.jumbo.trus.service.player.PlayerStatsFacade;
 import com.jumbo.trus.service.receivedFine.ReceivedFineService;
 import jakarta.persistence.criteria.Predicate;
@@ -63,6 +75,10 @@ public class AiReadOnlyToolService {
     private final FootballPlayerStatsService footballPlayerStatsService;
     private final TeamService teamService;
     private final PlayerStatsFacade playerStatsFacade;
+    private final AchievementService achievementService;
+    private final PlayerAchievementService playerAchievementService;
+    private final StepService stepService;
+    private final UserVisitedCountryService userVisitedCountryService;
 
     public ArrayNode toolDefinitions() {
         try {
@@ -83,6 +99,9 @@ public class AiReadOnlyToolService {
                 case "read_repeat_opponents" -> readRepeatOpponents(context);
                 case "read_team_directory" -> readTeamDirectory(arguments, context);
                 case "read_official_football" -> readOfficialFootball(arguments, context);
+                case "read_achievements" -> readAchievements(arguments, context);
+                case "read_steps" -> readSteps(arguments, context);
+                case "read_visited_countries" -> readVisitedCountries(arguments, context);
                 case "read_player_profile" -> readPlayerProfile(arguments, context);
                 default -> Map.of("error", "Neznámý read-only nástroj: " + toolName);
             };
@@ -129,27 +148,116 @@ public class AiReadOnlyToolService {
             return builder.and(predicates.toArray(Predicate[]::new));
         };
 
-        List<MatchEntity> matches = matchRepository.findAll(
+        int fetchLimit = Math.min(60, limit * 3);
+        List<MatchEntity> manualMatches = matchRepository.findAll(
                 specification,
-                PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "date"))
+                PageRequest.of(0, fetchLimit, Sort.by(Sort.Direction.DESC, "date"))
         ).getContent();
 
-        return matches.stream().map(match -> {
-            Map<String, Object> result = new LinkedHashMap<>();
-            result.put("id", match.getId());
-            result.put("opponent", match.getName());
-            result.put("date", formatDateTime(match.getDate()));
-            result.put("season_id", match.getSeason() == null ? null : match.getSeason().getId());
-            result.put("home", match.isHome());
-            result.put("home_goals", match.getHomeGoalNumber());
-            result.put("away_goals", match.getAwayGoalNumber());
-            result.put("participants", match.getPlayerList().stream().map(player -> Map.of(
-                    "id", player.getId(),
-                    "name", player.getName(),
-                    "fan", player.isFan()
-            )).toList());
-            return result;
-        }).toList();
+        TeamEntity officialTeam = context.appTeam().getTeam();
+        Date officialFromDate = fromDate;
+        Date officialToDate = toDate;
+        if (seasonId != null && seasonId != com.jumbo.trus.config.Config.ALL_SEASON_ID) {
+            SeasonDTO selectedSeason = seasonService.getSeason(seasonId);
+            if (officialFromDate == null) {
+                officialFromDate = selectedSeason.getFromDate();
+            }
+            if (officialToDate == null && selectedSeason.getToDate() != null) {
+                LocalDate seasonEnd = selectedSeason.getToDate().toInstant().atZone(APP_ZONE).toLocalDate();
+                officialToDate = startOfDay(seasonEnd.plusDays(1));
+            }
+        }
+        Date finalOfficialFromDate = officialFromDate;
+        Date finalOfficialToDate = officialToDate;
+        List<FootballMatchEntity> officialMatches = officialTeam == null || officialTeam.getId() == null
+                ? List.of()
+                : footballMatchRepository.findAll(
+                        officialMatchSpecification(
+                                officialTeam,
+                                finalOfficialFromDate,
+                                finalOfficialToDate,
+                                opponent,
+                                null,
+                                false
+                        ),
+                        PageRequest.of(0, fetchLimit, Sort.by(Sort.Direction.DESC, "date"))
+                ).getContent();
+
+        return combineMatches(officialMatches, manualMatches, officialTeam, limit);
+    }
+
+    private List<Map<String, Object>> combineMatches(
+            List<FootballMatchEntity> officialMatches,
+            List<MatchEntity> manualMatches,
+            TeamEntity officialTeam,
+            int limit
+    ) {
+        List<CombinedMatchRow> combined = new ArrayList<>();
+        Set<Long> officialIds = new HashSet<>();
+        Set<String> naturalKeys = new HashSet<>();
+        Long officialTeamId = officialTeam == null ? null : officialTeam.getId();
+
+        for (FootballMatchEntity match : officialMatches) {
+            TeamEntity opponent = opponent(match, officialTeamId);
+            String opponentName = opponent == null ? null : opponent.getName();
+            officialIds.add(match.getId());
+            naturalKeys.add(naturalMatchKey(opponentName, match.getDate()));
+            Map<String, Object> row = officialMatchRow(match, officialTeamId, false);
+            row.put("data_source", "official_import");
+            combined.add(new CombinedMatchRow(match.getDate(), row));
+        }
+
+        for (MatchEntity match : manualMatches) {
+            Long linkedOfficialId = match.getFootballMatch() == null ? null : match.getFootballMatch().getId();
+            String naturalKey = naturalMatchKey(match.getName(), match.getDate());
+            if ((linkedOfficialId != null && officialIds.contains(linkedOfficialId))
+                    || naturalKeys.contains(naturalKey)) {
+                continue;
+            }
+            naturalKeys.add(naturalKey);
+            combined.add(new CombinedMatchRow(match.getDate(), manualMatchRow(match)));
+        }
+
+        return combined.stream()
+                .sorted(Comparator.comparing(
+                        CombinedMatchRow::date,
+                        Comparator.nullsLast(Comparator.reverseOrder())
+                ))
+                .limit(limit)
+                .map(CombinedMatchRow::row)
+                .toList();
+    }
+
+    private Map<String, Object> manualMatchRow(MatchEntity match) {
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("id", match.getId());
+        result.put("data_source", "manual_app");
+        result.put("official_match_id", match.getFootballMatch() == null ? null : match.getFootballMatch().getId());
+        result.put("opponent", match.getName());
+        result.put("date", formatDateTime(match.getDate()));
+        result.put("season_id", match.getSeason() == null ? null : match.getSeason().getId());
+        result.put("home", match.isHome());
+        result.put("home_goals", match.getHomeGoalNumber());
+        result.put("away_goals", match.getAwayGoalNumber());
+        result.put("weather", matchWeatherRow(match.getWeather()));
+        result.put("participants", Optional.ofNullable(match.getPlayerList()).orElseGet(List::of)
+                .stream()
+                .map(player -> Map.of(
+                        "id", player.getId(),
+                        "name", player.getName(),
+                        "fan", player.isFan()
+                )).toList());
+        return result;
+    }
+
+    private String naturalMatchKey(String opponent, Date date) {
+        String normalizedOpponent = opponent == null
+                ? ""
+                : opponent.trim().toLowerCase(Locale.ROOT).replaceAll("\\s+", " ");
+        String localDate = date == null
+                ? ""
+                : date.toInstant().atZone(APP_ZONE).toLocalDate().toString();
+        return normalizedOpponent + "|" + localDate;
     }
 
     private Object findOfficialMatches(JsonNode arguments, AiToolContext context) {
@@ -168,7 +276,38 @@ public class AiReadOnlyToolService {
         boolean includePlayers = arguments.path("include_players").asBoolean(false);
         int limit = clamp(arguments.path("limit").asInt(20), 1, 30);
 
-        Specification<FootballMatchEntity> specification = (root, query, builder) -> {
+        Specification<FootballMatchEntity> specification = officialMatchSpecification(
+                team,
+                fromDate,
+                toDate,
+                opponent,
+                playedOnly,
+                currentLeagueOnly
+        );
+
+        List<FootballMatchEntity> matches = footballMatchRepository.findAll(
+                specification,
+                PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "date"))
+        ).getContent();
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("data_source", "official_import");
+        result.put("matches", matches.stream()
+                .map(match -> officialMatchRow(match, teamId, includePlayers))
+                .toList());
+        return result;
+    }
+
+    private Specification<FootballMatchEntity> officialMatchSpecification(
+            TeamEntity team,
+            Date fromDate,
+            Date toDate,
+            String opponent,
+            Boolean playedOnly,
+            boolean currentLeagueOnly
+    ) {
+        Long teamId = team.getId();
+        return (root, query, builder) -> {
             Predicate isHomeTeam = builder.equal(root.get("homeTeam").get("id"), teamId);
             Predicate isAwayTeam = builder.equal(root.get("awayTeam").get("id"), teamId);
             List<Predicate> predicates = new ArrayList<>();
@@ -195,18 +334,6 @@ public class AiReadOnlyToolService {
             query.distinct(true);
             return builder.and(predicates.toArray(Predicate[]::new));
         };
-
-        List<FootballMatchEntity> matches = footballMatchRepository.findAll(
-                specification,
-                PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "date"))
-        ).getContent();
-
-        Map<String, Object> result = new LinkedHashMap<>();
-        result.put("data_source", "official_import");
-        result.put("matches", matches.stream()
-                .map(match -> officialMatchRow(match, teamId, includePlayers))
-                .toList());
-        return result;
     }
 
     private Map<String, Object> officialMatchRow(
@@ -214,7 +341,8 @@ public class AiReadOnlyToolService {
             Long currentTeamId,
             boolean includePlayers
     ) {
-        boolean home = Objects.equals(match.getHomeTeam().getId(), currentTeamId);
+        boolean home = match.getHomeTeam() != null
+                && Objects.equals(match.getHomeTeam().getId(), currentTeamId);
         TeamEntity opponent = home ? match.getAwayTeam() : match.getHomeTeam();
         Map<String, Object> row = new LinkedHashMap<>();
         row.put("id", match.getId());
@@ -229,12 +357,35 @@ public class AiReadOnlyToolService {
         row.put("already_played", match.isAlreadyPlayed());
         row.put("round", match.getRound());
         row.put("league", leagueRow(match.getLeague()));
+        row.put("stadium", match.getStadium());
+        row.put("referee", match.getReferee());
+        row.put("referee_comment", match.getRefereeComment());
+        row.put("result_url", match.getUrlResult());
         if (includePlayers) {
             row.put("players", Optional.ofNullable(match.getPlayerList()).orElseGet(Set::of)
                     .stream()
                     .map(this::officialPlayerRow)
                     .toList());
         }
+        return row;
+    }
+
+    private Map<String, Object> matchWeatherRow(com.jumbo.trus.entity.MatchWeatherEntity weather) {
+        if (weather == null) {
+            return null;
+        }
+        Map<String, Object> row = new LinkedHashMap<>();
+        row.put("temperature", weather.getTemperature());
+        row.put("apparent_temperature", weather.getApparentTemperature());
+        row.put("relative_humidity", weather.getRelativeHumidity());
+        row.put("precipitation", weather.getPrecipitation());
+        row.put("rain", weather.getRain());
+        row.put("snowfall", weather.getSnowfall());
+        row.put("weather_code", weather.getWeatherCode());
+        row.put("cloud_cover", weather.getCloudCover());
+        row.put("wind_speed", weather.getWindSpeed());
+        row.put("wind_gusts", weather.getWindGusts());
+        row.put("source", weather.getSourceType());
         return row;
     }
 
@@ -541,6 +692,310 @@ public class AiReadOnlyToolService {
         };
     }
 
+    private Object readAchievements(JsonNode arguments, AiToolContext context) {
+        String dataset = requiredText(arguments, "dataset");
+        Long playerId = nullableLong(arguments, "player_id");
+        String search = nullableText(arguments, "search");
+        Boolean accomplishedOnly = nullableBoolean(arguments, "accomplished_only");
+        int limit = clamp(arguments.path("limit").asInt(30), 1, 100);
+
+        return switch (dataset) {
+            case "catalog" -> achievementService.getAllDetailedAchievements(context.appTeam().getId())
+                    .stream()
+                    .filter(detail -> matchesAchievementSearch(detail.getAchievement(), search))
+                    .limit(limit)
+                    .map(this::achievementDetailRow)
+                    .toList();
+            case "player" -> readPlayerAchievements(
+                    playerId == null ? context.currentPlayerId() : playerId,
+                    search,
+                    accomplishedOnly,
+                    limit,
+                    context
+            );
+            case "recent" -> {
+                List<Long> playerIds = playerService.getAll(context.appTeam().getId())
+                        .stream()
+                        .map(PlayerDTO::getId)
+                        .toList();
+                if (playerIds.isEmpty()) {
+                    yield List.of();
+                }
+                yield playerAchievementService.getLastPlayerAchievements(limit, playerIds)
+                        .stream()
+                        .filter(achievement -> matchesAchievementSearch(achievement.getAchievement(), search))
+                        .map(this::playerAchievementRow)
+                        .toList();
+            }
+            case "leaderboard" -> achievementLeaderboard(context, limit);
+            default -> Map.of("error", "Neznámý achievementový dataset: " + dataset);
+        };
+    }
+
+    private Object readSteps(JsonNode arguments, AiToolContext context) {
+        String dataset = requiredText(arguments, "dataset");
+        int limit = clamp(arguments.path("limit").asInt(30), 1, 366);
+        return switch (dataset) {
+            case "leaderboard" -> {
+                String requestedPeriod = nullableText(arguments, "period");
+                StepPeriod period = requestedPeriod == null
+                        ? StepPeriod.TODAY
+                        : StepPeriod.valueOf(requestedPeriod);
+                yield stepService.getLeaderboardForTeam(period, context.appTeam());
+            }
+            case "me" -> stepService.getStepsForUser(
+                            context.user().getId(),
+                            nullableDate(arguments, "from_date"),
+                            nullableDate(arguments, "to_date")
+                    ).stream()
+                    .limit(limit)
+                    .toList();
+            default -> Map.of("error", "Neznámý dataset kroků: " + dataset);
+        };
+    }
+
+    private Object readVisitedCountries(JsonNode arguments, AiToolContext context) {
+        String dataset = requiredText(arguments, "dataset");
+        Long requestedPlayerId = nullableLong(arguments, "player_id");
+        int limit = clamp(arguments.path("limit").asInt(50), 1, 100);
+
+        if ("me".equals(dataset)) {
+            List<VisitedCountryResponse> countries = userVisitedCountryService
+                    .getVisitedCountryResponses(context.user().getId());
+            return visitedCountrySummary(
+                    context.currentPlayerId(),
+                    context.currentPlayerName(),
+                    countries.stream().map(this::visitedCountryRow).toList()
+            );
+        }
+
+        Map<Long, String> teamPlayers = playerService.getAll(context.appTeam().getId()).stream()
+                .collect(java.util.stream.Collectors.toMap(
+                        PlayerDTO::getId,
+                        PlayerDTO::getName,
+                        (first, ignored) -> first,
+                        LinkedHashMap::new
+                ));
+        List<TeamVisitedCountryProjection> teamCountries = userVisitedCountryService
+                .getTeamVisitedCountries(context.appTeam().getId());
+        if ("player".equals(dataset)) {
+            Long playerId = requestedPlayerId == null ? context.currentPlayerId() : requestedPlayerId;
+            if (playerId == null || !teamPlayers.containsKey(playerId)) {
+                return Map.of("error", "Hráč nebyl v aktuálním týmu nalezen.");
+            }
+            List<TeamVisitedCountryProjection> playerCountries = teamCountries.stream()
+                    .filter(country -> Objects.equals(country.getPlayerId(), playerId))
+                    .toList();
+            String playerName = playerCountries.stream()
+                    .map(TeamVisitedCountryProjection::getPlayerName)
+                    .filter(Objects::nonNull)
+                    .findFirst()
+                    .orElse(teamPlayers.get(playerId));
+            return visitedCountrySummary(
+                    playerId,
+                    playerName,
+                    playerCountries.stream().map(this::visitedCountryRow).toList()
+            );
+        }
+        if (!"team".equals(dataset)) {
+            return Map.of("error", "Neznámý dataset navštívených zemí: " + dataset);
+        }
+
+        Map<Long, List<TeamVisitedCountryProjection>> byPlayer = new LinkedHashMap<>();
+        for (Long playerId : teamPlayers.keySet()) {
+            byPlayer.put(playerId, new ArrayList<>());
+        }
+        for (TeamVisitedCountryProjection country : teamCountries) {
+            byPlayer.computeIfAbsent(country.getPlayerId(), ignored -> new ArrayList<>()).add(country);
+        }
+        return byPlayer.entrySet().stream()
+                .map(entry -> {
+                    List<TeamVisitedCountryProjection> countries = entry.getValue();
+                    String playerName = countries.isEmpty()
+                            ? teamPlayers.get(entry.getKey())
+                            : countries.get(0).getPlayerName();
+                    return visitedCountrySummary(
+                            entry.getKey(),
+                            playerName,
+                            countries.stream().map(this::visitedCountryRow).toList()
+                    );
+                })
+                .sorted(Comparator
+                        .comparingLong((Map<String, Object> row) -> (long) row.get("country_count"))
+                        .reversed()
+                        .thenComparing(row -> String.valueOf(row.get("player"))))
+                .limit(limit)
+                .toList();
+    }
+
+    private Map<String, Object> visitedCountrySummary(
+            Long playerId,
+            String playerName,
+            List<Map<String, Object>> countries
+    ) {
+        Map<String, Map<String, Object>> distinctCountries = new LinkedHashMap<>();
+        for (Map<String, Object> country : countries) {
+            distinctCountries.putIfAbsent(String.valueOf(country.get("code")), country);
+        }
+        List<Map<String, Object>> countryList = new ArrayList<>(distinctCountries.values());
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("player_id", playerId);
+        result.put("player", playerName);
+        result.put("country_count", (long) countryList.size());
+        result.put("foreign_country_count", countryList.stream()
+                .filter(country -> !"CZ".equalsIgnoreCase(String.valueOf(country.get("code"))))
+                .count());
+        result.put("continent_count", countryList.stream()
+                .map(country -> country.get("continent_code"))
+                .filter(Objects::nonNull)
+                .distinct()
+                .count());
+        result.put("countries", countryList);
+        return result;
+    }
+
+    private Map<String, Object> visitedCountryRow(VisitedCountryResponse country) {
+        Map<String, Object> row = new LinkedHashMap<>();
+        row.put("code", country.code());
+        row.put("name", country.nameCs());
+        row.put("continent_code", country.continentCode());
+        row.put("first_visited_at", country.firstVisitedAt());
+        return row;
+    }
+
+    private Map<String, Object> visitedCountryRow(TeamVisitedCountryProjection country) {
+        Map<String, Object> row = new LinkedHashMap<>();
+        row.put("code", country.getCode());
+        row.put("name", country.getNameCs());
+        row.put("continent_code", country.getContinentCode());
+        row.put("first_visited_at", country.getFirstVisitedAt());
+        return row;
+    }
+
+    private Object readPlayerAchievements(
+            Long playerId,
+            String search,
+            Boolean accomplishedOnly,
+            int limit,
+            AiToolContext context
+    ) {
+        if (playerId == null || !belongsToCurrentTeam(playerId, context)) {
+            return Map.of("error", "Hráč nebyl v aktuálním týmu nalezen.");
+        }
+        AchievementPlayerDetail detail = achievementService.getAchievementsForPlayer(
+                playerId,
+                context.appTeam().getId()
+        );
+        List<PlayerAchievementDTO> achievements = new ArrayList<>();
+        if (!Boolean.FALSE.equals(accomplishedOnly)) {
+            achievements.addAll(detail.getAccomplishedPlayerAchievements());
+        }
+        if (!Boolean.TRUE.equals(accomplishedOnly)) {
+            achievements.addAll(detail.getNotAccomplishedPlayerAchievements());
+        }
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("player_id", playerId);
+        result.put("total_count", detail.getTotalCount());
+        result.put("success_rate", detail.getSuccessRate());
+        result.put("achievements", achievements.stream()
+                .filter(achievement -> matchesAchievementSearch(achievement.getAchievement(), search))
+                .limit(limit)
+                .map(this::playerAchievementRow)
+                .toList());
+        return result;
+    }
+
+    private Object achievementLeaderboard(AiToolContext context, int limit) {
+        Map<Long, String> playerNames = playerService.getAll(context.appTeam().getId())
+                .stream()
+                .collect(java.util.stream.Collectors.toMap(
+                        PlayerDTO::getId,
+                        PlayerDTO::getName,
+                        (first, ignored) -> first,
+                        LinkedHashMap::new
+                ));
+        return playerAchievementService.getListOfPlayersOrderAccomplishedAchievements(
+                        context.appTeam().getId(),
+                        limit
+                ).stream()
+                .map(stats -> achievementLeaderboardRow(stats, playerNames))
+                .toList();
+    }
+
+    private Map<String, Object> achievementLeaderboardRow(
+            IPlayerAchievementStats stats,
+            Map<Long, String> playerNames
+    ) {
+        Map<String, Object> row = new LinkedHashMap<>();
+        row.put("player_id", stats.getPlayerId());
+        row.put("player", playerNames.get(stats.getPlayerId()));
+        row.put("accomplished_count", nullableLong(stats.getAccomplishedCount()));
+        row.put("not_accomplished_count", nullableLong(stats.getNotAccomplishedCount()));
+        return row;
+    }
+
+    private boolean matchesAchievementSearch(AchievementDTO achievement, String search) {
+        if (search == null) {
+            return true;
+        }
+        if (achievement == null) {
+            return false;
+        }
+        String normalizedSearch = search.toLowerCase(Locale.ROOT);
+        return containsIgnoreCase(achievement.getName(), normalizedSearch)
+                || containsIgnoreCase(achievement.getCode(), normalizedSearch)
+                || containsIgnoreCase(achievement.getDescription(), normalizedSearch);
+    }
+
+    private boolean containsIgnoreCase(String value, String normalizedSearch) {
+        return value != null && value.toLowerCase(Locale.ROOT).contains(normalizedSearch);
+    }
+
+    private Map<String, Object> achievementDetailRow(AchievementDetail detail) {
+        Map<String, Object> row = achievementRow(detail.getAchievement());
+        row.put("total_count", detail.getTotalCount());
+        row.put("accomplished_count", detail.getAccomplishedCount());
+        row.put("success_rate", detail.getSuccessRate());
+        row.put("accomplished_players", detail.getAccomplishedPlayers());
+        return row;
+    }
+
+    private Map<String, Object> achievementRow(AchievementDTO achievement) {
+        Map<String, Object> row = new LinkedHashMap<>();
+        if (achievement == null) {
+            return row;
+        }
+        row.put("id", achievement.getId());
+        row.put("name", achievement.getName());
+        row.put("code", achievement.getCode());
+        row.put("description", achievement.getDescription());
+        row.put("secondary_condition", achievement.getSecondaryCondition());
+        row.put("only_for_players", achievement.isOnlyForPlayers());
+        row.put("manual", achievement.isManually());
+        row.put("calculation_scope", achievement.getCalculationScope());
+        row.put("team_success_rate", achievement.getTeamSuccessRate());
+        row.put("rarity", achievement.getRarity());
+        return row;
+    }
+
+    private Map<String, Object> playerAchievementRow(PlayerAchievementDTO playerAchievement) {
+        Map<String, Object> row = new LinkedHashMap<>();
+        row.put("id", playerAchievement.getId());
+        row.put("achievement", achievementRow(playerAchievement.getAchievement()));
+        row.put("player_id", playerAchievement.getPlayer() == null ? null : playerAchievement.getPlayer().getId());
+        row.put("player", playerAchievement.getPlayer() == null ? null : playerAchievement.getPlayer().getName());
+        row.put("accomplished", playerAchievement.getAccomplished());
+        row.put("accomplished_date", formatDateTime(playerAchievement.getAccomplishedDate()));
+        row.put("detail", playerAchievement.getDetail());
+        row.put("season_id", playerAchievement.getSeasonId());
+        row.put("match_id", playerAchievement.getMatch() == null ? null : playerAchievement.getMatch().getId());
+        row.put("football_match_id", playerAchievement.getFootballMatch() == null
+                ? null
+                : playerAchievement.getFootballMatch().getId());
+        return row;
+    }
+
     private Object readOfficialLeagues(AiToolContext context) {
         TeamEntity team = context.appTeam().getTeam();
         if (team == null) {
@@ -666,7 +1121,7 @@ public class AiReadOnlyToolService {
               {
                 "type": "function",
                 "name": "find_matches",
-                "description": "Najde zápasy aktuálního týmu v zadaném období. Použij nejprve pro otázky s relativním nebo konkrétním datem a následně načti statistiky podle match_id.",
+                "description": "Najde a zkombinuje zápasy aktuálního týmu: přednost mají kompletní importované oficiální zápasy, ručně zadané zápasy doplní chybějící záznamy a duplicity se odstraní. Použij pro minulé a předchozí zápasy i otázky s relativním nebo konkrétním datem.",
                 "strict": true,
                 "parameters": {
                   "type": "object",
@@ -778,6 +1233,58 @@ public class AiReadOnlyToolService {
               },
               {
                 "type": "function",
+                "name": "read_achievements",
+                "description": "Čte týmově omezené achievementy. Umí katalog s podmínkami a úspěšností, achievementy konkrétního hráče, poslední získané achievementy a týmový žebříček.",
+                "strict": true,
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "dataset": {"type": "string", "enum": ["catalog", "player", "recent", "leaderboard"]},
+                    "player_id": {"type": ["integer", "null"], "description": "Pro dataset player; null znamená hráče aktuálního uživatele."},
+                    "search": {"type": ["string", "null"], "description": "Část názvu, kódu nebo popisu achievementu."},
+                    "accomplished_only": {"type": ["boolean", "null"], "description": "Pro hráče: true splněné, false nesplněné, null obojí."},
+                    "limit": {"type": "integer", "minimum": 1, "maximum": 100}
+                  },
+                  "required": ["dataset", "player_id", "search", "accomplished_only", "limit"],
+                  "additionalProperties": false
+                }
+              },
+              {
+                "type": "function",
+                "name": "read_steps",
+                "description": "Čte kroky. Dataset leaderboard vrací týmový žebříček pouze z uživatelů s aktivním souhlasem; dataset me vrací denní kroky aktuálního uživatele v zadaném období.",
+                "strict": true,
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "dataset": {"type": "string", "enum": ["leaderboard", "me"]},
+                    "period": {"type": ["string", "null"], "enum": ["TODAY", "BETWEEN_MATCHES", "SINCE_LAST_MATCH", "ALL_TIME", null], "description": "Období pro leaderboard; null znamená dnešek."},
+                    "from_date": {"type": ["string", "null"], "description": "Pro dataset me, počáteční datum včetně ve formátu YYYY-MM-DD."},
+                    "to_date": {"type": ["string", "null"], "description": "Pro dataset me, koncové datum včetně ve formátu YYYY-MM-DD."},
+                    "limit": {"type": "integer", "minimum": 1, "maximum": 366}
+                  },
+                  "required": ["dataset", "period", "from_date", "to_date", "limit"],
+                  "additionalProperties": false
+                }
+              },
+              {
+                "type": "function",
+                "name": "read_visited_countries",
+                "description": "Čte navštívené země. Umí aktuálního uživatele, konkrétního hráče aktuálního týmu nebo týmový přehled seřazený podle počtu zemí.",
+                "strict": true,
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "dataset": {"type": "string", "enum": ["me", "player", "team"]},
+                    "player_id": {"type": ["integer", "null"], "description": "Pro dataset player; null znamená hráče aktuálního uživatele."},
+                    "limit": {"type": "integer", "minimum": 1, "maximum": 100, "description": "Maximální počet hráčů v týmovém přehledu."}
+                  },
+                  "required": ["dataset", "player_id", "limit"],
+                  "additionalProperties": false
+                }
+              },
+              {
+                "type": "function",
                 "name": "read_player_profile",
                 "description": "Vrátí souhrn profilu a statistik hráče. Null player_id znamená hráče spárovaného s aktuálním uživatelem.",
                 "strict": true,
@@ -795,5 +1302,8 @@ public class AiReadOnlyToolService {
             """;
 
     private record SeasonWindow(SeasonDTO current, SeasonDTO previous) {
+    }
+
+    private record CombinedMatchRow(Date date, Map<String, Object> row) {
     }
 }

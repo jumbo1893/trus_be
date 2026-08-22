@@ -20,6 +20,22 @@ public interface UserVisitedCountryRepository
     List<UserVisitedCountryEntity>
     findAllByUserIdOrderByFirstVisitedAtAsc(Long userId);
 
+    @Query("""
+            SELECT
+                r.player.id AS playerId,
+                r.player.name AS playerName,
+                v.country.code AS code,
+                v.country.nameCs AS nameCs,
+                v.firstVisitedAt AS firstVisitedAt,
+                v.country.continent.code AS continentCode
+            FROM UserVisitedCountryEntity v
+            JOIN UserTeamRole r ON r.user = v.user
+            WHERE r.appTeam.id = :appTeamId
+              AND r.player IS NOT NULL
+            ORDER BY r.player.name ASC, v.firstVisitedAt ASC
+            """)
+    List<TeamVisitedCountryProjection> findAllForTeam(@Param("appTeamId") Long appTeamId);
+
     @Query(value = """
         WITH inserted_country AS (
             INSERT INTO user_visited_country (

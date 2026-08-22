@@ -3,6 +3,7 @@ package com.jumbo.trus.service;
 import com.jumbo.trus.dto.VisitedCountryResponse;
 import com.jumbo.trus.entity.country.UserVisitedCountryEntity;
 import com.jumbo.trus.repository.UserVisitedCountryRepository;
+import com.jumbo.trus.repository.TeamVisitedCountryProjection;
 import com.jumbo.trus.repository.codebook.CountryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -55,6 +56,11 @@ public class UserVisitedCountryService {
                 .stream()
                 .map(this::toResponse)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<TeamVisitedCountryProjection> getTeamVisitedCountries(Long appTeamId) {
+        return userVisitedCountryRepository.findAllForTeam(appTeamId);
     }
 
     private VisitedCountryResponse toResponse(UserVisitedCountryEntity entity) {
