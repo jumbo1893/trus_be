@@ -1,0 +1,2663 @@
+{
+  "version": 1,
+  "rights": {
+    "basis": "Uživatel potvrdil, že má souhlas k převzetí a použití hlášek.",
+    "confirmedOn": "2026-08-22"
+  },
+  "sources": [
+    {
+      "name": "Hospoda",
+      "source": "HOSPODA",
+      "url": "https://www.hlaskyzfilmu.cz/hospoda/"
+    },
+    {
+      "name": "Hospoda – strana 2",
+      "source": "HOSPODA",
+      "url": "https://www.hlaskyzfilmu.cz/hospoda-2/"
+    },
+    {
+      "name": "Hospoda – strana 3",
+      "source": "HOSPODA",
+      "url": "https://www.hlaskyzfilmu.cz/hospoda-3/"
+    },
+    {
+      "name": "Hospoda – strana 4",
+      "source": "HOSPODA",
+      "url": "https://www.hlaskyzfilmu.cz/hospoda-4/"
+    },
+    {
+      "name": "Hospoda – strana 5",
+      "source": "HOSPODA",
+      "url": "https://www.hlaskyzfilmu.cz/hospoda-5/"
+    },
+    {
+      "name": "Hospoda – strana 6",
+      "source": "HOSPODA",
+      "url": "https://www.hlaskyzfilmu.cz/hospoda-6/"
+    },
+    {
+      "name": "Hospoda – strana 7",
+      "source": "HOSPODA",
+      "url": "https://www.hlaskyzfilmu.cz/hospoda-7/"
+    },
+    {
+      "name": "Hospoda – strana 8",
+      "source": "HOSPODA",
+      "url": "https://www.hlaskyzfilmu.cz/hospoda-8/"
+    },
+    {
+      "name": "Hospoda – strana 9",
+      "source": "HOSPODA",
+      "url": "https://www.hlaskyzfilmu.cz/hospoda-9/"
+    },
+    {
+      "name": "Hospoda – strana 10",
+      "source": "HOSPODA",
+      "url": "https://www.hlaskyzfilmu.cz/hospoda-10/"
+    },
+    {
+      "name": "Okresní přebor",
+      "source": "OKRESNI_PREBOR",
+      "url": "https://www.hlaskyzfilmu.cz/okresni-prebor/"
+    },
+    {
+      "name": "Okresní přebor – strana 2",
+      "source": "OKRESNI_PREBOR",
+      "url": "https://www.hlaskyzfilmu.cz/okresni-prebor-2/"
+    }
+  ],
+  "quotes": [
+    {
+      "id": "hospoda-5855578",
+      "text": "Nepiš mi to, já na píchačky dělat nebudu! Náhodou jsem tady dneska od půl devátý.\nJá ti řeknu proč... protože je pátek a ze záchytky pouštěli dřív.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda/",
+      "categories": [
+        "FINE"
+      ],
+      "keywords": [
+        "pokuta",
+        "policie",
+        "trest",
+        "řidičák"
+      ],
+      "characterCount": 147,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-6693596",
+      "text": "Tady to je.\nSrazily se?\nAle ne, ten inzerát je tady.\nJo, to tady je. Prodám funkční televizor. Ty chceš koupit televizor?",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 121,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-3709435",
+      "text": "Ty nemáš co na práci?\nNa jakou práci, pane šéf?\nTy se ptáš vážně na jakou práci?\nNó.\nNo jako kuchař bys třeba tady moh nahodit vomítku, né?",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda/",
+      "categories": [
+        "FOOD",
+        "WORK"
+      ],
+      "keywords": [
+        "jídlo",
+        "kuchař",
+        "oběd",
+        "práce",
+        "šéf",
+        "zaměstnání"
+      ],
+      "characterCount": 139,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-5721565",
+      "text": "Bureši, jak to, že nejste ve škole?\nJá tam šel, ale přeběhla mi přes cestu černá kočka. Dostal jsem strach.\nAha, takže jste šel raději za školu, že?\nJá jsem hrozně pověrčivej.\nNo dobře děláte. Černá kočka přináší smůlu. O tom se na vlastní kůži teď přesvědčíte.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 261,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-2797254",
+      "text": "Kotelnickej, ty nám tady kážeš jak palivo na tři.\nCo je to?\nHus.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 64,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-1318363",
+      "text": "Sou to dvě hodiny, devatenáct minut, dvaadvacet... teď už třicet vteřin, co jsem byl propuštěn od policejního jednání za účelem zadržení mýho řidičskýho voprávnění. Soudruzi, právě jsem prochrupnul papíry.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda/",
+      "categories": [
+        "FINE",
+        "RELATIONSHIP"
+      ],
+      "keywords": [
+        "pokuta",
+        "policie",
+        "trest",
+        "řidičák",
+        "vztah",
+        "manželství",
+        "rande"
+      ],
+      "characterCount": 205,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-635006",
+      "text": "Copak to tady máte? Co je tohleto?\nPlátýnko, vole, nemáš oči?",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 61,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-4974005",
+      "text": "Můžete mně říct, proč nejde elektrika?\nAle, no jistě, jsou ucpaný dráty, tak mě napadlo, nebyla jste včera pouštět draka, paní Jirásková a neuvízl vám nahoře na těch drátech, vylezla jste nahoru a tam jste si vzpomněla na mě a protože na mě máte pifku, tak jste udělala uzel na těch drátech a mně to sem teďka neteče.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 317,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-1991697",
+      "text": "Pajda mně včera zachránil život!\nTo víte. On vobčas pes vyvede věc, že by ho člověk praštil.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 92,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-3189274",
+      "text": "Co je, pane domácí? Vy pláčete? Že vy jste se poškorpili?\nVy jste to věděl?\nCo prosím?\nŽe ta ta není ta?\nJo, to jsem věděl.\nA oni taky?\nOni taky...",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 147,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-6914665",
+      "text": "Podivejte se, pane hospodský, vy neznáte typy, který se na takový způsob vydírání specializujou. Takový lidi jsou všeho schopný.\nČeho například?\nNapříklad všeho!\nNo... to jsem se dozvěděl. To si ani nemusím psát.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 212,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-1960145",
+      "text": "No, neděláš dobře, Jaroušku.\nHele, Vláďo... ty mi prosím tě do toho nekecej a starej se vo sebe. Já taky nekomentuju, když tady děláš ty svý rumový vánice a grand prix v koňaku...",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda/",
+      "categories": [
+        "BEER"
+      ],
+      "keywords": [
+        "pivo",
+        "alkohol",
+        "pití",
+        "nápoj",
+        "hospoda"
+      ],
+      "characterCount": 179,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-2906755",
+      "text": "To jste si u toho Kludskýho museli pěkně debužírovat, s takovým kuchařem.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda/",
+      "categories": [
+        "FOOD"
+      ],
+      "keywords": [
+        "jídlo",
+        "kuchař",
+        "oběd"
+      ],
+      "characterCount": 73,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-1615431",
+      "text": "Hele, zmetku! Koukej jí tu kořalku koupit nebo si za tebou zajdu.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda/",
+      "categories": [
+        "BEER"
+      ],
+      "keywords": [
+        "pivo",
+        "alkohol",
+        "pití",
+        "nápoj",
+        "hospoda"
+      ],
+      "characterCount": 65,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-6694254",
+      "text": "Nedělejte si ze mě srandičky. Já už učim třicet let a takhle blbý vejmluvy jsem neslyšel ani na pomocný škole.\nTy jsi chodil do pomocný školy?",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 142,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-1630181",
+      "text": "Tak co, vy si nedáte pivečko?\nTo jako já? Já už jich měl dneska čtrnáct. Když budu počítat i ty, co jsem tu vymlask po ránu a ty tři lahváče v kotelně.\nNo výborně, zarovnáme to na patnáct!\nJá se to vobyčejně snažím zarovnat na dvacet...",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-2/",
+      "categories": [
+        "BEER"
+      ],
+      "keywords": [
+        "pivo",
+        "alkohol",
+        "pití",
+        "nápoj",
+        "hospoda"
+      ],
+      "characterCount": 236,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-417091",
+      "text": "Jak dlouho jsi byl ženatej?\nNo dost, aby se mi po tom nestejskalo.\nZ tebe musela mít žena radost. Mít doma chlapa, ze kterýho věčně táhne pivo.\nJí to nevadilo.\nProsim tě, tak proč se s tebou rozvedla?\nOmyl! Já se rozved s ní.\nA mohla bych znát důvod?\nTřikrát za sebou si v samoobsluze spletla basy a přinesla mi domů dia pivo. Tak jak to mohlo dopadnout?\nPoslechni a tohleto zdůvodnění u soudu stačilo?\nRozvedli nás na první stání. Ten soudce byl taky pivař.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-2/",
+      "categories": [
+        "BEER",
+        "FINE",
+        "RELATIONSHIP"
+      ],
+      "keywords": [
+        "pivo",
+        "alkohol",
+        "pití",
+        "nápoj",
+        "hospoda",
+        "pokuta",
+        "policie",
+        "trest",
+        "řidičák",
+        "vztah",
+        "manželství",
+        "rande"
+      ],
+      "characterCount": 458,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-3297184",
+      "text": "S pivíčkem je to jako se ženskejma. První pivo je jako první rande. Člověk se na něj těší jak malej kluk. Po obědě už je přestaneš počítat a navečír kolikrát nevíš, proč to do sebe leješ.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-2/",
+      "categories": [
+        "BEER",
+        "FOOD",
+        "RELATIONSHIP"
+      ],
+      "keywords": [
+        "pivo",
+        "alkohol",
+        "pití",
+        "nápoj",
+        "hospoda",
+        "jídlo",
+        "kuchař",
+        "oběd",
+        "vztah",
+        "manželství",
+        "rande"
+      ],
+      "characterCount": 187,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-755214",
+      "text": "Jak dlouho to ještě může trvat?\nCo?\nNo to bezproudí. Teď ještě pár piv mám, ale přijde chvíle kdy se to bude muset začít řešit.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-2/",
+      "categories": [
+        "BEER"
+      ],
+      "keywords": [
+        "pivo",
+        "alkohol",
+        "pití",
+        "nápoj",
+        "hospoda"
+      ],
+      "characterCount": 127,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-2847563",
+      "text": "Pane šéf, podivejte se, podivejte se. To je krása, co? Nechte práce, dívejte se. Teda to vám řeknu. Tak takováhle panička byla u nás u cirkusu, měla drezúru pudlů, ovšem takhle nádherně nahoře vyvinutá nebyla jako tadle.\nDej mi s tím pokoj, prosím tě. Já se budu dívat, jak se nějaký mladý zdravý ženský válej na kanapi a já nemůžu sehnat uklízečku.\nTo je nádherný, to je krásný. Vašíku, hele, prosim tě vystřihni mi ji. Já si ji dám nad sporák.\nHele, nic mu nevystřihuj. Bude to mít nad sporákem, bude na to čumět, naleje si polívku do bot a vopaří si chodidla.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-2/",
+      "categories": [
+        "WORK",
+        "RELATIONSHIP"
+      ],
+      "keywords": [
+        "práce",
+        "šéf",
+        "zaměstnání",
+        "vztah",
+        "manželství",
+        "rande"
+      ],
+      "characterCount": 562,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-1373313",
+      "text": "Na kolik odhaduješ škodu?\nJak myslíte? V penězích, jo?\nNé, v mosaznejch knoflíkách nebo v korálích nebo v husách! S tebou je řeč jak s kozou na ledě prosím tě.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-2/",
+      "categories": [
+        "MONEY"
+      ],
+      "keywords": [
+        "peníze",
+        "účet",
+        "dluh"
+      ],
+      "characterCount": 159,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-2667634",
+      "text": "Ten hnědej, to je nulák a ten modrej je fáze.\nVíš tuty, že to není vobráceně?\nNo jistě! Dyť to dělám celej život.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-2/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 113,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-3727389",
+      "text": "Proboha tobě někdo svěřil dítě?!\nNo, nějakej venkovan v tržnici.\nTo musel bejt nepříčetnej nebo to dítě nebylo jeho.\nNo nepříčetnej byl určitě. Jinak by mi ho neprodal tak lacino.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-2/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 179,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-1575089",
+      "text": "Vo týdle hospodě se bude psát v novinách.\nNo jistě! To víš, že jo, v černý kronice! Já už vidim ten titulek: ZOUFALÝ ČIN RESTAURATÉRA! Šedesátiletej hospodskej v zoufalství umlátil svýho šílenýho kuchaře! Pak se voběsil vleže v mrazicím boxu.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-2/",
+      "categories": [
+        "FOOD"
+      ],
+      "keywords": [
+        "jídlo",
+        "kuchař",
+        "oběd"
+      ],
+      "characterCount": 242,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-3070656",
+      "text": "Co to je?\nAle, někdo mi to složil před kotelnou. Našel jsem to tam.\nCo s tím budeš dělat?\nPřečtu si to, když už jsem to našel ne?\nTo nedělej, neblbni! Začneš bejt vzdělanej a přestane se ti chtít dělat.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-2/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 202,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-1699222",
+      "text": "Klucí, co mám dělat?\nDej si pivo.\nDej mi pivo!",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-2/",
+      "categories": [
+        "BEER"
+      ],
+      "keywords": [
+        "pivo",
+        "alkohol",
+        "pití",
+        "nápoj",
+        "hospoda"
+      ],
+      "characterCount": 46,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-4350202",
+      "text": "Tak si najdi nějakej jinej šolích.\nNojó ale jakej?\nNech se najmout do armády. Tam furt hledaj nějaký dobrovolníky.\nCo bych tam podle tebe jako měl dělat?\nSpecialistu pro boj ve vysoký trávě.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-2/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 190,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-6185088",
+      "text": "Tady jsem, pane doktore. Vy jste zlatej člověk.\nTak copak se vám stalo, paninko?\nVoni mě dočista zabili, pane doktore.\nA kdopak vás zabil?\nTo vám nemůžu říct, pane doktore, protože toho člověka už do smrti nechci vidět, aby se mně nepřitížilo.\nJá jsem doktor Prášek. Dobrý den, já jsem vás nechal zavolat.\nJá vás znám, pane doktore, přednášel jste nám o vrozených poruchách intelektu.\nDo týhle hospody už do smrti nevkročím, pane doktore!\nPaní Jirásková upadla, bylo by vhodné provést traumatické vyšetření.\nJá jsem neupadla, mě srazili na lyžích.\nNo, to snad ne!\nNo, jak to, že ne, tadyhle jsem stála a takhle mě srazili na lyžích.\nA kdopak vás srazil, matko!\nNo, lyžař přece!\nAle babi, kdepak se tady v tom vedru vzal lyžař, no!\nTo vám nepovím, pane doktore, ale do smrti už ho nechci vidět, protože tuhle mi řek, že jsem halapartna a teď mě srazil na lyžích.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-2/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 861,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-5562725",
+      "text": "Viděla jste to o té paní s tou kočkou? Ta kočka se jí ztratí, léta je pryč a vrátí se den před její smrtí. Ona se s ním normálně přišla rozloučit.\nNo vidíte! A tohle právě mně říkala také paní Jonášová!\nŽe vám uteče Pajda a den před vaší smrtí se s vámi přijde rozloučit?",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-2/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 271,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-3364880",
+      "text": "Tohle si spolu vyřídíme!\nCo je, pane domácí? Vždyť jste si ten dort sám objednal.\nNo jo, ale ne s takovym idiotským sousoším nahoře!",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-2/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 132,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-1490980",
+      "text": "A jéje. Vichřice, vánice, bílá smrt. Tři dny tady nebyla, já jsem pookřál. Chtělo to ještě den. Moch jsem bejt jako znovu narozenej. Dobrý den, paní Jirásková.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-3/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 159,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-2708408",
+      "text": "Já, taková čistá a poetická aura!\nHele, aurora!",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-3/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 47,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-3071211",
+      "text": "Copak se dneska stane s jeho hospodou.\nMy jsme se ještě nerozhodli.\nHospoda není špatná věc. Ale mně by se tady líbila taková malá kavárnička. Paní Janička s Mařenkou by mohly roznášet nějaké ty zákusky.\nJo, zákusky. Hlavně fefrmincku.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-3/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 235,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-2082768",
+      "text": "Babi, babičko! Dejte si na dědečka pozor, aby vás nepřekvapil.\nMě by mohl jedině překvapit, kdybych ho potkala slušně a řádně oblečenýho, střízlivýho, a kdybych ho slyšela hezky pozdravit.\nDrahá paní, já po vás měkkým chlebem a vy do mě zlým slovem. Co jsem vám udělal špatnýho?\nVy na mě nemluvte, vy jste vožralej.\nJá že jsem vožralej?! Teda helejte, jestli vy nemáte momentálně v hlavě temno, Jirásková.\nChcete říct, že ne? Pojďte na mě dejchnout.\nNechoď tam, dědku, nebo tě uštkne.\nAle mám já toto zapotřebí, aby se se mnou na starý kolena takhle zacházelo? A ještě k tomu taková pinakotéka. To teda ne.\nCo... Co to... Co je to tohle?\nPředstavte si, stačilo maličko a skončilo to v jejím křtánu.\nKdo má u vás křtán? Okamžitě mi to vraťte!\nAni mě nenapadne!\nTu fefrminsku si zaplatíte!\nJo, už se stalo. Já ji objednával a tady je zapsaná. Dobrou noc. Kdepak chlapci... Starý báby by se měly střílet už zamlada.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-3/",
+      "categories": [
+        "MONEY",
+        "RELATIONSHIP"
+      ],
+      "keywords": [
+        "peníze",
+        "účet",
+        "dluh",
+        "vztah",
+        "manželství",
+        "rande"
+      ],
+      "characterCount": 912,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-3683835",
+      "text": "Heleďte, pane šéf, my jsme měli v cirkuse vopičáka...\nProč se díváš na mě?! Tady ti seděj čtyry i s mládětem.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-3/",
+      "categories": [
+        "WORK"
+      ],
+      "keywords": [
+        "práce",
+        "šéf",
+        "zaměstnání"
+      ],
+      "characterCount": 109,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-451726",
+      "text": "Co mám dělat?\nPoslední bitva vzplála, tak se dej na pochod.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-3/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 59,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-2750374",
+      "text": "Jo, kamaráde, ženatej člověk žije jako pes, ale umírá jako člověk. Svobodnej žije sice jako člověk, ale umírá jako pes, takže si vlastně nevybereš.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-3/",
+      "categories": [
+        "RELATIONSHIP"
+      ],
+      "keywords": [
+        "vztah",
+        "manželství",
+        "rande"
+      ],
+      "characterCount": 147,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-5806045",
+      "text": "Alkohol nepatří mezi doporučené prostředky stresových situací.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-3/",
+      "categories": [
+        "BEER"
+      ],
+      "keywords": [
+        "pivo",
+        "alkohol",
+        "pití",
+        "nápoj",
+        "hospoda"
+      ],
+      "characterCount": 62,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-87060",
+      "text": "Pane Babulo, zapomínáte na slogan.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-3/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 34,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-1718676",
+      "text": "Vypadá to jako čína, chutná to jako čína a není to čína.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-3/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 56,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-1629345",
+      "text": "Předevčírem si ho dal pan Novák a tak se po něm zlískal, že nemohl vylízt ty schůdky tady.\nAle babi, to nebylo z pití, já měl namoženou Achillovu šlachu.\nTo musel být ožrala, ten pan Achill.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-3/",
+      "categories": [
+        "RELATIONSHIP"
+      ],
+      "keywords": [
+        "vztah",
+        "manželství",
+        "rande"
+      ],
+      "characterCount": 190,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-4437578",
+      "text": "Mám snad nějakej splávek kruci? S holkou si pohraju, ale pivo musí mít průtok, rozumíte? Průůůtok!",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-3/",
+      "categories": [
+        "BEER",
+        "RELATIONSHIP"
+      ],
+      "keywords": [
+        "pivo",
+        "alkohol",
+        "pití",
+        "nápoj",
+        "hospoda",
+        "vztah",
+        "manželství",
+        "rande"
+      ],
+      "characterCount": 98,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-3906973",
+      "text": "Hele, Šípek, vraž si čípek a vyjeď.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-3/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 35,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-5411110",
+      "text": "Slyším dobře? Kdo shání fajfkovej tabák? Pánové, já můžu sloužit.\nProsím tě, co to zase inzeruješ? Dyť ty snad nekouříš, ne?\nNekouřím, ale tabák potřebuju pořád.\nTabák? A na co? Mohl bys mně to říct?\nNo jistě. Na vaření.\nNa vaření? Mo já snad špatně slyším.\nSlyšíte dobře, to je běžná praxe, pane šéf.\nVařit z tabáku?\nAle ne, vařit z tabáku. Copak se dá vařit z tabáku? Já ho používám jako koření.\nPánové, on používá jako koření fajfkovej tabák. Mně se dělá špatně, já dostávám svalový křeče, mně to zkracuje ruku, no podívej se.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-3/",
+      "categories": [
+        "WORK"
+      ],
+      "keywords": [
+        "práce",
+        "šéf",
+        "zaměstnání"
+      ],
+      "characterCount": 529,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-3887208",
+      "text": "Ježiš, to je ale krásná urážka na cti... takže o mně tvrdíte, že jsem opilec? Píšu si...",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-3/",
+      "categories": [
+        "BEER"
+      ],
+      "keywords": [
+        "pivo",
+        "alkohol",
+        "pití",
+        "nápoj",
+        "hospoda"
+      ],
+      "characterCount": 88,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-1158640",
+      "text": "Čo si myslíte, že sem vám dala nějaků ondratrů, či co...",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-4/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 56,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-3886979",
+      "text": "Josko, vyprávěj, co se v tobě odehrává. Sokrates to dělal taky, když ho nalili bolehlavem.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-4/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 90,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-781468",
+      "text": "Jeníčku.\nDalší takovej. Stoletej Špejbl. Já už jsem tady dva roky a on si nevšiml toho, že se jmenuju Jarda.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-4/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 108,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-878747",
+      "text": "Chmelomok, božský lok!",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-4/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 22,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-4903445",
+      "text": "To po mně nechtěj. Člověku dám přes hubu, ale zvíře týrat nebudu.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-4/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 65,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-3354403",
+      "text": "Hospodou se rozezní varhany, Kachna může volat černý havrany.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-4/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 61,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-3089068",
+      "text": "Ty ignorante, ty malamute, ty medajle jedna stará rakouská vysloužilá, ty se ptáš, co je? Ty mě chceš připravit o živnostenský voprávnění?",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-4/",
+      "categories": [
+        "FINE"
+      ],
+      "keywords": [
+        "pokuta",
+        "policie",
+        "trest",
+        "řidičák"
+      ],
+      "characterCount": 138,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-4326974",
+      "text": "Co je?\nDvě kolečka hnoje vezla bába z Troje.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-4/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 44,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-2206024",
+      "text": "Co je?\nCo by, čtvrtek.\nPozvracel se krtek.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-4/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 42,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-5567911",
+      "text": "Co že je?\nAbstinent.\nJo, vono něco takovýho opravdu existuje? Já myslel, že to jsou jenom novinářský kecy. Jinak je ti dobře, jo?",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-4/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 129,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-5974849",
+      "text": "Mně přines ruma na vztek. A Jozkovi dej taky jednoho a Václavovi taky. My se dneska vožereme všichni tři.\nVšichni čtyři.\nMně malýho.\nVšichni čtyři a půl.\nTakže vláček s tendrem.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-4/",
+      "categories": [
+        "BEER"
+      ],
+      "keywords": [
+        "pivo",
+        "alkohol",
+        "pití",
+        "nápoj",
+        "hospoda"
+      ],
+      "characterCount": 177,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-573407",
+      "text": "Tak mi laskavě jedno prosím natočte, měl jsem k obědu vepřovou.\nCopak, maminka zabíjela? Snad ne v koupelně.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-4/",
+      "categories": [
+        "FOOD"
+      ],
+      "keywords": [
+        "jídlo",
+        "kuchař",
+        "oběd"
+      ],
+      "characterCount": 108,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-5975841",
+      "text": "Nemocné navštěvovati, žíznivé napájeti, hladové sytiti. Je jedna z nejvznešenějších křesťanských zásad a když si to budeš pamatovat, dojdeš k štěstí, ty vole.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-4/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 158,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-3976663",
+      "text": "Prosím.\nJá jsem tady doma, račte.\nA já jsem tady častěji než doma.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-4/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 66,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-5885650",
+      "text": "Oni zdobí vánoční stromek!\nVy máte oči jako rys, paní Jirásková, taky jste si toho všimla, co?",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-4/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 94,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-859699",
+      "text": "Dáte si ještě?\nCopak je to při výši mýho důchodu možný?! To za starýho pana Jonáše, to bylo jiný. Ten mě občas pozval.\nMusel. Protože jinak chodila žalovat, že nasává slivovici.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-5/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 177,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-403326",
+      "text": "Natoč mi to pivo!\nNenatočím.\nSrandy už bylo dost. Já mám žízeň.\nJéjej, ta mi dneska pění, ale vona bude dobrá.\nCo to je?\nMáš žízeň?\nJo.\nNo výborně, tak pij.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-5/",
+      "categories": [
+        "BEER"
+      ],
+      "keywords": [
+        "pivo",
+        "alkohol",
+        "pití",
+        "nápoj",
+        "hospoda"
+      ],
+      "characterCount": 156,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-5824746",
+      "text": "Zrození hvězdy stříbrného plátna... Jardo, podepiš se mi na tácek!\nPředpokládám, že vám nemusím moc vysvětlovat. Co po vás chci, jste už viděl třikrát.\nNo, čtyřikrát vlastně, že. Nevadí to, že jsem plešatej?\nVůbec ne.\nA víte, že mně to vadí?",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-5/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 241,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-4158230",
+      "text": "Co se stalo?\nHele, nevím, co se stalo. Ale začínám pomalu tušit, co se asi stane teď.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-5/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 85,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-5844086",
+      "text": "Mně je špatně.\nMně taky.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-5/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 24,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-1988473",
+      "text": "A ta nákaza se týká jenom kuchyně nebo máte také kontaminované pivo v sudech?\nCo kontaminovaný? Jaká kuchyň? Jaký sudy? Tady je všechno v pořádku! To je všechno jejich dílo, ale vod týhletý doby máte útrum i s tou vodou, chlapi!\nTak jak je to s tím pivem?\nJá vám říkám, že tady je všechno v pořádku! Tady žádnej hygienik, nikdo nic nezakázal! To všechno voni! To je jejich práce!",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-5/",
+      "categories": [
+        "BEER",
+        "WORK",
+        "RELATIONSHIP"
+      ],
+      "keywords": [
+        "pivo",
+        "alkohol",
+        "pití",
+        "nápoj",
+        "hospoda",
+        "práce",
+        "šéf",
+        "zaměstnání",
+        "vztah",
+        "manželství",
+        "rande"
+      ],
+      "characterCount": 379,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-5210008",
+      "text": "Hele, Babula, nebuď votrávenej. V televizi v tom Receptáři zrovna říkali, že tohleto jde snadno předělat a pěstovat se v tom daj žampióny. Nějakej inženýr z Moravy na to posílá plánek asi za dvě stovky. Hele, vybouráš tu televizi, šásko, zbavíš to všech drátů, takhle se daj fochy, těch může bejt třeba lichej počet, to je jedno. A hlavně nakoupit koňskej hnůj, třicet kilo do toho přijde.\nV tom můžu pěstovat i křečka, ty.\nJo a důležitá věc: Úroda je až druhým rokem.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-5/",
+      "categories": [
+        "RELATIONSHIP"
+      ],
+      "keywords": [
+        "vztah",
+        "manželství",
+        "rande"
+      ],
+      "characterCount": 468,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-3465908",
+      "text": "Pane šéf, půjčte mi klíček od skříňky.\nCo chceš dělat?\nMusím nahodit pojistky.\nNo to víš... ty nahodíš pojistky a na Ukrajině přestanou jezdit tramvaje, ty.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-5/",
+      "categories": [
+        "MONEY",
+        "WORK"
+      ],
+      "keywords": [
+        "peníze",
+        "účet",
+        "dluh",
+        "práce",
+        "šéf",
+        "zaměstnání"
+      ],
+      "characterCount": 156,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-5696053",
+      "text": "Půjč mně sirky.\nSchovejte tu cigaretu! Copak vy jste neslyšel, co je dneska za den?\nTy, Vláďo, proč se nesmí v úterý kouřit?",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-5/",
+      "categories": [
+        "MONEY"
+      ],
+      "keywords": [
+        "peníze",
+        "účet",
+        "dluh"
+      ],
+      "characterCount": 124,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-5375733",
+      "text": "Paní Jirásková, babi. Zase nezaplatila.\nJá to jednou tý bábě vousatý spočítám. Ta se bude divit.\nMáš kliku, že tě neslyší.\nTy jsi se taky zbláznil, ty.\nCo?\nTakhle jí zapálit koudel pod zadkem.\nJá to za ni zaplatím.\nAle o to nejde. Jde o to, že za pět minut máme Jonášovou. Ta je horší než Stalin.\nJonášovou v lepším případě.\nA v horším?\nNech se překvapit. Tak Jaroušku, to je právě ten horší případ.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-5/",
+      "categories": [
+        "MONEY"
+      ],
+      "keywords": [
+        "peníze",
+        "účet",
+        "dluh"
+      ],
+      "characterCount": 399,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-3694478",
+      "text": "Ještě, že mám s sebou papír.\nJá vím, no. Že si nosíte svůj, ale todle to zrovna není dobrej papír. To cejtím v ruce. Vždyť to je samá křída, prosím vás. Já jsem tam ráno dával novou roli.\nJá ho nechci používat na toaletě.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-5/",
+      "categories": [
+        "FINE"
+      ],
+      "keywords": [
+        "pokuta",
+        "policie",
+        "trest",
+        "řidičák"
+      ],
+      "characterCount": 221,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-3089087",
+      "text": "Stejně, když tě vidím, Tomáši, jak piješ, tak bych chtěl, aby mi takhle odtejkala vana.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-5/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 87,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-5857522",
+      "text": "Hele, pane vedoucí. Dneska kam se podíváte, tam vidíte samýho vožungra, zloděje a smilníka.\nVšichni chlastaj, aby si někdo předplatil třeba Vesmír, to nikdo.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-5/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 157,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-1715741",
+      "text": "A co to, pane domácí, že si dáváte takovou lihovou kůru. Většinou jste přeci zůstával vždycky u piva.\nMám dneska výjimečný den.\nAle, bomba ve škole a máte volno, nebo co, ne?\nKdepak, prosím. Vyhrál jsem v Sazce.\nV Sazce?\nAno.\nVidíte, to je trefa. Já jsem v tý sazce snad nikdy nevyhrál ani pětník.\nProtože tomu nerozumíte, víte? Já jsem profesor přes sport, odborník. To musíte mít tady.\nNo jo, kdepak váš přehled, to já nemám. Ale víte, možná jsem si taky říkal, jestli to není tím, že jsem nikdy nesázel.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-5/",
+      "categories": [
+        "BEER"
+      ],
+      "keywords": [
+        "pivo",
+        "alkohol",
+        "pití",
+        "nápoj",
+        "hospoda"
+      ],
+      "characterCount": 506,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-439354",
+      "text": "Kdepak jste vzal ty uzeniny?!\nCo to? Jo, todle! To jsem našel... na smeťáku!",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-5/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 76,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-2923442",
+      "text": "Nemohl byste mi vrátit tu fajfku? To je památka na nebožtíka Trnku.\nKušuj, dostaneš ji na konci školního roku.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-6/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 110,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-5296511",
+      "text": "Chlapi, neblbněte, vy jste jak malí.\nKdo je u tebe malej, ty billboarde? Nepleť se do toho, nebo tě nacpu do půllitru.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-6/",
+      "categories": [
+        "RELATIONSHIP"
+      ],
+      "keywords": [
+        "vztah",
+        "manželství",
+        "rande"
+      ],
+      "characterCount": 118,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-2370116",
+      "text": "Kachna!\nCo je?\nPojď sem, budeš dělat medium.\nDobře!\nHele, Babula bude na něco myslet.\nBabula?\nNo slíbil to, že bude myslet. No a ty to tady na ten papírek namaluješ.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-6/",
+      "categories": [
+        "FINE"
+      ],
+      "keywords": [
+        "pokuta",
+        "policie",
+        "trest",
+        "řidičák"
+      ],
+      "characterCount": 165,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-1570253",
+      "text": "Poklona, pane profesore.\nCo to bylo?\nOn? Na mě to dělalo takovej dojem, že se loučí, že je na odchodu.\nAle u tohohle člověka jeden neví, jak myslí, co říká.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-6/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 156,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-2258737",
+      "text": "One, two, three, action!\nKam jedeš?\nCo?\nKam jedeš?",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-6/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 50,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-3704923",
+      "text": "Kachna.\nCo je?\nTy seš muž bystrého ducha a upřímného úsudku. Dá se dneska pořídit dobrej auťák za sto tisíc?\nZa sto? Kámoš koupil Trabanta za osm a jezdí to i v noci.\nTo jsem se optal toho pravýho.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-6/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 197,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-4559054",
+      "text": "To víno bych prosil bílé a nějaké sušší.\nJá bych zase to pivo zrzavé a mokřejší.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-6/",
+      "categories": [
+        "BEER"
+      ],
+      "keywords": [
+        "pivo",
+        "alkohol",
+        "pití",
+        "nápoj",
+        "hospoda"
+      ],
+      "characterCount": 80,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-2906017",
+      "text": "Tomáši, promiň, ty jsi začal topit v Komerční bance?",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-6/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 52,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-542801",
+      "text": "Copak to tu máte s tou dámou, pane Babulo?\nCo je ti po tom, pořadovej kroku.\nNa tohoto muže si dávejte pozor. To je vyhlášený alkoholik.\nA proč vám říká pořadovej kroku?\nProtože mi závidí, že jsem profesor tělocviku na gymnáziu s rozšířenou výukou jazyků a z tohoto titulu mi dovolte, abych vám sdělil, že když takové mladé a hezké děvče vysedává po hospodách, že to nevidím rád.\nJenomže, tohle není děvče, pane domácí.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-6/",
+      "categories": [
+        "BEER"
+      ],
+      "keywords": [
+        "pivo",
+        "alkohol",
+        "pití",
+        "nápoj",
+        "hospoda"
+      ],
+      "characterCount": 419,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-5000601",
+      "text": "Znáš hostinskýho Na Náhonu?\nNo, co je s ním?\nTomu, když se náhodou podaří natočit pivo s mírou, tak ho vystaví do vejlohy za účelem matení náhodnejch zákazníků.\nKolik jich už tam má?\nKoho? Čeho?\nNo těch piv.\nKde?\nV tý vejloze.\nŽádný. Protože se mu to ještě nepodařilo.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-6/",
+      "categories": [
+        "BEER"
+      ],
+      "keywords": [
+        "pivo",
+        "alkohol",
+        "pití",
+        "nápoj",
+        "hospoda"
+      ],
+      "characterCount": 268,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-2916830",
+      "text": "Prosím tě, Kachna, co to tady vykládáš, vždyť za tohle je kriminál! Ty to říkáš veřejně, co když se ti někdo votráví?\nProč by se měl někdo votrávit? A proč mně? To je vaše hospoda.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-6/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 180,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-5127896",
+      "text": "Co jsi dělal, když rodila tvoje žena?\nNo normálně, ožral jsem se!",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-6/",
+      "categories": [
+        "RELATIONSHIP"
+      ],
+      "keywords": [
+        "vztah",
+        "manželství",
+        "rande"
+      ],
+      "characterCount": 65,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-5592274",
+      "text": "Taky by ti huba neupadla, kdyby jsi řekl pan Babula.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-6/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 52,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-1299336",
+      "text": "Já si jídlo nedávám, já jsem živ o pivu.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-6/",
+      "categories": [
+        "BEER",
+        "FOOD"
+      ],
+      "keywords": [
+        "pivo",
+        "alkohol",
+        "pití",
+        "nápoj",
+        "hospoda",
+        "jídlo",
+        "kuchař",
+        "oběd"
+      ],
+      "characterCount": 40,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-4215149",
+      "text": "Ty, Josko, poslyš. Jakou starou jsi měl na mysli, když jsi tady Tomášovi říkal, aby o ní nemluvil?\nCo, jakou starou? No, tu moji.\nJá jsem nevěděl, že jsi ženatej.\nNejsem ženatej, byla se mnou jako družka.\nJak byla?\nHele, já se o ní nechci bavit.\nCo jste si udělali?\nJá ji nic. Vona blbne.\nNo, nediv se, když jí říkáš stará.\nJakým způsobem blbne?\nNormálně, jak ženský blbnou.\nPočkejte. To je silně individuální.\nProstě, nic jí není recht a vede řeči.\nNespokojenost je matkou pokroku a řeči jsou od toho, aby se vedly.\nJenže kdo to má furt poslouchat. To je pořád: Tohle udělej, tohle nedělej, támhle nechoď, semhle pojď, kdes byl včera.\nCos tam dělal? S kým jsi tam byl? Co ti říkal? Cos mu řekl ty? Proč jdeš tak pozdě domů? Kde máš prachy? Nešahej na mě, jsou tady děti. To je krásnej život, to je normálka.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-6/",
+      "categories": [
+        "RELATIONSHIP"
+      ],
+      "keywords": [
+        "vztah",
+        "manželství",
+        "rande"
+      ],
+      "characterCount": 808,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-410431",
+      "text": "Tak pánové, tady vám nesu ty vaše zrzavý štěstíčka. To je míra, co? Píšu to jako zahřívací kolo.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-7/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 96,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-260245",
+      "text": "Ty si nech ty pazoury pozlatit.\nHele, drž klapajznu, nebo tě přes ni majznu.\nUklidni se a houpej dál kačera, ty...",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-7/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 114,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-343667",
+      "text": "Škrtám Mrzena, píšu Uderník.\nZde!\nHele, ještě jednou řekni zde a já tě zde přetáhnu jak hada.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-7/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 93,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-21642",
+      "text": "Mařenko, kolik myslíš, svým ženským úsudkem, že se dá na tom tak vyhrát?\nNic.\nJak to nic? To by tam přece ti lidi neházeli prachy jako trotli.\nJak dlouho už děláte v hospodě?\nNo, já dlouho.\nTak to byste mohl lidi znát.\nNo, to je taky pravda.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-7/",
+      "categories": [
+        "RELATIONSHIP"
+      ],
+      "keywords": [
+        "vztah",
+        "manželství",
+        "rande"
+      ],
+      "characterCount": 241,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-128583",
+      "text": "Dejte to ke stropu, to ho nenapadne.\nJá to našel.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-7/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 49,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-577741",
+      "text": "Pane domácí, a víte, že opravdu spravedlnost není?\nJak to myslíte?\nStrejc si léta platil kremaci a pak se utopil v moři.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-7/",
+      "categories": [
+        "BEER"
+      ],
+      "keywords": [
+        "pivo",
+        "alkohol",
+        "pití",
+        "nápoj",
+        "hospoda"
+      ],
+      "characterCount": 120,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-446506",
+      "text": "To bych rád věděl, kde takový šmejdi berou peníze. Na práci to nešáhne.\nVysol pětikilo, vole, ti poradím.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-7/",
+      "categories": [
+        "MONEY",
+        "WORK"
+      ],
+      "keywords": [
+        "peníze",
+        "účet",
+        "dluh",
+        "práce",
+        "šéf",
+        "zaměstnání"
+      ],
+      "characterCount": 105,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-27059",
+      "text": "Já tady chci ještě zůstat.\nTo nejde. Co byste dělali v hospodě?\nCo tady děláš ty?\nTo je fakt.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-7/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 93,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-316559",
+      "text": "Dejte mi ještě jednu skotskou.\nSkotskou, ano!\nPoslechněte, je to opravdu skotská?\nNo jéje, pane domácí, ta úplně nejskotštější. Podívejte, ten chlap, co mi ji přivez, představte si, ten měl na sobě ještě sukni a ta rejha na pultě, to udělal dudama, jak se tady opíral.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-7/",
+      "categories": [
+        "RELATIONSHIP"
+      ],
+      "keywords": [
+        "vztah",
+        "manželství",
+        "rande"
+      ],
+      "characterCount": 268,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-303580",
+      "text": "Tak co, Mařenko, jak bylo na poště? Samí pošťáci, co? Netvařte se jako kakabus, já vám to všechno vynahradím.\nJá vim, jako pán bůh na dětech.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-7/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 141,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-636546",
+      "text": "Ne, ne, ne, já sám. Ukažte.\nVěříte, že přes to pivo takhle jste žlutej jako Číňan, pane domácí? A tohle bílý takhle kolem tý hlavy. Vy vypadáte jako čínskej děda Mráz.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-7/",
+      "categories": [
+        "BEER"
+      ],
+      "keywords": [
+        "pivo",
+        "alkohol",
+        "pití",
+        "nápoj",
+        "hospoda"
+      ],
+      "characterCount": 167,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-516329",
+      "text": "Jel bys?\nJá se obávám, že to nepůjde, protože mne nepotkalo takové štěstí, aby mi žena nafackovala a vzápětí mi darovala víkend na zotavenou.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-7/",
+      "categories": [
+        "RELATIONSHIP"
+      ],
+      "keywords": [
+        "vztah",
+        "manželství",
+        "rande"
+      ],
+      "characterCount": 141,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-132611",
+      "text": "Tenhle pán, děti, tak to je váš tatínek. Tohle jsou tvoje děti, jestli jsi ještě nezapomněl, že nějaký máš.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-7/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 107,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-135046",
+      "text": "Kalous! Nejseš ty Kalous?\nNe? Tak tam máš telefon.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-7/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 50,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-457353",
+      "text": "Tady se nic ohřejvat nebude.\nPočkej, vždyť si řikal, že si klidnej.\nJá jsem nic takovýho neřek.\nCo to kecáš? Celá hospoda to slyšela, je to pravda?\nJe!\nTy mlč, ty sněhuláku hladovej. No Vláďo, řekni jim něco.\nNo řečma se nic nevyřeší. My máme dvě možnosti. Buďto to vraťme, nebo to snězme.\nTakže to snězme.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-7/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 306,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-141243",
+      "text": "Vy jste to věděl?\nCo prosím?\nNo že ta ta není ta.\nJo, to jsem věděl.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-8/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 68,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-546472",
+      "text": "Meteorismus? Velice správně, meteorismus. Já věděl, že to má něco společného s klenbou nebeskou.\nTak to už jsem měl kolikrát a ještě nikdy jsem na to neumřel.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-8/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 158,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-368261",
+      "text": "Kdepak, chlapci. Starý báby by se měly střílet už zamlada.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-8/",
+      "categories": [
+        "RELATIONSHIP"
+      ],
+      "keywords": [
+        "vztah",
+        "manželství",
+        "rande"
+      ],
+      "characterCount": 58,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-81568",
+      "text": "Mně je špatně.\nAle copak, copak? Něco jsi sněd, co nebylo košér?\nTakže je to z chlastu.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-8/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 87,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-201096",
+      "text": "Tak, pánové, tady to je.\nNo já si snad ani dávat nebudu, slíbil jsem, že dneska budu brzo doma.\nHele, nemáš slibovat, co nemůžeš splnit.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-8/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 136,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-362414",
+      "text": "A jdem!\nPočkej, maminko. Já jsem tady někde měl flašku láhve.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-8/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 61,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-324874",
+      "text": "Nic, pane šéf. Já hledal cedník.\nTak to jsem zvědavej, co se stane, až začne vařit.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-8/",
+      "categories": [
+        "WORK"
+      ],
+      "keywords": [
+        "práce",
+        "šéf",
+        "zaměstnání"
+      ],
+      "characterCount": 83,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-40787",
+      "text": "Chlapi, jste mi to dali křivě.\nKdepak, šéfe, my vždycky na rovinu.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-8/",
+      "categories": [
+        "WORK",
+        "RELATIONSHIP"
+      ],
+      "keywords": [
+        "práce",
+        "šéf",
+        "zaměstnání",
+        "vztah",
+        "manželství",
+        "rande"
+      ],
+      "characterCount": 66,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-220900",
+      "text": "Kde je?\nKdo?\nPtakopysk Kachna, já mu jednu fláknu!\nPtakopysk Kachna je v kuchyni a chystá nějakou specialitu pro Vašíka. Když chvíli počkáš, budete na něj dva.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-8/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 159,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-636622",
+      "text": "Řekněte, dědo. Co to má znamenat Soudruzi, splnili jste plán jenom na 106 %?\nAle mě už nějaký procenta nezajímaj, chlapci. Já jsem v důchodu.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-8/",
+      "categories": [
+        "FINE",
+        "RELATIONSHIP"
+      ],
+      "keywords": [
+        "pokuta",
+        "policie",
+        "trest",
+        "řidičák",
+        "vztah",
+        "manželství",
+        "rande"
+      ],
+      "characterCount": 141,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-37423",
+      "text": "Nebejt mne a mejch novin, nevíš, kolikátýho je.\nA kolikátýho je?\nKup si noviny a dozvíš se to.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-8/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 94,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-514187",
+      "text": "Copak, to sis pořídil místo koně? Kde máš sedlo?",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-8/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 48,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-76065",
+      "text": "To koukáš, co se tady děje. Von se totiž Dušek vydal na cestu do finanční Evropy a Václava to už stálo tři kila.\nCo to je tři kila?\nNo co to je? Jedno bylo moje.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-8/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 161,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-472730",
+      "text": "Mařenko, Maruško rozmilá, skoč mi koupit kytku pro paní notářku.\nNo kdyby to bylo pro vaši ženu, tak bych šla, ale pro nějakou stoletou naivku se angažovat nebudu.\nTak koukla! Až se bude chtít rozvádět, tak za mnou nechodila.\nJá se nechci ani vdávat, tak nevím, proč bych se měla rozvádět.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-8/",
+      "categories": [
+        "RELATIONSHIP"
+      ],
+      "keywords": [
+        "vztah",
+        "manželství",
+        "rande"
+      ],
+      "characterCount": 289,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-358601",
+      "text": "Nechci vidět, co se bude dít, jestli se ten Tyršův pravnuk vrátí.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-8/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 65,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-540139",
+      "text": "Tě bůh, vejrůstku.\nAhoj špeditére. Tak kde jsi dneska krad, že jdeš tak pozdě?",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-9/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 78,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-165318",
+      "text": "Zdar a sílu najdeš v pívu.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-9/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 26,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-45362",
+      "text": "A když chci na tu televizi vidět, tak ji strčím do kbelíku s vodou.\nNekecej, a proč?\nCo proč? Voda zvětšuje.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-9/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 108,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-5601",
+      "text": "Co je? Koulíš jak moje stará při plnění domácích povinností.\nEhm, ehm.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-9/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 70,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-639753",
+      "text": "Heergot, co budeme dělat? Přece tady nebudu cucat lahváče jako nějakej puberťák!\nJá zatím točený pivo mám. Takže to neřeším. Ale až těch dvacet piv ze džbánu vypiju, tak nastane okamžik, kdy se to bude muset řešit!",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-9/",
+      "categories": [
+        "BEER"
+      ],
+      "keywords": [
+        "pivo",
+        "alkohol",
+        "pití",
+        "nápoj",
+        "hospoda"
+      ],
+      "characterCount": 214,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-622648",
+      "text": "Vy jste tu byla včera taky, paní Jirásková? A co se tady dělo? Můj kluk určitě nic špatnýho neudělal!\nVašeho pana syna mi ani nepřipomínejte. Byl veselej až moc a nechal mi přinýst fefrmintku - do půllitru!",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-9/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 206,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-1059311",
+      "text": "Já se ráno probudil a chvíli jsem si myslel, že jsem nebožtík. Protože mě nic nebolelo!",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-9/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 87,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-415019",
+      "text": "Co to tu vyvádíš? Koukni se na sebe, jak vypadáš. Všichni se ti tady smějou.\nJako generál. A rára uša rára...",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-9/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 109,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-476710",
+      "text": "Tak pusť zvuk.\nDyť je puštěnej.\nNekecej, tomu není vůbec rozumět.\nNo šel původně líp, ale já to jednou opravoval a od té doby to takhle chrchlá.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-9/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 144,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-251201",
+      "text": "Hele, Joska. Nazdar, sem si sedni, vedle mě, ať si mám s kým popovídat. Tady se dneska všichni zbláznili. Ačkoli s tebou si člověk moc nepolepší, co?",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-9/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 149,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-107019",
+      "text": "Dneska se flákaj všichni. A v tom, pánové, vidím největší přednost naší demokracie.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-9/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 83,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-683249",
+      "text": "Tak a teď si prstem pravé ruky sáhněte na nos.\nJá jsem říkal pravou.\nJá nevěděl, jakou myslíte. Jestli z vašeho pohledu nebo z pohledu pana šéfa.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-9/",
+      "categories": [
+        "WORK"
+      ],
+      "keywords": [
+        "práce",
+        "šéf",
+        "zaměstnání"
+      ],
+      "characterCount": 145,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-89148",
+      "text": "Nazdar, dědku!\nNeřikej mi dědku, já ti taky neřikám cucáku.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-9/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 59,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-332079",
+      "text": "Tak vy jste věděl, že je to člověk a ne ženská?",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-9/",
+      "categories": [
+        "RELATIONSHIP"
+      ],
+      "keywords": [
+        "vztah",
+        "manželství",
+        "rande"
+      ],
+      "characterCount": 47,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-551206",
+      "text": "Moment, mně se tam něco pálí.\nSnad opravdu nezačal vařit?\nOd toho je kuchař. On by se taky hodil do public relation.\nJá už vím, co udělám.\nOžereš se.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-9/",
+      "categories": [
+        "FOOD"
+      ],
+      "keywords": [
+        "jídlo",
+        "kuchař",
+        "oběd"
+      ],
+      "characterCount": 149,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-76868",
+      "text": "Hele, já si pučim ty noviny.\nTy umíš číst?\nNe, ale podívám se aspoň na obrázky.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-10/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 79,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "hospoda-227317",
+      "text": "Co má dělat, když má hlad?\nTak ať si ho hladí a říká mu malej.\nKdyž si ho bude hladit, přestane bejt malej.",
+      "source": "HOSPODA",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/hospoda-10/",
+      "categories": [
+        "GENERAL"
+      ],
+      "keywords": [],
+      "characterCount": 107,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "okresni-prebor-6034681",
+      "text": "Když nastoupí špekáček, dostanete na fráček.",
+      "source": "OKRESNI_PREBOR",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/okresni-prebor/",
+      "categories": [
+        "FOOTBALL"
+      ],
+      "keywords": [
+        "fotbal",
+        "zápas",
+        "gól",
+        "hráč",
+        "trenér",
+        "okresní přebor"
+      ],
+      "characterCount": 44,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "okresni-prebor-5904856",
+      "text": "Ber to tak, že každá ženská je zvířátko. A ty prostě musíš jen objevit jaký.",
+      "source": "OKRESNI_PREBOR",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/okresni-prebor/",
+      "categories": [
+        "FOOTBALL",
+        "RELATIONSHIP"
+      ],
+      "keywords": [
+        "fotbal",
+        "zápas",
+        "gól",
+        "hráč",
+        "trenér",
+        "okresní přebor",
+        "vztah",
+        "manželství",
+        "rande"
+      ],
+      "characterCount": 76,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "okresni-prebor-3174013",
+      "text": "Ty seš terapeut! Ty že jsi terapeut!? Ty nejsi ani maskot, ty vole!\nJak jsem moh vědět, že si na joháče dá pět jumů a selžou mu jájta?",
+      "source": "OKRESNI_PREBOR",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/okresni-prebor/",
+      "categories": [
+        "FOOTBALL"
+      ],
+      "keywords": [
+        "fotbal",
+        "zápas",
+        "gól",
+        "hráč",
+        "trenér",
+        "okresní přebor"
+      ],
+      "characterCount": 134,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "okresni-prebor-3468029",
+      "text": "A kdo seš ty?\nKužel.\nÁ, místní vtipálek.",
+      "source": "OKRESNI_PREBOR",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/okresni-prebor/",
+      "categories": [
+        "FOOTBALL"
+      ],
+      "keywords": [
+        "fotbal",
+        "zápas",
+        "gól",
+        "hráč",
+        "trenér",
+        "okresní přebor"
+      ],
+      "characterCount": 40,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "okresni-prebor-5232316",
+      "text": "Hoši, narážečku umí i moje stará.",
+      "source": "OKRESNI_PREBOR",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/okresni-prebor/",
+      "categories": [
+        "FOOTBALL"
+      ],
+      "keywords": [
+        "fotbal",
+        "zápas",
+        "gól",
+        "hráč",
+        "trenér",
+        "okresní přebor"
+      ],
+      "characterCount": 33,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "okresni-prebor-6027731",
+      "text": "Zelená je tjáva, fotbal, to je hja.",
+      "source": "OKRESNI_PREBOR",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/okresni-prebor/",
+      "categories": [
+        "FOOTBALL"
+      ],
+      "keywords": [
+        "fotbal",
+        "zápas",
+        "gól",
+        "hráč",
+        "trenér",
+        "okresní přebor"
+      ],
+      "characterCount": 35,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "okresni-prebor-5112561",
+      "text": "Vole. Vole, Psojedy. To není možný, vole, Psojedy. Pusť mě k tomu, ty vole.\nMatějka říkal, že mám výslovně řídit jenom já.\nPsojedy snad ani nejsou na mapě. Nejsou! Psojedy neexistujou.\nMatějka mně důvěřuje.\nPusť mě k tomu!",
+      "source": "OKRESNI_PREBOR",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/okresni-prebor/",
+      "categories": [
+        "FOOTBALL"
+      ],
+      "keywords": [
+        "fotbal",
+        "zápas",
+        "gól",
+        "hráč",
+        "trenér",
+        "okresní přebor"
+      ],
+      "characterCount": 222,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "okresni-prebor-1796038",
+      "text": "Já se ráno probudím a deprese. Já jdu do práce a deprese. Já jdu z práce...\nA deprese?\nKdyž jdu z práce, tak nemám. To je zajímavý. Jenom v úterý, když vyzvedávám kluka ze školky, to mám.",
+      "source": "OKRESNI_PREBOR",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/okresni-prebor/",
+      "categories": [
+        "FOOTBALL",
+        "WORK"
+      ],
+      "keywords": [
+        "fotbal",
+        "zápas",
+        "gól",
+        "hráč",
+        "trenér",
+        "okresní přebor",
+        "práce",
+        "šéf",
+        "zaměstnání"
+      ],
+      "characterCount": 187,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "okresni-prebor-6128629",
+      "text": "Máme Roteiro!",
+      "source": "OKRESNI_PREBOR",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/okresni-prebor/",
+      "categories": [
+        "FOOTBALL"
+      ],
+      "keywords": [
+        "fotbal",
+        "zápas",
+        "gól",
+        "hráč",
+        "trenér",
+        "okresní přebor"
+      ],
+      "characterCount": 13,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "okresni-prebor-519095",
+      "text": "Jardo, dyť ty v tom vypadáš jako prase.",
+      "source": "OKRESNI_PREBOR",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/okresni-prebor/",
+      "categories": [
+        "FOOTBALL"
+      ],
+      "keywords": [
+        "fotbal",
+        "zápas",
+        "gól",
+        "hráč",
+        "trenér",
+        "okresní přebor"
+      ],
+      "characterCount": 39,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "okresni-prebor-5140296",
+      "text": "Kde se sprchují hosté?\nNo tady.\nTo se sprchují společně s rozhodčími?\nNo ano, ale rozhodčí mají přednost, kdyby náhodou došla teplá.",
+      "source": "OKRESNI_PREBOR",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/okresni-prebor/",
+      "categories": [
+        "FOOTBALL"
+      ],
+      "keywords": [
+        "fotbal",
+        "zápas",
+        "gól",
+        "hráč",
+        "trenér",
+        "okresní přebor"
+      ],
+      "characterCount": 132,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "okresni-prebor-353818",
+      "text": "Ty můj malej šikmookej Maradono!",
+      "source": "OKRESNI_PREBOR",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/okresni-prebor/",
+      "categories": [
+        "FOOTBALL"
+      ],
+      "keywords": [
+        "fotbal",
+        "zápas",
+        "gól",
+        "hráč",
+        "trenér",
+        "okresní přebor"
+      ],
+      "characterCount": 32,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "okresni-prebor-987045",
+      "text": "Až se to roznese po okrese, tak je to nás konec. Oni nám rozklíží celej tým zevnitř.\nKdo oni?\nNo přece homosexuálové.",
+      "source": "OKRESNI_PREBOR",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/okresni-prebor/",
+      "categories": [
+        "FOOTBALL"
+      ],
+      "keywords": [
+        "fotbal",
+        "zápas",
+        "gól",
+        "hráč",
+        "trenér",
+        "okresní přebor"
+      ],
+      "characterCount": 117,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "okresni-prebor-1530473",
+      "text": "Nazdar, Jiřino.\nČau.\nAhoj. Udělej mi pivo a velkou vodku!\nSem ti špatně rozuměl. Co, že to chceš?\nTak malou, no.",
+      "source": "OKRESNI_PREBOR",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/okresni-prebor/",
+      "categories": [
+        "FOOTBALL",
+        "BEER"
+      ],
+      "keywords": [
+        "fotbal",
+        "zápas",
+        "gól",
+        "hráč",
+        "trenér",
+        "okresní přebor",
+        "pivo",
+        "alkohol",
+        "pití",
+        "nápoj",
+        "hospoda"
+      ],
+      "characterCount": 112,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "okresni-prebor-5217473",
+      "text": "Ty kjávo! To je tjáva?",
+      "source": "OKRESNI_PREBOR",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/okresni-prebor/",
+      "categories": [
+        "FOOTBALL"
+      ],
+      "keywords": [
+        "fotbal",
+        "zápas",
+        "gól",
+        "hráč",
+        "trenér",
+        "okresní přebor"
+      ],
+      "characterCount": 22,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "okresni-prebor-3878928",
+      "text": "Trenér Hnátek taky neměl licenci. Nebo jo?\nMěl.\nNekecej, vždyť byl úplně blbej.\nNo, ale měl licenci.",
+      "source": "OKRESNI_PREBOR",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/okresni-prebor-2/",
+      "categories": [
+        "FOOTBALL"
+      ],
+      "keywords": [
+        "fotbal",
+        "zápas",
+        "gól",
+        "hráč",
+        "trenér",
+        "okresní přebor"
+      ],
+      "characterCount": 100,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "okresni-prebor-6235745",
+      "text": "Za co jste mu dal tu červenou, ty vole?",
+      "source": "OKRESNI_PREBOR",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/okresni-prebor-2/",
+      "categories": [
+        "FOOTBALL"
+      ],
+      "keywords": [
+        "fotbal",
+        "zápas",
+        "gól",
+        "hráč",
+        "trenér",
+        "okresní přebor"
+      ],
+      "characterCount": 39,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "okresni-prebor-601571",
+      "text": "Jirko, co děláš jinýho kromě fotbalu? Co jinýho děláš?\nNo spoustu dělám věcí. Třeba to, nohejbal.",
+      "source": "OKRESNI_PREBOR",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/okresni-prebor-2/",
+      "categories": [
+        "FOOTBALL"
+      ],
+      "keywords": [
+        "fotbal",
+        "zápas",
+        "gól",
+        "hráč",
+        "trenér",
+        "okresní přebor"
+      ],
+      "characterCount": 97,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "okresni-prebor-4661598",
+      "text": "To je ale situace.\nPjekelní že?",
+      "source": "OKRESNI_PREBOR",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/okresni-prebor-2/",
+      "categories": [
+        "FOOTBALL"
+      ],
+      "keywords": [
+        "fotbal",
+        "zápas",
+        "gól",
+        "hráč",
+        "trenér",
+        "okresní přebor"
+      ],
+      "characterCount": 31,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "okresni-prebor-6014219",
+      "text": "Jak vidíte, čím víc gólů dáme, tím víc bodů máme.",
+      "source": "OKRESNI_PREBOR",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/okresni-prebor-2/",
+      "categories": [
+        "FOOTBALL"
+      ],
+      "keywords": [
+        "fotbal",
+        "zápas",
+        "gól",
+        "hráč",
+        "trenér",
+        "okresní přebor"
+      ],
+      "characterCount": 49,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "okresni-prebor-4816764",
+      "text": "Tak slabiny nebo podpaží, pamatuj si to!",
+      "source": "OKRESNI_PREBOR",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/okresni-prebor-2/",
+      "categories": [
+        "FOOTBALL"
+      ],
+      "keywords": [
+        "fotbal",
+        "zápas",
+        "gól",
+        "hráč",
+        "trenér",
+        "okresní přebor"
+      ],
+      "characterCount": 40,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "okresni-prebor-588741",
+      "text": "Jajdo, ty si nadjanej jako djáteník!",
+      "source": "OKRESNI_PREBOR",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/okresni-prebor-2/",
+      "categories": [
+        "FOOTBALL"
+      ],
+      "keywords": [
+        "fotbal",
+        "zápas",
+        "gól",
+        "hráč",
+        "trenér",
+        "okresní přebor"
+      ],
+      "characterCount": 36,
+      "weight": 1,
+      "enabled": true
+    },
+    {
+      "id": "okresni-prebor-419411",
+      "text": "Kluci měli tady Pepíka hrozně rádi. Dyť to byl skoro jako jejich táta.\nHovno, nesnášeli ho, já to dobře vím.",
+      "source": "OKRESNI_PREBOR",
+      "sourcePage": "https://www.hlaskyzfilmu.cz/okresni-prebor-2/",
+      "categories": [
+        "FOOTBALL"
+      ],
+      "keywords": [
+        "fotbal",
+        "zápas",
+        "gól",
+        "hráč",
+        "trenér",
+        "okresní přebor"
+      ],
+      "characterCount": 108,
+      "weight": 1,
+      "enabled": true
+    }
+  ]
+}
