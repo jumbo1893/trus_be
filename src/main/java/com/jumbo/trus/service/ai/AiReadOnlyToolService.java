@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.jumbo.trus.dto.SeasonDTO;
 import com.jumbo.trus.dto.ai.AiFineSummaryProjection;
-import com.jumbo.trus.dto.match.MatchDTO;
+import com.jumbo.trus.dto.ai.AiRepeatOpponentProjection;
 import com.jumbo.trus.dto.player.PlayerDTO;
 import com.jumbo.trus.entity.MatchEntity;
 import com.jumbo.trus.entity.filter.SeasonFilter;
@@ -23,8 +23,12 @@ import com.jumbo.trus.service.goal.GoalService;
 import com.jumbo.trus.service.player.PlayerService;
 import com.jumbo.trus.service.player.PlayerStatsFacade;
 import com.jumbo.trus.service.receivedFine.ReceivedFineService;
+import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -69,12 +73,17 @@ public class AiReadOnlyToolService {
                 case "find_matches" -> findMatches(arguments, context);
                 case "read_team_statistics" -> readTeamStatistics(arguments, context);
                 case "read_fine_summary" -> readFineSummary(arguments, context);
+                case "read_repeat_opponents" -> readRepeatOpponents(context);
                 case "read_team_directory" -> readTeamDirectory(arguments, context);
                 case "read_official_football" -> readOfficialFootball(arguments, context);
                 case "read_player_profile" -> readPlayerProfile(arguments, context);
                 default -> Map.of("error", "Neznámý read-only nástroj: " + toolName);
             };
             return serializeAndLimit(result);
+        } catch (DataAccessException exception) {
+            // Databázová chyba musí opustit transakci, jinak se projeví až jako
+            // zavádějící UnexpectedRollbackException bez původní příčiny.
+            throw exception;
         } catch (RuntimeException exception) {
             return serializeAndLimit(Map.of(
                     "error", "Nástroj nemohl data načíst.",
@@ -91,14 +100,32 @@ public class AiReadOnlyToolService {
         String opponent = nullableText(arguments, "opponent");
         int limit = clamp(arguments.path("limit").asInt(10), 1, 20);
 
-        List<MatchEntity> matches = matchRepository.findForAi(
-                context.appTeam().getId(),
-                seasonId,
-                fromDate,
-                toDate,
-                opponent,
-                PageRequest.of(0, limit)
-        );
+        Specification<MatchEntity> specification = (root, query, builder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            predicates.add(builder.equal(root.get("appTeam").get("id"), context.appTeam().getId()));
+            if (seasonId != null && seasonId != com.jumbo.trus.config.Config.ALL_SEASON_ID) {
+                predicates.add(builder.equal(root.get("season").get("id"), seasonId));
+            }
+            if (fromDate != null) {
+                predicates.add(builder.greaterThanOrEqualTo(root.get("date"), fromDate));
+            }
+            if (toDate != null) {
+                predicates.add(builder.lessThan(root.get("date"), toDate));
+            }
+            if (opponent != null) {
+                predicates.add(builder.like(
+                        builder.lower(root.get("name")),
+                        "%" + opponent.toLowerCase(Locale.ROOT) + "%"
+                ));
+            }
+            query.distinct(true);
+            return builder.and(predicates.toArray(Predicate[]::new));
+        };
+
+        List<MatchEntity> matches = matchRepository.findAll(
+                specification,
+                PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "date"))
+        ).getContent();
 
         return matches.stream().map(match -> {
             Map<String, Object> result = new LinkedHashMap<>();
@@ -184,6 +211,41 @@ public class AiReadOnlyToolService {
             result.put("message", "Nebyla nalezena žádná udělená pokuta odpovídající názvu.");
         }
         return result;
+    }
+
+    private Object readRepeatOpponents(AiToolContext context) {
+        SeasonFilter seasonFilter = new SeasonFilter(false, false, false);
+        seasonFilter.setAppTeam(context.appTeam());
+        SeasonWindow seasonWindow = findSeasonWindow(seasonService.getAll(seasonFilter), new Date());
+        SeasonDTO currentSeason = seasonWindow.current();
+
+        if (currentSeason == null) {
+            return Map.of(
+                    "repeat_opponents", List.of(),
+                    "message", "Tým nyní nemá sezonu odpovídající dnešnímu datu."
+            );
+        }
+
+        List<AiRepeatOpponentProjection> opponents = matchRepository.findAiRepeatOpponents(
+                context.appTeam().getId(),
+                currentSeason.getId(),
+                currentSeason.getFromDate()
+        );
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("current_season", seasonDirectoryRow(currentSeason));
+        result.put("repeat_opponent_count", opponents.size());
+        result.put("repeat_opponents", opponents.stream().map(this::repeatOpponentRow).toList());
+        return result;
+    }
+
+    private Map<String, Object> repeatOpponentRow(AiRepeatOpponentProjection opponent) {
+        Map<String, Object> row = new LinkedHashMap<>();
+        row.put("opponent", opponent.getOpponent());
+        row.put("current_season_match_count", nullableLong(opponent.getCurrentSeasonMatchCount()));
+        row.put("first_current_season_match", formatDateTime(opponent.getFirstCurrentSeasonMatch()));
+        row.put("historical_match_count", nullableLong(opponent.getHistoricalMatchCount()));
+        row.put("last_historical_match", formatDateTime(opponent.getLastHistoricalMatch()));
+        return row;
     }
 
     private SeasonWindow findSeasonWindow(List<SeasonDTO> seasons, Date now) {
@@ -418,6 +480,18 @@ public class AiReadOnlyToolService {
                     "fine_name": {"type": "string", "description": "Celý název pokuty nebo jeho část, například Překop."}
                   },
                   "required": ["fine_name"],
+                  "additionalProperties": false
+                }
+              },
+              {
+                "type": "function",
+                "name": "read_repeat_opponents",
+                "description": "Jedním krokem vrátí soupeře z aktuální sezony, se kterými tým hrál už před začátkem této sezony, včetně počtu a data dřívějších zápasů. Použij pro dotazy typu zda Trus letos hraje s týmy, se kterými už někdy hrál.",
+                "strict": true,
+                "parameters": {
+                  "type": "object",
+                  "properties": {},
+                  "required": [],
                   "additionalProperties": false
                 }
               },

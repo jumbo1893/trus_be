@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jumbo.trus.dto.SeasonDTO;
 import com.jumbo.trus.dto.ai.AiFineSummaryProjection;
+import com.jumbo.trus.dto.ai.AiRepeatOpponentProjection;
+import com.jumbo.trus.entity.MatchEntity;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.auth.UserEntity;
 import com.jumbo.trus.repository.MatchRepository;
@@ -20,6 +22,9 @@ import com.jumbo.trus.service.player.PlayerStatsFacade;
 import com.jumbo.trus.service.receivedFine.ReceivedFineService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -113,6 +118,48 @@ class AiReadOnlyToolServiceTest {
     }
 
     @Test
+    void findMatchesDoesNotPassNullFiltersToAStaticRepositoryQuery() throws Exception {
+        when(matchRepository.findAll(
+                org.mockito.ArgumentMatchers.<Specification<MatchEntity>>any(),
+                any(Pageable.class)
+        )).thenReturn(Page.empty());
+
+        String output = service.execute("find_matches", objectMapper.readTree("{}"), context);
+
+        assertTrue(objectMapper.readTree(output).isArray());
+        verify(matchRepository).findAll(
+                org.mockito.ArgumentMatchers.<Specification<MatchEntity>>any(),
+                any(Pageable.class)
+        );
+    }
+
+    @Test
+    void repeatOpponentsAreReturnedInOneDatabaseRead() throws Exception {
+        Instant now = Instant.now();
+        SeasonDTO current = new SeasonDTO(
+                2L,
+                "2026/27",
+                Date.from(now.minus(30, ChronoUnit.DAYS)),
+                Date.from(now.plus(300, ChronoUnit.DAYS))
+        );
+        when(seasonService.getAll(any())).thenReturn(List.of(current));
+        when(matchRepository.findAiRepeatOpponents(11L, 2L, current.getFromDate()))
+                .thenReturn(List.of(repeatOpponent("FC Test", now)));
+
+        String output = service.execute(
+                "read_repeat_opponents",
+                objectMapper.readTree("{}"),
+                context
+        );
+        JsonNode result = objectMapper.readTree(output);
+
+        assertEquals(1, result.path("repeat_opponent_count").asInt());
+        assertEquals("FC Test", result.path("repeat_opponents").get(0).path("opponent").asText());
+        assertEquals(3, result.path("repeat_opponents").get(0).path("historical_match_count").asLong());
+        verify(matchRepository).findAiRepeatOpponents(11L, 2L, current.getFromDate());
+    }
+
+    @Test
     void accessTiersExposeIncreasingToolRoundLimits() {
         assertEquals(6, com.jumbo.trus.entity.ai.AiAccessTier.STANDARD.getMaxToolRounds());
         assertEquals(10, com.jumbo.trus.entity.ai.AiAccessTier.PREMIUM.getMaxToolRounds());
@@ -135,6 +182,16 @@ class AiReadOnlyToolServiceTest {
             public Date getSeasonTo() { return season.getToDate(); }
             public Long getFineCount() { return fineCount; }
             public Long getTotalAmount() { return totalAmount; }
+        };
+    }
+
+    private AiRepeatOpponentProjection repeatOpponent(String name, Instant now) {
+        return new AiRepeatOpponentProjection() {
+            public String getOpponent() { return name; }
+            public Long getCurrentSeasonMatchCount() { return 2L; }
+            public Date getFirstCurrentSeasonMatch() { return Date.from(now.plus(10, ChronoUnit.DAYS)); }
+            public Long getHistoricalMatchCount() { return 3L; }
+            public Date getLastHistoricalMatch() { return Date.from(now.minus(200, ChronoUnit.DAYS)); }
         };
     }
 }

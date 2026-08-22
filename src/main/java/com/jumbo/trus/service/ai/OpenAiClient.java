@@ -178,6 +178,8 @@ public class OpenAiClient {
                 Pro souhrny pokut podle názvu vždy použij read_fine_summary místo obecného nástroje
                 read_team_statistics. Neopakuj stejný nástroj se stejnými parametry. Jakmile máš
                 data potřebná k odpovědi, přestaň volat nástroje a odpověz uživateli.
+                Pro dotazy, zda tým v aktuální sezoně hraje se soupeři, se kterými už hrál dříve,
+                použij vždy read_repeat_opponents; neporovnávej ručně omezené seznamy zápasů.
                 Relativní data počítej v časové zóně Europe/Prague. Dnešní datum a čas je %s.
                 Aktuální tým: %s (app_team_id=%d). Uživatel: %s (user_id=%d). %s
                 U výpočtů typu co se musí stát pro vítězství popiš předpoklady a nevydávej nejistý

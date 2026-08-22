@@ -1,5 +1,6 @@
 package com.jumbo.trus.repository;
 
+import com.jumbo.trus.dto.ai.AiRepeatOpponentProjection;
 import com.jumbo.trus.entity.MatchEntity;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import org.springframework.data.domain.Pageable;
@@ -72,22 +73,25 @@ public interface MatchRepository extends PagingAndSortingRepository<MatchEntity,
     );
 
     @Query("""
-            SELECT DISTINCT m
-            FROM match m
-            WHERE m.appTeam.id = :appTeamId
-              AND (:seasonId IS NULL OR :seasonId = -3 OR m.season.id = :seasonId)
-              AND (:fromDate IS NULL OR m.date >= :fromDate)
-              AND (:toDate IS NULL OR m.date < :toDate)
-              AND (:opponent IS NULL OR LOWER(m.name) LIKE LOWER(CONCAT('%', :opponent, '%')))
-            ORDER BY m.date DESC
+            SELECT
+                currentMatch.name AS opponent,
+                COUNT(DISTINCT currentMatch.id) AS currentSeasonMatchCount,
+                MIN(currentMatch.date) AS firstCurrentSeasonMatch,
+                COUNT(DISTINCT historicalMatch.id) AS historicalMatchCount,
+                MAX(historicalMatch.date) AS lastHistoricalMatch
+            FROM match currentMatch, match historicalMatch
+            WHERE currentMatch.appTeam.id = :appTeamId
+              AND currentMatch.season.id = :currentSeasonId
+              AND historicalMatch.appTeam.id = :appTeamId
+              AND historicalMatch.date < :currentSeasonFrom
+              AND LOWER(TRIM(historicalMatch.name)) = LOWER(TRIM(currentMatch.name))
+            GROUP BY currentMatch.name
+            ORDER BY currentMatch.name ASC
             """)
-    List<MatchEntity> findForAi(
+    List<AiRepeatOpponentProjection> findAiRepeatOpponents(
             @Param("appTeamId") Long appTeamId,
-            @Param("seasonId") Long seasonId,
-            @Param("fromDate") Date fromDate,
-            @Param("toDate") Date toDate,
-            @Param("opponent") String opponent,
-            Pageable pageable
+            @Param("currentSeasonId") Long currentSeasonId,
+            @Param("currentSeasonFrom") Date currentSeasonFrom
     );
 
     @Query("""
