@@ -8,8 +8,12 @@ import com.jumbo.trus.dto.ai.AiRepeatOpponentProjection;
 import com.jumbo.trus.entity.MatchEntity;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.auth.UserEntity;
+import com.jumbo.trus.entity.football.FootballMatchEntity;
+import com.jumbo.trus.entity.football.LeagueEntity;
+import com.jumbo.trus.entity.football.TeamEntity;
 import com.jumbo.trus.repository.MatchRepository;
 import com.jumbo.trus.repository.ReceivedFineRepository;
+import com.jumbo.trus.repository.football.FootballMatchRepository;
 import com.jumbo.trus.service.AttendanceService;
 import com.jumbo.trus.service.SeasonService;
 import com.jumbo.trus.service.beer.BeerService;
@@ -40,6 +44,7 @@ class AiReadOnlyToolServiceTest {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final MatchRepository matchRepository = mock(MatchRepository.class);
     private final ReceivedFineRepository receivedFineRepository = mock(ReceivedFineRepository.class);
+    private final FootballMatchRepository footballMatchRepository = mock(FootballMatchRepository.class);
     private final PlayerService playerService = mock(PlayerService.class);
     private final SeasonService seasonService = mock(SeasonService.class);
     private final GoalService goalService = mock(GoalService.class);
@@ -53,6 +58,7 @@ class AiReadOnlyToolServiceTest {
 
     private AiReadOnlyToolService service;
     private AiToolContext context;
+    private AppTeamEntity appTeam;
 
     @BeforeEach
     void setUp() {
@@ -60,6 +66,7 @@ class AiReadOnlyToolServiceTest {
                 objectMapper,
                 matchRepository,
                 receivedFineRepository,
+                footballMatchRepository,
                 playerService,
                 seasonService,
                 goalService,
@@ -72,7 +79,7 @@ class AiReadOnlyToolServiceTest {
                 playerStatsFacade
         );
 
-        AppTeamEntity appTeam = new AppTeamEntity();
+        appTeam = new AppTeamEntity();
         appTeam.setId(11L);
         appTeam.setName("Trus");
         UserEntity user = new UserEntity();
@@ -160,6 +167,59 @@ class AiReadOnlyToolServiceTest {
     }
 
     @Test
+    void repeatOpponentsPreferOfficialImportedData() throws Exception {
+        LeagueEntity currentLeague = new LeagueEntity();
+        currentLeague.setId(90L);
+        currentLeague.setName("1. liga");
+        currentLeague.setYear("2026/2027");
+        currentLeague.setCurrentLeague(true);
+
+        TeamEntity trus = team(5L, "Trus");
+        trus.setCurrentLeague(currentLeague);
+        TeamEntity opponent = team(6L, "Staří známí FC");
+        appTeam.setTeam(trus);
+
+        FootballMatchEntity currentMatch = footballMatch(
+                100L,
+                trus,
+                opponent,
+                currentLeague,
+                Instant.now().plus(20, ChronoUnit.DAYS),
+                false
+        );
+        LeagueEntity historicalLeague = new LeagueEntity();
+        historicalLeague.setId(80L);
+        historicalLeague.setYear("2024/2025");
+        FootballMatchEntity historicalMatch = footballMatch(
+                50L,
+                opponent,
+                trus,
+                historicalLeague,
+                Instant.now().minus(500, ChronoUnit.DAYS),
+                true
+        );
+
+        when(footballMatchRepository.findAiTeamMatchesInLeague(5L, 90L))
+                .thenReturn(List.of(currentMatch));
+        when(footballMatchRepository.findAiPlayedTeamMatchesOutsideLeague(5L, 90L))
+                .thenReturn(List.of(historicalMatch));
+
+        JsonNode result = objectMapper.readTree(service.execute(
+                "read_repeat_opponents",
+                objectMapper.readTree("{}"),
+                context
+        ));
+
+        assertEquals("official_import", result.path("data_source").asText());
+        assertEquals(1, result.path("repeat_opponent_count").asInt());
+        assertEquals(
+                "Staří známí FC",
+                result.path("repeat_opponents").get(0).path("opponent").asText()
+        );
+        verifyNoInteractions(matchRepository);
+    }
+
+    @Test
     void accessTiersExposeIncreasingToolRoundLimits() {
         assertEquals(6, com.jumbo.trus.entity.ai.AiAccessTier.STANDARD.getMaxToolRounds());
         assertEquals(10, com.jumbo.trus.entity.ai.AiAccessTier.PREMIUM.getMaxToolRounds());
@@ -193,5 +253,30 @@ class AiReadOnlyToolServiceTest {
             public Long getHistoricalMatchCount() { return 3L; }
             public Date getLastHistoricalMatch() { return Date.from(now.minus(200, ChronoUnit.DAYS)); }
         };
+    }
+
+    private TeamEntity team(Long id, String name) {
+        TeamEntity team = new TeamEntity();
+        team.setId(id);
+        team.setName(name);
+        return team;
+    }
+
+    private FootballMatchEntity footballMatch(
+            Long id,
+            TeamEntity homeTeam,
+            TeamEntity awayTeam,
+            LeagueEntity league,
+            Instant date,
+            boolean alreadyPlayed
+    ) {
+        FootballMatchEntity match = new FootballMatchEntity();
+        match.setId(id);
+        match.setHomeTeam(homeTeam);
+        match.setAwayTeam(awayTeam);
+        match.setLeague(league);
+        match.setDate(Date.from(date));
+        match.setAlreadyPlayed(alreadyPlayed);
+        return match;
     }
 }

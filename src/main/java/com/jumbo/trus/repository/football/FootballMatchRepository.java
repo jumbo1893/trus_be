@@ -3,6 +3,7 @@ package com.jumbo.trus.repository.football;
 import com.jumbo.trus.entity.football.FootballMatchEntity;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -11,7 +12,32 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-public interface FootballMatchRepository extends JpaRepository<FootballMatchEntity, Long> {
+public interface FootballMatchRepository extends JpaRepository<FootballMatchEntity, Long>, JpaSpecificationExecutor<FootballMatchEntity> {
+
+    @Query("""
+            SELECT fm
+            FROM FootballMatchEntity fm
+            WHERE fm.league.id = :leagueId
+              AND (fm.homeTeam.id = :teamId OR fm.awayTeam.id = :teamId)
+            ORDER BY fm.date ASC
+            """)
+    List<FootballMatchEntity> findAiTeamMatchesInLeague(
+            @Param("teamId") Long teamId,
+            @Param("leagueId") Long leagueId
+    );
+
+    @Query("""
+            SELECT fm
+            FROM FootballMatchEntity fm
+            WHERE fm.alreadyPlayed = true
+              AND fm.league.id <> :leagueId
+              AND (fm.homeTeam.id = :teamId OR fm.awayTeam.id = :teamId)
+            ORDER BY fm.date DESC
+            """)
+    List<FootballMatchEntity> findAiPlayedTeamMatchesOutsideLeague(
+            @Param("teamId") Long teamId,
+            @Param("leagueId") Long leagueId
+    );
 
     Optional<FootballMatchEntity> findByHomeTeam_IdAndRoundAndLeagueId(Long homeTeamId, Integer round, Long leagueId);
 

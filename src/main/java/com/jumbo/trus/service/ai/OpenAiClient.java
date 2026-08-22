@@ -180,6 +180,9 @@ public class OpenAiClient {
                 data potřebná k odpovědi, přestaň volat nástroje a odpověz uživateli.
                 Pro dotazy, zda tým v aktuální sezoně hraje se soupeři, se kterými už hrál dříve,
                 použij vždy read_repeat_opponents; neporovnávej ručně omezené seznamy zápasů.
+                Pro otázky o oficiální soutěži můžeš číst importované ligy, zápasy a hráčské výkony.
+                K hledání oficiálních zápasů a jejich hráčských detailů použij find_official_matches.
+                Když ruční season nebo match chybí, zkus odpovědět z oficiálních importovaných dat.
                 Relativní data počítej v časové zóně Europe/Prague. Dnešní datum a čas je %s.
                 Aktuální tým: %s (app_team_id=%d). Uživatel: %s (user_id=%d). %s
                 U výpočtů typu co se musí stát pro vítězství popiš předpoklady a nevydávej nejistý

@@ -9,10 +9,15 @@ import com.jumbo.trus.dto.ai.AiFineSummaryProjection;
 import com.jumbo.trus.dto.ai.AiRepeatOpponentProjection;
 import com.jumbo.trus.dto.player.PlayerDTO;
 import com.jumbo.trus.entity.MatchEntity;
+import com.jumbo.trus.entity.football.FootballMatchEntity;
+import com.jumbo.trus.entity.football.FootballMatchPlayerEntity;
+import com.jumbo.trus.entity.football.LeagueEntity;
+import com.jumbo.trus.entity.football.TeamEntity;
 import com.jumbo.trus.entity.filter.SeasonFilter;
 import com.jumbo.trus.entity.filter.StatisticsFilter;
 import com.jumbo.trus.repository.MatchRepository;
 import com.jumbo.trus.repository.ReceivedFineRepository;
+import com.jumbo.trus.repository.football.FootballMatchRepository;
 import com.jumbo.trus.service.AttendanceService;
 import com.jumbo.trus.service.SeasonService;
 import com.jumbo.trus.service.beer.BeerService;
@@ -47,6 +52,7 @@ public class AiReadOnlyToolService {
     private final ObjectMapper objectMapper;
     private final MatchRepository matchRepository;
     private final ReceivedFineRepository receivedFineRepository;
+    private final FootballMatchRepository footballMatchRepository;
     private final PlayerService playerService;
     private final SeasonService seasonService;
     private final GoalService goalService;
@@ -71,6 +77,7 @@ public class AiReadOnlyToolService {
         try {
             Object result = switch (toolName) {
                 case "find_matches" -> findMatches(arguments, context);
+                case "find_official_matches" -> findOfficialMatches(arguments, context);
                 case "read_team_statistics" -> readTeamStatistics(arguments, context);
                 case "read_fine_summary" -> readFineSummary(arguments, context);
                 case "read_repeat_opponents" -> readRepeatOpponents(context);
@@ -145,6 +152,108 @@ public class AiReadOnlyToolService {
         }).toList();
     }
 
+    private Object findOfficialMatches(JsonNode arguments, AiToolContext context) {
+        TeamEntity team = context.appTeam().getTeam();
+        if (team == null || team.getId() == null) {
+            return Map.of("error", "Aktuální tým není propojený s importovaným fotbalovým týmem.");
+        }
+
+        Long teamId = team.getId();
+        Date fromDate = startOfDay(nullableDate(arguments, "from_date"));
+        LocalDate inclusiveTo = nullableDate(arguments, "to_date");
+        Date toDate = inclusiveTo == null ? null : startOfDay(inclusiveTo.plusDays(1));
+        String opponent = nullableText(arguments, "opponent");
+        Boolean playedOnly = nullableBoolean(arguments, "played_only");
+        boolean currentLeagueOnly = arguments.path("current_league_only").asBoolean(false);
+        boolean includePlayers = arguments.path("include_players").asBoolean(false);
+        int limit = clamp(arguments.path("limit").asInt(20), 1, 30);
+
+        Specification<FootballMatchEntity> specification = (root, query, builder) -> {
+            Predicate isHomeTeam = builder.equal(root.get("homeTeam").get("id"), teamId);
+            Predicate isAwayTeam = builder.equal(root.get("awayTeam").get("id"), teamId);
+            List<Predicate> predicates = new ArrayList<>();
+            predicates.add(builder.or(isHomeTeam, isAwayTeam));
+            if (fromDate != null) {
+                predicates.add(builder.greaterThanOrEqualTo(root.<Date>get("date"), fromDate));
+            }
+            if (toDate != null) {
+                predicates.add(builder.lessThan(root.<Date>get("date"), toDate));
+            }
+            if (playedOnly != null) {
+                predicates.add(builder.equal(root.get("alreadyPlayed"), playedOnly));
+            }
+            if (currentLeagueOnly && team.getCurrentLeague() != null) {
+                predicates.add(builder.equal(root.get("league").get("id"), team.getCurrentLeague().getId()));
+            }
+            if (opponent != null) {
+                String pattern = "%" + opponent.toLowerCase(Locale.ROOT) + "%";
+                predicates.add(builder.or(
+                        builder.and(isHomeTeam, builder.like(builder.lower(root.get("awayTeam").get("name")), pattern)),
+                        builder.and(isAwayTeam, builder.like(builder.lower(root.get("homeTeam").get("name")), pattern))
+                ));
+            }
+            query.distinct(true);
+            return builder.and(predicates.toArray(Predicate[]::new));
+        };
+
+        List<FootballMatchEntity> matches = footballMatchRepository.findAll(
+                specification,
+                PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "date"))
+        ).getContent();
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("data_source", "official_import");
+        result.put("matches", matches.stream()
+                .map(match -> officialMatchRow(match, teamId, includePlayers))
+                .toList());
+        return result;
+    }
+
+    private Map<String, Object> officialMatchRow(
+            FootballMatchEntity match,
+            Long currentTeamId,
+            boolean includePlayers
+    ) {
+        boolean home = Objects.equals(match.getHomeTeam().getId(), currentTeamId);
+        TeamEntity opponent = home ? match.getAwayTeam() : match.getHomeTeam();
+        Map<String, Object> row = new LinkedHashMap<>();
+        row.put("id", match.getId());
+        row.put("date", formatDateTime(match.getDate()));
+        row.put("opponent_id", opponent == null ? null : opponent.getId());
+        row.put("opponent", opponent == null ? null : opponent.getName());
+        row.put("home", home);
+        row.put("home_team", teamRow(match.getHomeTeam()));
+        row.put("away_team", teamRow(match.getAwayTeam()));
+        row.put("home_goals", match.getHomeGoalNumber());
+        row.put("away_goals", match.getAwayGoalNumber());
+        row.put("already_played", match.isAlreadyPlayed());
+        row.put("round", match.getRound());
+        row.put("league", leagueRow(match.getLeague()));
+        if (includePlayers) {
+            row.put("players", Optional.ofNullable(match.getPlayerList()).orElseGet(Set::of)
+                    .stream()
+                    .map(this::officialPlayerRow)
+                    .toList());
+        }
+        return row;
+    }
+
+    private Map<String, Object> officialPlayerRow(FootballMatchPlayerEntity player) {
+        Map<String, Object> row = new LinkedHashMap<>();
+        row.put("player_id", player.getPlayer() == null ? null : player.getPlayer().getId());
+        row.put("player", player.getPlayer() == null ? null : player.getPlayer().getName());
+        row.put("team_id", player.getTeam() == null ? null : player.getTeam().getId());
+        row.put("team", player.getTeam() == null ? null : player.getTeam().getName());
+        row.put("goals", player.getGoals());
+        row.put("received_goals", player.getReceivedGoals());
+        row.put("own_goals", player.getOwnGoals());
+        row.put("yellow_cards", player.getYellowCards());
+        row.put("red_cards", player.getRedCards());
+        row.put("best_player", player.isBestPlayer());
+        row.put("clean_sheet", player.isCleanSheet());
+        return row;
+    }
+
     private Object readTeamStatistics(JsonNode arguments, AiToolContext context) {
         String category = requiredText(arguments, "category");
         String aggregation = requiredText(arguments, "aggregation");
@@ -214,6 +323,11 @@ public class AiReadOnlyToolService {
     }
 
     private Object readRepeatOpponents(AiToolContext context) {
+        TeamEntity officialTeam = context.appTeam().getTeam();
+        if (officialTeam != null && officialTeam.getId() != null && officialTeam.getCurrentLeague() != null) {
+            return readOfficialRepeatOpponents(officialTeam);
+        }
+
         SeasonFilter seasonFilter = new SeasonFilter(false, false, false);
         seasonFilter.setAppTeam(context.appTeam());
         SeasonWindow seasonWindow = findSeasonWindow(seasonService.getAll(seasonFilter), new Date());
@@ -236,6 +350,103 @@ public class AiReadOnlyToolService {
         result.put("repeat_opponent_count", opponents.size());
         result.put("repeat_opponents", opponents.stream().map(this::repeatOpponentRow).toList());
         return result;
+    }
+
+    private Object readOfficialRepeatOpponents(TeamEntity team) {
+        LeagueEntity currentLeague = team.getCurrentLeague();
+        List<FootballMatchEntity> currentMatches = footballMatchRepository.findAiTeamMatchesInLeague(
+                team.getId(),
+                currentLeague.getId()
+        );
+        List<FootballMatchEntity> historicalMatches = footballMatchRepository.findAiPlayedTeamMatchesOutsideLeague(
+                team.getId(),
+                currentLeague.getId()
+        );
+
+        Map<Long, List<FootballMatchEntity>> currentByOpponent = matchesByOpponent(currentMatches, team.getId());
+        Map<Long, List<FootballMatchEntity>> historyByOpponent = matchesByOpponent(historicalMatches, team.getId());
+        List<Map<String, Object>> repeated = new ArrayList<>();
+        for (Map.Entry<Long, List<FootballMatchEntity>> entry : currentByOpponent.entrySet()) {
+            List<FootballMatchEntity> history = historyByOpponent.get(entry.getKey());
+            if (history == null || history.isEmpty()) {
+                continue;
+            }
+            List<FootballMatchEntity> current = entry.getValue();
+            TeamEntity opponent = opponent(current.get(0), team.getId());
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("opponent_id", opponent.getId());
+            row.put("opponent", opponent.getName());
+            row.put("current_season_match_count", current.size());
+            row.put("first_current_season_match", current.stream()
+                    .map(FootballMatchEntity::getDate)
+                    .filter(Objects::nonNull)
+                    .min(Date::compareTo)
+                    .map(this::formatDateTime)
+                    .orElse(null));
+            row.put("historical_match_count", history.size());
+            row.put("last_historical_match", history.stream()
+                    .map(FootballMatchEntity::getDate)
+                    .filter(Objects::nonNull)
+                    .max(Date::compareTo)
+                    .map(this::formatDateTime)
+                    .orElse(null));
+            repeated.add(row);
+        }
+        repeated.sort(Comparator.comparing(row -> String.valueOf(row.get("opponent"))));
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("data_source", "official_import");
+        result.put("current_league", leagueRow(currentLeague));
+        result.put("repeat_opponent_count", repeated.size());
+        result.put("repeat_opponents", repeated);
+        return result;
+    }
+
+    private Map<Long, List<FootballMatchEntity>> matchesByOpponent(
+            List<FootballMatchEntity> matches,
+            Long teamId
+    ) {
+        Map<Long, List<FootballMatchEntity>> result = new LinkedHashMap<>();
+        for (FootballMatchEntity match : matches) {
+            TeamEntity opponent = opponent(match, teamId);
+            if (opponent != null && opponent.getId() != null) {
+                result.computeIfAbsent(opponent.getId(), ignored -> new ArrayList<>()).add(match);
+            }
+        }
+        return result;
+    }
+
+    private TeamEntity opponent(FootballMatchEntity match, Long teamId) {
+        if (match.getHomeTeam() != null && Objects.equals(match.getHomeTeam().getId(), teamId)) {
+            return match.getAwayTeam();
+        }
+        if (match.getAwayTeam() != null && Objects.equals(match.getAwayTeam().getId(), teamId)) {
+            return match.getHomeTeam();
+        }
+        return null;
+    }
+
+    private Map<String, Object> teamRow(TeamEntity team) {
+        if (team == null) {
+            return null;
+        }
+        Map<String, Object> row = new LinkedHashMap<>();
+        row.put("id", team.getId());
+        row.put("name", team.getName());
+        return row;
+    }
+
+    private Map<String, Object> leagueRow(LeagueEntity league) {
+        if (league == null) {
+            return null;
+        }
+        Map<String, Object> row = new LinkedHashMap<>();
+        row.put("id", league.getId());
+        row.put("name", league.getName());
+        row.put("year", league.getYear());
+        row.put("organization", league.getOrganization());
+        row.put("current", league.isCurrentLeague());
+        return row;
     }
 
     private Map<String, Object> repeatOpponentRow(AiRepeatOpponentProjection opponent) {
@@ -321,12 +532,28 @@ public class AiReadOnlyToolService {
         String dataset = requiredText(arguments, "dataset");
         boolean currentSeason = arguments.path("current_season").asBoolean(true);
         return switch (dataset) {
+            case "leagues" -> readOfficialLeagues(context);
             case "table" -> teamService.getTable(context.appTeam().getTeam().getId());
             case "fixtures" -> footballMatchService.getNextMatches(context.appTeam());
             case "next_and_last" -> footballMatchService.getNextAndLastFootballMatchDetail(context.appTeam());
             case "player_stats" -> footballPlayerStatsService.getPlayerStatsForTeam(currentSeason, context.appTeam());
             default -> Map.of("error", "Neznámý fotbalový dataset: " + dataset);
         };
+    }
+
+    private Object readOfficialLeagues(AiToolContext context) {
+        TeamEntity team = context.appTeam().getTeam();
+        if (team == null) {
+            return Map.of("error", "Aktuální tým není propojený s importovaným fotbalovým týmem.");
+        }
+        Map<Long, LeagueEntity> leagues = new LinkedHashMap<>();
+        if (team.getCurrentLeague() != null) {
+            leagues.put(team.getCurrentLeague().getId(), team.getCurrentLeague());
+        }
+        for (LeagueEntity league : Optional.ofNullable(team.getLeagueList()).orElseGet(List::of)) {
+            leagues.putIfAbsent(league.getId(), league);
+        }
+        return leagues.values().stream().map(this::leagueRow).toList();
     }
 
     private Object readPlayerProfile(JsonNode arguments, AiToolContext context) {
@@ -409,6 +636,11 @@ public class AiReadOnlyToolService {
         return value.asText().trim();
     }
 
+    private Boolean nullableBoolean(JsonNode arguments, String field) {
+        JsonNode value = arguments.get(field);
+        return value == null || value.isNull() ? null : value.asBoolean();
+    }
+
     private String requiredText(JsonNode arguments, String field) {
         String value = nullableText(arguments, field);
         if (value == null) {
@@ -446,6 +678,26 @@ public class AiReadOnlyToolService {
                     "limit": {"type": "integer", "minimum": 1, "maximum": 20}
                   },
                   "required": ["from_date", "to_date", "season_id", "opponent", "limit"],
+                  "additionalProperties": false
+                }
+              },
+              {
+                "type": "function",
+                "name": "find_official_matches",
+                "description": "Čte importované oficiální zápasy aktuálního týmu z football_match a volitelně hráčské výkony z football_match_player. Použij pro ligovou historii, rozpis, výsledky a detaily oficiálních zápasů, zejména když ručně zadané sezony nebo zápasy nestačí.",
+                "strict": true,
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "from_date": {"type": ["string", "null"], "description": "Počáteční datum včetně ve formátu YYYY-MM-DD."},
+                    "to_date": {"type": ["string", "null"], "description": "Koncové datum včetně ve formátu YYYY-MM-DD."},
+                    "opponent": {"type": ["string", "null"], "description": "Část názvu soupeře."},
+                    "played_only": {"type": ["boolean", "null"], "description": "True jen odehrané, false jen neodehrané, null obojí."},
+                    "current_league_only": {"type": "boolean"},
+                    "include_players": {"type": "boolean", "description": "Zahrne góly, karty a další importované výkony hráčů."},
+                    "limit": {"type": "integer", "minimum": 1, "maximum": 30}
+                  },
+                  "required": ["from_date", "to_date", "opponent", "played_only", "current_league_only", "include_players", "limit"],
                   "additionalProperties": false
                 }
               },
@@ -512,12 +764,12 @@ public class AiReadOnlyToolService {
               {
                 "type": "function",
                 "name": "read_official_football",
-                "description": "Čte oficiální ligovou tabulku, budoucí zápasy a oficiální hráčské statistiky týmu.",
+                "description": "Čte importované oficiální ligy týmu, ligovou tabulku, budoucí zápasy a oficiální hráčské statistiky.",
                 "strict": true,
                 "parameters": {
                   "type": "object",
                   "properties": {
-                    "dataset": {"type": "string", "enum": ["table", "fixtures", "next_and_last", "player_stats"]},
+                    "dataset": {"type": "string", "enum": ["leagues", "table", "fixtures", "next_and_last", "player_stats"]},
                     "current_season": {"type": "boolean"}
                   },
                   "required": ["dataset", "current_season"],
