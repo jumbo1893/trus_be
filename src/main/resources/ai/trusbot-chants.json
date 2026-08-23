@@ -1,0 +1,89 @@
+{
+  "chants": [
+    {
+      "id": "trus-chant-001",
+      "text": "Zrzavá sílá a vzadu hnědá díra!",
+      "enabled": true
+    },
+    {
+      "id": "trus-chant-002",
+      "text": "Liščí trus - dobrej trus!",
+      "enabled": true
+    },
+    {
+      "id": "trus-chant-003",
+      "text": "Liščí Trus - skóre plus!",
+      "enabled": true
+    },
+    {
+      "id": "trus-chant-004",
+      "text": "Fanoučci už burácí, nastupují Lišáci!",
+      "enabled": true
+    },
+    {
+      "id": "trus-chant-005",
+      "text": "Když nastoupí Liščí Trus, všichni křičí to je hnus!\nTrus je ale rozstřílí, výhru v lize vystřílí!",
+      "enabled": true
+    },
+    {
+      "id": "trus-chant-006",
+      "text": "Běží liška k autobusu, nese pytel svýho trusu.\nSoupeř za ní pospíchá, že jí pytel rozpíchá.\nLiška na něj vyrukuje, mistra ligy vybojuje.",
+      "enabled": true
+    },
+    {
+      "id": "trus-chant-007",
+      "text": "Kdo nefandí Trusu, nemá dost vkusu!",
+      "enabled": true
+    },
+    {
+      "id": "trus-chant-008",
+      "text": "Liščí Trus – nejlepší tým.\nDáme vám gól – počítej s tim.\nPak si dáme pivo – v Belle bude živo.",
+      "enabled": true
+    },
+    {
+      "id": "trus-chant-009",
+      "text": "Když hraje Trus Liščí, fanynky jen blahem piští.",
+      "enabled": true
+    },
+    {
+      "id": "trus-chant-010",
+      "text": "Chytrý jak liška Bystrouška – známka Trusího fanouška.",
+      "enabled": true
+    },
+    {
+      "id": "trus-chant-011",
+      "text": "Kdo by chtěl nadávat všemocným Lišákům, může se připojit v Německu k židákům.",
+      "enabled": true
+    },
+    {
+      "id": "trus-chant-012",
+      "text": "Liščí Trus - nejlepší v Praze!\nDáme pívo, bude blaze.\nLiščí Trus - nejlepší v republice.\nHelly nakopem do palice!",
+      "enabled": true
+    },
+    {
+      "id": "trus-chant-013",
+      "text": "Kdo bude mít na Liščí Trus kecy,\nten ať se smaží v peci!",
+      "enabled": true
+    },
+    {
+      "id": "trus-chant-014",
+      "text": "Peterka - baterka !!",
+      "enabled": true
+    },
+    {
+      "id": "trus-chant-015",
+      "text": "Kdyby tak Hellovéé, nebyli volovéé.\nTo by se krásně žiloo, to by byl ráááj!",
+      "enabled": true
+    },
+    {
+      "id": "trus-chant-016",
+      "text": "Nejlepší Trusák je - v podnapilym stavu!\nNejlepší Trusák je - uplně vožralej!\nNejlepší hellák je - s rozsekanou hlavou!\nNejlepší hellák je - uplně bez hlavy!",
+      "enabled": true
+    },
+    {
+      "id": "trus-chant-017",
+      "text": "Liščí Trus běží k brance,\ndává gól, jste bez šance!",
+      "enabled": true
+    }
+  ]
+}
