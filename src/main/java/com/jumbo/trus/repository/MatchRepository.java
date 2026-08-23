@@ -302,4 +302,19 @@ public interface MatchRepository extends PagingAndSortingRepository<MatchEntity,
             """)
     Set<Long> findIdsByFootballMatchId(@Param("footballMatchId") Long footballMatchId);
 
+    @Query("""
+            SELECT m.id AS matchId, m.appTeam.id AS appTeamId
+            FROM match m
+            WHERE m.footballMatch.id = :footballMatchId
+            """)
+    List<AppTeamMatchIdProjection> findAppTeamMatchIdsByFootballMatchId(
+            @Param("footballMatchId") Long footballMatchId
+    );
+
+    interface AppTeamMatchIdProjection {
+        Long getMatchId();
+
+        Long getAppTeamId();
+    }
+
 }

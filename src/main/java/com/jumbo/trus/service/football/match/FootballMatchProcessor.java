@@ -20,8 +20,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
@@ -102,13 +106,26 @@ public class FootballMatchProcessor {
         if (repositoryMatch == null) {
             return;
         }
-        outboxEventService.createEvent(
-                OutboxEventType.FOOTBALL_MATCH_UPDATED,
-                OutboxAggregateType.FOOTBALL_MATCH,
-                footballMatchId,
-                OutboxEventPayloadFactory.footballMatchUpdated(
-                        matchRepository.findIdsByFootballMatchId(footballMatchId),
-                        footballMatchPlayerRepository.findPlayerIdsByMatchId(footballMatchId)
+
+        Map<Long, Set<Long>> matchIdsByAppTeam = new LinkedHashMap<>();
+        for (MatchRepository.AppTeamMatchIdProjection affectedMatch
+                : matchRepository.findAppTeamMatchIdsByFootballMatchId(footballMatchId)) {
+            matchIdsByAppTeam
+                    .computeIfAbsent(affectedMatch.getAppTeamId(), ignored -> new LinkedHashSet<>())
+                    .add(affectedMatch.getMatchId());
+        }
+
+        Set<Long> footballPlayerIds = footballMatchPlayerRepository.findPlayerIdsByMatchId(footballMatchId);
+        matchIdsByAppTeam.forEach((appTeamId, matchIds) ->
+                // Scheduled PKFL synchronization has no HTTP request, so the
+                // affected app team must be supplied explicitly.
+                outboxEventService.createEventForTeam(
+                        OutboxEventType.FOOTBALL_MATCH_UPDATED,
+                        OutboxAggregateType.FOOTBALL_MATCH,
+                        footballMatchId,
+                        OutboxEventPayloadFactory.footballMatchUpdated(matchIds, footballPlayerIds),
+                        appTeamId,
+                        -1L
                 )
         );
     }

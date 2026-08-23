@@ -2,12 +2,10 @@ package com.jumbo.trus.service.header;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.springframework.web.context.annotation.RequestScope;
 
 import java.util.UUID;
 
 @Component
-@RequestScope
 @RequiredArgsConstructor
 public class OperationContext {
 
