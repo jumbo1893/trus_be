@@ -82,6 +82,12 @@ class OpenAiClientQuoteTest {
         assertTrue(instructions.contains("slovo ‚hospoda‘"));
         assertTrue(instructions.contains("slovem ‚přebor‘ nebo"));
         assertTrue(instructions.contains("‚okresní‘"));
+        assertTrue(instructions.contains("vždy použij read_person_facts"));
+        assertTrue(instructions.contains("vulgarity"));
+        assertTrue(instructions.contains("Při stavu AMBIGUOUS"));
+        assertTrue(instructions.contains("použij místo náhodných zajímavostí search_interviews"));
+        assertTrue(instructions.contains("předej person=null a limit=20"));
+        assertTrue(instructions.contains("necenzuruj vulgarity"));
         assertFalse(instructions.contains("dotaz zakončíš tečkou"));
     }
 

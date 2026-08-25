@@ -1,0 +1,3115 @@
+{
+  "schemaVersion": 1,
+  "sourceType": "user-provided-html-export",
+  "appTeamName": "Liščí Trus",
+  "interviews": [
+    {
+      "id": "40-1-otazka-pro-martina-humpla",
+      "sourceTitle": "40+1 otázka pro Martina Humpla",
+      "sourceUrl": "https://liscitrus.webnode.cz/news/40-1-otazka-pro-martina-humpla/",
+      "publishedAt": "2024-09-02T17:41",
+      "sourceHtmlSha256": "405f430ae057aae43bc5cb3c6c672111be09e41e6b868da0dc35065384439c2d",
+      "interviewee": {
+        "fullName": "Martin Humpl",
+        "aliases": [
+          "Marty"
+        ],
+        "playerId": 27,
+        "playerName": "Marty"
+      },
+      "questions": [
+        {
+          "number": 1,
+          "question": "Ahoj. Nejdřív se nám představ (jméno, přezdívka, věk, povolání, pozice v Trusu…)",
+          "answer": "Ahoj, jsem Martin, přezdívka Marty. Pozice v Trusu je goalkeeper č.1. Povolání je tester, protože to dělá Jumbo."
+        },
+        {
+          "number": 2,
+          "question": "Jak ses dostal do Trusu? Vzpomeneš si na první zápas?",
+          "answer": "Ty vole to nevim, nevzpomenu. Někdy asi v hospodě jste mi řekli, že vás je málo."
+        },
+        {
+          "number": 3,
+          "question": "Na kterej zápas nejraději vzpomínáš a na který bys naopak nejradši zapomenul?",
+          "answer": "Nejradši vzpomínám, jak jsme hráli s těma Kolumbijcema a já jsem vychytal nulu, i když v 59. minutě mi dal Dolly malou domu a dal to přímo útočníkovi do běhu a já jsem musel chytit samostatnej nájezd a vyhráli jsme 4:0. To byl můj nejlepší zápas. A zápas, na který bych zapomněl… na ten kdy jsem dělal robinzonádu, zranil jsem si rameno a musel jsem do nemocnice. Ale nevím s kým to bylo, i když to bylo taky na Litvínovský."
+        },
+        {
+          "number": 4,
+          "question": "Měl si před Trusem nějaký fotbalový zkušenosti?",
+          "answer": "No za Vládce Prahy a za FK Alej. Pak taky krajský přebor za Vršovice Mám asi 150 zápasů na Hanspaulce."
+        },
+        {
+          "number": 5,
+          "question": "Fandíš kromě Trusu ještě jinýmu fotbalovýmu týmu?",
+          "answer": "Spartě a Vládcům Prahy. A taky 1860 München a Partizan Beograd."
+        },
+        {
+          "number": 6,
+          "question": "A nějakýho oblíbeného hráče máš?",
+          "answer": "Jumbo. Dneska má parádní asistenci (pozn. redakce, hrálo se po zápase Perličky na dně – Liščí Trus 5:2). Jo a Filipa Panáka, to je můj oblíbenec, protože mi dal dres. A David Pavelka, protože má přehled jak svině, je to nejlepší středopolař v český lize a možná bude hrát za Trus."
+        },
+        {
+          "number": 7,
+          "question": "A mimo fotbal, baví tě i jiný sporty (aktivně i pasivně)?",
+          "answer": "Box a kanoistika. Já jezdím na vodu."
+        },
+        {
+          "number": 8,
+          "question": "Ono v Trusu taky nejde jenom o fotbal. Velký důraz se klade i na třetí poločas, jaký je tvůj pivní rekord?",
+          "answer": "Podle mě málo… i když jednou jsme seděli u Brabců a pak jsme se přesunuli do Trinity a seděli jsme asi 14 hodin v hospodě za ten den. Bohužel v Trinity už se piva nepsaly, ale mohlo to být tak 14 piv za ten den podle mě."
+        },
+        {
+          "number": 9,
+          "question": "Tak na tom by se dalo ještě zapracovat. A jaký pivo si po zápase nejradši vychutnáš?",
+          "answer": "Plzeň"
+        },
+        {
+          "number": 10,
+          "question": "Máš i oblíbenou hospodu?",
+          "answer": "U Brabců. A taky U Jelínků, ale tam nechodíme po Trusu. To jsou 2 nejlepší hospody v Praze."
+        },
+        {
+          "number": 11,
+          "question": "Jakou si rád pustíš hudbu?",
+          "answer": "Rohony a ten novej sparťanskej bengr."
+        },
+        {
+          "number": 12,
+          "question": "Oblíbený film?",
+          "answer": "Pelíšky, Prci prci prcičky 3: Svatba nebo vlastně Prcičky 1,2,3 a Reunion, Snowboarďáci, Rafťáci, Gympl a Vejška."
+        },
+        {
+          "number": 13,
+          "question": "A co seriál?",
+          "answer": "Okresní přebor, Osada, Případy 1. Oddělení a Hra o Trůny."
+        },
+        {
+          "number": 14,
+          "question": "A jestli máš i oblíbenou knihu?",
+          "answer": "Ty vole. Jako asi dvě jsem čet. John Steinbeck – O myších a lidech."
+        },
+        {
+          "number": 15,
+          "question": "A co pc/xbox/ps hru?",
+          "answer": "Mafia, Kingdom Come a LOLko."
+        },
+        {
+          "number": 16,
+          "question": "Jaká jsou tvoje oblíbená i neoblíbená jídla?",
+          "answer": "Oblíbený, když dá Bůh a je teplý, tak cigáro na Spartě a tatarák samozřejmě. A neoblíbený nevim."
+        },
+        {
+          "number": 17,
+          "question": "Ne/Oblíbené pití (alko i nealko)?",
+          "answer": "Oblíbený je Plzeň a vodka. A neoblíbený je whisky."
+        },
+        {
+          "number": 18,
+          "question": "Ne/oblíbený školní předmět?",
+          "answer": "Neoblíbený byla fyzika asi. A oblíbený přestávky a tělák."
+        },
+        {
+          "number": 19,
+          "question": "Máš nějakou vysněnou ženskou?",
+          "answer": "Majkelina Cat."
+        },
+        {
+          "number": 20,
+          "question": "Vysněná značka auta?",
+          "answer": "Peugeot 206."
+        },
+        {
+          "number": 21,
+          "question": "Máš nějaké oblíbené přísloví nebo motto?",
+          "answer": "Fandim, na nic jinýho není čas!"
+        },
+        {
+          "number": 22,
+          "question": "Jaké máš oblíbené zvíře? Máš nějaké doma?",
+          "answer": "Frída a Cyril jsou moje oblíbená zvířata, ale nemám je doma."
+        },
+        {
+          "number": 23,
+          "question": "Kde rád nakupuješ oblečení?",
+          "answer": "Na Trendyol."
+        },
+        {
+          "number": 24,
+          "question": "Jsi dochvilnej?",
+          "answer": "Jo."
+        },
+        {
+          "number": 25,
+          "question": "Kolikrát jsi člověkem?",
+          "answer": "Dvakrát. To druhý je angličtina."
+        },
+        {
+          "number": 26,
+          "question": "V kolik chodíš běžně spát a v kolik vstáváš?",
+          "answer": "Chodím spát o půlnoci, vstávám v 7:30."
+        },
+        {
+          "number": 27,
+          "question": "Co tě dokáže nejvíc vytočit?",
+          "answer": "Když si Jumbo nenaběhne do volnýho prostoru."
+        },
+        {
+          "number": 28,
+          "question": "To musíš být vytočený celkem často. Jakej používáš internetovej prohlížeč?",
+          "answer": "Google Chrome."
+        },
+        {
+          "number": 29,
+          "question": "A co máš jako domovskou stránku?",
+          "answer": "Nemám domovskou stránku. Mám takovou tu googlovskou, kde mám v oblíbených Youtube, Pornhub, Freevideo a Pornuj.cz."
+        },
+        {
+          "number": 30,
+          "question": "Jakej máš mobilní telefon?",
+          "answer": "iPhone 15."
+        },
+        {
+          "number": 31,
+          "question": "Máš nějaké tetování, případně prozradíš jaké?",
+          "answer": "Nemám. Říkal jsem jedný ať mi nakreslí, co chci, ale ona to nenakreslila a už jsou to asi 3 roky. Můj plán je, že bych si nechal udělat rukáv nebo noháv Okresního přeboru. Chci tam bednu, Roteiro, Slavoj Houslice, dresy Jatka Matějka a tak."
+        },
+        {
+          "number": 32,
+          "question": "Máš nějaký životní vzor?",
+          "answer": "Jumbo, chci bejt dobrej tester jako on."
+        },
+        {
+          "number": 33,
+          "question": "Blondýny nebo brunety?",
+          "answer": "Blondýny."
+        },
+        {
+          "number": 34,
+          "question": "Ronaldo nebo Messi?",
+          "answer": "Ty krávo to je těžký, já jsem byl celej život Ronaldo, ale teď jsem spíš Messi."
+        },
+        {
+          "number": 35,
+          "question": "Sprcha nebo vana?",
+          "answer": "Sprcha."
+        },
+        {
+          "number": 36,
+          "question": "Zima nebo léto?",
+          "answer": "Léto."
+        },
+        {
+          "number": 37,
+          "question": "Lyže nebo snowboard?",
+          "answer": "Lyže."
+        },
+        {
+          "number": 38,
+          "question": "Vodka nebo rum?",
+          "answer": "Vodka."
+        },
+        {
+          "number": 39,
+          "question": "Android nebo iOS?",
+          "answer": "iOS."
+        },
+        {
+          "number": 40,
+          "question": "Kuřák nebo nekuřák?",
+          "answer": "Nekuřák."
+        },
+        {
+          "number": 41,
+          "question": "Tak a je to všechno. Chtěl bys ještě něco vzkázat na závěr?",
+          "answer": "Ne."
+        }
+      ]
+    },
+    {
+      "id": "40-1-otazka-pro-lukase-hakla",
+      "sourceTitle": "40+1 otázka pro Lukáše Hakla",
+      "sourceUrl": "https://liscitrus.webnode.cz/news/40-1-otazka-pro-lukase-hakla/",
+      "publishedAt": "2024-08-23T12:26",
+      "sourceHtmlSha256": "28e3a80e6807fae681670e7483374897a8d314ffad71aa8a10b9f0ed8755fa2d",
+      "interviewee": {
+        "fullName": "Lukáš Hakl",
+        "aliases": [
+          "Haklos"
+        ],
+        "playerId": 40,
+        "playerName": "Haklos"
+      },
+      "questions": [
+        {
+          "number": 1,
+          "question": "Ahoj. Nejdřív se nám představ (jméno, přezdívka, věk, povolání, pozice v Trusu…)",
+          "answer": "Ahoj, já jsem Lukáš Hakl. Každej mi říká Haklos, protože to vyvozuje moje příjmení. Dělám v logistice a co se týče Trusu tak jsem hrotovej útočník samozřejmě."
+        },
+        {
+          "number": 2,
+          "question": "Jak ses dostal do Trusu? Vzpomeneš si na první zápas?",
+          "answer": "Přived mě tam Dolly a první zápas si fakt nevzpomínám. Možná mi to někdo připomene, ale nevim."
+        },
+        {
+          "number": 3,
+          "question": "Na kterej zápas nejraději vzpomínáš a na který bys naopak nejradši zapomenul?",
+          "answer": "Zápas, kterej bych nejradši zapomenul v Trusu neni. A oblíbenej… vždycky mě to bavilo a vždycky mě bavilo když jsem dal co nejvíc gólů. Tak třeba mě napadá ten zápas s těma buzerantama tam jak jsme otočili."
+        },
+        {
+          "number": 4,
+          "question": "Měl si před Trusem nějaký fotbalový zkušenosti?",
+          "answer": "Měl. Toho času Viktoria Praha 8, ale to nikdo neznáte (pozn. kapitána: Já za ně hrál taky). Hrál jsem tam tak 2-3 roky."
+        },
+        {
+          "number": 5,
+          "question": "Fandíš kromě Trusu ještě jinýmu fotbalovýmu týmu?",
+          "answer": "Samozřejmě! AC Sparta Praha a Manchester United. A taky 4077 Ducks, který jsem já zakládal."
+        },
+        {
+          "number": 6,
+          "question": "A nějakýho oblíbeného hráče máš?",
+          "answer": "Mám, je jichj víc. Dejme tomu útočný duo Wayne Rooney a Ruud van Nistelrooy. A ze současnejch asi Patrik Schick."
+        },
+        {
+          "number": 7,
+          "question": "A mimo fotbal, baví tě i jiný sporty (aktivně i pasivně)?",
+          "answer": "Aktivně mě baví hokej a nohejbal je fajn nebo i tenis."
+        },
+        {
+          "number": 8,
+          "question": "V Trusu se klade velký důraz i na třetí poločas, jaký je tvůj pivní rekord?",
+          "answer": "Já myslím, že tak okolo 10. piva je to pro mě strop. Ale jestli myslíte i mimo Trus tak to je tak okolo 20."
+        },
+        {
+          "number": 9,
+          "question": "To celkem jde. A jaký pivo si po zápase nejradši vychutnáš?",
+          "answer": "Plzeň, Kozla."
+        },
+        {
+          "number": 10,
+          "question": "Máš i oblíbenou hospodu?",
+          "answer": "Jo těch je. Třeba u Brabců."
+        },
+        {
+          "number": 11,
+          "question": "Jakou si rád pustíš hudbu?",
+          "answer": "Rammstein je jednička. A elektronickou hudbu mám rád."
+        },
+        {
+          "number": 12,
+          "question": "Oblíbený film?",
+          "answer": "Pulp Fiction."
+        },
+        {
+          "number": 13,
+          "question": "A co seriál?",
+          "answer": "Hra o Trůny."
+        },
+        {
+          "number": 14,
+          "question": "A jestli máš i oblíbenou knihu?",
+          "answer": "Knihu nečtu."
+        },
+        {
+          "number": 15,
+          "question": "A co pc/xbox/ps hru?",
+          "answer": "Diablo 2 svýho času a z posledních dob Last of Us, to je super hra."
+        },
+        {
+          "number": 16,
+          "question": "Jaká jsou tvoje oblíbená i neoblíbená jídla?",
+          "answer": "Jako oblíbený mám řecký gyros a neoblíbené, těch je málo. Nesnáším pendrek lékořicovej."
+        },
+        {
+          "number": 17,
+          "question": "Ne/Oblíbené pití (alko i nealko)?",
+          "answer": "Oblíbené pivo a nealko pivo. Nemám rád takový ty speciály jako rybičkový pivo a podobný hovadiny."
+        },
+        {
+          "number": 18,
+          "question": "Ne/oblíbený školní předmět?",
+          "answer": "Ve škole jsem byl naposledy teda hodně dlouho a už si to moc nepamatuju, ale neměl jsem rád literaturu, to mě nikdy nebavilo. Oblíbenej tělák."
+        },
+        {
+          "number": 19,
+          "question": "Máš nějakou vysněnou ženskou?",
+          "answer": "Jo. Jennifer Lawrence, Catherine Zeta-Jones."
+        },
+        {
+          "number": 20,
+          "question": "Vysněná značka auta?",
+          "answer": "Volkswagen."
+        },
+        {
+          "number": 21,
+          "question": "To ses nám moc nezasnil. Máš nějaké oblíbené přísloví nebo motto?",
+          "answer": "Nemám. Tim se nezabejvám. Můžu říct život plyne, to je asi největší moudro."
+        },
+        {
+          "number": 22,
+          "question": "Jaké máš oblíbené zvíře? Máš nějaké doma?",
+          "answer": "Zvíře doma nemám, ale mám rád psy, kočky a papoušky."
+        },
+        {
+          "number": 23,
+          "question": "Kde rád nakupuješ oblečení?",
+          "answer": "To je těžký. Třeba Celio je takový normální. Takže asi tak."
+        },
+        {
+          "number": 24,
+          "question": "Jsi dochvilnej?",
+          "answer": "Řekl bych že jo."
+        },
+        {
+          "number": 25,
+          "question": "Kolikrát jsi člověkem?",
+          "answer": "Jeden a půlkrát."
+        },
+        {
+          "number": 26,
+          "question": "V kolik chodíš běžně spát a v kolik vstáváš?",
+          "answer": "V 7 nebo 7:30 bstávám a chodím spát o půlnoci. A po obědě si dávám šlofíčka na půl hodiny."
+        },
+        {
+          "number": 27,
+          "question": "Co tě dokáže nejvíc vytočit?",
+          "answer": "Já se nějak moc nevytočím, těžko říct. Musí se ve mně nahromadit spousta věcí a pak jsem nepříčetnej."
+        },
+        {
+          "number": 28,
+          "question": "Jakej používáš internetovej prohlížeč?",
+          "answer": "Teď Google Chrome."
+        },
+        {
+          "number": 29,
+          "question": "A co máš jako domovskou stránku?",
+          "answer": "Seznam.cz, pochopitelně."
+        },
+        {
+          "number": 30,
+          "question": "Jakej máš mobilní telefon?",
+          "answer": "Vždycky Android, teďka Samsung."
+        },
+        {
+          "number": 31,
+          "question": "Máš nějaké tetování, případně prozradíš jaké?",
+          "answer": "Nemám žádný tetování a nechci mít."
+        },
+        {
+          "number": 32,
+          "question": "Máš nějaký životní vzor?",
+          "answer": "Ne."
+        },
+        {
+          "number": 33,
+          "question": "Blondýny nebo brunety?",
+          "answer": "Brunety."
+        },
+        {
+          "number": 34,
+          "question": "Ronaldo nebo Messi?",
+          "answer": "Ronaldo."
+        },
+        {
+          "number": 35,
+          "question": "Sprcha nebo vana?",
+          "answer": "Vana."
+        },
+        {
+          "number": 36,
+          "question": "Zima nebo léto?",
+          "answer": "Léto."
+        },
+        {
+          "number": 37,
+          "question": "Lyže nebo snowboard?",
+          "answer": "Lyže."
+        },
+        {
+          "number": 38,
+          "question": "Vodka nebo rum?",
+          "answer": "Rum."
+        },
+        {
+          "number": 39,
+          "question": "Android nebo iOS?",
+          "answer": "Android."
+        },
+        {
+          "number": 40,
+          "question": "Kuřák nebo nekuřák?",
+          "answer": "Nekuřák."
+        },
+        {
+          "number": 41,
+          "question": "Tak a je to všechno. Chtěl bys ještě něco vzkázat na závěr?",
+          "answer": "Je mi tady s váma fajn. A Sparta je mistr!"
+        }
+      ]
+    },
+    {
+      "id": "a40-1-otazka-pro-vaclava-kadlecka",
+      "sourceTitle": "40+1 otázka pro Václava Kadlečka",
+      "sourceUrl": "https://liscitrus.webnode.cz/news/a40-1-otazka-pro-vaclava-kadlecka/",
+      "publishedAt": "2014-03-21T19:08",
+      "sourceHtmlSha256": "09fd9e2ce749b4319f1ea292bcc1b640e53859c616ad7e47243b8cc5d24edd3f",
+      "interviewee": {
+        "fullName": "Václav Kadleček",
+        "aliases": [
+          "Venca",
+          "Vakad",
+          "Kadleczech"
+        ],
+        "playerId": 36,
+        "playerName": "Venca"
+      },
+      "questions": [
+        {
+          "number": 1,
+          "question": "Ahoj. Nejdřív se nám představ (jméno, přezdívka, věk, povolání, pozice v Trusu…)",
+          "answer": "Jmenuju se Václav Kadleček a je mi 22 let. Má přezdívka je Vakad (zkratka jména), ačkoli na dresu mám napsáno Kadleczech. Studuju již třetím rokem na České zemědělské univerzitě v Praze, provozně ekonomické fakultě, obor provoz a ekonomika. Má pozice v Trusu ještě není úplně stanovená, avšak zatím jsem se pohyboval spíše v útoku."
+        },
+        {
+          "number": 2,
+          "question": "Jak ses dostal do Trusu? Vzpomeneš si na první zápas?",
+          "answer": "Naverboval mě big boss Benny, kterej hledal nový spoluhráče. Poprvé jsem za Liščí Trus hrál na turnaji, který se konal v Čimicích někdy v únoru."
+        },
+        {
+          "number": 3,
+          "question": "Na kterej zápas nejraději vzpomínáš a na který bys naopak nejradši zapomenul?",
+          "answer": "Zatím vzpomínám jenom na turnaje, přičemž výše zmíněný turnaj je vzpomínkou negativní, avšak turnaj, který pořádal Liščí Trus je naopak vzpomínkou pozitivní."
+        },
+        {
+          "number": 4,
+          "question": "Měl si před Trusem nějaký fotbalový zkušenosti?",
+          "answer": "Hrál sem fotbal za asi 5 let za Lokomotivu Vltavín a Meteor. Ale to už je dávno, někdy kolem 5 třídy na základní škole."
+        },
+        {
+          "number": 5,
+          "question": "Fandíš kromě Trusu ještě jinýmu fotbalovýmu týmu?",
+          "answer": "Tak Spartě samozřejmě!! Ještě se můžu zmínit o Realu Madrid."
+        },
+        {
+          "number": 6,
+          "question": "A nějakýho oblíbeného hráče máš?",
+          "answer": "Teplouš Cristiano Ronaldo. Sice je divnej, ale fotbal hraje dobře!"
+        },
+        {
+          "number": 7,
+          "question": "Bezesporu. A mimo fotbal, baví tě i jiný sporty (aktivně i pasivně)?",
+          "answer": "Především mě dále baví cyklistika a fitko."
+        },
+        {
+          "number": 8,
+          "question": "V Trusu se ale klade velký důraz i na třetí poločas, jaký je tvůj pivní rekord?",
+          "answer": "Nejsem moc velkej pivař, takže asi 7 piv."
+        },
+        {
+          "number": 9,
+          "question": "No to je celkem bída, ale to určitě po některym ze zápasů napravíš. A jaký pivo si po zápase nejradši vychutnáš?",
+          "answer": "Piju skoro všechno, co teče. Bohatě stačí Gambáč 10°."
+        },
+        {
+          "number": 10,
+          "question": "Máš i oblíbenou hospodu?",
+          "answer": "Pivní steak house Pinta či ještě donedávna otevřený Dřevák na Kobylisísch."
+        },
+        {
+          "number": 11,
+          "question": "Jakou si rád pustíš hudbu?",
+          "answer": "Poslouchám od všeho něco."
+        },
+        {
+          "number": 12,
+          "question": "Oblíbený film?",
+          "answer": "Zachraňte vojína Ryana."
+        },
+        {
+          "number": 13,
+          "question": "A co seriál?",
+          "answer": "Hvězdná brána, HIMYM."
+        },
+        {
+          "number": 14,
+          "question": "A jestli máš i oblíbenou knihu?",
+          "answer": "Ač se za to stydím, vůbec nečtu, protože mě to prostě nebaví."
+        },
+        {
+          "number": 15,
+          "question": "A co pc/xbox/ps hru?",
+          "answer": "Counter strike, unreal tournament, heroes 3."
+        },
+        {
+          "number": 16,
+          "question": "Ne/Oblíbené jídlo?",
+          "answer": "Miluju steaky, špagety a prostě skoro všechno jídlo na světě. Nesnáším jen koprovku, fazole a květák."
+        },
+        {
+          "number": 17,
+          "question": "Ne/Oblíbené pití (alko i nealko)?",
+          "answer": "Piju všechno, co teče. Teda až na likéry a podobný hnusy."
+        },
+        {
+          "number": 18,
+          "question": "Ne/oblíbený školní předmět?",
+          "answer": "Spíš řeknu oblíbený předmět, to bude rychlejší. Vůbec mi nevadí matika, statistika a ekonomicko matematické metody, zbytek je peklo a to nesnáším!"
+        },
+        {
+          "number": 19,
+          "question": "Máš nějakou vysněnou ženskou?",
+          "answer": "Vysněnou ženskou mám, je jí Kateřina Trnková."
+        },
+        {
+          "number": 20,
+          "question": "A vysněná značka auta?",
+          "answer": "Aston Martin."
+        },
+        {
+          "number": 21,
+          "question": "Máš nějaké oblíbené přísloví nebo motto?",
+          "answer": "Co bolí, to roste."
+        },
+        {
+          "number": 22,
+          "question": "Jaké máš oblíbené zvíře? Máš nějaké doma?",
+          "answer": "Doma žádné nemám, ačkoli zvířata mám obecně rád všechny."
+        },
+        {
+          "number": 23,
+          "question": "Kde rád nakupuješ oblečení?",
+          "answer": "Nike, Adidas, Kenvelo, Marks and Spencer."
+        },
+        {
+          "number": 24,
+          "question": "Jsi dochvilnej?",
+          "answer": "Samozřejmě!"
+        },
+        {
+          "number": 25,
+          "question": "Kolikrát jsi člověkem?",
+          "answer": "Aspoň 10 krát!"
+        },
+        {
+          "number": 26,
+          "question": "To by mě opravdu zajímalo, jak si k tomuhle číslu došel. Pochybuju, že si takovej multilingvista. V kolik chodíš běžně spát a v kolik vstáváš?",
+          "answer": "Jak kdy. Někdy v 10, někdy v 1 ráno. Vstávám taky jak kdy. Do práce v půl 6, jinak asi kolem 8."
+        },
+        {
+          "number": 27,
+          "question": "Co tě dokáže nejvíc vytočit?",
+          "answer": "Dementní lidi."
+        },
+        {
+          "number": 28,
+          "question": "Jakej používáš internetovej prohlížeč?",
+          "answer": "Opera."
+        },
+        {
+          "number": 29,
+          "question": "A co máš jako domovskou stránku?",
+          "answer": "Nic."
+        },
+        {
+          "number": 30,
+          "question": "Jakej máš mobilní telefon?",
+          "answer": "Samsung S2"
+        },
+        {
+          "number": 31,
+          "question": "Máš nějaké tetování, případně prozradíš jaké?",
+          "answer": "Nemám."
+        },
+        {
+          "number": 32,
+          "question": "Máš nějaký životní vzor?",
+          "answer": "Konkrétního člověka ne."
+        },
+        {
+          "number": 33,
+          "question": "Blondýny nebo brunety?",
+          "answer": "Zrzky!"
+        },
+        {
+          "number": 34,
+          "question": "Ronaldo nebo Messi?",
+          "answer": "Ronaldo"
+        },
+        {
+          "number": 35,
+          "question": "Sprcha nebo vana?",
+          "answer": "Oboje"
+        },
+        {
+          "number": 36,
+          "question": "Zima nebo léto?",
+          "answer": "Léto"
+        },
+        {
+          "number": 37,
+          "question": "Lyže nebo snowboard?",
+          "answer": "Lyže"
+        },
+        {
+          "number": 38,
+          "question": "Vodka nebo rum?",
+          "answer": "Rum"
+        },
+        {
+          "number": 39,
+          "question": "Android nebo iOS?",
+          "answer": "Android"
+        },
+        {
+          "number": 40,
+          "question": "A chtěl bys ještě něco vzkázat na závěr?",
+          "answer": "Fanoušků není nikdy dost, takže neváhejte a přijďte nás podpořit na naše zápasy. Dík a čus ;)"
+        }
+      ]
+    },
+    {
+      "id": "a40-1-otazka-pro-marka-vavru",
+      "sourceTitle": "40+1 otázka pro Marka Vávru",
+      "sourceUrl": "https://liscitrus.webnode.cz/news/a40-1-otazka-pro-marka-vavru/",
+      "publishedAt": "2014-03-08T15:19",
+      "sourceHtmlSha256": "96ceea48d5b9242e7f6297d74d49760c91a93a9ea8c37bade799326bab4be920",
+      "interviewee": {
+        "fullName": "Marek Vávra",
+        "aliases": [
+          "Mára",
+          "Marko",
+          "squashista"
+        ],
+        "playerId": null,
+        "playerName": null
+      },
+      "questions": [
+        {
+          "number": 1,
+          "question": "Ahoj. Nejdřív se nám představ (jméno, přezdívka, věk, povolání, pozice v Trusu…)",
+          "answer": "Ahoj Trusáci a všichni fotbaloví fanoušci. Jmenuji se Marek a u liščat nosím na zádech číslo 8. Je mi 21 let a aktuálně studuji VŠE na fakultě Mezinárodních vztahů a na Právnické fakultě UK v Praze. Bohužel díky školnímu vytížení nezbývá čas na práci, což docela zabolí na konci měsíce při bilancování finanční situace."
+        },
+        {
+          "number": 2,
+          "question": "Jak ses dostal do Trusu? Vzpomeneš si na první zápas?",
+          "answer": "Sice nepatřím mezi zákládající členy, ale do Trusu jsem se dostal ještě během první sezóny přes Malýnyho. Byl zápas a Trus se nějak nesešel, tak jsem přijel vypomoci a už jsem tu zůstal. První zápas si pamatuji jen letmo. Myslím, že jsme prohráli 10:3."
+        },
+        {
+          "number": 3,
+          "question": "Na kterej zápas nejraději vzpomínáš a na který bys naopak nejradši zapomenul?",
+          "answer": "Nejraději samozřejmě vzpomínám na zápasy protiHellům, protože to má vždy takový zvláštní náboj a je zde cítit pach nepřátelství, ale poté je vše zapomenuto nad zrzavým mokem v nejbližší hospodě.Shodou okolností bych také nejdraději zapomněl na jeden zápas proti Hellům a to konkrétně na finále turnaje, kdy nás opravdu zdecimovali…. Stejně si to určitě zaplatili."
+        },
+        {
+          "number": 4,
+          "question": "Měl si před Trusem nějaký fotbalový zkušenosti?",
+          "answer": "Před Trusem jsem moc fotbalových zkušeností nepobral. Něco bylo, ale to opravdu nestojí za řeč."
+        },
+        {
+          "number": 5,
+          "question": "Fandíš kromě Trusu ještě i jinýmu fotbalovýmu týmu?",
+          "answer": "Můj oblíbený tým je Arsenal, i když poslední dobou se mi zdá sestava horší a horší. A v neposlední řadě si rád zafandím ve prospěch Borussie Dortmund."
+        },
+        {
+          "number": 6,
+          "question": "A nějakýho oblíbeného hráče máš?",
+          "answer": "Těch je docela dost, ale mezi ty top hráče patří Marco Reus, Tomáš Rosický a z naší ligy například Bořek Dočkal nebo Lukáš Vácha."
+        },
+        {
+          "number": 7,
+          "question": "A mimo fotbal, baví tě i jiný sporty (aktivně i pasivně)?",
+          "answer": "Sporty mám moc rád a pasivně zkouším zvládnout všechny druhy sportů. Rád si zajdu třeba na tenis, squash, kulečník nebo šipky."
+        },
+        {
+          "number": 8,
+          "question": "V Trusu se klade velký důraz i na třetí poločas, jaký je tvůj pivní rekord?",
+          "answer": "No žádná sláva to nebude snad nějakých 15-16 piv. A prosím spoluhráče Honzu Flégla, aby se mi moc nesmál."
+        },
+        {
+          "number": 9,
+          "question": "Flígl nemá rekord o moc větší na to, že trénuje skoro denně. A jaký pivo si po zápase nejradši vychutnáš?",
+          "answer": "Je mi to fakt jedno. Ale nejčastěji v poslední době piju Kozla 11, Svijany 11 nebo Lapák 12."
+        },
+        {
+          "number": 10,
+          "question": "Máš i oblíbenou hospodu?",
+          "answer": "No nejčastěji v poslední době zavítám do Šatlavy nebo do Malešické tvrze. Každopádně ve výčtu hospod nesmím zapomenout na klubovou hospu Bella nebo na knaipu na Proseku u Huga, kde pár liščat přišlo, kvůli nedostatku finančních prostředků, o vlasy."
+        },
+        {
+          "number": 11,
+          "question": "Takhle to zní, jako kdyby nás stříhal přímo na místě pan výčepní. Jakou si rád pustíš hudbu?",
+          "answer": "Hudební scéna jde zcela mimo mě. Snad jen když něco hrajou v hospodě, tak si to rád poslechnu."
+        },
+        {
+          "number": 12,
+          "question": "Oblíbený film?",
+          "answer": "Oblíbených filmů je také spousta, ale mezi ty hlavní by patřily Vykoupení z věznice Shawshank, Zelená míle, Počátek nebo třeba Prokletý ostrov."
+        },
+        {
+          "number": 13,
+          "question": "A co seriál?",
+          "answer": "Tady samozřejmě musím zmínit Game of Thrones, Battlestar Galactica, Stargate Atlantis, TBBT, Defiance, Breaking Bad nebo HIMYM."
+        },
+        {
+          "number": 14,
+          "question": "A jestli máš i oblíbenou knihu?",
+          "answer": "U knih je to se mnou opravdu horší, ale zrovna teď čtu GoT v originále nebo Harry Pottera v němčině."
+        },
+        {
+          "number": 15,
+          "question": "A co pc/xbox/ps hru?",
+          "answer": "Assassins creed a samozřejmě nejmilovanější Fifinka, kterou hraju z vesela od roku 98."
+        },
+        {
+          "number": 16,
+          "question": "Ne/Oblíbené jídlo?",
+          "answer": "Rád si pochutnám na tradičních českých klasikách, jako je Svíčková nebo knedlo vepřo zelo. Nesnesu jedině koprovku."
+        },
+        {
+          "number": 17,
+          "question": "Ne/Oblíbené pití (alko i nealko)?",
+          "answer": "Jelikož i na posledním turnaji jsem byl zařazen do pivní divize Trusu, tak tohle je jasná odpověď. Chmelomok je prostě božský lok."
+        },
+        {
+          "number": 18,
+          "question": "A nealko nepiješ jo nebo co? Ne/oblíbený školní předmět?",
+          "answer": "Mezi oblíbené předměty patřil určitě Dějepis nebo ZSV. V současné době to nahradilo hlavně právo a je jedno, které to je zrovna odvětví. Nesnáším Chemii a Fyziku."
+        },
+        {
+          "number": 19,
+          "question": "Máš nějakou vysněnou ženskou?",
+          "answer": "Těch bylo, je a bude. Málo místa na odpověď."
+        },
+        {
+          "number": 20,
+          "question": "A vysněná značka auta?",
+          "answer": "Nejsem náročný. Tudíž to musí aspoň jezdit."
+        },
+        {
+          "number": 21,
+          "question": "To ses moc nezasnil. Máš nějaké oblíbené přísloví nebo motto?",
+          "answer": "Jako někteří z mých předchůdců na interview i já vyznávám náboženství 5 na 5 s filozofií 6 čestných. Známe své lidi. Snad je to opravdu náboženství a nestane se z toho sekta."
+        },
+        {
+          "number": 22,
+          "question": "Chudáci fanoušci z těhle inside jokeů asi moc nemaj. Jaké máš oblíbené zvíře? Máš nějaké doma?",
+          "answer": "Doma jsem za zvíře maximálně já a na normální zvěř mám alergii, takže žádné nemáme."
+        },
+        {
+          "number": 23,
+          "question": "Kde rád nakupuješ oblečení?",
+          "answer": "No nejradši to oblečení nakupuji v krámě.Ale mohl bych to zkusit někdy i jinde, když teď nad tím přemýšlím."
+        },
+        {
+          "number": 24,
+          "question": "Doporučuju třznici. Super výběr. Jsi dochvilnej?",
+          "answer": "Většinou jsem všude tak o půl hodiny dříve. Je to špatné, ale neuděláš nic."
+        },
+        {
+          "number": 25,
+          "question": "No já určitě nic dělat nebudu. Kolikrát jsi člověkem?",
+          "answer": "No na tomhle jsem docela myslím dobře. Krom obligátní ájiny, se učím ještě desátým rokem německy a začal jsem i s fráninou."
+        },
+        {
+          "number": 26,
+          "question": "V kolik chodíš běžně spát a v kolik vstáváš?",
+          "answer": "Spát tak kolem jedenáctéa vstávám vždy kolem sedmé."
+        },
+        {
+          "number": 27,
+          "question": "Co tě dokáže nejvíc vytočit?",
+          "answer": "Jsem od přírody vznětlivý, takže i sebemenší maličkost."
+        },
+        {
+          "number": 28,
+          "question": "Jakej používáš internetovej prohlížeč?",
+          "answer": "Mozillu."
+        },
+        {
+          "number": 29,
+          "question": "A co máš jako domovskou stránku?",
+          "answer": "Klasika seznámek."
+        },
+        {
+          "number": 30,
+          "question": "Jakej máš mobilní telefon?",
+          "answer": "HTC one V"
+        },
+        {
+          "number": 31,
+          "question": "Máš nějaké tetování, případně prozradíš jaké?",
+          "answer": "Nejsem pirát"
+        },
+        {
+          "number": 32,
+          "question": "Pravda. Máš nějaký životní vzor?",
+          "answer": "Aspoň z poloviny bych chtěl být jednou jako moji rodiče."
+        },
+        {
+          "number": 33,
+          "question": "Blondýny nebo brunety?",
+          "answer": "Beru obě."
+        },
+        {
+          "number": 34,
+          "question": "Ronaldo nebo Messi?",
+          "answer": "Ani jeden"
+        },
+        {
+          "number": 35,
+          "question": "Sprcha nebo vana?",
+          "answer": "Vanička na relax je nejlepší."
+        },
+        {
+          "number": 36,
+          "question": "Zima nebo léto?",
+          "answer": "Jaro"
+        },
+        {
+          "number": 37,
+          "question": "Lyže nebo snowboard?",
+          "answer": "Lyže"
+        },
+        {
+          "number": 38,
+          "question": "Vodka nebo rum?",
+          "answer": "Rum"
+        },
+        {
+          "number": 39,
+          "question": "Android nebo iOS?",
+          "answer": "Android"
+        },
+        {
+          "number": 40,
+          "question": "Kuřák nebo nekuřák?",
+          "answer": "Jak se to vezme. Zvládnu oboje."
+        },
+        {
+          "number": 41,
+          "question": "Závěr sme projeli celkem svižně. Máš ještě nějaký vzkaz na závěr?",
+          "answer": "Choďte fandit, protože to budeme opravdu hodně potřebovat. A když už ne na zápas, tak aspoň přijďte podpořit třetí poločas."
+        }
+      ]
+    },
+    {
+      "id": "a40-1-otazka-pro-michala-slavatu",
+      "sourceTitle": "40+1 otázka pro Michala Slavatu",
+      "sourceUrl": "https://liscitrus.webnode.cz/news/a40-1-otazka-pro-michala-slavatu/",
+      "publishedAt": "2014-02-24T22:24",
+      "sourceHtmlSha256": "e3e97a982250fdbc1b851de0baecf1d76733bd36f60693f596db9473acc443f5",
+      "interviewee": {
+        "fullName": "Michal Slavata",
+        "aliases": [
+          "Sláva"
+        ],
+        "playerId": 32,
+        "playerName": "Sláva"
+      },
+      "questions": [
+        {
+          "number": 1,
+          "question": "Ahoj. Nejdřív se nám představ (jméno, přezdívka, věk, povolání, pozice v Trusu…)",
+          "answer": "Čau, jmenuju se Michal, ale nikdo mi neřekne jinak než Sláva. Je mi 21 a už 3. rokem studuju ČVUT-FEL, kde to snad dokopu ke zdárnému konci. Moje pozice v Trusu je docela zajímavá. Společně s Malýnym patříme ke dvěma tupcům, co se do tý brány nebojí stoupnout, takže buď chytám a nebo hraju útok. Když tak nad tím přemýšlím, tak s obranou taky nemam problém, takže asi hraju tam, kde je zrovna místo."
+        },
+        {
+          "number": 2,
+          "question": "Jak ses dostal do Trusu? Vzpomeneš si na první zápas?",
+          "answer": "Do trusu jsem naskočil jako výpomoc v přáteláku, který jsme hráli v Čakovicích proti Hlavonožcům. Bylo to poměrně hodně na začátku věhlasné éry Trusu, nicméně k úplně zakládajícím členům nepatřím. V přáteláku se ukázaly moje kvality a následně jsem byl draftován do širší základní sestavy."
+        },
+        {
+          "number": 3,
+          "question": "Ano, to byla další výborná práce věhlasného Trusáckýho skautingu. Na kterej zápas nejraději vzpomínáš a na který bys naopak nejradši zapomenul?",
+          "answer": "Nejradši vzpomínám na všechny vyhraný derby proti Helům a ještě na zápas s Interem Mokušlě, nebo jak se jmenovali, kterej jsme hráli na úplně posraným hřišti s mantinelama a vyhráli jsme hrozně vysoko. A nejradši bych zapomenul na finále poháru, který se hrálo v Kobylisích. To kopyto nám tam dalo snad 3 góly."
+        },
+        {
+          "number": 4,
+          "question": "Měl si před Trusem nějaký fotbalový zkušenosti?",
+          "answer": "Tak určitě. Já ty kluky znám, já hrál s nima a proti nim a někdy s nima proti někomu jinýmu. Znáš to. Je to sport a když vynechám tělák a fotbálek u babči v Křovínově tak nic moc."
+        },
+        {
+          "number": 5,
+          "question": "Fandíš kromě Trusu ještě jinýmu fotbalovýmu týmu?",
+          "answer": "V český lize fandím Spartičce a jinak třeba Real. V mým srdci má ale jasný místo Trus."
+        },
+        {
+          "number": 6,
+          "question": "A nějakýho oblíbeného hráče máš?",
+          "answer": "Kromě sebe asi ani ne. Možná ještě Zlatana, ten je podobně skromnej jako já a hlavně má dobrej kung-fu styl. A pak bych možná ještě vypíchnul Toma Řepku, protože on jediný chápe, co to znamená, když se hraje taktika brambůrky."
+        },
+        {
+          "number": 7,
+          "question": "Yes! Ať to křupe! A mimo fotbal, baví tě i jiný sporty (aktivně i pasivně)?",
+          "answer": "Mimo fotbal chodím hodně do posilky. Tam dám tak 5-6 kousků. Pak teda i ta normální posilka a jinak jezdím hodně na kole. Poslední dobou taky zkouším downhill, což je fakt pecka, akorát slušný kolo stojí tak 150 táců. Takže tímto bych se chtěl obrátit na managera Trusu, aby už mi konečně napsal nějaký prémie. Dík."
+        },
+        {
+          "number": 8,
+          "question": "To si budeš muset asi nejřív zasloužit…V Trusu se klade velký důraz i na třetí poločas, jaký je tvůj pivní rekord?",
+          "answer": "Třetí poločas samozřejmě nepodceňuju. Podle mě je to ten nejdůležitější. Akorát můj pivní rekord je takový smutný, pač si ho nepamatuju. Myslím si, že asi padnul na některých Svijanských slavnostech, kde jsme to s Flíglem počítali na něco okolo 25-30 kousků za den. Jinak rychlostní rekord je 8 piv, za necelý 2 hodky."
+        },
+        {
+          "number": 9,
+          "question": "Noo, tak tohle by možná za prémii stálo. Slušný. A jaký pivo si po zápase nejradši vychutnáš?",
+          "answer": "Tak ideálně chlazený a pěkně načepovaný. Po zápase je ideální nějaký lehčí, takže pivní speciálky vynechám a dám si nějakou klasiku jako je třeba kozel 10 a 11, svijany 11, gambáč 11 a 12,a nebo prostě to, co je v nejbližší hospodě."
+        },
+        {
+          "number": 10,
+          "question": "Máš i oblíbenou hospodu?",
+          "answer": "Oblíbených hospod by bylo určitě víc. Na Proseku je to Bella, ikdyž po tom, co tam začali točit Krušovice, už tam moc nechodím. Pak je to hospoda Na Kolejích, U Králů, Šatlava, všechny hospody U Tří sester a z mimo pražských je to hospoda Na Vyhlídce."
+        },
+        {
+          "number": 11,
+          "question": "Jakou si rád pustíš hudbu?",
+          "answer": "No že bych měl nějaký hodně vyhrazený styl, se asi říct nedá. Mam rád třeba Linkiny, Landu, Orlíky, From Our Hands, All Faces Down, Green Day a tak dál. Prostě je to taková směska všeho, co se dá poslouchat."
+        },
+        {
+          "number": 12,
+          "question": "Oblíbený film?",
+          "answer": "Na nějakým filmu asi moc neujíždím. Nejvíc se mi líbí, když se tam řežou mečema, takže třeba něco typu Troja, 300 bitva u Thermopyl, Království nebeské a tak…"
+        },
+        {
+          "number": 13,
+          "question": "A co seriál?",
+          "answer": "Seriálů by se našla spousta. Teď docela sjíždím Arrow, Walking dead a BBT. Jinak je to určitě House, Simpsonovi, Suits, sem tam HIMYM, Friends, Game of thrones, kde jsem ještě neviděl 3. sérii, za což se omlouvám, nebo třeba ještě Black books."
+        },
+        {
+          "number": 14,
+          "question": "A jestli máš i oblíbenou knihu?",
+          "answer": "Přečetl jsem celou ságu o Zaklínačovi, která se mi fakt líbila a jinak je to třeba Hlava XXII, Na západní frontě klid nebo Farma zvířat."
+        },
+        {
+          "number": 15,
+          "question": "A co pc/xbox/ps hru?",
+          "answer": "Tak na psku hraju nejradši fifu, ve který rád vyklepnu bratra a na PC to jsou to asi všechny díly Age of empires, ve kterým zase rád vyklepnu třeba Flígla nebo Bennyho."
+        },
+        {
+          "number": 16,
+          "question": "No to už bude pár let, cos je naposledy vyklep….Ne/Oblíbené jídlo?",
+          "answer": "Asi největší humus je koprovka. Popravdě řečeno nikdy jsem jí ani nejedl, protože mi strašně smrdí. A další dobrej humáč je dušená mrkev. A nejradši mam jakýkoliv maso. Třeba grilovaná krkovička na grilu potěší. A pro ty co to neví, kuřecí není maso."
+        },
+        {
+          "number": 17,
+          "question": "Ne/Oblíbené pití (alko i nealko)?",
+          "answer": "V oblíbenosti alka jasně vítězí pivo a v nealku točená malinovka s kofolou. A neoblíbený alko pití je určitě zelená a nealko cokoliv, co obsahuje v názvu multivitamin."
+        },
+        {
+          "number": 18,
+          "question": "Ne/oblíbený školní předmět?",
+          "answer": "Nejvíc mě bavili předměty, jako třeba děják nebo zemák a nejvíc mě srala fyzika s Válkem a chemie s Kyzlicí. Mor na ně."
+        },
+        {
+          "number": 19,
+          "question": "Máš nějakou vysněnou ženskou?",
+          "answer": "Tak těch by bylo tolik, že kdybych ti je tu měl všechny vypsat, tak ti to nikdy nepošlu."
+        },
+        {
+          "number": 20,
+          "question": "No i tak ti to trvalo dost dlouho, tak dem dál. Vysněná značka auta?",
+          "answer": "V mým vozovým parku už mi chybí jenom nějaký Lambo a potom Shelby GT 500 ideálně z roku 1968. A tímto se opět obracím na managera Trusu, ať s tím něco udělá."
+        },
+        {
+          "number": 21,
+          "question": "Kdybys nechlastal, tak si už si to moh všechno dávno mít. Máš nějaké oblíbené přísloví nebo motto?",
+          "answer": "Tady bych si asi půjčil hlášky od Flígla. 5 na 5 je prostě legendární a je to odpověď na většinu otázek ve vesmíru. Tam kde selže 5 na 5, platí 6 čestných."
+        },
+        {
+          "number": 22,
+          "question": "Fanoušči určitě čekali tvoje dříve oblíbené „Všechno je na hovno, jenom včely sou na med a ten je taky na hovno.“ Ale OK. Jaké máš oblíbené zvíře? Máš nějaké doma?",
+          "answer": "Doma mám bratra. Kdo ho zná, pochopí, kdo ne, tak ať přijede na návštěvu. Vstup je určitě levnější než do Zoo a podívaná je minimálně stejná, né-li lepší. A oblíbený zvíře by byl asi vlk a samozřejmě liška. Už se těším, až se na ní k Flíglovi dojdu podívat."
+        },
+        {
+          "number": 23,
+          "question": "Bratra sem dlouho neviděl, asi zas někdy zajdu. Kde rád nakupuješ oblečení?",
+          "answer": "Docela rád chodím do New Yorkra a do C&A."
+        },
+        {
+          "number": 24,
+          "question": "Jsi dochvilnej?",
+          "answer": "Já si myslím, že celkem jo. Do hospod se vždycky snažím přijít včas a zbytek mě nezajímá. Já totiž nechodím pozdě, jenom ostatní přišli dřív."
+        },
+        {
+          "number": 25,
+          "question": "Kolikrát jsi člověkem?",
+          "answer": "Umím snad česky, potom anglicky a taky trochu rusky. Takže bych to viděl na krásnejch 2 a půl chlapa. Teď jsem si uvědomil, že jsem je zapomněl zmínit u seriálů."
+        },
+        {
+          "number": 26,
+          "question": "V kolik chodíš běžně spát a v kolik vstáváš?",
+          "answer": "Snažím se jít spát do půlnoci a vstávat mezi 7-8. Samozřejmě se to mění podle aktuálního programu, a když přijdu v 5 ráno domů z kalby, tak v 7 opravdu nevstávám."
+        },
+        {
+          "number": 27,
+          "question": "Co tě dokáže nejvíc vytočit?",
+          "answer": "Nejvíc mě sere to, že tenhle dotazník musím psát sám na kompu a nemůžu ho dělat s nějakou pěknou reportérkou. A pak mě ještě serou debilní lidi, a když mi v hospodě nedonesou pivo přesně, když dopíjím a musím na něj čekat."
+        },
+        {
+          "number": 28,
+          "question": "Na tohle je Bella nejlepší. Sotva se napiješ z prvního, už se nese druhý. Jumbo by moh vyprávět. Eště nám všem pivo dluží. Jakej používáš internetovej prohlížeč?",
+          "answer": "Mam Firefox a Exploler."
+        },
+        {
+          "number": 29,
+          "question": "A co máš jako domovskou stránku?",
+          "answer": "Tam mam klasiku v podobě seznamu."
+        },
+        {
+          "number": 30,
+          "question": "Jakej máš mobilní telefon?",
+          "answer": "Nokia lumia 820. Ale na poličce mi pořád leží můj starý sony, kterýmu dojde baterka asi tak v roce 2859."
+        },
+        {
+          "number": 31,
+          "question": "Máš nějaké tetování, případně prozradíš jaké?",
+          "answer": "Tetování mám tak maximálně od míče, když s ním dostanu v bráně a to není moc plánovaný."
+        },
+        {
+          "number": 32,
+          "question": "Máš nějaký životní vzor?",
+          "answer": "Docela se mi líbil styl jednoho týpka v Suits. Jak se jenom jmenoval… už vím. Byl to Harvey Specter."
+        },
+        {
+          "number": 33,
+          "question": "Schvaluje se. Blondýny nebo brunety?",
+          "answer": "Čím rezavější střecha, tím vlhčí sklep. V podstatě je mi to ale asi jedno."
+        },
+        {
+          "number": 34,
+          "question": "Ronaldo nebo Messi?",
+          "answer": "Z nich určitě Ronaldo, protože Messi těží z hry celý Barcelony a kdyby hrál třeba v Anglii tak by to vypadalo úplně jinak."
+        },
+        {
+          "number": 35,
+          "question": "Sprcha nebo vana?",
+          "answer": "Po fotbale sprcha, ale rád se naložím i do vany."
+        },
+        {
+          "number": 36,
+          "question": "Zima nebo léto?",
+          "answer": "V létě je vedro, v zimě je zima, alespoň většinou teda, takže volím jaro."
+        },
+        {
+          "number": 37,
+          "question": "Lyže nebo snowboard?",
+          "answer": "Kolo."
+        },
+        {
+          "number": 38,
+          "question": "Vodka nebo rum?",
+          "answer": "Tak tohle je určitě zajímavá otázka. Kdybych to měl pít čistý, tak je to rum, ale pokud se to s něčím napíchá ve správným poměru, asi tak 50 na 50, což je v podstatě obdoba 5 na 5, tak je mi to jedno."
+        },
+        {
+          "number": 39,
+          "question": "Android nebo iOS?",
+          "answer": "WP8."
+        },
+        {
+          "number": 40,
+          "question": "Kuřák nebo nekuřák?",
+          "answer": "Nekuřák."
+        },
+        {
+          "number": 41,
+          "question": "A chtěl bys ještě něco vzkázat na závěr?",
+          "answer": "Přestaňte mě srát a začněte chodit na zápasy, jinak mě všichni, co to čtete a nepřijdete, zvete na 6 čestných. Práci zdar a rukám klid."
+        }
+      ]
+    },
+    {
+      "id": "a40-1-otazka-pro-lukase-novotneho",
+      "sourceTitle": "40+1 otázka pro Lukáše Novotného",
+      "sourceUrl": "https://liscitrus.webnode.cz/news/a40-1-otazka-pro-lukase-novotneho/",
+      "publishedAt": "2014-02-14T17:52",
+      "sourceHtmlSha256": "baaf893a66e7adf9d9e398ab85c571c522fc30c76ef9ca4b447a140b395ea320",
+      "interviewee": {
+        "fullName": "Lukáš Novotný",
+        "aliases": [
+          "Luky"
+        ],
+        "playerId": 19,
+        "playerName": "Luky"
+      },
+      "questions": [
+        {
+          "number": 1,
+          "question": "Ahoj. Nejdřív se nám představ (jméno, přezdívka, věk, povolání, pozice v Trusu…)",
+          "answer": "Ahoj, jmenuji se Lukáš Novotný a v Trusu hraji pod přezdívkou Luky a číslem 16. Nedávno jsem oslavil své 20. narozeniny a jsem tedy nejmladší hráč Trusu. Jinak studuji prvním rokem stavební fakultu na ČVUT. Moje pozice v Trusu je taková, že se spíše snažím být tam, kde zrovna nikdo není."
+        },
+        {
+          "number": 2,
+          "question": "Jak ses dostal do Trusu? Vzpomeneš si na první zápas?",
+          "answer": "Pokud si dobře vzpomínám, tak jsem se do Trusu dostal na podzim roku 2011 přes Malýnyho. Můj první zápas byl určitě v Čakovicích, ale to byl nějaký přátelák. První soutěžní zápas byl proti týmu Mammissero a bylo to v Masné."
+        },
+        {
+          "number": 3,
+          "question": "Na kterej zápas nejraději vzpomínáš a na který bys naopak nejradši zapomenul?",
+          "answer": "Rád vzpomínám právě na první soutěžní zápas, protože jsem v něm dal 2 nebo 3 góly a to se moc často nestává. Tenkrát jsme vyhráli 12:7, takže začátek v novém týmu byl povedený. Také rád vzpomínám na zápas na Letný, už nevím, s kým to bylo, ale 5 minut před koncem jsme prohrávali asi o tři góly a nečekaně jsme srovnali a nakonec v penaltách vyhráli. A nerad vzpomínám na takové zápasy, kde jsme v poslední chvíli přišli o dobrý výsledek."
+        },
+        {
+          "number": 4,
+          "question": "Měl si před Trusem nějaký fotbalový zkušenosti?",
+          "answer": "Ano měl jsem. 6 let jsem hrál za Meteor Praha VIII. Asi ve 12ti jsem skončil, protože jsem přestával stíhat školu. Nemusí to být na první pohled znát, ale stihl jsem si vydobýt místo v základní sestavě na pozici defenzivního záložníka. Bylo to hezké období."
+        },
+        {
+          "number": 5,
+          "question": "Ale v Trusu je to určitě lepší. Fandíš kromě Trusu ještě jinýmu fotbalovýmu týmu?",
+          "answer": "Fandím Slavii Praha, snažím se ji aktivně podporovat i na stadionu, ale už na to nemám tolik času jako dříve."
+        },
+        {
+          "number": 6,
+          "question": "A nějakýho oblíbenýho hráče máš?",
+          "answer": "Konkrétního oblíbeného hráče nemám. Mám takový názor, že i ten nejlepší hráč by bez svých spoluhráčů vlastně nic nedokázal."
+        },
+        {
+          "number": 7,
+          "question": "Velká pravda. A mimo fotbal, baví tě i jiný sporty (aktivně i pasivně)?",
+          "answer": "Baví mě hodně sportů. Teď se snažím chodit pravidelně do posilovny a běhat. Míčové sporty, kolo jsou super a v zimě brusle, nebo lyže neuškodí. V televizi se můžu koukat na jakýkoliv sport, samozřejmě fotbal je na prvním místě."
+        },
+        {
+          "number": 8,
+          "question": "V Trusu se klade velký důraz i na třetí poločas, jaký je tvůj pivní rekord?",
+          "answer": "No pivní rekord za večer je asi 12 piv, po vypití jsem i dokázal sednout na kolo a bez zranění dojet kam jsem potřeboval. A jinak během celého dne si myslím něco kolem 15 piv."
+        },
+        {
+          "number": 9,
+          "question": "Dobrej výkon. To se pozná kvalitní skauting. A jaký pivo si po zápase nejradši vychutnáš?",
+          "answer": "Pivo mám hodně rád, takže mě potěší většina piv. Nejvíce asi Svijany 11."
+        },
+        {
+          "number": 10,
+          "question": "Máš i oblíbenou hospodu?",
+          "answer": "Jistě, že mám. Na střední po škole jsme chodili do Pivnice Na Veselí, kde točili asi za 20 Břeňáka. Další je třeba U Trajců, ale po tom co jsem slyšel větu: „Tak sem příště nechoďte“ už oblíbená moc není. Prostě, kde je dobré pivo, tak tam se cítím dobře."
+        },
+        {
+          "number": 11,
+          "question": "U Trajců je hlavně geniální jídelák. Kdo neviděl, nepochopí. Jakou si rád pustíš hudbu?",
+          "answer": "Já si asi nejradši pustím rádio, nemám žádný svůj hudební styl. Když se mi líbí nějaká písnička, tak ji prostě stáhnu a nekoukám na to, jestli to rock, nebo to hrajou na Šlágru."
+        },
+        {
+          "number": 12,
+          "question": "Oblíbený film?",
+          "answer": "Jednoznačně to je Gladiátor."
+        },
+        {
+          "number": 13,
+          "question": "A co seriál?",
+          "answer": "Když už se koukám na televizi, tak to je sport, takže v televizi seriály nesleduju a počítačový divák seriálů také nejsem. Ale při slově seriál se mi nejrychleji vybaví Simpsonovi."
+        },
+        {
+          "number": 14,
+          "question": "A jestli máš i oblíbenou knihu?",
+          "answer": "No asi poslední a jediná přečtená kniha je Honzíkova cesta. Opravdu nejsem nějaký knihomol, ale když jsem četl sem tam na maturitu, tak se mi zalíbila kniha Na západní frontě klid."
+        },
+        {
+          "number": 15,
+          "question": "A co pc/xbox/ps hru?",
+          "answer": "Jedině PC. Dříve jsem u her trávil celkem dost času, ale nějak mě to pustilo. Teď si občas zahraju letadla War Thunder, FIFU, Dirty 2 nebo Mafii."
+        },
+        {
+          "number": 16,
+          "question": "Ne/Oblíbené jídlo?",
+          "answer": "Myslím, že nějak obzvlášť vybíravej nejsem, ale takovou hrachovou kaši nesnesu. Naopak mám rád český klasiky, svíčkovou, knedlo vepřo zelo, dál těstoviny, v létě nějaký to grilovaní. Jídlo je dobrá věc."
+        },
+        {
+          "number": 17,
+          "question": "Souhlas. Ne/Oblíbené pití (alko i nealko)?",
+          "answer": "Oblíbené alko určitě pivo, víno se dá taky pít a z tvrdýho domácí pálenku. Neoblíbené alko takové ty sladké aperitivy. Z nealka nejčastěji piju vodu, džusy, sem tam colu, kofolu. Neoblíbené nealko mě nenapadá."
+        },
+        {
+          "number": 18,
+          "question": "Ne/oblíbený školní předmět?",
+          "answer": "Chodil jsem na stavební průmyslovku a bavilo mě to tak nějak celkově, vypadá to divně, ale je to tak. Momentálně teď nenávidím matiku."
+        },
+        {
+          "number": 19,
+          "question": "Wow, tak to se často nevidí. Máš nějakou vysněnou ženskou?",
+          "answer": "Jo mám v hlavě napsáno, jak by měla taková vysněná ženská vypadat."
+        },
+        {
+          "number": 20,
+          "question": "Fanynky asi doufaly, že se dozví něco konkrétnějšího…No nic. Co vysněná značka auta?",
+          "answer": "Mám dvě vysněný auta, jedno na normální ježdění. Líbí se mi třeba Škoda Octavia combi RS, Audi RS 6, Volkswagen Touareg. A to druhý je takovej větší sen, chtěl bych starýho Mustanga."
+        },
+        {
+          "number": 21,
+          "question": "Máš nějaké oblíbené přísloví nebo motto?",
+          "answer": "Život je boj."
+        },
+        {
+          "number": 22,
+          "question": "Jaké máš oblíbené zvíře? Máš nějaké doma?",
+          "answer": "Oblíbené zvíře nemám, když sem byl malej, měl sem křečka, potom jsem si jednou po škole koupil myš co se s ní krmí hadi a teď mám doma 4. rokem kočku."
+        },
+        {
+          "number": 23,
+          "question": "Kde rád nakupuješ oblečení?",
+          "answer": "Když už se dokopu jít si něco koupit na sebe, tak jdu do nějakýho obchodáku a tam se vždycky něco najde. Svůj obchod kam chodím, nemám."
+        },
+        {
+          "number": 24,
+          "question": "Jsi dochvilnej?",
+          "answer": "Snažím se být, ale kolikrát se to nepovede."
+        },
+        {
+          "number": 25,
+          "question": "Kolikrát jsi člověkem?",
+          "answer": "Skoro dvakrát. Angličtina není vůbec moje silná stránka, ale s pomocí rukou se domluvím. Z němčiny mi toho v hlavě moc nezůstalo."
+        },
+        {
+          "number": 26,
+          "question": "V kolik chodíš běžně spát a v kolik vstáváš?",
+          "answer": "Běžně chodím spát okolo půlnoci a vstávám, jak je potřeba. Do školy v 6:30, jinak si rád přispím."
+        },
+        {
+          "number": 27,
+          "question": "Co tě dokáže nejvíc vytočit?",
+          "answer": "Když někdo něco řekne nebo slíbí a neudělá to."
+        },
+        {
+          "number": 28,
+          "question": "Jakej používáš internetovej prohlížeč?",
+          "answer": "Mozillu Firefox"
+        },
+        {
+          "number": 29,
+          "question": "A co máš jako domovskou stránku?",
+          "answer": "Seznam.cz"
+        },
+        {
+          "number": 30,
+          "question": "Jakej máš mobilní telefon?",
+          "answer": "Teď mám LG Optimus l5"
+        },
+        {
+          "number": 31,
+          "question": "Máš nějaké tetování, případně prozradíš jaké?",
+          "answer": "Nemám žádné, ale někdy možná něco bude."
+        },
+        {
+          "number": 32,
+          "question": "Máš nějaký životní vzor?",
+          "answer": "Ten také nemám."
+        },
+        {
+          "number": 33,
+          "question": "Blondýny nebo brunety?",
+          "answer": "Asi blondýny."
+        },
+        {
+          "number": 34,
+          "question": "Ronaldo nebo Messi?",
+          "answer": "Messi"
+        },
+        {
+          "number": 35,
+          "question": "Sprcha nebo vana?",
+          "answer": "Častěji se sprchuji, ale jednou za čas je vana dobrá."
+        },
+        {
+          "number": 36,
+          "question": "Zima nebo léto?",
+          "answer": "Léto"
+        },
+        {
+          "number": 37,
+          "question": "Lyže nebo snowboard?",
+          "answer": "Lyže"
+        },
+        {
+          "number": 38,
+          "question": "Vodka nebo rum?",
+          "answer": "Vodka"
+        },
+        {
+          "number": 39,
+          "question": "Android nebo iOS?",
+          "answer": "Android"
+        },
+        {
+          "number": 40,
+          "question": "Kuřák nebo nekuřák?",
+          "answer": "Nekuřák"
+        },
+        {
+          "number": 41,
+          "question": "Správná odpověď. Získáváš šanci říct na závěr cokoliv, co máš na srdci.",
+          "answer": "Chtěl bych pozdravit všechny fanoušky Trusu, choďte na zápasy, ať je plný stadion."
+        }
+      ]
+    },
+    {
+      "id": "a40-1-otazka-pro-jakuba-novaka",
+      "sourceTitle": "40+1 otázka pro Jakuba Nováka",
+      "sourceUrl": "https://liscitrus.webnode.cz/news/a40-1-otazka-pro-jakuba-novaka/",
+      "publishedAt": "2014-02-10T17:42",
+      "sourceHtmlSha256": "b28c368a4fc71999d750fc583ae5b6523eca1559343e63e8219c338483845796",
+      "interviewee": {
+        "fullName": "Jakub Novák",
+        "aliases": [
+          "heiselpapier"
+        ],
+        "playerId": 12,
+        "playerName": "Hajzlák"
+      },
+      "questions": [
+        {
+          "number": 1,
+          "question": "Ahoj. Nejdřív se nám představ (jméno, přezdívka, věk, povolání, pozice v Trusu…)",
+          "answer": "Ahoj, jmenuju se Jakub Novák a moje přezdívka je heiselpapier, kvůli specifickýmu smyslu pro humor. Bude mi 22, živím se jako tester a občas překládám knihy, nicméně moje vysněná práce je sazeč pečiva. V Trusu hraju v obraně, ale při napadání nebo nepříznivým stavu se vysunuju dopředu a dávám spoustu gólů."
+        },
+        {
+          "number": 2,
+          "question": "Jak ses dostal do Trusu? Vzpomeneš si na první zápas?",
+          "answer": "Do Trusu mě zlanařil Benny, kterýho jsem poznal na derby fanoušků Sparty a slávie. Potřebovali v tý době tvrdýho hráče do obrany a já toho času nastupoval často pod vlivem alkoholu, a tak jsem se nebál občas přitvrdit. Kromě toho jsem fotbal nikdy moc neuměl, takže jsem často někoho nakopal i nechtěně. Měli o mě zájem i Hellové, Trus ale nabídl lepší podmínky smlouvy a serióznější jednání. Bylo to jedno z nejlepších rozhodnutí v mým životě a za žádnou cenu bych nepřestoupil. První zápas byl tuším přátelák proti Holomkům, výsledek už nevim, ale fanynky tam donesly lahváče."
+        },
+        {
+          "number": 3,
+          "question": "Jó, to byly časy…Na kterej zápas nejraději vzpomínáš a na který bys naopak nejradši zapomenul?",
+          "answer": "Rád vzpomínám na všechny vyhraný derby s Hellama (a že jich nebylo málo) a pak na různý turnaje. Je toho za ty roky strašně moc a něco vypíchnout je těžký, možná zápas se Slovanem Patriots, kdy jsme vyhráli asi 22:10. Rád jsem měl zápasy ze začátku svýho působení v Trusu, kdy jsme měli docela dobrý výsledky. Pak vzpomínám rád na zápasy, kde byla podpora fanoušků. Zapomenul bych na zápasy s Hellama ve finále poháru LoP, kdy jsme dostali nářez a asi čtyři góly od největšího kopyta ligy. A pak ještě match s Mamisserem na Masný, kde nás bylo o jednoho míň a snad jsme ani nevystřelili na bránu."
+        },
+        {
+          "number": 4,
+          "question": "Měl si před Trusem nějaké fotbalové zkušenosti?",
+          "answer": "Závodně jsem fotbal nikdy nehrál, podle mě hráči velkýho fotbalu co trénujou, gelujou se a nechoděj do hospody, nemaj v malým fotbale co pohledávat. Možná Šimákovi bych to odpustil. Na gymplu jsem hrál futsal, na kterej i dneska rád zajedu a mám tam plno kamarádů."
+        },
+        {
+          "number": 5,
+          "question": "Fandíš kromě Trusu ještě jinýmu fotbalovýmu týmu?",
+          "answer": "Fandim Spartě, na nic jinýho není čas. Spartě fandí většina týmu, paradoxně jsme v tomhle mnohem ortodoxnější než třeba Hell Spartans, který maj Spartu v názvu, a přitom za ně hraje všelijaká pakáž. A těch pár lidí, co od nich na Spartu chodí, jsou stejně fanoušci na nic."
+        },
+        {
+          "number": 6,
+          "question": "A nějakýho oblíbeného hráče máš?",
+          "answer": "Lukáš Mařan je super spoluhráč a bojovník, mimo Trus mám taky spíš rád srdcaře než hračičky, výjimky jsou Poborský a Zidane, který mám rád ještě z prehistorických let, kdy jsem si kupoval hattrick a hrál CSM. Pak mám rád Manuela Pamiče, di Cania a Pavla Pergla. Jo a nesmim zapomenout na Zvonimira Bobana, kterýho jsem sice neviděl kopat do míče, ale zato jsem ho viděl kopat do fízla."
+        },
+        {
+          "number": 7,
+          "question": "A mimo fotbal, baví tě i jiný sporty (aktivně i pasivně)?",
+          "answer": "Občas si nechám dát pár granátů do hlavy na kickboxu, abych nebyl přechytralej, ale všeobecně jsem na sporty spíš levej. V hospodě rád hraju fotbálek. Pasivně sporty nesleduju, je to nuda."
+        },
+        {
+          "number": 8,
+          "question": "No ta docházka na kickbbox asi nebude nic moc, protože rádoby chytrý řeči máš pořád. V Trusu se klade velký důraz i na třetí poločas, jaký je tvůj pivní rekord?",
+          "answer": "Těžko říct, když už těch piv vypiju nějaký dvojciferný množství, tak si toho pak moc nepamatuju. Pivo a alkohol všeobecně nemám moc rád, radši si přečtu nějakou pěknou knížku nebo zajdu do kostela."
+        },
+        {
+          "number": 9,
+          "question": "Zeptal bych se na oblíbenej kostel, ale otázky jsou pevně daný. Takže oblíbený pivo?",
+          "answer": "Na značky moc nehraju, spíš si myslim, že záleží na tom, jak je to pivo natočený. Ale když už bych měl něco vyzdvihnout, tak je to Božkovskej rum."
+        },
+        {
+          "number": 10,
+          "question": "Máš i oblíbenou hospodu?",
+          "answer": "Měl jsem rád Dřeváka než ho zavřela hygiena, neskutečný nálože jídla a šváb v ceně, levná kořalka a fotbálek, šipky, totálně nechutný hajzly… Mělo to genius loci, tak snad ho po deratizaci zase otevřou. Pak mám rád restauraci U svaté Anny na Radlický, kde výborně vařej. Z mimopražských podniků bych vypíchnul neratovickou hospodu u FraJi."
+        },
+        {
+          "number": 11,
+          "question": "Jakou si rád pustíš hudbu?",
+          "answer": "Já nemam moc hudební sluch, takže se mi líbí skoro všechny žánry. Avicii, Landa, Kategorie C, Skrewdriver, Harlej, Michal David, Hrobka&Pitva. Srdcovka je Matuška, dokonce jsem si kvůli němu koupil banjo, ale zatím jsem ho ani nenaladil, natož abych se na něj naučil hrát."
+        },
+        {
+          "number": 12,
+          "question": "Oblíbený film?",
+          "answer": "Jednoznačně Proč? Je to kultovní snímek o sparťanských fanoušcích, ten znám skoro nazpaměť. Na filmy ale jinak moc nekoukam. Všeobecně mám ale radši český než zahraniční."
+        },
+        {
+          "number": 13,
+          "question": "A co seriál?",
+          "answer": "Na seriály koukam hodně, nejradši mám asi Tři kamarádi a Jerry, South Park, Black Books, Hospodu…"
+        },
+        {
+          "number": 14,
+          "question": "A jestli máš i oblíbenou knihu?",
+          "answer": "Určitě 1984 a Farma zvířat od Orwella, pak se mi líbil Mechanickej pomeranč, O myších a lidech… Super knihy psal London, docela se mi líběj i historický romány od Vandenberga. Pak taková klasika jako Harry Potter samozřejmě taky. Mám rád i knížky pro děti. Bořík a spol., Malý Mikuláš, atd… A Turnerovy deníky jsou super."
+        },
+        {
+          "number": 15,
+          "question": "A co pc/xbox/ps hru?",
+          "answer": "Se spolubydlama občas hraju Fifu na Xboxu. Bavila mě Mafie a GTA2, to jsou pecky. Nejradši mám ale multiplayer hry nebo oldschoolovky."
+        },
+        {
+          "number": 16,
+          "question": "Ne/Oblíbené jídlo?",
+          "answer": "Delikatesa jsou smažený batolata, nesnášim olivy a okurku v chesburgeru."
+        },
+        {
+          "number": 17,
+          "question": "Ne/Oblíbené pití (alko i nealko)?",
+          "answer": "Alko rum, nealko rum s kolou. Nemam rád Aloe Vera kvůli těm blitkám, co v tom plavou. Moc jsem zatím nepřišel na chuť vínu, což se snažím změnit, protože je prej zdravý."
+        },
+        {
+          "number": 18,
+          "question": "Ne/oblíbený školní předmět?",
+          "answer": "Nikdy jsem neměl rád výtvarku, na přiloženém nákresu tygra se každý může přesvědčit proč. Teď, když už na škole nejsem, mě baví historie a zeměpis. Bohužel jsem ve studentských letech neměl rozum a nedával na hodinách pozor, tak to teď doháním samostudiem."
+        },
+        {
+          "number": 19,
+          "question": "Máš nějakou vysněnou ženskou?",
+          "answer": "Líbila se mi herečka z filmu Amadeus, Elizabeth Berridge, ale je to starej film a dneska už jí je přes padesát, takže zase nic."
+        },
+        {
+          "number": 20,
+          "question": "A vysněná značka auta?",
+          "answer": "Líbila se mi ta kára z Návratu do budoucnosti."
+        },
+        {
+          "number": 21,
+          "question": "Máš nějaké oblíbené přísloví nebo motto?",
+          "answer": "Jedem das Seine."
+        },
+        {
+          "number": 22,
+          "question": "Jaké máš oblíbené zvíře? Máš nějaké doma?",
+          "answer": "Samozřejmě liška!! V dohledný době si plánuju pořídit tučňáka. A až se dám na dráhu piráta, tak se mnou bude na hausbótu bydlet papoušek, kterýho naučím hajlovat. Doma mám králíka, ale to je prevít."
+        },
+        {
+          "number": 23,
+          "question": "To sou vskutku zajímavé plány. Kde rád nakupuješ oblečení?",
+          "answer": "Nakupování hadrů je pro mě noční můra."
+        },
+        {
+          "number": 24,
+          "question": "Jsi dochvilnej?",
+          "answer": "Haha, otázka přesně pro mě. Nerad čekám, takže radši všude chodím o něco pozdějc. Kromě toho trpím spánkovou poruchou, takže nezvládám vstávání. Pozdě chodim na srazy, do školy, do hospody, do práce, prostě všude."
+        },
+        {
+          "number": 25,
+          "question": "To můžu potvrdit. Kolikrát jsi člověkem?",
+          "answer": "Celkem obstojně šprechtim anglicky a asi bych se domluvil i španělsky."
+        },
+        {
+          "number": 26,
+          "question": "V kolik chodíš běžně spát a v kolik vstáváš?",
+          "answer": "Spát tak ve 3 ráno a vstávám kolem poledne."
+        },
+        {
+          "number": 27,
+          "question": "Co tě dokáže nejvíc vytočit?",
+          "answer": "Policejní zlovůle a dohadování se s blbečkama. Pak taky hrát s Dollym Fifu, ne že by nějak vyhrával, ale hraje naprosto příšernej fotbal a ty zápasy pak nikoho nebaví."
+        },
+        {
+          "number": 28,
+          "question": "Jakej používáš internetovej prohlížeč?",
+          "answer": "Většinou Chrome. Na liščím Firefoxu jsem navštěvoval nevhodný stránky a teď je zavirovanej a plnej reklam. Reinstalovat se mi to nechce a na Chrome už jsem si zvyknul.."
+        },
+        {
+          "number": 29,
+          "question": "A co máš jako domovskou stránku?",
+          "answer": "Když jsem ještě navštěvoval gymnázium, kluci mi to často měnili na https://kuba.novak.homo.com a podobný srandy, teď už tam mam prázdnou záložku a nastavený otevírání panelů z předchozího prohlížení."
+        },
+        {
+          "number": 30,
+          "question": "Kluci asi věděli proč…Jakej máš mobilní telefon?",
+          "answer": "Nokia 200."
+        },
+        {
+          "number": 31,
+          "question": "Máš nějaké tetování, případně prozradíš jaké?",
+          "answer": "Tetování zatím ne, ale do budoucna plánuju Spartu a Trus."
+        },
+        {
+          "number": 32,
+          "question": "Máš nějaký životní vzor?",
+          "answer": "Rychlý šípy jednoznačně!"
+        },
+        {
+          "number": 33,
+          "question": "Blondýny nebo brunety?",
+          "answer": "Záleží mi na barvě pleti, ne na barvě vlasů."
+        },
+        {
+          "number": 34,
+          "question": "Ronaldo nebo Messi?",
+          "answer": "Ronaldo, ale ten tlustej Brazilec."
+        },
+        {
+          "number": 35,
+          "question": "Sprcha nebo vana?",
+          "answer": "Meju se jen sporadicky."
+        },
+        {
+          "number": 36,
+          "question": "Zima nebo léto?",
+          "answer": "Léto jednoznačně. V zimě sem furt nemocnej."
+        },
+        {
+          "number": 37,
+          "question": "No ty si nemocnej permanentně…Lyže nebo snowboard?",
+          "answer": "Víc asi padám ze snowboardu, takže lyže."
+        },
+        {
+          "number": 38,
+          "question": "Vodka nebo rum?",
+          "answer": "Rumík."
+        },
+        {
+          "number": 39,
+          "question": "Android nebo iOS?",
+          "answer": "Je mi to fuk. Naposledy jsem měl Symbian."
+        },
+        {
+          "number": 40,
+          "question": "Kuřák nebo nekuřák?",
+          "answer": "Nekouřim, ale miluju vůni dýmovnic."
+        },
+        {
+          "number": 41,
+          "question": "A chtěl bys ještě něco vzkázat na závěr?",
+          "answer": "Chtěl bych pozdravit všechny naše fanoušky a poděkovat za podporu. Taky bych rád poděkoval mámě, že v průběhu těhotenství (vlastně nikdy v životě) nechlastala a nekouřila, a já se tak narodil s nohama a můžu kopat za TruSS. A v neposlední řadě všem spoluhráčům za to, že tvoří tak super tým a super partu."
+        }
+      ]
+    },
+    {
+      "id": "a40-1-otazka-pro-jana-flegla",
+      "sourceTitle": "40+1 otázka pro Jana Flégla",
+      "sourceUrl": "https://liscitrus.webnode.cz/news/a40-1-otazka-pro-jana-flegla/",
+      "publishedAt": "2014-02-07T23:08",
+      "sourceHtmlSha256": "11869875b85a7541d45d8dbf8a495c6d68206ba0cddd6ec9955ba7637d647015",
+      "interviewee": {
+        "fullName": "Jan Flégl",
+        "aliases": [
+          "Flégl"
+        ],
+        "playerId": 9,
+        "playerName": "Flígl"
+      },
+      "questions": [
+        {
+          "number": 1,
+          "question": "Ahoj. Nejdřív se nám představ (jméno, přezdívka, věk, povolání, pozice v Trusu…)",
+          "answer": "Čus, TRUS!! Jmenuju se Jan Flégl, jinak jsem známej jako Flígl. Je mi 21. Studuju na VŠE mezinárodní obchod. Povolání nemam, akorát když je nějaká akce tak si přivydělám jako bedňák. V Trusu se snažím hrát především obranu."
+        },
+        {
+          "number": 2,
+          "question": "Jak ses dostal do Trusu? Vzpomeneš si na první zápas?",
+          "answer": "Na gymplu jsem se kolem trusu pohyboval už od začátku, ale hrát sem za trus nechtěl, protože fotbal neumim a i z toho důvodu ani oni nechtěli mě. Podle stránek trusu byl můj první zápas nějakej záskok, vůbec už nevim s kym se hrálo, ani kdy to bylo. Každopádně se tam ukázalo, že nejsem jedinej, kdo neumí hrát a tak už jsem zůstal."
+        },
+        {
+          "number": 3,
+          "question": "Na kterej zápas nejraději vzpomínáš a na který bys naopak nejradši zapomenul?",
+          "answer": "Nepamatuju si nic."
+        },
+        {
+          "number": 4,
+          "question": "Měl si před Trusem nějaký fotbalové zkušenosti?",
+          "answer": "Nic velkýho. Akorát ještě snad ve školce sem chodil trénovat do Chaber, ale to bylo k ničemu."
+        },
+        {
+          "number": 5,
+          "question": "Fandíš kromě Trusu ještě jinýmu fotbalovýmu týmu?",
+          "answer": "Jenom Trus!!"
+        },
+        {
+          "number": 6,
+          "question": "Supr. A nějakýho oblíbenýho hráče máš?",
+          "answer": ":D :D"
+        },
+        {
+          "number": 7,
+          "question": "Jasný. Tak zkusíme zabrousit mimo fotbal, baví tě i jiný sporty (aktivně i pasivně)?",
+          "answer": "Jo, baví mě většina sportů. Nejvíc asi basket. Pasivně mě sporty nebavěj ani třeba na PC. Jediný kdy sporty sleduju v televizi, tak je při olympiádě a když je to mistrovství."
+        },
+        {
+          "number": 8,
+          "question": "V Trusu se ale klade velký důraz i na třetí poločas, jaký je tvůj pivní rekord?",
+          "answer": "Těžko říct no. Tipnul bych to na takovejch 15, spíš asi víc. Vždycky mam pocit, že mam na účtu víc než sem vypil. Ve Svijanech myslim, že sme dali všichni kolem 20, ale to se těžko počítá, když se pije celej den."
+        },
+        {
+          "number": 9,
+          "question": "No tenkrát po zápase to bylo minimálně o jedno víc jak Jumbo, kterej měl 16…A jaký pivo si po zápase nejradši vychutnáš?",
+          "answer": "To takhle nejde přesně říct. Asi Plzeň, jinak mám rád Svijany, Kozla a teď dost piju Klášter 10, ale to je tim, že ho maj u Koček levný a né tim, že by bylo něčím vyjímečný. Mám rád piva z malejch pivovarů. Celkově mám rád asi většinu piv. Akorát nemám rád Ferdinanda a Krušovice a Budvaru taky moc neholduju, i když ta dvanáctka docela jde, když neni nic jinýho."
+        },
+        {
+          "number": 10,
+          "question": "Určitě máš i nějakou oblíbenou hospodu...",
+          "answer": "Jistě. Chodim ke Kočkám Potom, i když tam moc často nezavítám, to mam rád u Davida v Krkonošské hospůdce. Míval jsem rád Bellu, ale co tam začali čepovat Krušovice tak už to není, co bejvalo."
+        },
+        {
+          "number": 11,
+          "question": "Jakou si rád pustíš hudbu?",
+          "answer": "Poslouchám vpodstatě všechno. Hlavně poslouchám rock, punkrock atd. Poslední dobou jedu především na Dropkick Murphys, SKA-P, Flogging Molly, System of a down a z českých Wohnout, ŠKWOR, Gramotón a teď už ne tak často Tři sestry."
+        },
+        {
+          "number": 12,
+          "question": "Oblíbený film?",
+          "answer": "Pulp fiction, celkově teda Tarantinova tvorba, všechny díly Hvězdnejch válek a nevim, je toho spousta."
+        },
+        {
+          "number": 13,
+          "question": "A co seriál?",
+          "answer": "Hmm.. The Wire, Game of Thrones, Breaking Bad, Spartacus … dál Suits, Scrubs,Firefly, klasiky jako: TBBT, HIMYM, M*A*S*H, Futurama, simpsni atd. Koukal sem na první sérii Vikings a nějak mě nebavily poslední díly, ale stejně na to budu koukat dál… Jo, ještě Father Ted, je to taková blbost, ale prostě feck off!!"
+        },
+        {
+          "number": 14,
+          "question": "Oukeej…A jestli máš i oblíbenou knihu?",
+          "answer": "Píseň ledu a ohně. Doufám, že to ten dědek dopíše dřív, než zemře. Zaklínač, ale u toho sem nedočet všechny díly. Jinak jako malej jsem hodněkrát čet Na ostřích čepelí, Poslední bere vše ad., který napsal Miroslav Žamboch. Takže celkově sem spíš do fantasy."
+        },
+        {
+          "number": 15,
+          "question": "A co pc/xbox/ps hru?",
+          "answer": "Nemám xbox ani ps. Takže všechno co sem kdy hrál, tak bylo na PC. Teď už tolik nehraju, ale Skyrim, GTA SA, ze starejch pecek nezapomenu na Mafii, Diablo 2, Gothic, Age of Empires 2, Battle for middle-earth."
+        },
+        {
+          "number": 16,
+          "question": "Ne/Oblíbené jídlo?",
+          "answer": "Když je to dobře připravený tak je dobrý všechno. Klasicky svíčková, koprová a takový český klasiky, ale jak řikám, musí to kuchař umět a ne jako onehdá ve školní jídelně, že prdnou bílou sračku na talíř a vydávaj to za koprovku. Bych blil.\n\nNemam rád takový ty hospodský bílý houskový knedlíky, je to jenom pěna bez chuti. Nechápu, když už kurva chtěj podávat knedlíky, tak ať kurva místo cesty do Makra udělaj normální těsto. Neřikám, že to musí bejt jak od maminky, ale za trochu snahy bych i připlatil. Navíc je to ostuda, je to taková česká specialita bych řek, a když si to dá cizinec v hospodě tak si pak musí myslet, že jsme prasata."
+        },
+        {
+          "number": 17,
+          "question": "To si asi bude myslet stejně, ale jinak souhlas. Co ne/oblíbené pití (alko i nealko)?",
+          "answer": "Oblíbený alko je samozřejmě pivo, víno, medovina, za poslední rok-dva sem začal mít rád whisk(e)y. Jinak pálenky, Jager. Z nealka voda, kofola…Neoblíbený alko...(dlouze se zamyslí)...nechutnalo mi saké když sem ho jednou měl, ale bude toho víc. K nealku bych řek, že nemám rád colu. Dával sem si jí minule v Belle, protože sem jel autem a málem sem se z toho poblil, fakt humus, nevim jak sem to moh kdysi pít."
+        },
+        {
+          "number": 18,
+          "question": "Ne/oblíbený školní předmět?",
+          "answer": "To je fuk, stejně sem při hodinách nevnímal. A teď už tam ani nechodim."
+        },
+        {
+          "number": 19,
+          "question": "Máš nějakou vysněnou ženskou?",
+          "answer": "To ani nebudu říkat. To se stejně zas příští tejden změní."
+        },
+        {
+          "number": 20,
+          "question": "A vysněná značka auta?",
+          "answer": "Nevim no. Lamborghini nebo Maserati."
+        },
+        {
+          "number": 21,
+          "question": "Máš nějaké oblíbené přísloví nebo motto?",
+          "answer": "Neřek bych. Mám oblíbené hlášky z různejch filmů a seriálů. Třeba z filmu Blbý a blbější: „I zdi sou posraný.“ Ale přímo motto, kterym bych se řídil, nemam."
+        },
+        {
+          "number": 22,
+          "question": "Jaké máš oblíbené zvíře? Máš nějaké doma?",
+          "answer": "Mám doma modrožlutou andulku. Jmenuje se Bob a je mu asi 12 let."
+        },
+        {
+          "number": 23,
+          "question": "Tak snad se snese s liškou, která ti brzy doma přibude. Kde rád nakupuješ oblečení?",
+          "answer": "Nemam rád nakupování."
+        },
+        {
+          "number": 24,
+          "question": "Jsi dochvilnej?",
+          "answer": "Jak kdy."
+        },
+        {
+          "number": 25,
+          "question": "Kolikrát jsi člověkem?",
+          "answer": "Umim docela dobře anglicky, něco málo umim rusky a ještě lehký základy španělštiny."
+        },
+        {
+          "number": 26,
+          "question": "V kolik chodíš běžně spát a v kolik vstáváš?",
+          "answer": "Běžně chodim spát kolem půlnoci, občas až kolem druhý, zase si to vynahrazuju dopoledne, kdy vstávám už kolem poledne."
+        },
+        {
+          "number": 27,
+          "question": "Co tě dokáže nejvíc vytočit?",
+          "answer": "Jak už sem psal, štvou mě ty hospodský odfláknutý HK. Pak mě štvou lidi, co pořád nahlašujou Why so serious (najdete, možná, na facebooku – takovej morbidni občas rasistickej humor) a ještě víc lidi, co to pak zablokujou. Já chápu, že to některý lidi to třeba pohoršuje a tak, ale jak k tomu přijdu já, když přijdu o svojí denní dávku zábavy. Jak je známo, smích prodlužuje život a když mi ho takhle kradou tak mě vlastně systematicky připravujou o život. Až zjistim kdo to dělá tak je zažaluju. Nebo možná ne, záleží, jestli se mi bude chtít."
+        },
+        {
+          "number": 28,
+          "question": "Ty knedlíky ti koukam hodně ležej v žaludku. Jakej používáš internetovej prohlížeč?",
+          "answer": "Mozzila Firefox"
+        },
+        {
+          "number": 29,
+          "question": "A co máš jako domovskou stránku?",
+          "answer": "Tyvole nevim. Počkej, se kouknu…. Ha! Google tam je."
+        },
+        {
+          "number": 30,
+          "question": "Jakej máš mobilní telefon?",
+          "answer": "Takovej stříbrnej, tenkej. Samsung je na tom napsaný. Mam někde krabičku a tam je napsanej přesně model, ale než bych ho šel hledat, tak to si radši doleju. Nějak to do mě dneska teče."
+        },
+        {
+          "number": 31,
+          "question": "Máš nějaké tetování, případně prozradíš jaké?",
+          "answer": "Nemam, stejně by nebylo vidět :D"
+        },
+        {
+          "number": 32,
+          "question": "Máš nějaký životní vzor?",
+          "answer": "Ne."
+        },
+        {
+          "number": 33,
+          "question": "Blondýny nebo brunety?",
+          "answer": "Když už bych měl vybírat jenom podle toho, tak brunetky nebo zrzky."
+        },
+        {
+          "number": 34,
+          "question": "Ronaldo nebo Messi?",
+          "answer": "Kašlu na oba stejně, nevim na koho víc. Beztak to sou nějaký cegáni ne?"
+        },
+        {
+          "number": 35,
+          "question": "No…dá se říct. Sprcha nebo vana?",
+          "answer": "Ideálně výřivka, ale normálně sprcha."
+        },
+        {
+          "number": 36,
+          "question": "Zima nebo léto?",
+          "answer": "V létě chutná líp."
+        },
+        {
+          "number": 37,
+          "question": "Lyže nebo snowboard?",
+          "answer": "Umim na obou. Na lyžích, ale jezdim už od malička. Pamatuju si jak mě ještě jako malinkýho, táta poprvé postavil na takový malinký lyžičky u nás za barákem a učil mě jak na tom stát a tak, pak mě tahal na nějakym laně nebo co, než mě pustil na menší svážek. Prostě myslim, že na lyžích si to celkem dávám. Snowboard mam teprve posledních pár let. Nemam toho na něm zas tolik naježděno, ale celkem mi to šlo a řek bych, že jezdim tak průměrně.\n\nJednoznačně volim lyže."
+        },
+        {
+          "number": 38,
+          "question": "Supr, že si tu jednoznačnou volbu doprovodil tak zajímavym příběhem. Vodka nebo rum?",
+          "answer": "Ani jedno mi moc nejede. Ale vodka s redbullem nebo rum s kolou, to joo."
+        },
+        {
+          "number": 39,
+          "question": "Android nebo iOS?",
+          "answer": "Nemam ani jedno. Jablíčko nechcu."
+        },
+        {
+          "number": 40,
+          "question": "Kuřák nebo nekuřák?",
+          "answer": "Nekuřák!!"
+        },
+        {
+          "number": 41,
+          "question": "A chtěl bys ještě něco vzkázat na závěr?",
+          "answer": "TRUS !!! Choďte fandit a podporujte nás ve všech třech poločasech !! ..heh, sem se přitom rozhovoru lehce opil :D"
+        }
+      ]
+    },
+    {
+      "id": "a40-1-otazka-pro-mateje-jandaka",
+      "sourceTitle": "40+1 otázka pro Matěje Jandáka",
+      "sourceUrl": "https://liscitrus.webnode.cz/news/a40-1-otazka-pro-mateje-jandaka/",
+      "publishedAt": "2014-02-03T18:32",
+      "sourceHtmlSha256": "fe54f6827a8c84a3d63f07359a0d29d74aef8a157bdb50db1f6cd6f58ae1c3ab",
+      "interviewee": {
+        "fullName": "Matěj Jandák",
+        "aliases": [
+          "Jumbo"
+        ],
+        "playerId": 15,
+        "playerName": "Jumbo"
+      },
+      "questions": [
+        {
+          "number": 1,
+          "question": "Ahoj. Nejdřív se nám představ (jméno, přezdívka, věk, povolání, pozice v Trusu…)",
+          "answer": "Zdravím všechny fanoušky Trusu. Mý jméno je Matěj Jandák ale hraju pod přezdívkou Jumbo. Je mi 22 a studuju třetim rokem na hnojárně. Svoji pozici v Trusu sám moc nevim, no většinou se stavim do útoku ale tak po minutě na hřišti mi dojdou síly a postupně sem všude a nikde..."
+        },
+        {
+          "number": 2,
+          "question": "Jak ses dostal do Trusu? Vzpomeneš si na první zápas?",
+          "answer": "Do Trusu sem se dostal od Hellů. Když se před x lety vytvářely tyhle týmy tak sem si řikal, že radši pudu do týmu, kde je v názvu Sparta… No kdybych vynalez nějakej stroj času, tak bych se vrátil a asi se nakopal do koulí. Postupem času to tam stálo víc a víc za hovno, o čemž vypovídá i koncentrace slávistů v tomhle „sparťanskym“ týmu. Každopádně hned jak se mi naskytla možnost, tak hned sem skočil do Trusu spolu s Karlossem. První zápas si pamatuju moc dobře, bylo to tušim v Bohnicích, právě proti Hellům."
+        },
+        {
+          "number": 3,
+          "question": "Pamatuješ si to výborně, akorát to bylo na Pohořelci. Tak zkusíme tvojí pamět znova. Na kterej zápas nejraději vzpomínáš a na který bys naopak nejradši zapomenul?",
+          "answer": "Nejradši vzpomínám právě na ten můj první zápas s Hellama. Ty sráče sme porazili a ještě sem dal nějakej ten gól a to se taky často nestává. Dále se nedá nevzpomenout na zápas, kam dorazili naši ultruss young. Naopak nejhorší zápas byl asi prohra ve finále lopky proti HS."
+        },
+        {
+          "number": 4,
+          "question": "Měl si před Trusem nějaký fotbalový zkušenosti?",
+          "answer": "No… Hrál sem za Bílou horu v přípravce a pak za Střešovice v mladších žácích. Respektive vysedával sem na lavičce béčka a naskakoval do hry jako levej obránce, protože nikdo nebyl levák a nikdo nechtěl hrát obránce. Což sem teda nechtěl ani já a levák taky nejsem, ale bohužel :D"
+        },
+        {
+          "number": 5,
+          "question": "Fandíš kromě Trusu ještě jinýmu fotbalovýmu týmu?",
+          "answer": "No jak už vyplynulo, fandim Spartě."
+        },
+        {
+          "number": 6,
+          "question": "A nějakýho oblíbeného hráče máš?",
+          "answer": "Tomáš Řepka, Di Canio… no to bude asi všechno, fotbalisti sou většinou pěkný buzeranti."
+        },
+        {
+          "number": 7,
+          "question": "A mimo fotbal, baví tě i jiný sporty (aktivně i pasivně)?",
+          "answer": "Tak rád si zahraju i jiný sporty, teda ne, že bych byl v jakymkoliv na nějaký úrovni, ale sem pro každou prdel. Pasivně nesleduju nic, prakticky ani ten fotbal ne…"
+        },
+        {
+          "number": 8,
+          "question": "Ono v Trusu taky nejde jenom o fotbal. Velký důraz se klade i na třetí poločas, jaký je tvůj pivní rekord?",
+          "answer": "No můj pivní rekord padl nedávno po zápase Trusu, když sme se vydali i se soupeřem k dřevákovi a pak následně do Fleapitu. Snažil sem se držet krok s Flíglem, jenomže sem byl po 16. pivu pod stolem a Flígl vysmátej. No a tak se na tomhle čísle rekord zastavil."
+        },
+        {
+          "number": 9,
+          "question": "Dobrýý. Ono tenkrát padlo těch rekordů asi víc. A jaký pivo si po zápase nejradši vychutnáš?",
+          "answer": "Po zápase skočim s radostí po jakymkoliv pivu. Ale jinak třeba Svijany, Budvar…"
+        },
+        {
+          "number": 10,
+          "question": "Máš i oblíbenou hospodu?",
+          "answer": "Oblíbenou hospodu snad ani nemam. Všeobecně je to ta kde je dobrej poměr cena/výkon. Třeba tam kde je pivo tak za 22 sedávám rád. A samozřejmě Bella už je taková trusí tradiční."
+        },
+        {
+          "number": 11,
+          "question": "Jakou si rád pustíš hudbu?",
+          "answer": "Jedině Hroby a Pity. A když mam nějakou slabší chvilku nebo chci udělat dojem na nějakou hezkou holku a nechci jí pouštět ty prásárny tak sáhnu po něčem jemnějším typu Juden Mord."
+        },
+        {
+          "number": 12,
+          "question": "Koukám, že co se hudby týče, máš hodně vytříbenej vkus. Co oblíbený film?",
+          "answer": "Jasně Proč?. Pak třeba můžu zmínit Football faktory. Ale celkově filmům ňák moc neholduju."
+        },
+        {
+          "number": 13,
+          "question": "A co seriál?",
+          "answer": "Tak klasika Simpsni, pak Futurama, Family Guy…U všech tak nějak platí, že novější série stojej total za vyližprdel, tak už sem je přestal sledovat, nevim čim to je. A pak můžu zmínit třeba Dextera, to je snad jedinej seriál kterej sem viděl celej. A samozřejmě Hospoda!! To je kvalitní seriál ze života."
+        },
+        {
+          "number": 14,
+          "question": "A jestli máš i oblíbenou knihu?",
+          "answer": "Tak kdyby se počítala oblíbenost podle toho, kolikrát sem danou knížku přečet, tak by určitě s přehledem vedl Harry Potter. První díly sem jako menší projel minimálně 10x všechny. Jinak Farma zvířat nebo 1984 od Orwella."
+        },
+        {
+          "number": 15,
+          "question": "A co pc/xbox/ps hru?",
+          "answer": "Tak Football Managera hraju už 10. rokem. Vynechal sem snad jenom poslední sérii. Pak třeba tanky hraju poslední dobou no a z mládí se nedá zapomenout na pár pecek typu Settlers 2. Poslední dobou je bohužel míň času, je to takový na sráč."
+        },
+        {
+          "number": 16,
+          "question": "Už z dálky je vidět, že rád jíš. Jaká jsou tvoje oblíbená i neoblíbená jídla?",
+          "answer": "Oblíbený je ňáký grilovaný maso, to je moje nová pochoutka. Neoblíbený třeba houby, ryby, vajíčko a rajče, z toho bleju."
+        },
+        {
+          "number": 17,
+          "question": "Ne/Oblíbené pití (alko i nealko)?",
+          "answer": "Rum/Pivo a neoblíbený nějaká přeslazená kravina když je bez alkoholu. Jo a taky whisky je hnus, jedině to do sebe naklopit a pak rychle zalejt pivem :D"
+        },
+        {
+          "number": 18,
+          "question": "Ne/oblíbený školní předmět?",
+          "answer": "Tak klasika, tělák oblíbenost ostatnímu sem dával nenávist. I když teď s odstupem času bych se víc zajímal třeba o děják."
+        },
+        {
+          "number": 19,
+          "question": "Máš nějakou vysněnou ženskou?",
+          "answer": "Stačí když bude umět vařit, prát a takový věci, o kterých nemam moc páru. Vydělávat pořádný prachy a hlavně mě moc nesrat."
+        },
+        {
+          "number": 20,
+          "question": "Tak hodně štěstí při hledání. A vysněná značka auta?",
+          "answer": "Ani moc nemam…ale audiny pro mě dycky byly takovej ten symbol parády."
+        },
+        {
+          "number": 21,
+          "question": "Máš nějaké oblíbené přísloví nebo motto?",
+          "answer": "Asi nic. Jediný co se tomu blíží je 6 pravidel"
+        },
+        {
+          "number": 22,
+          "question": "Jaké máš oblíbené zvíře? Máš nějaké doma?",
+          "answer": "Doma máme pěkně hnusnýho čokla, co se jmenuje Hnusík a je fakt hnusnej…ale můj teda určitě není. Jinak jedině liška, závidim flíglovi že ji bude mít na dvorku."
+        },
+        {
+          "number": 23,
+          "question": "Kde rád nakupuješ oblečení?",
+          "answer": "To je mi fakt fuk. Občas najdu na netu nebo tak něco, co se mi líbí a du na to… třeba teď pokoukávám po tričku s Jiřím Károu."
+        },
+        {
+          "number": 24,
+          "question": "Jsi dochvilnej?",
+          "answer": "Řek bych že jo, ostatní sou kreténi a choděj furt pozdě."
+        },
+        {
+          "number": 25,
+          "question": "Kolikrát jsi člověkem?",
+          "answer": "No tak když se to veme kolem a kolem tak tak 2x, nemčinu a angličtinu sečtu dohromady protože samotný je moc neumim… a stejně sou oba germánský, tak je to šumák."
+        },
+        {
+          "number": 26,
+          "question": "V kolik chodíš běžně spát a v kolik vstáváš?",
+          "answer": "No nutno říct že poslední dobou to mám pěkně retardérsky posunutý a vstávám třeba v 11 a chodim spát tak ve 3. Ono když dávaj na Fandovi ve 2 South Park a předtim Riskuj, tak si na to člověk rád počká. A když už sme u toho, tak na South park sem zapomněl u seriálů."
+        },
+        {
+          "number": 27,
+          "question": "Co tě dokáže nejvíc vytočit?",
+          "answer": "Taková ta klasika každýho normálního člověka… židi, cikáni, negři…"
+        },
+        {
+          "number": 28,
+          "question": "To známe…Jakej používáš internetovej prohlížeč?",
+          "answer": "Firefox"
+        },
+        {
+          "number": 29,
+          "question": "A co máš jako domovskou stránku?",
+          "answer": "Tak nějak ze zvyku mám už od dávna spartaforever.cz. Ale že bych tam trávil nějakej čas, to už se říct nedá…"
+        },
+        {
+          "number": 30,
+          "question": "Jakej máš mobilní telefon?",
+          "answer": "Vodafone mobil – kvalita, doporučuju."
+        },
+        {
+          "number": 31,
+          "question": "Máš nějaké tetování, případně prozradíš jaké?",
+          "answer": "Nemam, ale snad něco časem přijde. Nevim, jestli ten liščí trus na čelo jak sem sliboval, ale něco v podobnym stylu by to chtělo."
+        },
+        {
+          "number": 32,
+          "question": "Liščí Trus na čelo je super! Máš nějaký životní vzor?",
+          "answer": "Sepp Dietrich, velitel tankový armády."
+        },
+        {
+          "number": 33,
+          "question": "Blondýny nebo brunety?",
+          "answer": "Brunety."
+        },
+        {
+          "number": 34,
+          "question": "Ronaldo nebo Messi?",
+          "answer": "Oba sou to sráči"
+        },
+        {
+          "number": 35,
+          "question": "Sprcha nebo vana?",
+          "answer": "No nejlíp ani jedno…Ale když už tak sprcha, dokonce sem dostal k Vánocům rádio do sprchy, tak teď se tam můžu přes zimu pěkně vyhřejvat."
+        },
+        {
+          "number": 36,
+          "question": "Zima nebo léto?",
+          "answer": "Tak nejlíp jaro, ale když mě nutíte vybrat tak to léto teda no."
+        },
+        {
+          "number": 37,
+          "question": "Lyže nebo snowboard?",
+          "answer": "Spíš snowboard, ale ani na jednom sem nestál tak 3 roky a ani mi to moc nějak nechybí. Naposled, když sem byl na sjezdovce, tak sem sjel jednou svah a pak sem šel chlastat."
+        },
+        {
+          "number": 38,
+          "question": "Vodka nebo rum?",
+          "answer": "Když je to tuzemský tak rum. Když ne tak taky, ale sem z toho míň nadšenej."
+        },
+        {
+          "number": 39,
+          "question": "Android nebo iOS?",
+          "answer": "Nemam porovnání a je mi to tak nějak u prdele, ale celkově se dá říct, že lidi co maj Apple, sou pěkný kreténi a já sám mam Android a nemam si na co stěžovat. Takže nějak tak."
+        },
+        {
+          "number": 40,
+          "question": "Tvoje kuřáctví je všeobecně známý, ale ta otázka tu je. Takže kuřák nebo nekuřák?",
+          "answer": "Tak když si dám o poločase páva, aby se mi líp běhalo, tak to vůbec neuškodí."
+        },
+        {
+          "number": 41,
+          "question": "Tak a je to všechno. Chtěl bys ještě něco vzkázat na závěr?",
+          "answer": "Pamatujte, nic než Trus!! A začněte chodit na zápasy sakra."
+        }
+      ]
+    },
+    {
+      "id": "a40-1-otaza-pro-jana-dolezala",
+      "sourceTitle": "40+1 otázka pro Jana Doležala",
+      "sourceUrl": "https://liscitrus.webnode.cz/news/a40-1-otaza-pro-jana-dolezala/",
+      "publishedAt": "2014-01-31T18:17",
+      "sourceHtmlSha256": "1060cf7876f2b73c5f0fc1cfbec8351e8dd42d1af9ca8a68b1c2f3b6a62b8ec3",
+      "interviewee": {
+        "fullName": "Jan Doležal",
+        "aliases": [
+          "Dolly"
+        ],
+        "playerId": 7,
+        "playerName": "Dolly"
+      },
+      "questions": [
+        {
+          "number": 1,
+          "question": "Ahoj. Nejdřív se nám představ (jméno, přezdívka, věk, povolání, pozice v Trusu…)",
+          "answer": "Zdravim. Jmenuju se Honza Doležal, ale nikdo mi neřekne jinak než Dolly. Je mi 21 a v Trusu budu nosit na zádech dvojku. Jsem student a snad zdárně zmáknu alespoň bakaláře. Ke škole si přivydělávám různejma brigádama, třeba komentováním fotbalu. V Trusu budu hrát tam, kde bude asi zrovna potřeba. Obrana nebo útok, je mi to celkem jedno, nechám to na trenérovi."
+        },
+        {
+          "number": 2,
+          "question": "Jak ses dostal do Trusu? Vzpomeneš si na první zápas?",
+          "answer": "Do trusu jsem se dostal tak, že jsem ho založil. Ještě, že se nepořádaly žádný nábory, to bych si asi neškrtnul. První zápas byl s 4077 DUCKS, což jsou kámoši, s kterejma celkem zdatně kopem Hanspaulku. Trus prohrál 0:3, ale podali jsme bojovnej výkon."
+        },
+        {
+          "number": 3,
+          "question": "Na kterej zápas nejraději vzpomínáš a na který bys naopak nejradši zapomenul?",
+          "answer": "Nejradši vzpomínám na zápas s Interem Mokušle a výsledkem cca. 35:17, moc pěkný fotbalový skóre. V tom zápase jsem dal snad 15 gólu, to bylo fajn. Nejhorší byl zápas s Elitou v Čakovicích. Myslim, že náš první zápas proti nim prohra tušim 3:2. Hlavně furt strašně prasili a věčně jsme končili na zemi, akorát v sobě bohužel nikdo z nich neměl sportovního ducha, takže nikdy žádnej faul nepřiznali. Ale taková nefér hra prostě k Elitě patří. Do míče se jich tam moc netrefí, tak alespoň takhle."
+        },
+        {
+          "number": 4,
+          "question": "15gólů ujde, snad bude podobná odpověď i u piv. Měl si před Trusem nějaký fotbalový zkušenosti?",
+          "answer": "Nejvíc jsem toho odkopal v TJ Kyje. Pak asi dvě sezony v SK Union Čelákovice a chvilku jsem si kopnul i za Viktorku Žižkov."
+        },
+        {
+          "number": 5,
+          "question": "Fandíš kromě Trusu ještě jinýmu fotbalovýmu týmu?",
+          "answer": "Kurva fandim! Fandim Spartičce, jinak to nebylo a nebude. V zahraničí mám v oblibě Arsenal, ale nemusel by bejt tak multikulturní."
+        },
+        {
+          "number": 6,
+          "question": "A nějakýho oblíbeného hráče máš?",
+          "answer": "Nejradši mám Tomáše Rosickýho. Dřív jsem taky ujížděl hodně na Raulovi a v současnosti se mi moc líbí Eden Hazard, ten je prostě neskutečnej."
+        },
+        {
+          "number": 7,
+          "question": "A mimo fotbal, baví tě i jiný sporty (aktivně i pasivně)?",
+          "answer": "Aktivně žádnej neprovozuju. Mám ale rád squash, kulečník, tenis a třeba basketbal. Nejvíc teď asi dávám právě squashi, na ten chodim každej tejden."
+        },
+        {
+          "number": 8,
+          "question": "V Trusu se klade velký důraz i na třetí poločas, jaký je tvůj pivní rekord?",
+          "answer": "Pivo mám rád, ale zas tak mě na něj neužije. Musim teda potupně říct, že 11. Ve společnosti pivařů, jaká v trusu je, budu skoro za abstinenta."
+        },
+        {
+          "number": 9,
+          "question": "No tak hrozný to snad nebude. A jaký pivo si po zápase nejradši vychutnáš?",
+          "answer": "Nejradši mám jedenáctky. Úplně nejlíp Kozlíka nebo Svijanskej máz."
+        },
+        {
+          "number": 10,
+          "question": "Máš i oblíbenou hospodu?",
+          "answer": "Kousek, co bydlim je parádní podnik, jmenuje se U Sporťáka. Za supr cenu tady maj kozlíka tankovou desítku, takže fajn. Jinak po Spartičce rozhodně potěšej jedny, dvoje Svijany v hospůdce U Velblouda."
+        },
+        {
+          "number": 11,
+          "question": "Jakou si rád pustíš hudbu?",
+          "answer": "Neposlouchám skoro nic, v tomhle jsem hroznej analfabet. Dřív mě dost brali Green Day. Z našich kapel můžu skoro všechny, nejradši mám asi Kabát."
+        },
+        {
+          "number": 12,
+          "question": "A nějaký filmy znáš?",
+          "answer": "Na TV nekoukám skoro vůbec a ani toho moc nestahuju. Líbí se mi ale třeba Forrest Gump, to je prostě klasika. Ještě mám v oblibě film 60 sekund, je to o zlodějích aut."
+        },
+        {
+          "number": 13,
+          "question": "Jo, my víme o čem to je. A co seriály, taky nic?",
+          "answer": "Na seriálech neujíždim tak jako jiný magoři v týmu, ale Simpsonovi, Californication nebo Dva a půl chlapa mě zaručeně pobaví."
+        },
+        {
+          "number": 14,
+          "question": "A jestli máš i oblíbenou knihu?",
+          "answer": "Jako malej jsem hltal knížky o čutálistech podobně starejch jako jsem byl já, takže z mládí jsou asi top Andělé v kopačkách. Aktuálně už toho moc nenačtu, ale třeba Pottera jsem přelouskal. Dost se mi líbí knížka o kariéře Jardy Blažka - Bláža, do toho jsem se dost začet."
+        },
+        {
+          "number": 15,
+          "question": "A co pc/xbox/ps hru?",
+          "answer": "Xbox je fajn, ten mám i doma. Nejvíc jsem na sportovní hry, takže vyklepnout spolubydlící ve Fifě nikdy nezklame."
+        },
+        {
+          "number": 16,
+          "question": "No na veřejnost prosakují informace, že výklepy dostáváš spíš ty. Tvoje Ne/Oblíbené jídlo?",
+          "answer": "Třeba drštková polívka, to je pěknej humus. Taky nejim koprovku, ale ani nevim jestli mi chutná, nebo ne, prostě mi šíleně smrdí, tak se k ní nemůžu ani přiblížit. Jinak jsem vděčnej strávník, snim skoro všechno. Mezi největší kvalitu bych dal asi svíčkovou, rajskou a českou klasiku vepřo, knedlo, zelo."
+        },
+        {
+          "number": 17,
+          "question": "Ne/Oblíbené pití (alko i nealko)?",
+          "answer": "Největší kentus je asi mrkovej džus a z alkoholu se týhle hnusný chuti zdatně přibližuje třeba whisky. Co naopak můžu je ledovej čaj broskev a z alka nepohrdnu rumíkem nebo třeba hruškovicí. Dobrý pivko je automatika."
+        },
+        {
+          "number": 18,
+          "question": "Ne/oblíbený školní předmět?",
+          "answer": "Největší děs byla chemie, fyzika a podobný kraviny. Co mě naopak i celkem bavilo, byl kromě těláku i dějepis a čeština, ale ta jedině, když jsme brali literaturu."
+        },
+        {
+          "number": 19,
+          "question": "Máš nějakou vysněnou ženskou?",
+          "answer": "Hele to zas tak neřešim. Líbí se mi prostě kus od kusu. Kdybych měl říct nějaký jména, tak potom asi Adriana Lima a Andrea Verešová."
+        },
+        {
+          "number": 20,
+          "question": "A vysněná značka auta?",
+          "answer": "Na auta jsem úplně blbej. Moje zamilovaný auto je ale Shelby GT 500. Mám to odčuměný z mýho oblíbenýho filmu 60 sekund, ale Eleanor bych mu rohodně neřikal."
+        },
+        {
+          "number": 21,
+          "question": "Máš nějaké oblíbené přísloví nebo motto?",
+          "answer": "Takový to běžný jako každej slušnej člověk: Smrt hellům! A nějaký do života, tak to asi otřepaný: Nikdy to nevzdávej, ale bohužel, co se týče školy, mi to moc uplatňovat nejde."
+        },
+        {
+          "number": 22,
+          "question": "Jaké máš oblíbené zvíře? Máš nějaké doma?",
+          "answer": "Fandim psům a nesnášim kočky, jsou uplně pitomý. A doma mám králíka Sira Bobíkuse I."
+        },
+        {
+          "number": 23,
+          "question": "Kde rád nakupuješ oblečení?",
+          "answer": "Medvěd je fajn. Měl sem dost rád i Bershku, ale v poslední době tam nepoznám panský oddělení od dámskýho. Bennymu to nevadí, ale já na to moc nejsem."
+        },
+        {
+          "number": 24,
+          "question": "Jsi dochvilnej?",
+          "answer": "Na dochvilnost si potrpim. Když má ale člověk kolem sebe takový lemply jako je Hajzlák a podobný individua, tak se to těžko udržuje. Čekat někde 20 minut, než se uráčej dorazit je o zdraví."
+        },
+        {
+          "number": 25,
+          "question": "Kolikrát jsi člověkem?",
+          "answer": "Měl bych umět anglicky a asi i rusky. To slovo MĚL je dost důležitý, protože realita je bohužel jiná. Na jazyky jsem bídnej. Ale česky mi to mele parádně, jak dá každej za pravdu, asi víc než je zdrávo."
+        },
+        {
+          "number": 26,
+          "question": "V kolik chodíš běžně spát a v kolik vstáváš?",
+          "answer": "Zalomim to tak v 1 a na nohou bejvám už lehce po 8. Když vstávám do háku, tak je to samozřejmě trošku jinak, ale tohle je takovej standart."
+        },
+        {
+          "number": 27,
+          "question": "Co tě dokáže nejvíc vytočit?",
+          "answer": "Když někdo nedojídá nebo se rejpe v jídle. To mě vyloženě sere, jinak asi nic, ale na žrádlo si prostě potrpim."
+        },
+        {
+          "number": 28,
+          "question": "Jakej používáš internetovej prohlížeč?",
+          "answer": "Google chrome. Kdyby to byl fakt google chromý podle Martyho frků, stejně by dal tragickýmu exploreru na prdel."
+        },
+        {
+          "number": 29,
+          "question": "A co máš jako domovskou stránku?",
+          "answer": "Trapně odpovídám www.seznam.cz"
+        },
+        {
+          "number": 30,
+          "question": "Jakej máš mobilní telefon?",
+          "answer": "Sencor. Podle názvu to zní na kvalitu podobnou telefonu se žvejkačkama, ale nějakej shit to zase není."
+        },
+        {
+          "number": 31,
+          "question": "Máš nějaké tetování, případně prozradíš jaké?",
+          "answer": "Nemám žádný, takže asi nic moc neprozradim."
+        },
+        {
+          "number": 32,
+          "question": "Máš nějaký životní vzor?",
+          "answer": "Na tohle moc nehraju. Věřim sám sobě."
+        },
+        {
+          "number": 33,
+          "question": "Blondýny nebo brunety?",
+          "answer": "Určitě brunety. Ono se sice říká, že to není tak úplně pravda s těma blonckama, že jsou blbý, ale mně se to zatím vesměs potvrdilo."
+        },
+        {
+          "number": 34,
+          "question": "Ronaldo nebo Messi?",
+          "answer": "Buzík nebo heterák? Docela jasná odpověď. Messi."
+        },
+        {
+          "number": 35,
+          "question": "Sprcha nebo vana?",
+          "answer": "V létě hlavně sprcha. Jinak vanu si samozřejmě přes rok dávám tak nějak průběžně, ale jedině s pěnou, jinak to nestojí za nic."
+        },
+        {
+          "number": 36,
+          "question": "Zima nebo léto?",
+          "answer": "Smrt zimě, tu bych zrušil. Rozhodně léto."
+        },
+        {
+          "number": 37,
+          "question": "Lyže nebo snowboard?",
+          "answer": "Snowboard skoro ani nevim co je. Lyže alespoň znám, ale to rozhodně neznamená, že jezdim jako Bode Miller. Ale když už bych měl něco říct, tak lyže."
+        },
+        {
+          "number": 38,
+          "question": "Vodka nebo rum?",
+          "answer": "Na panáky radši vodka. Pokud jde o míchání, tak cola s rumem nad vodkou s džusem nebo energeťákem o něco málo vede. Přece jen je to správný výjezďácký pití."
+        },
+        {
+          "number": 39,
+          "question": "Android nebo iOS?",
+          "answer": "Na tyhle kecy o mobilech a operačních systémech odpovídám nerad, ale když to musí bejt, tak Android."
+        },
+        {
+          "number": 40,
+          "question": "Kuřák nebo nekuřák?",
+          "answer": "Nekuřák"
+        },
+        {
+          "number": 41,
+          "question": "Tak to máš skoro za sebou. Snad jen ještě pár slov závěrem…?",
+          "answer": "Trus není jen klub, to je životní styl."
+        }
+      ]
+    },
+    {
+      "id": "a40-1-otazka-pro-jana-maleho",
+      "sourceTitle": "40+1 otázka pro Jana Malého",
+      "sourceUrl": "https://liscitrus.webnode.cz/news/a40-1-otazka-pro-jana-maleho/",
+      "publishedAt": "2014-01-27T17:22",
+      "sourceHtmlSha256": "109339b688de52e07af1d4c752b500de3080237e0f4a53b495c071de825c13e8",
+      "interviewee": {
+        "fullName": "Jan Malý",
+        "aliases": [
+          "Malýny"
+        ],
+        "playerId": 24,
+        "playerName": "Malyny"
+      },
+      "questions": [
+        {
+          "number": 1,
+          "question": "Ahoj. Nejdřív se nám představ (jméno, přezdívka, věk, povolání, pozice v Trusu…)",
+          "answer": "Čau. Jmenuju se Jan Malý nebo jinak Malýny, je mi 22 let a studuju na ČVUT v Praze elektrotechniku. Pozice v týmu je různá podle situace a potřeb. Nejradši mám obranu nebo útok. Jsem takovej univerzál."
+        },
+        {
+          "number": 2,
+          "question": "Jak ses dostal do Trusu? Vzpomeneš si na první zápas?",
+          "answer": "Když vznikal první tým, kluci sháněli ještě někoho, protože jich bylo málo, tak oslovili mě. A taky potřebovali někoho, kdo v brance neuhne míči, když chytá. První zápas si pamatuju. Byl to zápas s DUCK 4077 na Kobylisích, první zápas Trusu historicky. Přesný výsledek nevím, ale vím, že jsme málem překvapili. Nakonec to byla těsná prohra."
+        },
+        {
+          "number": 3,
+          "question": "No bylo to 3:0, ale čekal se větší nářez, to je pravda. Na kterej zápas nejraději vzpomínáš a na který bys naopak nejradši zapomenul?",
+          "answer": "Nejraději vzpomínám na derby s Hell Spartans na Pohořelci. Dal jsem dvě branky, vyhrálo se. Jinak každy zápas za Trus je pro mě čest a na žádný bych nechtěl zapomenout."
+        },
+        {
+          "number": 4,
+          "question": "Tos řek moc hezky. Měl si před Trusem nějaký fotbalový zkušenosti?",
+          "answer": "Asi v 7 letech jsem hrál měsíc za Junior Praha a odehrál 2 školní turnaje. Jednou za ZŠ V Rybníčkách a jednou Za Gymnázium Čakovice."
+        },
+        {
+          "number": 5,
+          "question": "Fandíš kromě Trusu ještě jinýmu fotbalovýmu týmu?",
+          "answer": "Samozřejmě. Mým nejoblíbenějším týmem je Slavie Praha."
+        },
+        {
+          "number": 6,
+          "question": "A nějakýho oblíbenýho hráče máš?",
+          "answer": "Vždycky jsem měl rád Franka Lamparda, z Čechů se mi líbí Petr Čech a Tomáš Rosický."
+        },
+        {
+          "number": 7,
+          "question": "A mimo fotbal, baví tě i jiný sporty (aktivně i pasivně)?",
+          "answer": "Mám sport hodně rád a několika sportům se i aktivně věnuju. Když mám čas, chodím na squash a tenis, někdy na stolní tenis. V zimě mě hodně baví sjezdové lyžování a v létě cyklistika. V televizi mě nejvíce baví tenis a hokej. Ze zimních sportů rád sleduju biatlon a skoky na lyžích. Samozřejmě velké fotbalové zápasy, jako derby, reprezentace, zápasy Slavie, sleduju taky. Jinak většinou se snažím sledovat i závody formule 1."
+        },
+        {
+          "number": 8,
+          "question": "V Trusu se klade velký důraz i na třetí poločas, jaký je tvůj pivní rekord?",
+          "answer": "Myslím, že určitou průpravu na třetí poločas mám. Můj rekord je 15 piv za den a 12 za večer."
+        },
+        {
+          "number": 9,
+          "question": "To není vůbec špatný. A jaký pivo si po zápase nejradši vychutnáš?",
+          "answer": "Poslední dobou mi chutnají piva z malých pivovarů, například Hendrych z Vrchlabí. Z velkých pivovarů nejradši Kozla z Velkých Popovic."
+        },
+        {
+          "number": 10,
+          "question": "Máš i oblíbenou hospodu kam na ty piva z malých pivovaru chodíš?",
+          "answer": "Samozřejmě, že jako snad každý v Trusu mám několik oblíbených hospod. Každá má své kouzlo a mám na ni nějakou vzpomínku. Jednou z nejoblíbenějších je čakovická hospoda Na kolejích, jedna z prvních hospod, kam jsem chodil. Podobně například Bella na Proseku, kde se nejčastěji hasila žízeň ze zápasů Trusu. Blízko bydliště mám oblíbenou Malešickou tvrz a Šatlavu. Z hlediska piva mám ale nejradši Krkonošskou hospůdku v Bubenči."
+        },
+        {
+          "number": 11,
+          "question": "Jakou si rád pustíš hudbu?",
+          "answer": "Nejradši mám rockovou a punk-rockovou hudbu. Z českých kapel poslouchám třeba Tři sestry, Wohnouty, Škwory, ze slovenských Horkýže slíže a Iné kafé, z těch mezinárodních SKA-P, Green Day a Linkin Park."
+        },
+        {
+          "number": 12,
+          "question": "Oblíbený film?",
+          "answer": "Filmy sleduju, ale vysloveně oblíbený nemám."
+        },
+        {
+          "number": 13,
+          "question": "A co seriál?",
+          "answer": "Tady je to podobné jako u filmů. Poslední dobou mě nejvíc zaujalo Suits. House M. D. Je taky super klasika."
+        },
+        {
+          "number": 14,
+          "question": "A jestli máš i oblíbenou knihu?",
+          "answer": "Rád čtu thrillery. Můj oblíbený autor je Dan Brown."
+        },
+        {
+          "number": 15,
+          "question": "A co pc/xbox/ps hru?",
+          "answer": "Mám rád hlavně sportovní a závodní hry. FIFA, NHL, Need for Speed..."
+        },
+        {
+          "number": 16,
+          "question": "Ne/Oblíbené jídlo?",
+          "answer": "Mám rád omáčky. Svíčkovou, rajskou. Moc nemusím brokolici na jakýkoli způsob."
+        },
+        {
+          "number": 17,
+          "question": "Ne/Oblíbené pití (alko i nealko)?",
+          "answer": "Pivo je jasně nejoblíbenějším nápojem, z nealka Kofola nebo malinovka a whiskou taky nepohrdnu. Nemám rád zelenou a takový ty sladký alkoholy."
+        },
+        {
+          "number": 18,
+          "question": "Ne/Oblíbený školní předmět?¨",
+          "answer": "Každej školní předmět je neoblíbenej."
+        },
+        {
+          "number": 19,
+          "question": "Máš nějakou vysněnou ženskou?",
+          "answer": "Mám."
+        },
+        {
+          "number": 20,
+          "question": "A vysněná značka auta?",
+          "answer": "Škoda Octavia."
+        },
+        {
+          "number": 21,
+          "question": "Skromnej kluk, tak to má bejt. Máš nějaké oblíbené přísloví nebo motto?",
+          "answer": "I pád na hubu je pohyb kupředu. To je asi nejvýstižnější."
+        },
+        {
+          "number": 22,
+          "question": "Jaké máš oblíbené zvíře? Máš nějaké doma?",
+          "answer": "Doma žádný zvíře nemám, ale psi jsou super."
+        },
+        {
+          "number": 23,
+          "question": "Kde rád nakupuješ oblečení?",
+          "answer": "Nemám žádný oblíbený obchod s oblečením. Kde najdu to, co chci tam to koupím."
+        },
+        {
+          "number": 24,
+          "question": "To zní rozumně. Jsi dochvilnej?",
+          "answer": "Myslím, že docela jo. Občas to samozřejmě nevyjde. ;-)"
+        },
+        {
+          "number": 25,
+          "question": "Kolikrát jsi člověkem?",
+          "answer": "Asi dvakrát. Angličtina sice není stoprocentní, ale zase mám základy i němčiny a španělštiny."
+        },
+        {
+          "number": 26,
+          "question": "V kolik chodíš běžně spát a v kolik vstáváš?",
+          "answer": "Chodím spát mezi desátou večer a jednou ráno a probouzím se mezi 8 a 10"
+        },
+        {
+          "number": 27,
+          "question": "Co tě dokáže nejvíc vytočit?",
+          "answer": "Toho by bylo. Sportovní výsledky moje i cizí, škola, práce, debilita druhejch lidí, politika, volení komunistů, ale nejvíc mě sere, když mi něco nejde."
+        },
+        {
+          "number": 28,
+          "question": "Jakej používáš internetovej prohlížeč?",
+          "answer": "Nejčastěji Google Chrome, občas Internet Explorer."
+        },
+        {
+          "number": 29,
+          "question": "A co máš jako domovskou stránku?",
+          "answer": "Centrum.cz"
+        },
+        {
+          "number": 30,
+          "question": "Jakej máš mobilní telefon?",
+          "answer": "Sonny Ericsson Xperia miniPro"
+        },
+        {
+          "number": 31,
+          "question": "Máš nějaké tetování, případně prozradíš jaké?",
+          "answer": "Nemám nic a ani neplánuju."
+        },
+        {
+          "number": 32,
+          "question": "Máš nějaký životní vzor?",
+          "answer": "Mámu a tátu."
+        },
+        {
+          "number": 33,
+          "question": "Blondýny nebo brunety?",
+          "answer": "Většinou barva vlasů nerozhoduje, ale radši brunety."
+        },
+        {
+          "number": 34,
+          "question": "Ronaldo nebo Messi?",
+          "answer": "Nemám rád ani jednoho, ale radši Ronalda."
+        },
+        {
+          "number": 35,
+          "question": "Sprcha nebo vana?",
+          "answer": "Vana."
+        },
+        {
+          "number": 36,
+          "question": "Zima nebo léto?",
+          "answer": "Určitě zima, ale léto je asi druhý nejoblíbenější období v roce."
+        },
+        {
+          "number": 37,
+          "question": "Lyže nebo snowboard?",
+          "answer": "Lyže jsou jasná volba. Na snowboardu jsem nikdy nestál a ani to zkoušet nechci."
+        },
+        {
+          "number": 38,
+          "question": "Vodka nebo rum?",
+          "answer": "Moc nepiju ani jedno. Ale ani jedno mě neurazí."
+        },
+        {
+          "number": 39,
+          "question": "Android nebo iOS?",
+          "answer": "Tak to mi je úplně jedno."
+        },
+        {
+          "number": 40,
+          "question": "Kuřák nebo nekuřák?",
+          "answer": "Nekuřák."
+        },
+        {
+          "number": 41,
+          "question": "A chtěl bys ještě něco vzkázat na závěr?",
+          "answer": "Určitě. Aby fanoušci chodili na zápasy. Má to smysl. Myslím, že jsme dobře doplnili tým, a že výkony budou dobrý. S podporou fanoušků se hraje hned líp. A ještě bych chtěl fanoušky pozvat i na třetí poločasy, kde je taky důležitá jejich podpora."
+        }
+      ]
+    },
+    {
+      "id": "a40-1-otazka-pro-lukase-marana",
+      "sourceTitle": "40+1 otázka pro Lukáše Mařana",
+      "sourceUrl": "https://liscitrus.webnode.cz/news/a40-1-otazka-pro-lukase-marana/",
+      "publishedAt": "2014-01-24T17:41",
+      "sourceHtmlSha256": "fe77698e078958427b8084575ff82ac738e082fe54683910cf1be78271ed1435",
+      "interviewee": {
+        "fullName": "Lukáš Mařan",
+        "aliases": [
+          "Mařka"
+        ],
+        "playerId": null,
+        "playerName": null
+      },
+      "questions": [
+        {
+          "number": 1,
+          "question": "Ahoj. Nejdřív se nám představ (jméno, přezdívka, věk, povolání, pozice v Trusu…)",
+          "answer": "Ahoj. Jmenuji se Lukáš Mařan, ale fanoušci Liščího Trusu mě znají spíš jako Mařku. Je mi 22 let a stále se ještě snažím studovat, při studiu si přivydělávám jako prodavač v antikvariátu. Na dresu mám číslo 17, ale už si vůbec nepamatuju z jakýho důvodu zrovna tohle číslo. Nejčastěji hraju v útoku, ale protože mi to moc nejde tak to poslední dobou chodim kazit i do obrany."
+        },
+        {
+          "number": 2,
+          "question": "Jak ses dostal do Trusu? Vzpomeneš si na první zápas?",
+          "answer": "Jsem jeden ze zakládajících členů. Pamatuju si, jak se na střední škole o přestávkách Trus zakládal, jak jsme vymýšleli název atd. Můj první zápas byl kvůli nemoci až zápas v Čakovicích proti Teamu. Hodně se mi povedl a nastřílel jsem hattrick, ale spíš než nějakou skvělou formou to bylo tím, že soupeř měl v bráně nějakou holku, na kterou se nikomu jinýmu nechtělo střílet."
+        },
+        {
+          "number": 3,
+          "question": "Góly se počítaj! Na kterej zápas nejraději vzpomínáš a na který bys naopak nejradši zapomenul?",
+          "answer": "Rád vzpomínám na první zápas LoP proti Realu Praha. Sice jsme na penalty prohráli, ale na první ligový zápas se nezapomíná. Jinak jsem měl rád zápasy proti Slovan Patriots (R.I.P.) a samozřejmě derby proti Hellům a Elitě ještě za starých časů. Tak nikdy jsem neměl moc rád zápasy proti Letný. Byli to docela debilové. A co se týká zapomínání tak asi nějakej ten výprask od Destiny."
+        },
+        {
+          "number": 4,
+          "question": "Měl si před Trusem nějaký fotbalový zkušenosti?",
+          "answer": "Opravdu hodně málo, že to snad ani nestojí za řeč."
+        },
+        {
+          "number": 5,
+          "question": "Fandíš kromě Trusu ještě jinýmu fotbalovýmu týmu?",
+          "answer": "Jsem velký fanoušek Manchesteru United. GGMU"
+        },
+        {
+          "number": 6,
+          "question": "A nějakýho oblíbenýho hráče máš?",
+          "answer": "Můj útočný vzor vždycky byl Filippo Inzaghi. Jinak mám rád Wayna Rooneyho, Paula Scholese a Ole Gunnara Solskjaera."
+        },
+        {
+          "number": 7,
+          "question": "A mimo fotbal, baví tě i jiný sporty (aktivně i pasivně)?",
+          "answer": "Žádný sport nedělám závodně, ale rekreačně hraju squash, občas basketbal. V létě rád chodím na brusle nebo běhat. A po delší době jsem zase začal navštěvovat posilovnu. V zimě jezdím na snowboardu a poslední dobou jsem odhalil i kouzlo běžek. Pasivně mám rád většinu sportů, rád sleduji hokej, lyžování, atletiku nebo ženský plážový volejbal je skvělý sport."
+        },
+        {
+          "number": 8,
+          "question": "V Trusu se klade velký důraz i na třetí poločas, jaký je tvůj pivní rekord?",
+          "answer": "Na svých třetích poločasech velmi pilně trénuji, ale forma pořád není nejlepší. Můj pivní rekord je již docela vousatý nějaké tři roky zpátky se mi povedlo vypít 13 piv. Poslední dobou se bohužel nemůžu dostat na dvojciferný počet."
+        },
+        {
+          "number": 9,
+          "question": "Tak snad se dostaneš co nevidět zase do formy. S jakym pivem se ti ty rekordy nejlíp trhaj?",
+          "answer": "Nejsem žádný velký gurmán, takže spíš než oblíbené řeknu to, co piju nejčastěji a to je poslední dobou Gambrinus jedenáctka. Ještě mi docela chutná Černá hora nebo klasika, Prazdroj."
+        },
+        {
+          "number": 10,
+          "question": "Máš i oblíbenou hospodu?",
+          "answer": "Tak trávím v hospodách určitou část svého života, takže je jasný, že mi jich pár přirostlo k srdci. V Praze jsou to Bella na Střížkově, což je kultovní hospoda Liščího Trusu, Hokejka na Čerňáku. V Plzni samozřejmě Kačaba, dále Sally Brown nebo Jameson."
+        },
+        {
+          "number": 11,
+          "question": "Jakou si rád pustíš hudbu?",
+          "answer": "Poslouchám převážně hip hop. Mám rád věci od Snowgoons, Sicknature, Sean Strange, AOTP, Jedi Mind Tricks, Atmosphere, Beastie Boys, RA the Rugged Man, Gavlyn, Swollen Members, Madchild, Dilated Peoples nebo Guiltyho Simpsona. Když nemám chuť na hip hop, poslouchám „staré vykopávky“, jako Beatles, Edith Piaf nebo Johnny Cash. Určitě jsem ale na spoustu věcí zapomněl. Co se týká české hudby, poslouchám jí velmi okrajově, takže ani nemám kromě Prago Union nějaké oblíbence."
+        },
+        {
+          "number": 12,
+          "question": "Vyčerpávající odpověď. Co oblíbený film?",
+          "answer": "Z oblíbených filmů musím jmenovat Mlčení jehňátek, Amélie z Montmartru, Počátek, Lola beží o život, Mrtvá nevěsta, Někdo to rád horké. Jinak mám rád staré sci-fi takže stará Planeta opic, Vetřelec nebo Star Wars."
+        },
+        {
+          "number": 13,
+          "question": "A co seriály?",
+          "answer": "Napadá mě Dead like Me, True Blood, TBBT, Scrubs a The Newsroom."
+        },
+        {
+          "number": 14,
+          "question": "Vzhledem k tvý brigádě máš určitě i oblíbenou knihu…",
+          "answer": "Tak samozřejmě jako pracovník antikvariátu dost čtu. Mám rád Zabijáka od Emila Zoly, Katyně od Pavla Kohouta, Cizinec od Camuse, Hlava XXII od Hellera nebo skoro všechno od George Orwella."
+        },
+        {
+          "number": 15,
+          "question": "A co pc/xbox/ps hru?",
+          "answer": "Mám jenom PC a rád si zahraju FIFU, NHL, Football Managera nebo třeba starou dobrou Mafii."
+        },
+        {
+          "number": 16,
+          "question": "Ne/Oblíbené jídlo?",
+          "answer": "Poslední dobou zjišťuju, že dobré jídlo nemusí za každou cenu obsahovat maso. Takže nějaký těstoviny, dýňový rizoto, ale nějaký dobře udělaný steak s gratinovanými brambory je prostě úžasný. Z ovoce mám rád ananas a pomeranč. Od mala mám obrovskou nenávist proti všem druhům hub, takže rozhodně houby. Nejsem fanoušek ani ořechů a rozinek."
+        },
+        {
+          "number": 17,
+          "question": "Ne/Oblíbené pití (alko i nealko)?",
+          "answer": "Z nealkoholických nápojů mám rád Kofolu. V alku jednoznačně vítězí pivo. Z neoblíbených musím uvést Tonic a z alka asi všechno co má víc než 20%. Už i to víno jsem schopnej pít."
+        },
+        {
+          "number": 18,
+          "question": "Ne/oblíbený školní předmět?",
+          "answer": "Ve škole jsem vždycky trpěl na hudebce, ať to bylo na základce nebo na střední. Jinak latina, deskriptiva. Na vejšce mě sere asi úplně všechno."
+        },
+        {
+          "number": 19,
+          "question": "Máš nějakou vysněnou ženskou?",
+          "answer": "Tak kdo nemá. Jednoznačně Audrey Tautou, Colleen Haskell, Mena Suvari, Alize Cornet a Kajsa Bergqvist. Z těch, kterým to dneska už tolik nesluší, ale v době největší krásy jsem velmi obdivoval Jodie Foster nebo ještě hlouběji do minulosti Audrey Hepburn."
+        },
+        {
+          "number": 20,
+          "question": "A vysněná značka auta?",
+          "answer": "Auta mi nikdy moc neříkaly a moc se v nich nevyznám. Takže trapně řeknu, že by mi bohatě stačila Škoda Superb."
+        },
+        {
+          "number": 21,
+          "question": "Máš nějaké oblíbené přísloví nebo motto?",
+          "answer": "Jak mám na jednom svém tričku Impossible is nothing."
+        },
+        {
+          "number": 22,
+          "question": "Tak pozor, nás sponzoruje Nike, takže radši změníme téma. Jaké máš oblíbené zvíře? Máš nějaké doma?",
+          "answer": "Zvíře teď nemám, dřív jsem měl křečka. Když jsem byl malý, tak jsem miloval nosorožce."
+        },
+        {
+          "number": 23,
+          "question": "Kde rád nakupuješ oblečení?",
+          "answer": "Co se týká, bot mám rád Asics Gel Lyte škoda, že už se do Čech nedováží. Kopačky preferuju Nike. Ostatní oblečení už moc vyhraněné nemám, asi kromě triček, ty většinou kupuju od kapel nebo týmů, kterým fandím."
+        },
+        {
+          "number": 24,
+          "question": "Jsi dochvilnej?",
+          "answer": "Jak říkal Sir Alex Ferguson dochvilnost je známka disciplíny, a pokud jí nemáte, nemůžete uspět. Takže si už na to dávám větší pozor, ale pořád bych se neoznačil za dochvilného."
+        },
+        {
+          "number": 25,
+          "question": "Kolikrát jsi člověkem?",
+          "answer": "Bohužel mockrát ne. Umím akorát špatně anglicky a tragicky rusky. Ve francouzštině umím jenom sortie a německy Hande hoch!."
+        },
+        {
+          "number": 26,
+          "question": "V kolik chodíš běžně spát a v kolik vstáváš?",
+          "answer": "Většinou mi to vychází, že jdu spát kolem půlnoci a ráno se snažím nejpozději do půl deváté vstát."
+        },
+        {
+          "number": 27,
+          "question": "Co tě dokáže nejvíc vytočit?",
+          "answer": "Jsem klidnej člověk. Vytočím se jenom, když mi to nejde na hřišti."
+        },
+        {
+          "number": 28,
+          "question": "Jakej používáš internetovej prohlížeč?",
+          "answer": "Google Chrome"
+        },
+        {
+          "number": 29,
+          "question": "A co máš jako domovskou stránku?",
+          "answer": "Jsem oldschooler, takže Seznam.cz."
+        },
+        {
+          "number": 30,
+          "question": "Jakej máš mobilní telefon?",
+          "answer": "Samsung Galaxy S Duos"
+        },
+        {
+          "number": 31,
+          "question": "Máš nějaké tetování, případně prozradíš jaké?",
+          "answer": "Nemám nic, ale vypadá to, že ho možná i budu mít."
+        },
+        {
+          "number": 32,
+          "question": "Máš nějaký životní vzor?",
+          "answer": "Obdivuju Sira Alexe Fergusona. Je to pro mě příklad tvrdé práce, loajality a dalších vlastností, které cenim."
+        },
+        {
+          "number": 33,
+          "question": "Blondýny nebo brunety?",
+          "answer": "Dřív vyhrávaly tmavovlasé dívky, ale poslední dobou spíš blondýnky."
+        },
+        {
+          "number": 34,
+          "question": "Ronaldo nebo Messi?",
+          "answer": "Ani jeden. Španělsko je pro simulanty. Anglie rulez"
+        },
+        {
+          "number": 35,
+          "question": "Sprcha nebo vana?",
+          "answer": "Je mi to jedno."
+        },
+        {
+          "number": 36,
+          "question": "Zima nebo léto?",
+          "answer": "Spíš léto"
+        },
+        {
+          "number": 37,
+          "question": "Lyže nebo snowboard?",
+          "answer": "Snowboard"
+        },
+        {
+          "number": 38,
+          "question": "Vodka nebo rum?",
+          "answer": "Ani jedno, ale když už, tak rum."
+        },
+        {
+          "number": 39,
+          "question": "Android nebo iOS?",
+          "answer": "Android"
+        },
+        {
+          "number": 40,
+          "question": "Kuřák nebo nekuřák?",
+          "answer": "Bohužel kuřák a po marných pokusech přestat ještě silnější než kdy dřív."
+        },
+        {
+          "number": 41,
+          "question": "A chtěl bys ještě něco vzkázat na závěr?",
+          "answer": "Fanděte Trusu, choďte na zápasy na všechny tři poločasy, buďte Ultrus. Buďte real. A nezapomeňte, že fotbal je jenom záminka. Liščí Trus Against Football!"
+        }
+      ]
+    },
+    {
+      "id": "a40-1-otazka-pro-karla-dvoraka",
+      "sourceTitle": "40+1 otázka pro Karla Dvořáka",
+      "sourceUrl": "https://liscitrus.webnode.cz/news/a40-1-otazka-pro-karla-dvoraka/",
+      "publishedAt": "2014-01-20T17:11",
+      "sourceHtmlSha256": "d5c754d4fa1f956d6d89cb5f6f29c09e9ff8daf961636e962245a03c4be94592",
+      "interviewee": {
+        "fullName": "Karel Dvořák",
+        "aliases": [
+          "Karlos"
+        ],
+        "playerId": 16,
+        "playerName": "Karloss"
+      },
+      "questions": [
+        {
+          "number": 1,
+          "question": "Ahoj. Nejdřív se nám představ (jméno, přezdívka, věk, povolání, pozice v Trusu…)",
+          "answer": "Jmenuji si Karel Dvořák a je mi 21let. Říkají mi Karlos. Pracuji jako prodavač fotografické techniky a příslušenství. V Trusu většinou hraji jako útočník."
+        },
+        {
+          "number": 2,
+          "question": "Jak ses dostal do Trusu? Vzpomeneš si na první zápas?",
+          "answer": "No už ani přesně nevím. V předchozím týmu Hell Spartans si přišel Jumbo jako nepotřebný a měl touhu změnit dres. Přišlo nám tam dost nových kluků, které jsem pořádně neznal a neměl si s nimi tolik co říci. Tak jsem se rozhodl, že s Jumbem půjdu do Trusu. Zástupce Lišáků souhlasil a bylo hotovo. První zápas za Trus byl právě proti bývalému týmu Hell Spartans."
+        },
+        {
+          "number": 3,
+          "question": "Na kterej zápas nejraději vzpomínáš a na který bys naopak nejradši zapomenul?",
+          "answer": "Člověk vždycky rád vzpomíná na zápasy vítězný nebo na ty, kde dal nějaký hezký gól. Asi stojí za zmínku právě jen ten první zápas za Trus, který jsme vyhráli. Já měl nějaké asistence, Jumbo dával snad i dva góly. No paráda!\nNerad vzpomínám na zápasy proti soupeřům, který byli vyslověně kopyta a proti kterým jsme prohráli uplně zbytečnými a náhodnými góly. A těch bylo více než dost."
+        },
+        {
+          "number": 4,
+          "question": "Měl si před Trusem nějaký fotbalový zkušenosti?",
+          "answer": "Začínal jsem na Meteoru Praha VIII, Admira Praha, SK Ďáblice, SK Třeboradice, TJ Březiněves a pokud se tam počítá i LoP, tak zmiňovaní Hell Spartans."
+        },
+        {
+          "number": 5,
+          "question": "To je slušná kariéra. Fandíš kromě Trusu ještě jinýmu fotbalovýmu týmu?",
+          "answer": "Ano, Spartě. Ze zahraničních klubů je mi sympatický Liverpool."
+        },
+        {
+          "number": 6,
+          "question": "A nějakýho oblíbeného hráče máš?",
+          "answer": "Dříve to byl Míra Matušovič. V posledních letech jsem měl rád třeba Manuela Pamiće. Teď se mi líbí Lukáš Vácha. Ze zahraničních fotbalistů asi nemám nějakého oblíbence."
+        },
+        {
+          "number": 7,
+          "question": "A mimo fotbal, baví tě i jiný sporty (aktivně i pasivně)?",
+          "answer": "Teď chodim pár měsiců cvičit, takže asi to. A někdy si jdu zaběhat ..."
+        },
+        {
+          "number": 8,
+          "question": "V Trusu se klade velký důraz i na třetí poločas, jaký je tvůj pivní rekord?",
+          "answer": "Nejvíce jsem vypil po závěrečných zkouškách – 8."
+        },
+        {
+          "number": 9,
+          "question": "A jaký pivo si po zápase nejradši vychutnáš?",
+          "answer": "Pivo moc nemusim. Nemám tedy žádné oblíbené."
+        },
+        {
+          "number": 10,
+          "question": "Na Trusáka zajímavá odpověď. Máš i přesto nějakou oblíbenou hospodu?",
+          "answer": "Pohodová hospoda je Bella na Střížkově."
+        },
+        {
+          "number": 11,
+          "question": "Jakou si rád pustíš hudbu?",
+          "answer": "Mám rád písničky z 80. let. Český i zahraniční. Ale poslechnu si i moderní hudbu."
+        },
+        {
+          "number": 12,
+          "question": "Oblíbený film?",
+          "answer": "Rád se dívám na starší český filmy typu – Na samotě u lesa, Marečku podejte mi pero atd.\nZe zahraničních třeba Dannyho Parťaci. Z kreslených Toy Story."
+        },
+        {
+          "number": 13,
+          "question": "A co seriály?",
+          "answer": "Jmenuju se Earl, Krok za Krokem, Přátelé, Simpsonovi, South Park"
+        },
+        {
+          "number": 14,
+          "question": "A jestli máš i oblíbenou knihu?",
+          "answer": "… ?"
+        },
+        {
+          "number": 15,
+          "question": "Hmm… tak co nějakou pc/xbox/ps hru?",
+          "answer": "Fifa"
+        },
+        {
+          "number": 16,
+          "question": "Ne/Oblíbené jídlo?",
+          "answer": "Neodmítnu sýrovou pizzu."
+        },
+        {
+          "number": 17,
+          "question": "Ne/Oblíbené pití (alko i nealko)?",
+          "answer": "Mám rád džusy."
+        },
+        {
+          "number": 18,
+          "question": "Ne/Oblíbený školní předmět?",
+          "answer": "Tělák nebo dějepis a neoblíbená matika"
+        },
+        {
+          "number": 19,
+          "question": "Máš nějakou vysněnou ženskou?",
+          "answer": "Tu už mám ?! :-D"
+        },
+        {
+          "number": 20,
+          "question": "Good for you. A vysněná značka auta?",
+          "answer": "BMW"
+        },
+        {
+          "number": 21,
+          "question": "Máš nějaké oblíbené přísloví nebo motto?",
+          "answer": "To asi nemám."
+        },
+        {
+          "number": 22,
+          "question": "Jaké máš oblíbené zvíře? Máš nějaké doma?",
+          "answer": "Vždycky jsme měli doma kočku, než se narodili sourozenci. Jenže na kočky má ségra alergii. Máma má zase na psy. Ale máme doma teď dva ošklivý naháče, sklípkana a krysu."
+        },
+        {
+          "number": 23,
+          "question": "Kde rád nakupuješ oblečení?",
+          "answer": "Nevim. To je různý."
+        },
+        {
+          "number": 24,
+          "question": "Jsi dochvilnej?",
+          "answer": "Všude chodim včas! Vždycky jsem všude až moc brzo. Na rozdíl od ostatních hráčů Trusu :-)"
+        },
+        {
+          "number": 25,
+          "question": "Kolikrát jsi člověkem?",
+          "answer": "Jednou … jestli vůbec."
+        },
+        {
+          "number": 26,
+          "question": "V kolik chodíš běžně spát a v kolik vstáváš?",
+          "answer": "Kolem půlnoci a vstávám v sedm. Pak jdu do fitka a pak do háku."
+        },
+        {
+          "number": 27,
+          "question": "Co tě dokáže nejvíc vytočit?",
+          "answer": "Nevim."
+        },
+        {
+          "number": 28,
+          "question": "Mně třeba takováhle odpověď. Jakej používáš internetovej prohlížeč?",
+          "answer": "Google Chrome"
+        },
+        {
+          "number": 29,
+          "question": "A co máš jako domovskou stránku?",
+          "answer": "Seznam.cz"
+        },
+        {
+          "number": 30,
+          "question": "Jakej máš mobilní telefon?",
+          "answer": "HTC Evo 3D"
+        },
+        {
+          "number": 31,
+          "question": "Máš nějaké tetování, případně prozradíš jaké?",
+          "answer": "Mám na koze. (Pražský Hrad a Spartu). Za pár dní to bude pokračovat na rameno a na ruku."
+        },
+        {
+          "number": 32,
+          "question": "Máš nějaký životní vzor?",
+          "answer": "Nemám"
+        },
+        {
+          "number": 33,
+          "question": "Blondýny nebo brunety?",
+          "answer": "To je různý."
+        },
+        {
+          "number": 34,
+          "question": "Ronaldo nebo Messi?",
+          "answer": "Ronaldo"
+        },
+        {
+          "number": 35,
+          "question": "Sprcha nebo vana?",
+          "answer": "Sprcha"
+        },
+        {
+          "number": 36,
+          "question": "Zima nebo léto?",
+          "answer": "Léto"
+        },
+        {
+          "number": 37,
+          "question": "Lyže nebo snowboard?",
+          "answer": "Ani na jednom jsem nikdy nestál."
+        },
+        {
+          "number": 38,
+          "question": "Vodka nebo rum?",
+          "answer": "Rum"
+        },
+        {
+          "number": 39,
+          "question": "Android nebo iOS?",
+          "answer": "Android"
+        },
+        {
+          "number": 40,
+          "question": "Kuřák nebo nekuřák?",
+          "answer": "Nekuřák"
+        },
+        {
+          "number": 41,
+          "question": "Výborně, tak to bude všechno. Moc ses nám teda nerozpovídal. Snad sis to šetřil na závěr. Teď máš možnost vzkázat cokoliv komukoliv.",
+          "answer": "Fanděte a choďte podporovat TruSS. Stojí to za to!"
+        }
+      ]
+    },
+    {
+      "id": "a40-1-otazka-pro-petra-benese",
+      "sourceTitle": "40+1 otázka pro Petra Beneše",
+      "sourceUrl": "https://liscitrus.webnode.cz/news/a40-1-otazka-pro-petra-benese/",
+      "publishedAt": "2014-01-19T17:03",
+      "sourceHtmlSha256": "297b742312aa9dfa79beec5fabb8c6a43d57e8532592ada7ff16811962c15931",
+      "interviewee": {
+        "fullName": "Petr Beneš",
+        "aliases": [
+          "Benny",
+          "BENITO"
+        ],
+        "playerId": 2,
+        "playerName": "Benny"
+      },
+      "questions": [
+        {
+          "number": 1,
+          "question": "Ahoj. Nejdřív se nám představ (jméno, přezdívka, věk, povolání, pozice v Trusu…)",
+          "answer": "Zdravim všechny trusáky!! Jmenuju se Petr Beneš aka Benny. Na dresu mám teď BENITO a číslo 7. Je mi za pár dní 22 a sem studentem ČZU. V Trusu si na nějaký posty moc nehrajem, ale většinou hraju spíš zezadu, protože jinak tam nikdy nikdo není. Plus sem teda něco jako manažer nebo ja nevim co, vedoucí mužstva."
+        },
+        {
+          "number": 2,
+          "question": "Jak ses dostal do Trusu? Vzpomeneš si na první zápas?",
+          "answer": "Tak v Trusu jsem od samýho začátku, jelikož sem ho s Danem Králem spoluzakládal. Takže můj první zápas je i první zápas Trusu vůbec – tedy přátelák s Duckama."
+        },
+        {
+          "number": 3,
+          "question": "Na kterej zápas nejraději vzpomínáš a na který bys naopak nejradši zapomenul?",
+          "answer": "Mám celkem blbou pamět, ale nejvíc sou určitě derby s Hellama. Rád vzpomínám na to hned po přestupu Jumba a Karlose. Když Jumbo otevřel skóre, měl sem snad větší radost, než kdybych se trefil sám. No a nejradši bych zapomněl na všechny ty prohraný derby. Nejvíc asi bolí to z finále poháru. Byli sme tak blízko a pak nám Hellové, co se do finále prokontumovali, dali desítku. No hrůza."
+        },
+        {
+          "number": 4,
+          "question": "Měl si před Trusem nějaký fotbalový zkušenosti?",
+          "answer": "Ale jo. Hrál jsem za Březiněves, Ďáblice, Viktorku 8 nebo Třeboradice. Nikde sem ale díru do světa neudělal. Většinou sem vysedával na lavičce."
+        },
+        {
+          "number": 5,
+          "question": "Fandíš kromě Trusu ještě jinýmu fotbalovýmu týmu?",
+          "answer": "No jasně! Jsem aktivním fanouškem Sparty. Permici mám asi desátou sezónu, poslední dobou dávám i dost výjezdů včetně zahraničí. Sparta je můj život. Jinak oblíbenejch týmů v zahraničí mám víc, ale sleduju akorát v Anglii Arsenal. Snad ten titul letos daj."
+        },
+        {
+          "number": 6,
+          "question": "A nějakýho oblíbeného hráče máš?",
+          "answer": "To se mi dost mění. Mám rád Rosickýho a z Arsenalu ještě Cazorlu, Wilshiera nebo Ozila. Teď ve Spartě fandim Kadeřábkovi. Pak fandim Vaškovi Kadlecovi, měl jsem rád Řepku. Di Canio taky nebyl špatnej :P. Ale můj vzor i mimo fotbal je David Beckham. To je pán!"
+        },
+        {
+          "number": 7,
+          "question": "A mimo fotbal, baví tě i jiný sporty (aktivně i pasivně)?",
+          "answer": "Chodim do posilovny a dělám kickbox. Jinak sem ale na sporty celkově dost levej. Ani ten fotbal mi nikdy nešel, ale hrál sem ho tak dlouho až sem se ho aspoň trochu naučil. V televizi se rád podívám na tenis a pak skoro na všechno, když je tam česká účast a o něco jde (mistrovství, olympiáda). Ať už je to hokej, lyže, atletika…"
+        },
+        {
+          "number": 8,
+          "question": "V Trusu se klade velký důraz i na třetí poločas, jaký je tvůj pivní rekord?",
+          "answer": "Tak v tomhle žádnej extra rekordman nejsem. Ale zase to vynahrazuju účastí. Jenom opravdu výjimečně pozápasovou hospodu vynechám. Ale abych odpověděl – nejvíc jsem dal asi 9 plus ňáký panáky samozřejmě."
+        },
+        {
+          "number": 9,
+          "question": "To na Trusáka není žádná sláva. A jaký pivo si po zápase nejradši vychutnáš?",
+          "answer": "Mám rád jedenáctky – Svijany nebo Kozla. Hodně taky záleží kde. Jinak vždycky rád zkusim nějaký nový z malýho pivovaru nebo nějakej speciál."
+        },
+        {
+          "number": 10,
+          "question": "Máš i oblíbenou hospodu?",
+          "answer": "Tak tady řeknu asi Bellu na Střížkově. Je to tam sice dražší, ale je tam fajn a chodim tam už celkem dlouho a i s Trusem tam často skončíme."
+        },
+        {
+          "number": 11,
+          "question": "Jakou si rád pustíš hudbu?",
+          "answer": "No poslouchám toho víc. Rock (Green Day, Linkin Park, Kaiser Chiefs, Billy Tallent, 30s To Mars ale i Kabáty, Landu…), Pop (Madonna, Timberlake, Rihanna…), Taneční hudbu (teď třeba Calvina Harrise) nebo českej i zahraniční Rap…"
+        },
+        {
+          "number": 12,
+          "question": "Oblíbený film?",
+          "answer": "Mám rád filmy od Davida Finchera jako Sedm, nebo od Tarantina jako Pulp Fiction nebo Sin City. Plus ještě zmíním 300 (Bitva u Thermopyl) a filmy s Rockym. Ale mám rád i českou klasiku jako Vesničko má středisková, Homolkovi, Jáchyme hoď ho do stroje a podobně."
+        },
+        {
+          "number": 13,
+          "question": "A co seriál?",
+          "answer": "Na seriály sem celkem magor. Kromě úplnejch klasik jako Simpsonovi, South Park, Himym nebo BigBang zkusim doporučit několik dalších, víc nebo míň známejch: IT Crowd, How Not To Live Your Life, Sherlock, Homeland, Band of Brothers, Californication, Cougar Town, Community, Dexter, Dr.House, Hannibal, Ugly Americans, My name is Earl, Lost, Misfits, Suits…to je tak co mě teď napadá. A teď jsem zvědavej na Intelligence. Ale celkově nejvíc top jsou Přátelé!"
+        },
+        {
+          "number": 14,
+          "question": "A jestli máš i oblíbenou knihu?",
+          "answer": "No z toho kolik sem vypsal seriálů, se dá vytušit, že toho moc nenačtu. Ani ten Maxim už si nekupuju tolik jako dřív. Rád mám Lovce od Williama Luthera Pierce."
+        },
+        {
+          "number": 15,
+          "question": "A co pc/xbox/ps hru?",
+          "answer": "Na tohle moc nejsem. Ale rád si zahraju FIFU nebo PES. Taky sem rád hrál GTA Vice City a NFS Underground II a Mafii, ale poslední dobou hraju akorat tu fifu občas u kámošů. Doma nehraju nic."
+        },
+        {
+          "number": 16,
+          "question": "Ne/Oblíbené jídlo?",
+          "answer": "Mám rád maso, to je základ. Pořádnej stejk nebo i ryby mám rád. Těstoviny nebo i český klasicky jako svíčkovou nebo vepřo-knedlo-zelo… No jednodušší bude, co rád nemám – žemlovku."
+        },
+        {
+          "number": 17,
+          "question": "Ne/Oblíbené pití (alko i nealko)?",
+          "answer": "Nejvíc piju vodu. Když maj někde domácí citronádu nebo ledovej čaj, tak slavim. Z alka řeknu asi klasiku rum s kolou…na tom se nedá nic zkazit. A co nemám rád? Jablečnej džus a asi whiskey. Na to co to stojí je to celkem hnus."
+        },
+        {
+          "number": 18,
+          "question": "Ne/Oblíbený školní předmět?",
+          "answer": "Největší nenávist sem dával vždycky chemii. Tak debilní předmět a eště ho čirou náhodou vždycky učí ňáká kráva… Rád sem měl samozřejmě tělák a celkem i zeměpis nebo dějepis, ale to neznamená, že by mi tyhle předměty šly. Teď na vejšce je to všechno na hovno. Jediný EMM mi přišlo, že by mohlo k něčemu bejt a i se to dalo naučit, ale taky žádná sláva. Jo a ájinu sem měl vždycky celkem rád."
+        },
+        {
+          "number": 19,
+          "question": "Máš nějakou vysněnou ženskou?",
+          "answer": "No to se mi taky dost mění. Teď bych řek asi Terezku Chlebovskou"
+        },
+        {
+          "number": 20,
+          "question": "A vysněná značka auta?",
+          "answer": "Teď jezdim Subaru Forestrem a sem spokojenej. Ale vysněnej je Aston Martin…"
+        },
+        {
+          "number": 21,
+          "question": "Máš nějaké oblíbené přísloví nebo motto?",
+          "answer": "Nevim, jestli je oblíbený, ale dost se řídim – Co nemusíš dělat dnes, odlož na zítra."
+        },
+        {
+          "number": 22,
+          "question": "Jaké máš oblíbené zvíře? Máš nějaké doma?",
+          "answer": "Určitě mám rád psy, mám doma zlatýho retrívra Bena. Jinak sou mi sympatický medvědi a lvi."
+        },
+        {
+          "number": 23,
+          "question": "Kde rád nakupuješ oblečení?",
+          "answer": "Sportovní mám nejradši Nike. Pro klasický oblečení chodim hlavně do Pull&Bear nebo Bershky a podobnejch krámů."
+        },
+        {
+          "number": 24,
+          "question": "Jsi dochvilnej?",
+          "answer": "No…snažim se. Ale taky rád spim. Ale když nemám bejt někde ráno, tak si myslim, že to celkem de. Ale i v tom vstávání se lepšim."
+        },
+        {
+          "number": 25,
+          "question": "Kolikrát jsi člověkem?",
+          "answer": "No mimo češtinu umim obstojně anglicky a učil sem se pár let italsky, ale to žádná sláva není. A něco rozumim i slovensky, ale to je u mě parodie na jazyk."
+        },
+        {
+          "number": 26,
+          "question": "V kolik chodíš běžně spát a v kolik vstáváš?",
+          "answer": "Teď se snažim chodit nejpozději o půlnoci a vstávám mezi osmou, devátou, když nemusim do školy."
+        },
+        {
+          "number": 27,
+          "question": "Co tě dokáže nejvíc vytočit?",
+          "answer": "Sem docela flegmatik, takže asi nic moc. Leda když Trus nebo Sparta nějak debilně prohrajou."
+        },
+        {
+          "number": 28,
+          "question": "Jakej používáš internetovej prohlížeč?",
+          "answer": "Firefox"
+        },
+        {
+          "number": 29,
+          "question": "A co máš jako domovskou stránku?",
+          "answer": "Snad od počátku věků mám jako domovskou stránku Seznam.cz, už sem na to zvyklej."
+        },
+        {
+          "number": 30,
+          "question": "Jakej máš mobilní telefon?",
+          "answer": "Telefony mě bavěj. Hned co si nějakej koupim, tak už vymejšlim jakej bude další. Baví mě si o nich číst. Aktuálně mám Samsung Galaxy S2."
+        },
+        {
+          "number": 31,
+          "question": "Máš nějaké tetování, případně prozradíš jaké?",
+          "answer": "Zatím nemám, ale plánuju s motivem Sparty a už to nabírá celkem reálný obrysy. Možná, že bude ještě před startem ligy. No a časem plánuju i tetování Liščího Trusu. To sem klukům v kabině slíbil, když spolu vydržíme nějakou tu sezónu. (A už to nějaká ta sezóna bude, co jsem to slíbil.)"
+        },
+        {
+          "number": 32,
+          "question": "Máš nějaký životní vzor?",
+          "answer": "No jak už sem řikal u těch fotbalistů. Uctívám Beckhama. Jeho život bych z fleku bral. Ale vyloženě životní vzor to asi nebude. Ten asi nemám. Na každym se daj najít nějaký ty mouchy."
+        },
+        {
+          "number": 33,
+          "question": "Blondýny nebo brunety?",
+          "answer": "To je asi poslední co u vzhledu holek řešim. Ale jestli musim vybrat, tak brunety."
+        },
+        {
+          "number": 34,
+          "question": "Ronaldo nebo Messi?",
+          "answer": "Ronaldo"
+        },
+        {
+          "number": 35,
+          "question": "Sprcha nebo vana?",
+          "answer": "Sprcha"
+        },
+        {
+          "number": 36,
+          "question": "Zima nebo Léto?",
+          "answer": "Stoprocentně léto."
+        },
+        {
+          "number": 37,
+          "question": "Lyže nebo Snowboard?",
+          "answer": "Na lyžích umim, na snowboardu sem se chvíli učil a taky to není špatný. Ale smrt zimě."
+        },
+        {
+          "number": 38,
+          "question": "Vodka nebo rum?",
+          "answer": "Jasnej rum!"
+        },
+        {
+          "number": 39,
+          "question": "Android nebo iOS?",
+          "answer": "Mám android, ale co je lepší nevim."
+        },
+        {
+          "number": 40,
+          "question": "Kuřák nebo nekuřák?",
+          "answer": "Nekuřák. Doutníček leda…"
+        },
+        {
+          "number": 41,
+          "question": "Tak to bude všechno. Děkujeme za vyčerpávající odpovědi. Chtěl bys ještě něco vzkázat na závěr?",
+          "answer": "Věděl jsem, že tahle „otázka“ na závěr přijde (možná proto, že sem ten dotazník sám připravoval :D), ale stejně jsem se na ní nedokázal připravit. Ale asi bych teda vzkázal fanouškům: Choďte nás podporovat! Fotbal sice není kdovíjakej, ale před zápasem na pivo, při zápase, kdo bude zrovna střídat, tak s váma taky toho lahváče klidně dá, no a po zápase je hospoda jasná. Takže nudit se nebudete a nám moc pomůžete.\n\nAť žije Trus a smrt hellům!!!"
+        }
+      ]
+    }
+  ]
+}

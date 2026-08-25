@@ -1,0 +1,186 @@
+[
+  {
+    "id": "navigation_main",
+    "title": "Základní navigace",
+    "aliases": ["menu", "spodní lišta", "horní lišta", "přehled", "statistiky", "zvonek", "profil"],
+    "paths": ["Spodní Přehled", "Spodní Pokuty", "Prostřední tlačítko s pivem", "Spodní Statistiky", "Spodní Menu"],
+    "steps": ["Přehled otevře domovskou obrazovku.", "Pokuty otevřou udělování pokut v zápase.", "Tlačítko s pivem otevře zápis piv a panáků.", "Statistiky vysunou nabídku statistických přehledů.", "Menu vysune úplnou nabídku funkcí.", "Ikona účtu vpravo nahoře otevře profilové menu, ikona TrusBota asistenta a zvonek seznam notifikací."],
+    "conditions": ["Šipka zpět se na domovském Přehledu nezobrazuje.", "Některé položky závisejí na právech, spárovaném hráči a dostupných datech."]
+  },
+  {
+    "id": "login_registration",
+    "title": "Přihlášení a registrace",
+    "aliases": ["přihlásit", "registrace", "zapomenuté heslo", "nový účet", "nový tým"],
+    "paths": ["Přihlašovací obrazovka", "Přihlášení → Zaregistruj se", "Přihlášení → Zapomněl jsem heslo"],
+    "steps": ["Přihlášení: vyplňte e-mail a heslo a stiskněte Přihlaš se.", "Obnova hesla: stiskněte Zapomněl jsem heslo a potvrďte e-mail.", "Registrace: zadejte e-mail, heslo a přezdívku, pokračujte výběrem nebo založením týmu a případně doplňte jméno."],
+    "conditions": ["Po prvním přihlášení může aplikace vyžádat dokončení jména nebo týmového zařazení."]
+  },
+  {
+    "id": "home_overview",
+    "title": "Přehled a rychlé akce u zápasu",
+    "aliases": ["domů", "příští zápas", "poslední zápas", "více", "vzájemné zápasy", "h2h", "obnovit přehled"],
+    "paths": ["Spodní Přehled", "Přehled → karta příštího nebo posledního zápasu"],
+    "steps": ["Tažením dolů obnovíte data.", "Klepnutí na název nebo datum ligového zápasu otevře jeho detail.", "Přidat hráče založí předvyplněný interní zápas, nebo upraví účast v již existujícím.", "Přidat góly otevře zápis gólů a asistencí.", "Více nabídne Detail, Přidat piva, Přidat pokuty a Vzájemné zápasy."],
+    "conditions": ["Přidat góly je dostupné jen při spárování ligového a interního zápasu.", "Piva a pokuty mohou být neaktivní, dokud interní zápas neexistuje."]
+  },
+  {
+    "id": "match_add",
+    "title": "Přidání zápasu",
+    "aliases": ["přidat zápas", "nový zápas", "založit zápas", "účast hráčů", "soupeř", "výsledek"],
+    "paths": ["Menu → Přidat zápas", "Menu → Seznam zápasů → +", "Přehled → Přidat hráče"],
+    "steps": ["Zadejte jméno soupeře a datum.", "Nastavte, zda jde o domácí zápas, a případně výsledek.", "Vyberte sezonu.", "V poli Hráči označte účastníky; fanoušci se vybírají samostatně.", "Stiskněte Uložit zápas, nebo Uložit a přidat góly."],
+    "conditions": ["Výsledek může u budoucího zápasu zůstat prázdný.", "Formulář otevřený z Přehledu může mít soupeře, datum a ligové propojení předvyplněné."]
+  },
+  {
+    "id": "match_edit_detail",
+    "title": "Úprava, detail a smazání zápasu",
+    "aliases": ["upravit zápas", "smazat zápas", "detail zápasu", "statistiky zápasu", "záložky zápasu"],
+    "paths": ["Menu → Seznam zápasů → klepnout na zápas", "Program zápasů → klepnout na zápas"],
+    "steps": ["Na záložce Upravit změňte údaje nebo účast a stiskněte Uložit.", "Smazat otevře potvrzovací panel; teprve potvrzení zápas odstraní.", "Detail ukazuje ligová data, Statistiky souhrn piv, pokut, gólů a asistencí a H2H vzájemné zápasy."],
+    "conditions": ["Záložky jsou dynamické a zobrazí se jen tehdy, když pro ně existují interní nebo ligová data."]
+  },
+  {
+    "id": "player_add_edit",
+    "title": "Přidání a úprava hráče nebo fanouška",
+    "aliases": ["přidat hráče", "nový hráč", "upravit hráče", "smazat hráče", "fanoušek", "neaktivní hráč"],
+    "paths": ["Menu → Přidat hráče", "Menu → Seznam hráčů → +", "Seznam hráčů → hráč → tužka"],
+    "steps": ["Vyplňte Přezdívku.", "Volitelně profil spárujte s ligovým hráčem a nastavte datum narození.", "Přepínačem Fanoušek určete typ profilu a přepínačem Aktivní jeho běžnou dostupnost ve výběrech.", "Stiskněte Uložit hráče nebo Uložit.", "Smazat hráče lze v úpravě po potvrzení."],
+    "conditions": ["Neaktivní profil se běžně nenabízí, ale ve vícenásobných výběrech jej lze dodatečně zobrazit."]
+  },
+  {
+    "id": "achievements",
+    "title": "Achievementy",
+    "aliases": ["achievement", "úspěch", "splnění achievementu", "seznam achievementů"],
+    "paths": ["Menu → Seznam achievementů", "Seznam hráčů → hráč → achievement"],
+    "steps": ["Klepnutí na achievement v katalogu otevře jeho popis, podmínky, úspěšnost a držitele.", "Dlaždice v profilu hráče otevře detail jeho splnění.", "U achievementů povolených k ruční změně lze stav po potvrzení přepnout."],
+    "conditions": ["Ruční přepnutí se nezobrazuje u automaticky spravovaných achievementů."]
+  },
+  {
+    "id": "fine_type_add_edit",
+    "title": "Přidání nebo úprava typu pokuty",
+    "aliases": ["nová pokuta", "přidat pokutu do číselníku", "typ pokuty", "částka pokuty", "upravit pokutu", "pouze nové pokuty"],
+    "paths": ["Menu → Přidat/upravit pokutu → +", "Menu → Přidat/upravit pokutu → klepnout na řádek pokuty"],
+    "steps": ["Pro nový typ stiskněte +, zadejte Název pokuty a Výši pokuty v Kč a stiskněte Uložit pokutu.", "Pro úpravu klepněte na existující typ, změňte název nebo částku a stiskněte Uložit.", "Smazat odstraní typ až po potvrzení."],
+    "conditions": ["Přepínač Pouze nové pokuty zapnutý mění jen budoucí udělení; vypnutý může změnu propsat i do historicky udělených pokut."]
+  },
+  {
+    "id": "fine_assign_one",
+    "title": "Přiřazení pokuty jednomu hráči a zápasu",
+    "aliases": ["udělit pokutu", "přiřadit pokutu", "pokuta hráči", "pokuta v zápase", "jeden hráč"],
+    "paths": ["Spodní Pokuty", "Menu → Přidat pokutu v zápase", "Přehled → Více → Přidat pokuty"],
+    "steps": ["Vyberte sezonu a zápas.", "Zvolte režim Jeden hráč.", "Klepněte na řádek hráče.", "Pomocí + nebo − nastavte počet u jednotlivých typů pokut.", "Stiskněte Uložit změny."],
+    "conditions": ["Čip V ZÁPASE nebo OSTATNÍ pouze informuje o účasti; pokutu lze přidat i neúčastníkovi.", "Uložit změny se aktivuje až po změně hodnoty."]
+  },
+  {
+    "id": "fine_assign_many",
+    "title": "Přiřazení stejné pokuty více hráčům",
+    "aliases": ["hromadná pokuta", "více hráčů", "všichni hráči", "hrající", "nehrající"],
+    "paths": ["Spodní Pokuty → Více hráčů", "Menu → Přidat pokutu v zápase → Více hráčů"],
+    "steps": ["Vyberte sezonu a zápas a přepněte na Více hráčů.", "Označte hráče ručně nebo použijte Všichni, Hrající či Nehrající.", "Stiskněte Potvrdit.", "Pomocí + nebo − nastavte společnou změnu u typu pokuty.", "Stiskněte Uložit změny."],
+    "conditions": ["Zrušit výběr odznačí všechny hráče."]
+  },
+  {
+    "id": "drinks",
+    "title": "Přidání piv a panáků",
+    "aliases": ["přidat pivo", "přidat panáka", "tvrdé", "čárkování", "gesta pivo"],
+    "paths": ["Prostřední spodní tlačítko s pivem", "Menu → Přidat pivo v zápase", "Přehled → Více → Přidat piva"],
+    "steps": ["Vyberte sezonu a zápas.", "V seznamu měňte počty tlačítky + a − u hodnot Piva a Tvrdé.", "Pro rychlé zadání zapněte Čárkování, šipkami vyberte hráče, tahem dolů přidejte pivo a tahem doprava panáka; opačné tahy hodnotu odeberou.", "Stiskněte Uložit změny."],
+    "conditions": ["Čárkování podporuje nejvýše 30 piv a 20 panáků na hráče."]
+  },
+  {
+    "id": "goals_assists",
+    "title": "Přidání gólů a asistencí",
+    "aliases": ["přidat gól", "asistence", "střelec", "propsat do pokut"],
+    "paths": ["Přehled → Přidat góly", "Přidat zápas → Uložit a přidat góly"],
+    "steps": ["Na první obrazovce nastavte góly hráčů tlačítky + a −.", "Volbou Propsat do pokut určete, zda se změna promítne i do pokut podle serverových pravidel.", "Stiskněte Pokračuj k asistencím.", "Nastavte asistence a stiskněte Potvrď změny."],
+    "conditions": ["Funkce vyžaduje interní zápas; z Přehledu také spárování s ligovým zápasem.", "Šipka zpět z asistencí vrací na góly."]
+  },
+  {
+    "id": "statistics",
+    "title": "Statistiky",
+    "aliases": ["statistiky piv", "statistiky pokut", "statistiky gólů", "účast", "docházka", "detail piv", "řazení statistik"],
+    "paths": ["Spodní Statistiky → vybrat přehled"],
+    "steps": ["Vyberte statistiku podle hráče nebo zápasu a typ údaje.", "Výběrem sezony omezte období.", "Hledání odešlete tlačítkem hledání na klávesnici; prázdný dotaz filtr zruší.", "Šipka řazení obrátí pořadí.", "Klepnutí na řádek otevře podrobný rozpis ve spodním panelu."],
+    "conditions": ["Horní filtry se při posunu dolů schovají a při návratu nahoru znovu objeví."]
+  },
+  {
+    "id": "league",
+    "title": "Ligový program, tabulka a týmový detail",
+    "aliases": ["program zápasů", "ligová tabulka", "pořadí týmů", "oficiální soutěž", "detail týmu"],
+    "paths": ["Menu → Program zápasů", "Menu → Ligová tabulka"],
+    "steps": ["Klepnutí na ligový zápas otevře jeho detail.", "Klepnutí na tým v tabulce otevře detail týmu.", "Záložky Detail, Program, Výsledky a případně H2H přepínají dostupné informace."],
+    "conditions": ["Řádky zápasů uvnitř týmových záložek mohou být pouze informační a nemusí otevírat další detail."]
+  },
+  {
+    "id": "seasons",
+    "title": "Správa sezon",
+    "aliases": ["přidat sezonu", "upravit sezonu", "smazat sezonu", "nastavení sezon"],
+    "paths": ["Menu → Nastavení sezon", "Nastavení sezon → +", "Nastavení sezon → klepnout na sezonu"],
+    "steps": ["Zadejte název, začátek a konec sezony.", "Stiskněte Uložit sezonu nebo Uložit.", "Smazat odstraní sezonu po potvrzení."],
+    "conditions": ["Sezony určují období používané ve filtrech zápasů a statistik."]
+  },
+  {
+    "id": "steps",
+    "title": "Kroky a týmový žebříček",
+    "aliases": ["kroky", "sdílet kroky", "souhlas kroky", "žebříček kroků"],
+    "paths": ["Menu → Kroky"],
+    "steps": ["Udělit souhlas vyžádá systémové oprávnění a zapne sdílení týmového denního součtu.", "Přepínačem Sdílet moje kroky s týmem lze souhlas odvolat.", "Tažení dolů synchronizuje data.", "Volby Dnes, Do zápasu, Od zápasu a Celkem mění období; rozbalovací řazení a šipka mění pořadí."],
+    "conditions": ["Aplikace sdílí denní součet, nikoli trasu."]
+  },
+  {
+    "id": "notifications",
+    "title": "Notifikace a oznámení",
+    "aliases": ["zvonek", "oznámení", "push", "povolit notifikace", "test notifikace"],
+    "paths": ["Horní zvonek", "Profilové menu → Oznámení"],
+    "steps": ["Zvonek otevře seznam zpráv; Předchozí a Další listují stránkami.", "V nastavení stiskněte Povolit oznámení nebo Znovu ověřit.", "Poslat test odešle zkušební push, pokud existuje token.", "Přepínači vyberte typy událostí a stiskněte Potvrď změny."],
+    "conditions": ["Klepnutí na kartu notifikace je v aktuálním klientském kódu pouze informační."]
+  },
+  {
+    "id": "profile_pairing",
+    "title": "Spárování uživatelského účtu s hráčem",
+    "aliases": ["spárovat hráče", "můj profil", "nastavení uživatele", "propojit účet s hráčem"],
+    "paths": ["Ikona účtu vpravo nahoře → Nastavení uživatele"],
+    "steps": ["V poli Spárování s hráčem vyberte hráče, jehož osobní profil patří účtu.", "Stiskněte Potvrdit změny.", "Po spárování se v profilovém menu zobrazí Můj profil/seznam achievementů."],
+    "conditions": ["Seznam může obsahovat možnost párování odebrat."]
+  },
+  {
+    "id": "user_permissions_account",
+    "title": "Uživatelé, práva, odhlášení a smazání účtu",
+    "aliases": ["správa uživatelů", "admin", "práva", "odhlásit", "smazat účet"],
+    "paths": ["Ikona účtu vpravo nahoře → Správa uživatelů", "Ikona účtu vpravo nahoře → Odhlásit", "Ikona účtu vpravo nahoře → Smazat účet"],
+    "steps": ["Ve Správě uživatelů klepněte na uživatele a změnu práv potvrďte nebo zrušte.", "Odhlásit ukončí relaci.", "Smazat účet otevře potvrzení a po souhlasu účet odstraní a odhlásí."],
+    "conditions": ["Uživatel nemůže změnit práva sám sobě a práva nelze přidělit účtu bez týmové role.", "Správa uživatelů může být dostupná jen správci." ]
+  },
+  {
+    "id": "footbar",
+    "title": "Footbar",
+    "aliases": ["propojit footbar", "aktualizovat footbar", "porovnání statistik footbar"],
+    "paths": ["Ikona účtu vpravo nahoře → Footbar"],
+    "steps": ["Propojit Footbar otevře webové přihlášení a po návratu uloží autorizaci.", "Aktualizovat statistiky spustí synchronizaci týmových aktivit.", "V Porovnání statistik vyberte sezonu a zápas."],
+    "conditions": ["Propojit Footbar se zobrazuje jen u dosud nepropojeného účtu."]
+  },
+  {
+    "id": "trusbot",
+    "title": "Ovládání TrusBota",
+    "aliases": ["zeptat se trusbota", "mikrofon", "diktování", "limit trusbota", "obnovit chat"],
+    "paths": ["Horní ikona TrusBota", "Menu → TrusBot"],
+    "steps": ["Klepnutí na nabídnutou otázku pouze vloží její text do pole.", "Vlastní dotaz může mít nejvýše 1000 znaků.", "Mikrofon spustí nebo zastaví české diktování.", "Odeslat odešle dotaz a přidá odpověď do historie.", "Obnovit znovu načte historii a denní limit; Zkusit znovu opakuje načtení po chybě."],
+    "conditions": ["Odeslání je neaktivní při vyčerpaném limitu, vypnutém přístupu nebo během odesílání.", "Při trvale zamítnutém mikrofonu může Otevřít nastavení přejít do systémového nastavení aplikace."]
+  },
+  {
+    "id": "appearance_info",
+    "title": "Vzhled a informace o aplikaci",
+    "aliases": ["tmavý režim", "světlý režim", "automatický vzhled", "verze aplikace", "informace"],
+    "paths": ["Ikona účtu vpravo nahoře → Vzhled", "Ikona účtu vpravo nahoře → Informace"],
+    "steps": ["Automatický použije režim telefonu, Světlý zapne světlý vzhled a Tmavý tmavý vzhled.", "Informace zobrazí název, verzi a číslo sestavení."],
+    "conditions": ["Vzhled se mění okamžitě bez tlačítka Uložit.", "Obrazovka Informace nemá další akční tlačítko."]
+  },
+  {
+    "id": "generic_controls",
+    "title": "Obecné chování ovládacích prvků",
+    "aliases": ["plus", "tužka", "šipka zpět", "uložit", "potvrdit", "zrušit", "kalendář", "výběr", "tažení dolů", "chyba"],
+    "paths": ["Platí napříč aplikací"],
+    "steps": ["+ obvykle vytvoří novou položku daného typu.", "Tužka otevře úpravu zobrazené položky.", "Řádek s šipkou nebo chevronem obvykle otevře detail.", "Kalendářové pole otevře výběr data.", "Rozbalovací pole otevře seznam nebo spodní panel.", "Uložit, Potvrď změny nebo Potvrdit změny odešle připravené změny.", "Tažení dolů obnoví data tam, kde je podporováno.", "Zkusit znovu opakuje poslední neúspěšné načtení."],
+    "conditions": ["Tlačítko pro uložení bývá neaktivní, dokud se něco nezmění.", "Destruktivní akce se provedou až po potvrzení; Zrušit panel zavře."]
+  }
+]

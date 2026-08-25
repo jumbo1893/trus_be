@@ -46,6 +46,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -71,6 +72,7 @@ class AiReadOnlyToolServiceTest {
     private final PlayerAchievementService playerAchievementService = mock(PlayerAchievementService.class);
     private final StepService stepService = mock(StepService.class);
     private final UserVisitedCountryService userVisitedCountryService = mock(UserVisitedCountryService.class);
+    private final TrusBotPersonFactService personFactService = mock(TrusBotPersonFactService.class);
 
     private AiReadOnlyToolService service;
     private AiToolContext context;
@@ -96,7 +98,8 @@ class AiReadOnlyToolServiceTest {
                 achievementService,
                 playerAchievementService,
                 stepService,
-                userVisitedCountryService
+                userVisitedCountryService,
+                personFactService
         );
 
         appTeam = new AppTeamEntity();
@@ -239,6 +242,59 @@ class AiReadOnlyToolServiceTest {
         assertTrue(definitions.contains("read_achievements"));
         assertTrue(definitions.contains("read_steps"));
         assertTrue(definitions.contains("read_visited_countries"));
+        assertTrue(definitions.contains("read_person_facts"));
+        assertTrue(definitions.contains("search_interviews"));
+    }
+
+    @Test
+    void personFactsDelegateToTeamScopedAggregator() throws Exception {
+        when(personFactService.readRandomFacts("Martin Humpl", context)).thenReturn(Map.of(
+                "status", "FOUND",
+                "person", Map.of("player_id", 27L)
+        ));
+
+        JsonNode result = objectMapper.readTree(service.execute(
+                "read_person_facts",
+                objectMapper.readTree("{\"person\":\"Martin Humpl\"}"),
+                context
+        ));
+
+        assertEquals("FOUND", result.path("status").asText());
+        assertEquals(27L, result.path("person").path("player_id").asLong());
+        verify(personFactService).readRandomFacts("Martin Humpl", context);
+    }
+
+    @Test
+    void interviewSearchDelegatesSpecificAndExpandedTopic() throws Exception {
+        when(personFactService.searchInterviewAnswers(
+                "Jumbo",
+                "názor na zimu",
+                List.of("zima", "léto"),
+                3,
+                context
+        )).thenReturn(Map.of("status", "FOUND", "matches", List.of()));
+
+        JsonNode result = objectMapper.readTree(service.execute(
+                "search_interviews",
+                objectMapper.readTree("""
+                        {
+                          "person": "Jumbo",
+                          "topic": "názor na zimu",
+                          "keywords": ["zima", "léto"],
+                          "limit": 3
+                        }
+                        """),
+                context
+        ));
+
+        assertEquals("FOUND", result.path("status").asText());
+        verify(personFactService).searchInterviewAnswers(
+                "Jumbo",
+                "názor na zimu",
+                List.of("zima", "léto"),
+                3,
+                context
+        );
     }
 
     @Test
@@ -386,6 +442,24 @@ class AiReadOnlyToolServiceTest {
         assertEquals(6, com.jumbo.trus.entity.ai.AiAccessTier.STANDARD.getMaxToolRounds());
         assertEquals(10, com.jumbo.trus.entity.ai.AiAccessTier.PREMIUM.getMaxToolRounds());
         assertEquals(14, com.jumbo.trus.entity.ai.AiAccessTier.ULTRA.getMaxToolRounds());
+    }
+
+    @Test
+    void readsRelevantNavigationInstructionsFromGuide() throws Exception {
+        JsonNode arguments = objectMapper.createObjectNode()
+                .put("query", "přiřadit pokutu hráči a zápasu")
+                .put("limit", 2);
+
+        JsonNode result = objectMapper.readTree(service.execute(
+                "read_app_navigation",
+                arguments,
+                context
+        ));
+
+        assertTrue(result.path("matches").isArray());
+        assertTrue(result.path("matches").toString().contains("fine_assign_one"));
+        assertTrue(service.toolDefinitions().toString().contains("read_app_navigation"));
+        verifyNoInteractions(matchRepository, receivedFineRepository, footballMatchRepository);
     }
 
     private AiFineSummaryProjection projection(

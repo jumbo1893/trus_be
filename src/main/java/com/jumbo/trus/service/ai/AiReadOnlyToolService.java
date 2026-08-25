@@ -49,6 +49,9 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.text.Normalizer;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -79,6 +82,7 @@ public class AiReadOnlyToolService {
     private final PlayerAchievementService playerAchievementService;
     private final StepService stepService;
     private final UserVisitedCountryService userVisitedCountryService;
+    private final TrusBotPersonFactService personFactService;
 
     public ArrayNode toolDefinitions() {
         try {
@@ -103,6 +107,18 @@ public class AiReadOnlyToolService {
                 case "read_steps" -> readSteps(arguments, context);
                 case "read_visited_countries" -> readVisitedCountries(arguments, context);
                 case "read_player_profile" -> readPlayerProfile(arguments, context);
+                case "read_person_facts" -> personFactService.readRandomFacts(
+                        requiredText(arguments, "person"),
+                        context
+                );
+                case "search_interviews" -> personFactService.searchInterviewAnswers(
+                        nullableText(arguments, "person"),
+                        requiredText(arguments, "topic"),
+                        textList(arguments, "keywords", 8),
+                        clamp(arguments.path("limit").asInt(3), 1, 20),
+                        context
+                );
+                case "read_app_navigation" -> readAppNavigation(arguments);
                 default -> Map.of("error", "Neznámý read-only nástroj: " + toolName);
             };
             return serializeAndLimit(result);
@@ -1104,6 +1120,23 @@ public class AiReadOnlyToolService {
         return value;
     }
 
+    private List<String> textList(JsonNode arguments, String field, int maximumSize) {
+        JsonNode value = arguments.path(field);
+        if (!value.isArray()) {
+            return List.of();
+        }
+        List<String> result = new ArrayList<>();
+        for (JsonNode item : value) {
+            if (item.isTextual() && !item.asText().isBlank()) {
+                result.add(item.asText().trim());
+                if (result.size() >= maximumSize) {
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
     private int clamp(int value, int minimum, int maximum) {
         return Math.max(minimum, Math.min(maximum, value));
     }
@@ -1114,6 +1147,66 @@ public class AiReadOnlyToolService {
             return exception.getClass().getSimpleName();
         }
         return message.length() <= 500 ? message : message.substring(0, 500);
+    }
+
+    private Object readAppNavigation(JsonNode arguments) {
+        String query = requiredText(arguments, "query");
+        int limit = clamp(arguments.path("limit").asInt(3), 1, 5);
+        ArrayNode guide;
+        try (InputStream stream = AiReadOnlyToolService.class
+                .getResourceAsStream("/ai/trusbot-navigation-guide.json")) {
+            if (stream == null) {
+                throw new IllegalStateException("Navigační příručka TrusBota nebyla nalezena.");
+            }
+            guide = (ArrayNode) objectMapper.readTree(stream);
+        } catch (IOException exception) {
+            throw new IllegalStateException("Navigační příručku TrusBota nelze načíst.", exception);
+        }
+
+        String normalizedQuery = normalizeNavigationText(query);
+        List<String> tokens = Arrays.stream(normalizedQuery.split("\\s+"))
+                .filter(token -> token.length() >= 3)
+                .distinct()
+                .toList();
+        List<NavigationMatch> matches = new ArrayList<>();
+        for (JsonNode entry : guide) {
+            String title = normalizeNavigationText(entry.path("title").asText());
+            String searchable = normalizeNavigationText(entry.toString());
+            int score = searchable.contains(normalizedQuery) ? 100 : 0;
+            if (title.contains(normalizedQuery)) {
+                score += 40;
+            }
+            for (String token : tokens) {
+                if (title.contains(token)) {
+                    score += 12;
+                } else if (searchable.contains(token)) {
+                    score += 3;
+                }
+            }
+            if (score > 0) {
+                matches.add(new NavigationMatch(score, entry));
+            }
+        }
+        matches.sort(Comparator.comparingInt(NavigationMatch::score).reversed());
+        List<JsonNode> selected = matches.stream()
+                .limit(limit)
+                .map(NavigationMatch::entry)
+                .toList();
+        return Map.of(
+                "query", query,
+                "matches", selected,
+                "message", selected.isEmpty()
+                        ? "V navigační příručce nebyl nalezen odpovídající postup."
+                        : "Postup je z aktuální klientské příručky; respektuj uvedené podmínky dostupnosti."
+        );
+    }
+
+    private String normalizeNavigationText(String value) {
+        return Normalizer.normalize(value == null ? "" : value, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}+", "")
+                .toLowerCase(Locale.ROOT)
+                .replaceAll("[^a-z0-9]+", " ")
+                .trim();
     }
 
     private static final String TOOL_DEFINITIONS = """
@@ -1297,6 +1390,52 @@ public class AiReadOnlyToolService {
                   "required": ["player_id", "current_season"],
                   "additionalProperties": false
                 }
+              },
+              {
+                "type": "function",
+                "name": "read_person_facts",
+                "description": "Vyhledá hráče nebo fanouška výhradně v aktuálním app_team podle přezdívky z player, občanského jména z football_player nebo aliasu z týmového rozhovoru. Použij pro obecné dotazy typu řekni mi něco o osobě, co na ni říkáš nebo dej zajímavosti. Backend náhodně vybere přesně 2 databázové zajímavosti a u spárovaného rozhovoru další 2 odpovědi; osoba existující pouze v týmovém rozhovoru dostane 4 odpovědi. Vrať všechny vybrané položky přirozeně a rozhovory necenzuruj.",
+                "strict": true,
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "person": {"type": "string", "description": "Samotná přezdívka, občanské jméno nebo známý alias hledané osoby."}
+                  },
+                  "required": ["person"],
+                  "additionalProperties": false
+                }
+              },
+              {
+                "type": "function",
+                "name": "search_interviews",
+                "description": "Tematicky vyhledá původní otázky a odpovědi v rozhovorech dostupných aktuálnímu app_team. Použij pro konkrétní dotaz na názor, zkušenost nebo minulost osoby, například co si Jumbo myslí o zimě. Když person=null, vrátí nejrelevantnější odpověď za každého dostupného hráče a umožní otázky typu kteří hráči hráli v mládí fotbal. Odpovědi parafrázuj bez cenzury a nic si nevymýšlej.",
+                "strict": true,
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "person": {"type": ["string", "null"], "description": "Přezdívka, občanské jméno nebo alias; null pro hledání napříč všemi rozhovory týmu."},
+                    "topic": {"type": "string", "description": "Konkrétní věc, názor nebo zkušenost hledaná v rozhovoru, bez jména osoby."},
+                    "keywords": {"type": "array", "items": {"type": "string"}, "maxItems": 8, "description": "Česká synonyma či pravděpodobné znění otázky v rozhovoru, například [fotbalové zkušenosti, před Trusem, mládí]."},
+                    "limit": {"type": "integer", "minimum": 1, "maximum": 20, "description": "Pro jednu osobu obvykle 3; pro porovnání všech osob použij 20."}
+                  },
+                  "required": ["person", "topic", "keywords", "limit"],
+                  "additionalProperties": false
+                }
+              },
+              {
+                "type": "function",
+                "name": "read_app_navigation",
+                "description": "Vyhledá v aktuální uživatelské příručce přesnou cestu obrazovkami, význam tlačítek, postup obsluhy a podmínky dostupnosti. Použij pro otázky typu jak něco v aplikaci přidat, upravit, otevřít, zapnout, najít nebo kam klepnout. Nečte týmová data a nic nemění.",
+                "strict": true,
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "query": {"type": "string", "description": "Stručně formulovaný cíl nebo hledaný ovládací prvek v češtině."},
+                    "limit": {"type": "integer", "minimum": 1, "maximum": 5, "description": "Počet nejbližších částí příručky; obvykle 2 až 3."}
+                  },
+                  "required": ["query", "limit"],
+                  "additionalProperties": false
+                }
               }
             ]
             """;
@@ -1305,5 +1444,8 @@ public class AiReadOnlyToolService {
     }
 
     private record CombinedMatchRow(Date date, Map<String, Object> row) {
+    }
+
+    private record NavigationMatch(int score, JsonNode entry) {
     }
 }
