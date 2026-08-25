@@ -6,6 +6,7 @@ import com.jumbo.trus.dto.step.StepSyncItemDTO;
 import com.jumbo.trus.dto.step.StepSyncRequestDTO;
 import com.jumbo.trus.dto.step.StepLeaderboardDTO;
 import com.jumbo.trus.dto.step.StepLeaderboardResponseDTO;
+import com.jumbo.trus.dto.step.StepHistoryResponseDTO;
 import com.jumbo.trus.dto.step.StepPeriod;
 import com.jumbo.trus.entity.MatchEntity;
 import com.jumbo.trus.entity.PlayerEntity;
@@ -30,6 +31,7 @@ import com.jumbo.trus.service.outbox.OutboxEventService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.ArgumentCaptor;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.*;
 import java.util.List;
@@ -39,6 +41,7 @@ import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -219,6 +222,53 @@ class StepServiceTest {
         assertEquals("FC Poslední", result.lastMatch().opponentName());
         assertEquals(List.of(), result.entries());
         verifyNoInteractions(repository);
+    }
+
+    @Test
+    void historyReturnsEveryDayAndMarksMissingReportsWithoutInventingZeroSteps() {
+        UserEntity currentUser = user(7L);
+        UserEntity targetUser = user(8L);
+        targetUser.setName("Jiný chodec");
+        UserTeamRole targetRole = new UserTeamRole();
+        targetRole.setUser(targetUser);
+        when(userService.getCurrentUserEntity()).thenReturn(currentUser);
+        when(userTeamRoleRepository.findByUserIdAndAppTeamId(8L, 3L))
+                .thenReturn(Optional.of(targetRole));
+
+        LocalDate today = LocalDate.now(ZoneId.of("Europe/Prague"));
+        StepUpdateEntity update = new StepUpdateEntity();
+        update.setDate(today);
+        update.setStepNumber(12_345);
+        when(repository.findAllByUserIdAndDateBetweenOrderByDateAsc(
+                8L, today.minusDays(29), today))
+                .thenReturn(List.of(update));
+
+        StepHistoryResponseDTO result = service.getHistory(8L, 30);
+
+        assertEquals(8L, result.userId());
+        assertEquals("Jiný chodec", result.userName());
+        assertEquals(30, result.days().size());
+        assertEquals(today, result.days().get(0).date());
+        assertEquals(12_345, result.days().get(0).stepCount());
+        assertEquals(today.minusDays(1), result.days().get(1).date());
+        assertNull(result.days().get(1).stepCount());
+    }
+
+    @Test
+    void historyRejectsUserWhoDidNotConsentInCurrentTeam() {
+        UserEntity currentUser = user(7L);
+        UserEntity targetUser = user(8L);
+        UserTeamRole targetRole = new UserTeamRole();
+        targetRole.setUser(targetUser);
+        when(userService.getCurrentUserEntity()).thenReturn(currentUser);
+        when(userTeamRoleRepository.findByUserIdAndAppTeamId(8L, 3L))
+                .thenReturn(Optional.of(targetRole));
+        when(consentRepository.findByUserIdAndAppTeamId(8L, 3L))
+                .thenReturn(Optional.empty());
+
+        assertThrows(ResponseStatusException.class, () -> service.getHistory(8L, 30));
+        verify(repository, never())
+                .findAllByUserIdAndDateBetweenOrderByDateAsc(anyLong(), any(), any());
     }
 
     private static StepSyncRequestDTO request(StepSyncItemDTO... items) {

@@ -5,6 +5,8 @@ import com.jumbo.trus.dto.step.StepConsentDTO;
 import com.jumbo.trus.dto.step.StepBackgroundSyncRequestDTO;
 import com.jumbo.trus.dto.step.StepLeaderboardDTO;
 import com.jumbo.trus.dto.step.StepLeaderboardResponseDTO;
+import com.jumbo.trus.dto.step.StepHistoryDayDTO;
+import com.jumbo.trus.dto.step.StepHistoryResponseDTO;
 import com.jumbo.trus.dto.step.StepMatchDTO;
 import com.jumbo.trus.dto.step.StepPeriod;
 import com.jumbo.trus.dto.step.StepSyncItemDTO;
@@ -37,8 +39,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Service
@@ -122,6 +126,66 @@ public class StepService {
                 .stream()
                 .map(this::toDTO)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public StepHistoryResponseDTO getHistory(Long requestedUserId, int days) {
+        if (days < 1 || days > MAX_RANGE_DAYS) {
+            throw new StepValidationException("Historii lze načíst v rozsahu 1 až 366 dní");
+        }
+
+        UserEntity currentUser = userService.getCurrentUserEntity();
+        AppTeamEntity appTeam = appTeamService.getCurrentAppTeamOrThrow();
+        requireEnabledConsent(currentUser.getId(), appTeam.getId());
+
+        Long targetUserId = requestedUserId == null ? currentUser.getId() : requestedUserId;
+        UserTeamRole targetRole = userTeamRoleRepository
+                .findByUserIdAndAppTeamId(targetUserId, appTeam.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN));
+        if (!targetUserId.equals(currentUser.getId())) {
+            requireEnabledConsent(targetUserId, appTeam.getId());
+        }
+
+        LocalDate to = LocalDate.now(ZoneId.of("Europe/Prague"));
+        LocalDate from = to.minusDays(days - 1L);
+        Map<LocalDate, StepUpdateEntity> updatesByDate = new HashMap<>();
+        stepUpdateRepository
+                .findAllByUserIdAndDateBetweenOrderByDateAsc(targetUserId, from, to)
+                .forEach(update -> updatesByDate.put(update.getDate(), update));
+
+        List<StepHistoryDayDTO> history = java.util.stream.IntStream
+                .range(0, days)
+                .mapToObj(offset -> to.minusDays(offset))
+                .map(date -> {
+                    StepUpdateEntity update = updatesByDate.get(date);
+                    return new StepHistoryDayDTO(
+                            date,
+                            update == null ? null : update.getStepNumber());
+                })
+                .toList();
+
+        String userName = targetRole.getUser().getName();
+        if (userName == null || userName.isBlank()) {
+            userName = "Uživatel";
+        }
+        return new StepHistoryResponseDTO(
+                targetUserId,
+                userName,
+                from,
+                to,
+                history);
+    }
+
+    private void requireEnabledConsent(Long userId, Long appTeamId) {
+        boolean enabled = stepConsentRepository
+                .findByUserIdAndAppTeamId(userId, appTeamId)
+                .map(StepConsentEntity::isEnabled)
+                .orElse(false);
+        if (!enabled) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Historie kroků je dostupná pouze uživatelům se souhlasem");
+        }
     }
 
     @Transactional(readOnly = true)

@@ -4,6 +4,7 @@ import com.jumbo.trus.dto.step.StepDailyDTO;
 import com.jumbo.trus.dto.step.StepConsentDTO;
 import com.jumbo.trus.dto.step.StepBackgroundSyncRequestDTO;
 import com.jumbo.trus.dto.step.StepLeaderboardResponseDTO;
+import com.jumbo.trus.dto.step.StepHistoryResponseDTO;
 import com.jumbo.trus.dto.step.StepPeriod;
 import com.jumbo.trus.dto.step.StepSyncRequestDTO;
 import com.jumbo.trus.config.security.RoleRequired;
@@ -58,5 +59,20 @@ public class StepController {
             @RequestParam(required = false) LocalDate from,
             @RequestParam(required = false) LocalDate to) {
         return stepService.getMySteps(from, to);
+    }
+
+    @RoleRequired("READER")
+    @GetMapping("/history")
+    public StepHistoryResponseDTO getMyHistory(
+            @RequestParam(defaultValue = "30") int days) {
+        return stepService.getHistory(null, days);
+    }
+
+    @RoleRequired("READER")
+    @GetMapping("/history/{userId}")
+    public StepHistoryResponseDTO getUserHistory(
+            @PathVariable Long userId,
+            @RequestParam(defaultValue = "30") int days) {
+        return stepService.getHistory(userId, days);
     }
 }
