@@ -553,4 +553,3 @@ public interface BeerRepository extends PagingAndSortingRepository<BeerEntity, L
     );
 
 }
-

@@ -15,6 +15,7 @@ import com.jumbo.trus.service.exceptions.DuplicateEmailException;
 import com.jumbo.trus.service.football.team.TeamProcessor;
 import com.jumbo.trus.service.notification.push.DeviceTokenCollector;
 import com.jumbo.trus.service.player.PlayerService;
+import com.jumbo.trus.service.membership.MembershipService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -41,6 +42,7 @@ public class UserService implements UserDetailsService {
     private final DeviceTokenCollector deviceTokenCollector;
     private final PlayerRepository playerRepository;
     private final PlayerMapper playerMapper;
+    private final MembershipService membershipService;
 
     public UserSetup returnPlayerSetup(AppTeamEntity appTeamEntity) {
         UserSetup userSetup = new UserSetup();
@@ -80,6 +82,7 @@ public class UserService implements UserDetailsService {
             entity.setPassword(passwordEncoder.encode(user.getPassword()));
             entity.setName(user.getName().trim());
             entity = userRepository.save(entity);
+            membershipService.initializeBaseline(entity.getId());
 
             UserDTO dto = new UserDTO();
             dto.setId(entity.getId());

@@ -14,6 +14,7 @@ import com.jumbo.trus.repository.achievement.PlayerAchievementRepository;
 import com.jumbo.trus.service.achievement.helper.AchievementEligibilityService;
 import com.jumbo.trus.service.achievement.rule.CountryAchievementRule;
 import com.jumbo.trus.service.notification.push.maker.AchievementNotificationMaker;
+import com.jumbo.trus.service.membership.MembershipService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -86,6 +87,7 @@ public class CountryAchievementCalculator {
     private final PlayerAchievementRepository playerAchievementRepository;
     private final PlayerMapper playerMapper;
     private final AchievementNotificationMaker achievementNotificationMaker;
+    private final MembershipService membershipService;
     private final PlayerAchievementMapper playerAchievementMapper;
     private final AchievementEligibilityService achievementEligibilityService;
 
@@ -239,6 +241,13 @@ public class CountryAchievementCalculator {
                         )
                         .map(playerAchievementMapper::toDTO)
                         .toList();
+
+        savedAchievements.stream()
+                .filter(entity -> newlyAccomplishedAchievementIds.contains(entity.getAchievement().getId()))
+                .forEach(entity -> membershipService.achievementAccomplished(
+                        entity.getPlayer().getId(),
+                        entity.getId()
+                ));
 
         if (!accomplishedDTOs.isEmpty()) {
             achievementNotificationMaker.sendAchievementNotify(

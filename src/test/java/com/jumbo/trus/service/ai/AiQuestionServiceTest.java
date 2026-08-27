@@ -70,6 +70,7 @@ class AiQuestionServiceTest {
         when(authService.getCurrentUserEntity()).thenReturn(user);
         when(appTeamService.getCurrentAppTeamOrThrow()).thenReturn(appTeam);
         when(userTeamRoleRepository.findByUserIdAndAppTeamId(5L, 6L)).thenReturn(Optional.of(role));
+        when(quotaService.getUsage(5L)).thenReturn(usage);
     }
 
     @Test
@@ -91,6 +92,7 @@ class AiQuestionServiceTest {
         AiQuestionResponse response = service.ask(request(reserved.getQuestion()));
 
         assertEquals("Sedm piv.", response.getAnswer());
+        assertEquals(usage, response.getUsage());
         var contextCaptor = org.mockito.ArgumentCaptor.forClass(AiToolContext.class);
         verify(openAiClient).answer(
                 eq(reserved.getQuestion()),

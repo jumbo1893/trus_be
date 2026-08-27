@@ -1,17 +1,19 @@
 package com.jumbo.trus.service.ai;
 
-import com.jumbo.trus.dto.ai.AiAccessDTO;
-import com.jumbo.trus.dto.ai.AiAccessUpdateRequest;
 import com.jumbo.trus.dto.ai.AiUsageDTO;
+import com.jumbo.trus.dto.membership.MembershipDTO;
+import com.jumbo.trus.dto.membership.MembershipGrantRequest;
 import com.jumbo.trus.entity.ai.AiAccessTier;
 import com.jumbo.trus.entity.ai.AiQuestionEntity;
 import com.jumbo.trus.entity.ai.AiQuestionStatus;
-import com.jumbo.trus.entity.ai.AiUserAccessEntity;
+import com.jumbo.trus.entity.membership.MembershipTier;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.auth.UserEntity;
 import com.jumbo.trus.repository.ai.AiQuestionRepository;
-import com.jumbo.trus.repository.ai.AiUserAccessRepository;
 import com.jumbo.trus.repository.auth.UserRepository;
+import com.jumbo.trus.service.membership.MembershipService;
+import com.jumbo.trus.service.membership.MembershipSnapshot;
+import com.jumbo.trus.service.exceptions.MembershipGrantException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -27,31 +29,23 @@ public class AiQuotaService {
 
     private static final ZoneId QUOTA_ZONE = ZoneId.of("Europe/Prague");
 
-    private final AiUserAccessRepository accessRepository;
     private final AiQuestionRepository questionRepository;
     private final UserRepository userRepository;
+    private final MembershipService membershipService;
 
     @Transactional
     public AiQuotaDecision reserve(
             Long userId,
             AppTeamEntity appTeam,
-            String questionText
+        String questionText
     ) {
         UserEntity user = lockUser(userId);
-        AiUserAccessEntity access = getOrCreateAccessForLockedUser(user);
+        EffectiveAccess effectiveAccess = effectiveAccess(membershipService.getSnapshotForLockedUser(user));
         UsageWindow window = currentUsageWindow();
         long used = countUsage(userId, window);
-        AiUsageDTO currentUsage = toUsage(access, used, window.date());
+        AiUsageDTO currentUsage = toUsage(effectiveAccess, used, window.date());
 
-        if (!access.isEnabled()) {
-            return AiQuotaDecision.denied(
-                    currentUsage,
-                    AiQuestionStatus.DISABLED,
-                    "TrusBot není pro váš účet povolen."
-            );
-        }
-
-        Integer dailyLimit = access.getDailyLimit();
+        Integer dailyLimit = effectiveAccess.dailyLimit();
         if (dailyLimit != null && used >= dailyLimit) {
             return AiQuotaDecision.denied(
                     currentUsage,
@@ -69,16 +63,54 @@ public class AiQuotaService {
 
         return AiQuotaDecision.allowed(
                 question,
-                toUsage(access, used + 1, window.date())
+                toUsage(effectiveAccess, used + 1, window.date())
         );
     }
 
     @Transactional
     public AiUsageDTO getUsage(Long userId) {
         UserEntity user = lockUser(userId);
-        AiUserAccessEntity access = getOrCreateAccessForLockedUser(user);
+        EffectiveAccess effectiveAccess = effectiveAccess(membershipService.getSnapshotForLockedUser(user));
         UsageWindow window = currentUsageWindow();
-        return toUsage(access, countUsage(userId, window), window.date());
+        return toUsage(effectiveAccess, countUsage(userId, window), window.date());
+    }
+
+    @Transactional
+    public MembershipDTO getMembership(Long userId) {
+        UserEntity user = lockUser(userId);
+        MembershipSnapshot membership = membershipService.getSnapshotForLockedUser(user);
+        EffectiveAccess effective = effectiveAccess(membership);
+        return new MembershipDTO(
+                MembershipTier.valueOf(effective.tier().name()),
+                membership.unlimitedTier(),
+                membership.timedTier(),
+                effective.dailyLimit(),
+                membership.ultraMillisRemaining(),
+                membership.premiumMillisRemaining(),
+                membership.ultraUntil(),
+                membership.premiumUntil(),
+                membership.countedDrinks(),
+                membership.drinkCountingStartedAt(),
+                membership.drinksTowardNextPremium(),
+                membership.drinksToNextPremium(),
+                MembershipService.DRINKS_PER_PREMIUM_WEEK,
+                MembershipService.DAYS_PER_REWARD_WEEK
+        );
+    }
+
+    @Transactional
+    public MembershipDTO grantMembership(Long userId, MembershipGrantRequest request) {
+        MembershipTier tier = request.getTier();
+        boolean unlimited = Boolean.TRUE.equals(request.getUnlimited());
+        Duration duration = resolveGrantDuration(request, tier, unlimited);
+        membershipService.setBackendGrant(userId, tier, duration, unlimited);
+        return getMembership(userId);
+    }
+
+    @Transactional
+    public MembershipDTO clearMembershipGrant(Long userId) {
+        membershipService.clearBackendGrant(userId);
+        return getMembership(userId);
     }
 
     @Transactional(readOnly = true)
@@ -116,48 +148,9 @@ public class AiQuotaService {
         questionRepository.save(question);
     }
 
-    @Transactional
-    public AiAccessDTO updateAccess(Long userId, AiAccessUpdateRequest request) {
-        UserEntity user = lockUser(userId);
-        AiUserAccessEntity access = getOrCreateAccessForLockedUser(user);
-        AiAccessTier tier = request.getTier();
-        access.setTier(tier);
-        access.setDailyLimit(
-                tier == AiAccessTier.ULTRA
-                        ? null
-                        : request.getDailyLimit() != null
-                        ? request.getDailyLimit()
-                        : tier.getDefaultDailyLimit()
-        );
-        if (request.getEnabled() != null) {
-            access.setEnabled(request.getEnabled());
-        }
-        return toAccessDTO(accessRepository.save(access));
-    }
-
-    @Transactional(readOnly = true)
-    public List<AiAccessDTO> getAllAccess() {
-        return accessRepository.findAllByOrderByUserNameAsc()
-                .stream()
-                .map(this::toAccessDTO)
-                .toList();
-    }
-
     private UserEntity lockUser(Long userId) {
         return userRepository.findByIdForUpdate(userId)
                 .orElseThrow(() -> new EntityNotFoundException("Uživatel nebyl nalezen: " + userId));
-    }
-
-    private AiUserAccessEntity getOrCreateAccessForLockedUser(UserEntity user) {
-        return accessRepository.findByUserIdForUpdate(user.getId())
-                .orElseGet(() -> {
-                    AiUserAccessEntity access = new AiUserAccessEntity();
-                    access.setUser(user);
-                    access.setTier(AiAccessTier.STANDARD);
-                    access.setDailyLimit(AiAccessTier.STANDARD.getDefaultDailyLimit());
-                    access.setEnabled(true);
-                    return accessRepository.saveAndFlush(access);
-                });
     }
 
     private AiQuestionEntity getQuestion(Long questionId) {
@@ -180,30 +173,76 @@ public class AiQuotaService {
         return new UsageWindow(date, from, to);
     }
 
-    private AiUsageDTO toUsage(AiUserAccessEntity access, long used, LocalDate date) {
-        Integer limit = access.getDailyLimit();
+    private AiUsageDTO toUsage(
+            EffectiveAccess effectiveAccess,
+            long used,
+            LocalDate date
+    ) {
+        Integer limit = effectiveAccess.dailyLimit();
         boolean unlimited = limit == null;
         Integer remaining = unlimited ? null : Math.max(0, limit - Math.toIntExact(used));
         return new AiUsageDTO(
-                access.getTier(),
+                effectiveAccess.tier(),
                 used,
                 limit,
                 remaining,
                 unlimited,
-                access.isEnabled(),
+                true,
                 date
         );
     }
 
-    private AiAccessDTO toAccessDTO(AiUserAccessEntity access) {
-        return new AiAccessDTO(
-                access.getUser().getId(),
-                access.getUser().getName(),
-                access.getUser().getMail(),
-                access.getTier(),
-                access.getDailyLimit(),
-                access.isEnabled()
-        );
+    private EffectiveAccess effectiveAccess(MembershipSnapshot membership) {
+        MembershipTier membershipTier = maxTier(membership.timedTier(), membership.unlimitedTier());
+        AiAccessTier effectiveTier = AiAccessTier.valueOf(membershipTier.name());
+        return new EffectiveAccess(effectiveTier, effectiveTier.getDefaultDailyLimit());
+    }
+
+    private Duration resolveGrantDuration(
+            MembershipGrantRequest request,
+            MembershipTier tier,
+            boolean unlimited
+    ) {
+        boolean hasDaysOrHours = request.getDurationDays() != null || request.getDurationHours() != null;
+        boolean hasValidUntil = request.getValidUntil() != null;
+        if (tier == MembershipTier.STANDARD) {
+            return null;
+        }
+        if (unlimited) {
+            if (hasDaysOrHours || hasValidUntil) {
+                throw new MembershipGrantException(
+                        "Neomezené členství nesmí současně obsahovat dobu platnosti."
+                );
+            }
+            return null;
+        }
+        if (hasDaysOrHours == hasValidUntil) {
+            throw new MembershipGrantException(
+                    "Pro časově omezené členství zadejte durationDays/durationHours, nebo validUntil."
+            );
+        }
+        if (hasValidUntil) {
+            Duration duration = Duration.between(Instant.now(), request.getValidUntil());
+            if (duration.isZero() || duration.isNegative()) {
+                throw new MembershipGrantException("validUntil musí ležet v budoucnosti.");
+            }
+            return duration;
+        }
+        long days = request.getDurationDays() == null ? 0 : request.getDurationDays();
+        long hours = request.getDurationHours() == null ? 0 : request.getDurationHours();
+        try {
+            Duration duration = Duration.ofDays(days).plusHours(hours);
+            if (duration.isZero() || duration.isNegative()) {
+                throw new MembershipGrantException("Doba členství musí být delší než nula.");
+            }
+            return duration;
+        } catch (ArithmeticException exception) {
+            throw new MembershipGrantException("Doba členství je příliš dlouhá.", exception);
+        }
+    }
+
+    private MembershipTier maxTier(MembershipTier first, MembershipTier second) {
+        return first.ordinal() >= second.ordinal() ? first : second;
     }
 
     private String truncate(String value, int maxLength) {
@@ -214,5 +253,8 @@ public class AiQuotaService {
     }
 
     private record UsageWindow(LocalDate date, Instant from, Instant to) {
+    }
+
+    private record EffectiveAccess(AiAccessTier tier, Integer dailyLimit) {
     }
 }

@@ -1,4 +1,4 @@
-package com.jumbo.trus.entity.ai;
+package com.jumbo.trus.entity.membership;
 
 import com.jumbo.trus.entity.auth.UserEntity;
 import jakarta.persistence.*;
@@ -12,34 +12,32 @@ import java.time.Instant;
 
 @Entity
 @Table(
-        name = "ai_user_access",
-        uniqueConstraints = @UniqueConstraint(name = "uk_ai_user_access_user", columnNames = "user_id")
+        name = "achievement_membership_credit",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uk_achievement_membership_credit_source",
+                columnNames = {"user_id", "player_achievement_id"}
+        )
 )
 @Data
-public class AiUserAccessEntity {
+public class AchievementMembershipCreditEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ai_user_access_seq")
-    @SequenceGenerator(name = "ai_user_access_seq", sequenceName = "ai_user_access_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "achievement_membership_credit_seq")
+    @SequenceGenerator(name = "achievement_membership_credit_seq", sequenceName = "achievement_membership_credit_seq", allocationSize = 1)
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private UserEntity user;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    private AiAccessTier tier = AiAccessTier.STANDARD;
-
-    /** Null znamená neomezený počet dotazů. */
-    @Column(name = "daily_limit")
-    private Integer dailyLimit = AiAccessTier.STANDARD.getDefaultDailyLimit();
+    @Column(name = "player_achievement_id", nullable = false)
+    private Long playerAchievementId;
 
     @Column(nullable = false)
-    private boolean enabled = true;
+    private boolean active;
 
     @Column(nullable = false, updatable = false)
     private Instant createdAt;

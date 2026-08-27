@@ -31,6 +31,7 @@ import com.jumbo.trus.service.notification.push.maker.BeerNotificationMaker;
 import com.jumbo.trus.service.order.OrderBeerByBeerAndLiquorNumberThenName;
 import com.jumbo.trus.service.outbox.OutboxEventPayloadFactory;
 import com.jumbo.trus.service.outbox.OutboxEventService;
+import com.jumbo.trus.service.membership.MembershipService;
 import com.jumbo.trus.service.websocket.WebSocketSender;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -39,8 +40,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -58,6 +61,7 @@ public class BeerService {
     private final PlayerRepository playerRepository;
     private final PlayerMapper playerMapper;
     private final OutboxEventService outboxEventService;
+    private final MembershipService membershipService;
 
     /**
      * metoda napamuje hráče a zápas z přepravky k pivu a uloží ho do DB
@@ -69,6 +73,10 @@ public class BeerService {
         BeerEntity newBeer = saveBeerToRepository(beerDTO, null, appTeam);
         outboxEventService.createEvent(OutboxEventType.BEER_CHANGED, OutboxAggregateType.BEER, newBeer.getId(),
                 OutboxEventPayloadFactory.beersChanged(newBeer.getMatch().getId(), newBeer.getMatch().getSeason().getId(), Set.of(newBeer.getPlayer().getId()), Set.of(newBeer.getId())));
+        membershipService.recordDrinkChanges(Map.of(
+                newBeer.getPlayer().getId(),
+                newBeer.getBeerNumber() + newBeer.getLiquorNumber()
+        ));
         return beerMapper.toDTO(newBeer);
     }
 
@@ -86,8 +94,17 @@ public class BeerService {
         beerMultiAddResponse.setMatch(matchDTO.getName());
         Set<Long> beerIds = new HashSet<>();
         Set<Long> playerIds = new HashSet<>();
+        Map<Long, Integer> drinkChangesByPlayer = new HashMap<>();
         for (BeerNoMatchDTO beerNoMatchDTO : beerListDTO.getBeerList()) {
-            Long id = processBeer(beerNoMatchDTO, beerListDTO.getMatchId(), newBeerNotification, newLiquorNotification, beerMultiAddResponse, appTeam);
+            Long id = processBeer(
+                    beerNoMatchDTO,
+                    beerListDTO.getMatchId(),
+                    newBeerNotification,
+                    newLiquorNotification,
+                    beerMultiAddResponse,
+                    appTeam,
+                    drinkChangesByPlayer
+            );
             if (id != null) {
                 beerIds.add(id);
                 playerIds.add(beerNoMatchDTO.getPlayerId());
@@ -96,14 +113,19 @@ public class BeerService {
         notificationService.addNotification("Přidáno pivka v zápase " + beerMultiAddResponse.getMatch(), newBeerNotification+newLiquorNotification.toString());
         outboxEventService.createEvent(OutboxEventType.BEER_CHANGED, OutboxAggregateType.BEER, null,
                 OutboxEventPayloadFactory.beersChanged(beerListDTO.getMatchId(), matchDTO.getSeasonId(), playerIds, beerIds));
+        membershipService.recordDrinkChanges(drinkChangesByPlayer);
         return beerMultiAddResponse;
     }
 
     private Long processBeer(BeerNoMatchDTO beerNoMatchDTO, Long matchId, StringBuilder newBeerNotification, StringBuilder newLiquorNotification,
-                             BeerMultiAddResponse beerMultiAddResponse, AppTeamEntity appTeam) {
+                             BeerMultiAddResponse beerMultiAddResponse, AppTeamEntity appTeam,
+                             Map<Long, Integer> drinkChangesByPlayer) {
         BeerDTO beerDTO = new BeerDTO(matchId, beerNoMatchDTO);
         BeerDTO oldBeer = getBeerDtoByPlayerAndMatch(matchId, beerNoMatchDTO.getPlayerId());
         if (isNeededToRewriteBeer(oldBeer, beerDTO)) {
+            int drinkDelta = beerDTO.getBeerNumber() + beerDTO.getLiquorNumber()
+                    - oldBeer.getBeerNumber() - oldBeer.getLiquorNumber();
+            drinkChangesByPlayer.merge(beerNoMatchDTO.getPlayerId(), drinkDelta, Integer::sum);
             beerMultiAddResponse.addBeersLiquorsAndPlayer(beerDTO.getBeerNumber() - oldBeer.getBeerNumber(), beerDTO.getLiquorNumber() - oldBeer.getLiquorNumber(), false);
             beerDTO.setId(oldBeer.getId());
             BeerEntity beerEntity = saveBeerToRepository(beerDTO, oldBeer, appTeam);
@@ -111,6 +133,11 @@ public class BeerService {
             setMultiBeerNotification(newBeerNotification, newLiquorNotification, beerDTO, oldBeer);
             return beerEntity.getId();
         } else if (isNeededToAddNewBeer(oldBeer, beerDTO)) {
+            drinkChangesByPlayer.merge(
+                    beerNoMatchDTO.getPlayerId(),
+                    beerDTO.getBeerNumber() + beerDTO.getLiquorNumber(),
+                    Integer::sum
+            );
             beerMultiAddResponse.addBeersLiquorsAndPlayer(beerDTO.getBeerNumber(), beerDTO.getLiquorNumber(), true);
             BeerEntity beerEntity = saveBeerToRepository(beerDTO, null, appTeam);
             webSocketSender.sendPlayerStatsUpdate(beerDTO.getPlayerId(), appTeam);
@@ -198,8 +225,16 @@ public class BeerService {
         return new BeerSetupResponse(matchDTO, seasonDTO, beerNoMatchWithPlayerDTOS, matchList);
     }
 
+    @Transactional
     public void deleteBeer(Long beerId) {
+        BeerEntity beer = beerRepository.findById(beerId).orElse(null);
         beerRepository.deleteById(beerId);
+        if (beer != null && beer.getPlayer() != null) {
+            membershipService.recordDrinkChanges(Map.of(
+                    beer.getPlayer().getId(),
+                    -(beer.getBeerNumber() + beer.getLiquorNumber())
+            ));
+        }
     }
 
     public List<BeerDTO> getTopDrinkersByMatch(long appTeamId) {

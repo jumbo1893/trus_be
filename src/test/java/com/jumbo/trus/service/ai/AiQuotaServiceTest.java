@@ -1,14 +1,14 @@
 package com.jumbo.trus.service.ai;
 
-import com.jumbo.trus.entity.ai.AiAccessTier;
 import com.jumbo.trus.entity.ai.AiQuestionEntity;
 import com.jumbo.trus.entity.ai.AiQuestionStatus;
-import com.jumbo.trus.entity.ai.AiUserAccessEntity;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.auth.UserEntity;
 import com.jumbo.trus.repository.ai.AiQuestionRepository;
-import com.jumbo.trus.repository.ai.AiUserAccessRepository;
 import com.jumbo.trus.repository.auth.UserRepository;
+import com.jumbo.trus.entity.membership.MembershipTier;
+import com.jumbo.trus.service.membership.MembershipService;
+import com.jumbo.trus.service.membership.MembershipSnapshot;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -21,18 +21,17 @@ import static org.mockito.Mockito.*;
 
 class AiQuotaServiceTest {
 
-    private final AiUserAccessRepository accessRepository = mock(AiUserAccessRepository.class);
     private final AiQuestionRepository questionRepository = mock(AiQuestionRepository.class);
     private final UserRepository userRepository = mock(UserRepository.class);
+    private final MembershipService membershipService = mock(MembershipService.class);
     private final AiQuotaService service = new AiQuotaService(
-            accessRepository,
             questionRepository,
-            userRepository
+            userRepository,
+            membershipService
     );
 
     private UserEntity user;
     private AppTeamEntity appTeam;
-    private AiUserAccessEntity access;
 
     @BeforeEach
     void setUp() {
@@ -41,15 +40,19 @@ class AiQuotaServiceTest {
         appTeam = new AppTeamEntity();
         appTeam.setId(11L);
 
-        access = new AiUserAccessEntity();
-        access.setId(1L);
-        access.setUser(user);
-        access.setTier(AiAccessTier.STANDARD);
-        access.setDailyLimit(2);
-        access.setEnabled(true);
-
         when(userRepository.findByIdForUpdate(7L)).thenReturn(Optional.of(user));
-        when(accessRepository.findByUserIdForUpdate(7L)).thenReturn(Optional.of(access));
+        when(membershipService.getSnapshotForLockedUser(user)).thenReturn(new MembershipSnapshot(
+                MembershipTier.STANDARD,
+                MembershipTier.STANDARD,
+                0,
+                0,
+                null,
+                null,
+                0,
+                Instant.parse("2026-08-25T00:00:00Z"),
+                0,
+                10
+        ));
     }
 
     @Test
@@ -88,8 +91,18 @@ class AiQuotaServiceTest {
 
     @Test
     void ultraTierHasNoDailyLimit() {
-        access.setTier(AiAccessTier.ULTRA);
-        access.setDailyLimit(null);
+        when(membershipService.getSnapshotForLockedUser(user)).thenReturn(new MembershipSnapshot(
+                MembershipTier.ULTRA,
+                MembershipTier.STANDARD,
+                1,
+                0,
+                Instant.parse("2026-08-25T00:00:01Z"),
+                null,
+                0,
+                Instant.parse("2026-08-25T00:00:00Z"),
+                0,
+                10
+        ));
         when(questionRepository.countByUserIdAndCreatedAtGreaterThanEqualAndCreatedAtLessThan(
                 eq(7L), any(Instant.class), any(Instant.class)
         )).thenReturn(10_000L);

@@ -1,6 +1,8 @@
 package com.jumbo.trus.service.ai;
 
 import com.jumbo.trus.dto.ai.*;
+import com.jumbo.trus.dto.membership.MembershipDTO;
+import com.jumbo.trus.dto.membership.MembershipGrantRequest;
 import com.jumbo.trus.entity.PlayerEntity;
 import com.jumbo.trus.entity.ai.AiQuestionEntity;
 import com.jumbo.trus.entity.ai.AiQuestionStatus;
@@ -61,7 +63,7 @@ public class AiQuestionService {
             );
             AiQuestionEntity completed = quotaService.complete(reservedQuestion.getId(), answer);
             awardTrusBotAchievement(context.currentPlayerId(), appTeam);
-            return toResponse(completed, decision.usage());
+            return toResponse(completed, quotaService.getUsage(user.getId()));
         } catch (RuntimeException exception) {
             try {
                 quotaService.fail(reservedQuestion.getId(), exception);
@@ -86,14 +88,18 @@ public class AiQuestionService {
         return quotaService.getUsage(authService.getCurrentUserEntity().getId());
     }
 
-    public List<AiAccessDTO> getAllAccess() {
-        requireGlobalAdmin();
-        return quotaService.getAllAccess();
+    public MembershipDTO getMembership() {
+        return quotaService.getMembership(authService.getCurrentUserEntity().getId());
     }
 
-    public AiAccessDTO updateAccess(Long userId, AiAccessUpdateRequest request) {
+    public MembershipDTO grantMembership(Long userId, MembershipGrantRequest request) {
         requireGlobalAdmin();
-        return quotaService.updateAccess(userId, request);
+        return quotaService.grantMembership(userId, request);
+    }
+
+    public MembershipDTO clearMembershipGrant(Long userId) {
+        requireGlobalAdmin();
+        return quotaService.clearMembershipGrant(userId);
     }
 
     private AiToolContext createToolContext(UserEntity user, AppTeamEntity appTeam) {

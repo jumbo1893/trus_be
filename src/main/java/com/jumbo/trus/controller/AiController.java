@@ -36,18 +36,4 @@ public class AiController {
         return questionService.getUsage();
     }
 
-    @RoleRequired("NONE")
-    @GetMapping("/access")
-    public List<AiAccessDTO> allAccess() {
-        return questionService.getAllAccess();
-    }
-
-    @RoleRequired("NONE")
-    @PutMapping("/access/{userId}")
-    public AiAccessDTO updateAccess(
-            @PathVariable Long userId,
-            @Valid @RequestBody AiAccessUpdateRequest request
-    ) {
-        return questionService.updateAccess(userId, request);
-    }
 }

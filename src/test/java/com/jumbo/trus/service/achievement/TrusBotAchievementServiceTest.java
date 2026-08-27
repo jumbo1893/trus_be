@@ -11,6 +11,7 @@ import com.jumbo.trus.repository.achievement.AchievementRepository;
 import com.jumbo.trus.repository.achievement.PlayerAchievementRepository;
 import com.jumbo.trus.service.achievement.helper.AchievementEligibilityService;
 import com.jumbo.trus.service.notification.push.maker.AchievementNotificationMaker;
+import com.jumbo.trus.service.membership.MembershipService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -29,13 +30,15 @@ class TrusBotAchievementServiceTest {
     private final AchievementEligibilityService eligibilityService = mock(AchievementEligibilityService.class);
     private final PlayerAchievementMapper playerAchievementMapper = mock(PlayerAchievementMapper.class);
     private final AchievementNotificationMaker notificationMaker = mock(AchievementNotificationMaker.class);
+    private final MembershipService membershipService = mock(MembershipService.class);
     private final TrusBotAchievementService service = new TrusBotAchievementService(
             playerRepository,
             achievementRepository,
             playerAchievementRepository,
             eligibilityService,
             playerAchievementMapper,
-            notificationMaker
+            notificationMaker,
+            membershipService
     );
 
     private final AppTeamEntity appTeam = new AppTeamEntity();
@@ -79,6 +82,7 @@ class TrusBotAchievementServiceTest {
         assertNotNull(playerAchievement.getAccomplishedDate());
         assertEquals("První dotaz položený TrusBotovi.", playerAchievement.getDetail());
         verify(playerAchievementRepository).save(playerAchievement);
+        verify(membershipService).achievementAccomplished(7L, null);
         verify(notificationMaker).sendAchievementNotify(mapped, appTeam);
     }
 

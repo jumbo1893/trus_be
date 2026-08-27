@@ -11,6 +11,7 @@ import com.jumbo.trus.repository.achievement.AchievementRepository;
 import com.jumbo.trus.repository.achievement.PlayerAchievementRepository;
 import com.jumbo.trus.service.achievement.helper.AchievementEligibilityService;
 import com.jumbo.trus.service.notification.push.maker.AchievementNotificationMaker;
+import com.jumbo.trus.service.membership.MembershipService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -38,6 +39,7 @@ public class TrusBotAchievementService {
     private final AchievementEligibilityService achievementEligibilityService;
     private final PlayerAchievementMapper playerAchievementMapper;
     private final AchievementNotificationMaker achievementNotificationMaker;
+    private final MembershipService membershipService;
 
     /**
      * Udělí achievement za první úspěšně zodpovězený dotaz. Metoda je
@@ -181,6 +183,7 @@ public class TrusBotAchievementService {
         playerAchievement.setDetail(detail);
 
         PlayerAchievementEntity saved = playerAchievementRepository.save(playerAchievement);
+        membershipService.achievementAccomplished(saved.getPlayer().getId(), saved.getId());
         PlayerAchievementDTO savedDto = playerAchievementMapper.toDTO(saved);
         achievementNotificationMaker.sendAchievementNotify(savedDto, appTeam);
         return AwardOutcome.AWARDED;

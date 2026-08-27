@@ -40,6 +40,7 @@ import com.jumbo.trus.service.notification.push.maker.AchievementNotificationMak
 import com.jumbo.trus.service.order.OrderMatchByDate;
 import com.jumbo.trus.service.receivedFine.ReceivedFineService;
 import com.jumbo.trus.service.outbox.AchievementPlayerWork;
+import com.jumbo.trus.service.membership.MembershipService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -69,6 +70,7 @@ public class AchievementCalculator {
     private final GoalService goalService;
     private final AchievementNotificationMaker achievementNotificationMaker;
     private final StepAchievementCalculator stepAchievementCalculator;
+    private final MembershipService membershipService;
     private final ThreadLocal<Long> eventSeasonId = new ThreadLocal<>();
     private final Map<String, AchievementFunction> achievementCalculators =
             Map.<String, AchievementFunction>ofEntries(
@@ -604,6 +606,11 @@ public class AchievementCalculator {
 
             PlayerAchievementDTO savedDto = playerAchievementMapper.toDTO(savedEntity);
 
+            membershipService.achievementAccomplished(
+                    savedEntity.getPlayer().getId(),
+                    savedEntity.getId()
+            );
+
             collectOrSendAchievementNotification(savedDto, appTeam, newlyAccomplishedAchievements);
             return savedDto;
         }
@@ -614,7 +621,15 @@ public class AchievementCalculator {
         }
 
         calculated.setAccomplishedDate(null);
-        return playerAchievementMapper.toDTO(playerAchievementRepository.save(playerAchievementMapper.toEntity(calculated)));
+        PlayerAchievementEntity savedEntity =
+                playerAchievementRepository.save(playerAchievementMapper.toEntity(calculated));
+        if (wasAccomplished) {
+            membershipService.achievementRevoked(
+                    savedEntity.getPlayer().getId(),
+                    savedEntity.getId()
+            );
+        }
+        return playerAchievementMapper.toDTO(savedEntity);
     }
 
     private boolean isRelevantForContext(AchievementDTO achievement, AchievementRecalculationContext context) {
@@ -871,6 +886,10 @@ public class AchievementCalculator {
             PlayerAchievementEntity savedEntity =
                     playerAchievementRepository.save(playerAchievementMapper.toEntity(playerAchievement));
             PlayerAchievementDTO savedDto = playerAchievementMapper.toDTO(savedEntity);
+            membershipService.achievementAccomplished(
+                    savedEntity.getPlayer().getId(),
+                    savedEntity.getId()
+            );
             collectOrSendAchievementNotification(savedDto, appTeam, newlyAccomplishedAchievements);
             return savedDto;
         }
