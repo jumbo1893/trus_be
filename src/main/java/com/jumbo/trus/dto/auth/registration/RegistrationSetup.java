@@ -14,6 +14,8 @@ public class RegistrationSetup {
 
     private List<LeagueWithTeams> leagueWithTeamsList;
 
+    private List<AppTeamDTO> appTeamList;
+
     private LeagueWithTeams primaryLeague;
 
     private TeamWithAppTeams primaryTeam;

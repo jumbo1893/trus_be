@@ -4,6 +4,7 @@ import com.jumbo.trus.dto.auth.UserDTO;
 import com.jumbo.trus.dto.auth.UserSetup;
 import com.jumbo.trus.dto.auth.UserTeamRoleDTO;
 import com.jumbo.trus.dto.player.PlayerDTO;
+import com.jumbo.trus.config.security.firebase.FirebaseIdentity;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.auth.UserEntity;
 import com.jumbo.trus.mapper.PlayerMapper;
@@ -26,10 +27,13 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.webjars.NotFoundException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -75,24 +79,81 @@ public class UserService implements UserDetailsService {
         return userSetup;
     }
 
+    @Transactional
     public UserDTO create(UserDTO user) {
+        UserEntity entity = new UserEntity();
+        entity.setMail(user.getMail().toLowerCase().trim());
+        entity.setPassword(passwordEncoder.encode(user.getPassword()));
+        entity.setName(user.getName().trim());
         try {
-            UserEntity entity = new UserEntity();
-            entity.setMail(user.getMail().toLowerCase().trim());
-            entity.setPassword(passwordEncoder.encode(user.getPassword()));
-            entity.setName(user.getName().trim());
-            entity = userRepository.save(entity);
-            membershipService.initializeBaseline(entity.getId());
-
-            UserDTO dto = new UserDTO();
-            dto.setId(entity.getId());
-            dto.setMail(entity.getMail());
-            dto.setAdmin(entity.isAdmin());
-            //notificationService.addAdminNotification("Zaregistrován nový uživatel", entity.getMail());
-            return dto;
+            entity = userRepository.saveAndFlush(entity);
         } catch (DataIntegrityViolationException e) {
             throw new DuplicateEmailException();
         }
+        membershipService.initializeBaselineForNewUser(entity);
+
+        UserDTO dto = new UserDTO();
+        dto.setId(entity.getId());
+        dto.setMail(entity.getMail());
+        dto.setAdmin(entity.isAdmin());
+        //notificationService.addAdminNotification("Zaregistrován nový uživatel", entity.getMail());
+        return dto;
+    }
+
+    @Transactional
+    public UserDTO provisionFirebaseUser(FirebaseIdentity identity, String requestedName) {
+        if (identity.email() == null || identity.email().isBlank()) {
+            throw new AuthException("Firebase účet neobsahuje e-mail", AuthException.NOT_LOGGED_IN);
+        }
+
+        String normalizedEmail = identity.email().trim().toLowerCase(Locale.ROOT);
+        UserEntity existingByUid = userRepository.findByFirebaseUid(identity.uid()).orElse(null);
+        if (existingByUid != null) {
+            return returnUserWithoutSensitiveData(existingByUid);
+        }
+
+        UserEntity existingByEmail = userRepository.findByMailIgnoreCase(normalizedEmail).orElse(null);
+        if (existingByEmail != null) {
+            if (existingByEmail.getFirebaseUid() != null
+                    && !existingByEmail.getFirebaseUid().equals(identity.uid())) {
+                throw new AuthException(
+                        "E-mail je už propojený s jiným Firebase účtem",
+                        AuthException.INSUFFICIENT_RIGHTS
+                );
+            }
+            existingByEmail.setFirebaseUid(identity.uid());
+            if ((existingByEmail.getName() == null || existingByEmail.getName().isBlank())
+                    && requestedName != null && !requestedName.isBlank()) {
+                existingByEmail.setName(requestedName.trim());
+            }
+            return returnUserWithoutSensitiveData(userRepository.saveAndFlush(existingByEmail));
+        }
+
+        UserEntity entity = new UserEntity();
+        entity.setFirebaseUid(identity.uid());
+        entity.setMail(normalizedEmail);
+        entity.setName(resolveRegistrationName(requestedName, identity));
+        // Sloupec zůstává během kompatibilní migrace NOT NULL, ale nové přihlášení
+        // už tento náhodný interní údaj nikdy nepoužívá.
+        entity.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
+        try {
+            entity = userRepository.saveAndFlush(entity);
+        } catch (DataIntegrityViolationException exception) {
+            throw new DuplicateEmailException();
+        }
+        membershipService.initializeBaselineForNewUser(entity);
+        return returnUserWithoutSensitiveData(entity);
+    }
+
+    private String resolveRegistrationName(String requestedName, FirebaseIdentity identity) {
+        if (requestedName != null && !requestedName.isBlank()) {
+            return requestedName.trim();
+        }
+        if (identity.displayName() != null && !identity.displayName().isBlank()) {
+            return identity.displayName().trim();
+        }
+        int atIndex = identity.email().indexOf('@');
+        return atIndex > 0 ? identity.email().substring(0, atIndex) : identity.email();
     }
 
     @Override
@@ -190,7 +251,7 @@ public class UserService implements UserDetailsService {
         Authentication newAuth = new UsernamePasswordAuthenticationToken(
                 freshUser,
                 authentication.getCredentials(),
-                authentication.getAuthorities() // můžeš tam dát Collections.emptyList(), protože nepoužíváš authorities
+                freshUser.getAuthorities()
         );
         SecurityContextHolder.getContext().setAuthentication(newAuth);
     }

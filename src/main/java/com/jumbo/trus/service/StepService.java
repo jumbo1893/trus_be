@@ -85,9 +85,7 @@ public class StepService {
 
     @Transactional
     public List<StepDailyDTO> backgroundSync(StepBackgroundSyncRequestDTO request) {
-        UserEntity user = userRepository.findByMail(request.mail().toLowerCase().trim())
-                .filter(candidate -> passwordEncoder.matches(request.password(), candidate.getPassword()))
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+        UserEntity user = resolveBackgroundSyncUser(request);
         UserTeamRole role = userTeamRoleRepository.findByUserIdAndAppTeamId(user.getId(), request.appTeamId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN));
 
@@ -108,6 +106,21 @@ public class StepService {
                 .toList();
         publishStepEvent(user, request.appTeamId(), role, results);
         return results.stream().map(StepUpsertResult::entity).map(this::toDTO).toList();
+    }
+
+    private UserEntity resolveBackgroundSyncUser(StepBackgroundSyncRequestDTO request) {
+        var authentication = org.springframework.security.core.context.SecurityContextHolder
+                .getContext()
+                .getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof UserEntity user) {
+            return user;
+        }
+        if (request.mail() == null || request.password() == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+        }
+        return userRepository.findByMail(request.mail().toLowerCase().trim())
+                .filter(candidate -> passwordEncoder.matches(request.password(), candidate.getPassword()))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
     }
 
     @Transactional(readOnly = true)

@@ -8,6 +8,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Objects;
 
 @Entity
@@ -35,34 +36,34 @@ public class AppTeamEntity {
     private TeamEntity team;
 
     @OneToMany(mappedBy = "appTeam", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<UserTeamRole> teamRoles;
+    private List<UserTeamRole> teamRoles = new ArrayList<>();
 
     @OneToMany(mappedBy = "appTeam")
-    private List<PlayerEntity> playerList;
+    private List<PlayerEntity> playerList = new ArrayList<>();
 
     @OneToMany(mappedBy = "appTeam")
-    private List<MatchEntity> matchList;
+    private List<MatchEntity> matchList = new ArrayList<>();
 
     @OneToMany(mappedBy = "appTeam")
-    private List<NotificationEntity> notificationList;
+    private List<NotificationEntity> notificationList = new ArrayList<>();
 
     @OneToMany(mappedBy = "appTeam")
-    private List<GoalEntity> goalList;
+    private List<GoalEntity> goalList = new ArrayList<>();
 
     @OneToMany(mappedBy = "appTeam")
-    private List<ReceivedFineEntity> receivedFineList;
+    private List<ReceivedFineEntity> receivedFineList = new ArrayList<>();
 
     @OneToMany(mappedBy = "appTeam")
-    private List<SeasonEntity> seasonList;
+    private List<SeasonEntity> seasonList = new ArrayList<>();
 
     @OneToMany(mappedBy = "appTeam")
-    private List<FineEntity> fineList;
+    private List<FineEntity> fineList = new ArrayList<>();
 
     @OneToMany(mappedBy = "appTeam")
-    private List<BeerEntity> beerList;
+    private List<BeerEntity> beerList = new ArrayList<>();
 
     @OneToMany(mappedBy = "appTeam")
-    private List<DynamicTextEntity> dynamicTextList;
+    private List<DynamicTextEntity> dynamicTextList = new ArrayList<>();
 
     @Override
     public boolean equals(Object o) {

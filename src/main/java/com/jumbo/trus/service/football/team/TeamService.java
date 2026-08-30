@@ -56,6 +56,7 @@ public class TeamService {
     }
 
     public RegistrationSetup getRegistrationSetup() {
+        List<AppTeamDTO> appTeams = appTeamProvider.getAllAppTeams();
         List<LeagueWithTeams> currentLeagues = leagueService
                 .getAllLeagues(Organization.PKFL, true)
                 .stream()
@@ -66,7 +67,7 @@ public class TeamService {
                 .flatMap(league -> league.getTeamWithAppTeamsList().stream())
                 .collect(Collectors.toMap(TeamWithAppTeams::getId, team -> team));
 
-        appTeamProvider.getAllAppTeams().forEach(appTeam -> {
+        appTeams.forEach(appTeam -> {
             TeamWithAppTeams team = teamIdToTeamMap.get(appTeam.getTeam().getId());
             if (team != null) {
                 team.getAppTeamList().add(appTeam);
@@ -76,6 +77,7 @@ public class TeamService {
         AppTeamDTO primaryAppTeam = appTeamProvider.getLisciTrusAppTeam();
         return new RegistrationSetup(
                 currentLeagues,
+                appTeams,
                 new LeagueWithTeams(leagueService.getLeagueBy(primaryAppTeam.getTeam().getCurrentLeagueId())),
                 new TeamWithAppTeams(primaryAppTeam.getTeam()),
                 primaryAppTeam

@@ -25,10 +25,12 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.webjars.NotFoundException;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -57,18 +59,26 @@ public class AppTeamService implements AppTeamProvider {
         return appTeamRepository.findAll().stream().map(appTeamMapper::toDTO).toList();
     }
 
+    @Transactional
     public UserDTO registerAppTeam(AppTeamRegistration appTeamRegistration) {
         UserEntity user = userService.getCurrentUserEntity();
-        TeamEntity team = teamRepository.findById(appTeamRegistration.getFootballTeamId())
-                .orElseThrow(() -> new NotFoundException("Tým s id " + appTeamRegistration.getFootballTeamId() + " nenalezen!"));
+        validateAppTeamName(appTeamRegistration.getName());
+        TeamEntity team = appTeamRegistration.getFootballTeamId() == null
+                ? createStandaloneTeam(appTeamRegistration.getName().trim())
+                : teamRepository.findById(appTeamRegistration.getFootballTeamId())
+                    .orElseThrow(() -> new NotFoundException("Tým s id " + appTeamRegistration.getFootballTeamId() + " nenalezen!"));
         createNewAppTeamIfNotExists(appTeamRegistration, user, team);
         userService.refreshUserInSecurityContext();
         return userService.getCurrentUser();
     }
 
+    @Transactional
     public UserDTO addCurrentUserToAppTeam(Long appTeamId) {
         UserEntity user = userService.getCurrentUserEntity();
         AppTeamEntity appTeam = findAppTeamByIdOrThrow(appTeamId);
+        if (userTeamRoleRepository.findByUserIdAndAppTeamId(user.getId(), appTeamId).isPresent()) {
+            return userService.getCurrentUser();
+        }
         createNewUserTeamRole(user, appTeam, "READER");
         userService.refreshUserInSecurityContext();
         return userService.getCurrentUser();
@@ -96,7 +106,9 @@ public class AppTeamService implements AppTeamProvider {
         userTeamRole.setUser(user);
         userTeamRole.setAppTeam(appTeam);
         userTeamRole.setRole(role);
-        userTeamRoleRepository.save(userTeamRole);
+        UserTeamRole savedRole = userTeamRoleRepository.save(userTeamRole);
+        user.getTeamRoles().add(savedRole);
+        appTeam.getTeamRoles().add(savedRole);
     }
 
     public void addPlayerToCurrentUser(UserEntity userEntity, PlayerDTO playerDTO) {
@@ -144,14 +156,14 @@ public class AppTeamService implements AppTeamProvider {
 
     private AppTeamEntity createNewAppTeam(AppTeamRegistration appTeamRegistration, UserEntity user, TeamEntity team) {
         AppTeamEntity newAppTeam = new AppTeamEntity();
-        newAppTeam.setName(appTeamRegistration.getName());
+        newAppTeam.setName(appTeamRegistration.getName().trim());
         newAppTeam.setOwner(user);
         newAppTeam.setTeam(team);
         return appTeamRepository.save(newAppTeam);
     }
 
     private void createNewAppTeamIfNotExists(AppTeamRegistration appTeamRegistration, UserEntity user, TeamEntity team) {
-        Optional<AppTeamEntity> existingTeam = findAppTeamByName(appTeamRegistration.getName());
+        Optional<AppTeamEntity> existingTeam = appTeamRepository.findByNameIgnoreCase(appTeamRegistration.getName().trim());
         if (existingTeam.isPresent()) {
             List<ValidationField> fields = List.of(
                     new ValidationField("appTeamName", "Jméno " + appTeamRegistration.getName() + " již existuje!")
@@ -159,5 +171,21 @@ public class AppTeamService implements AppTeamProvider {
             throw new FieldValidationException("Dané jméno již existuje", fields);
         }
         createNewUserTeamRole(user, createNewAppTeam(appTeamRegistration, user, team), "ADMIN");
+    }
+
+    private TeamEntity createStandaloneTeam(String name) {
+        TeamEntity team = new TeamEntity();
+        team.setName(name);
+        team.setUri("custom:" + UUID.randomUUID());
+        return teamRepository.save(team);
+    }
+
+    private void validateAppTeamName(String name) {
+        if (name == null || name.isBlank()) {
+            throw new FieldValidationException(
+                    "Vyplň název týmu",
+                    List.of(new ValidationField("appTeamName", "Vyplň název týmu"))
+            );
+        }
     }
 }

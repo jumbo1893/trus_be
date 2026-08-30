@@ -142,4 +142,16 @@ class MembershipServiceTest {
         assertEquals(0, account.getGrantedUltraMillisRemaining());
         assertEquals(0, account.getGrantedPremiumMillisRemaining());
     }
+
+    @Test
+    void initializesNewUserWithoutReloadingIt() {
+        when(accountRepository.saveAndFlush(any(MembershipAccountEntity.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        service.initializeBaselineForNewUser(user);
+
+        verify(userRepository, never()).findByIdForUpdate(anyLong());
+        verify(accountRepository, never()).findByUserIdForUpdate(anyLong());
+        verify(accountRepository).saveAndFlush(argThat(created -> created.getUser() == user));
+    }
 }

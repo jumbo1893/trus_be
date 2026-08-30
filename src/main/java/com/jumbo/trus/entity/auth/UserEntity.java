@@ -29,6 +29,9 @@ public class UserEntity implements UserDetails {
     @Column(nullable = false, unique = true)
     private String mail;
 
+    @Column(name = "firebase_uid", unique = true)
+    private String firebaseUid;
+
 
     private String name;
 
@@ -39,25 +42,25 @@ public class UserEntity implements UserDetails {
     private boolean admin = false;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<UserTeamRole> teamRoles;
+    private List<UserTeamRole> teamRoles = new ArrayList<>();
 
     @OneToMany(mappedBy = "owner")
-    private List<AppTeamEntity> appTeamsOwner;
+    private List<AppTeamEntity> appTeamsOwner = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")
-    private List<AthleteEntity> athletes;
+    private List<AthleteEntity> athletes = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")
-    private List<FootbarAccountEntity> footbarAccounts;
+    private List<FootbarAccountEntity> footbarAccounts = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")
-    private List<OAuthStateEntity> oAuthStateEntities;
+    private List<OAuthStateEntity> oAuthStateEntities = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<DeviceToken> deviceTokens;
+    private List<DeviceToken> deviceTokens = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<EnabledPushNotification> enabledPushNotifications;
+    private List<EnabledPushNotification> enabledPushNotifications = new ArrayList<>();
 
     @Override
     public String getUsername() {

@@ -48,6 +48,16 @@ public class MembershipService {
         createAccount(user);
     }
 
+    /**
+     * Vytvoří účet pro právě persistovaného uživatele bez dalšího načítání
+     * stejné entity. Volající drží transakci, takže uživatel i členství vzniknou
+     * atomicky a Hibernate nemusí během registrace znovu připojovat jeho kolekce.
+     */
+    @Transactional
+    public void initializeBaselineForNewUser(UserEntity user) {
+        createAccount(user);
+    }
+
     @Transactional
     public MembershipSnapshot getSnapshot(Long userId) {
         UserEntity user = lockUser(userId);
