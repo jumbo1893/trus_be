@@ -7,6 +7,9 @@ import com.jumbo.trus.mapper.football.FootballMatchMapper;
 import com.jumbo.trus.repository.football.FootballMatchRepository;
 import com.jumbo.trus.repository.MatchRepository;
 import com.jumbo.trus.repository.football.FootballMatchPlayerRepository;
+import com.jumbo.trus.repository.participation.MatchParticipationRepository;
+import com.jumbo.trus.repository.participation.MatchParticipationCommentRepository;
+import com.jumbo.trus.repository.participation.MatchParticipationCommentReactionRepository;
 import com.jumbo.trus.entity.outbox.OutboxAggregateType;
 import com.jumbo.trus.entity.outbox.OutboxEventType;
 import com.jumbo.trus.service.outbox.OutboxEventPayloadFactory;
@@ -40,6 +43,9 @@ public class FootballMatchProcessor {
     private final MatchRepository matchRepository;
     private final FootballMatchPlayerRepository footballMatchPlayerRepository;
     private final OutboxEventService outboxEventService;
+    private final MatchParticipationRepository matchParticipationRepository;
+    private final MatchParticipationCommentRepository matchParticipationCommentRepository;
+    private final MatchParticipationCommentReactionRepository matchParticipationCommentReactionRepository;
 
     public List<FootballMatchDTO> getAllMatches() {
         return footballMatchRepository.findAll().stream()
@@ -139,6 +145,9 @@ public class FootballMatchProcessor {
         if (matchesId == null || matchesId.isEmpty()) {
             return;
         }
+        matchParticipationCommentReactionRepository.deleteObsoleteByLeague(leagueId, matchesId);
+        matchParticipationCommentRepository.deleteObsoleteByLeague(leagueId, matchesId);
+        matchParticipationRepository.deleteObsoleteByLeague(leagueId, matchesId);
         logger.debug("smazáno přebytečných zápasů: {} ", footballMatchRepository.deleteByLeagueIdAndMatchIdNotIn(leagueId, matchesId));
     }
 

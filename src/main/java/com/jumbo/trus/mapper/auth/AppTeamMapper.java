@@ -21,6 +21,7 @@ public abstract class AppTeamMapper {
     @Mapping(target = "owner", ignore = true)
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "dynamicTextList", ignore = true)
+    @Mapping(target = "matchParticipationPromptAudience", ignore = true)
     public abstract AppTeamEntity toEntity(AppTeamDTO source);
 
     @Mapping(target = "ownerId", source = "owner.id")

@@ -3,6 +3,7 @@ package com.jumbo.trus.entity.auth;
 import com.jumbo.trus.entity.*;
 import com.jumbo.trus.entity.football.TeamEntity;
 import com.jumbo.trus.entity.notification.NotificationEntity;
+import com.jumbo.trus.entity.participation.MatchParticipationPromptAudience;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -20,6 +21,11 @@ public class AppTeamEntity {
     private Long id;
 
     private String name;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 24)
+    private MatchParticipationPromptAudience matchParticipationPromptAudience =
+            MatchParticipationPromptAudience.ALL_PAIRED;
 
     @ManyToOne
     private UserEntity owner;

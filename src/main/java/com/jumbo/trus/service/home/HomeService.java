@@ -11,6 +11,7 @@ import com.jumbo.trus.dto.helper.WarningType;
 import com.jumbo.trus.dto.home.DashboardMatch;
 import com.jumbo.trus.dto.home.HomeSetup;
 import com.jumbo.trus.dto.match.MatchDTO;
+import com.jumbo.trus.dto.participation.MatchParticipationDetail;
 import com.jumbo.trus.dto.player.PlayerDTO;
 import com.jumbo.trus.dto.receivedfine.response.get.detailed.ReceivedFineDetailedResponse;
 import com.jumbo.trus.dto.weather.MatchWeatherDTO;
@@ -23,6 +24,7 @@ import com.jumbo.trus.service.football.match.FootballMatchService;
 import com.jumbo.trus.service.header.HeaderManager;
 import com.jumbo.trus.service.ip.GeoIpService;
 import com.jumbo.trus.service.match.MatchService;
+import com.jumbo.trus.service.participation.MatchParticipationService;
 import com.jumbo.trus.service.player.PlayerAchievementService;
 import com.jumbo.trus.service.player.PlayerService;
 import com.jumbo.trus.service.receivedFine.ReceivedFineService;
@@ -53,6 +55,7 @@ public class HomeService {
     private final UserVisitedCountryService userVisitedCountryService;
     private final CountryAchievementCalculator countryAchievementCalculator;
     private final WeatherService weatherService;
+    private final MatchParticipationService matchParticipationService;
 
     public HomeSetup setup(Long userId, AppTeamEntity appTeamEntity) {
         HomeSetup homeSetup = new HomeSetup();
@@ -60,7 +63,15 @@ public class HomeService {
 
         homeSetup.setNextBirthday(getUpcomingBirthday(appTeamEntity.getId()));
         homeSetup.setNextAndLastFootballMatch(getNextAndLastMatch(appTeamEntity));
-        homeSetup.setNextMatch(getNextMatch(appTeamEntity));
+        DashboardMatch nextMatch = getNextMatch(appTeamEntity, userId);
+        homeSetup.setNextMatch(nextMatch);
+        if (nextMatch != null && nextMatch.getMatch() != null) {
+            homeSetup.setParticipationPrompt(matchParticipationService.getPrompt(
+                    userId,
+                    appTeamEntity,
+                    nextMatch.getMatch().getFootballMatch()
+            ));
+        }
         homeSetup.setLastMatch(getLastMatch(appTeamEntity, player));
         homeSetup.setStatsBoards(statsBoardDataService.getStatsBoardDataList(appTeamEntity));
         VisitedCountryResponse visitedCountryResponse = userVisitedCountryService.addVisitedCountry(userId, geoIpService.getCountryCode(headerManager.getClientIp()));
@@ -84,7 +95,7 @@ public class HomeService {
         }
     }
 
-    private DashboardMatch getNextMatch(AppTeamEntity appTeamEntity) {
+    private DashboardMatch getNextMatch(AppTeamEntity appTeamEntity, Long userId) {
         FootballMatchDetail footballMatchDetail = footballMatchService.getNextAndLastFootballMatchDetail(appTeamEntity, true);
         if (footballMatchDetail == null) {
             return null;
@@ -100,7 +111,10 @@ public class HomeService {
         dashboardMatch.setMatch(footballMatchDetail);
         List<TextWithRedirect> matchInfoList = new ArrayList<>();
         addTextRedirectToList(matchInfoList, getWeatherText(footballMatchDetail.getFootballMatch()));
-        addTextRedirectToList(matchInfoList, getNumberOfPlayersText(footballMatchDetail, match, true));
+        addTextRedirectToList(
+                matchInfoList,
+                getParticipationText(footballMatchDetail, userId, appTeamEntity)
+        );
         dashboardMatch.setMatchInfoList(matchInfoList);
 
         return dashboardMatch;
@@ -157,6 +171,34 @@ public class HomeService {
             }
         }
 
+        return text;
+    }
+
+    private TextWithRedirect getParticipationText(
+            FootballMatchDetail footballMatchDetail,
+            Long userId,
+            AppTeamEntity appTeam
+    ) {
+        MatchParticipationDetail participation = matchParticipationService.getDetail(
+                footballMatchDetail.getFootballMatch().getId(),
+                userId,
+                appTeam
+        );
+
+        int attending = participation.getAttendingPlayers().size()
+                + participation.getAttendingFans().size();
+        int maybe = participation.getMaybePlayers().size()
+                + participation.getMaybeFans().size();
+        int notAttending = participation.getNotAttendingPlayers().size()
+                + participation.getNotAttendingFans().size();
+
+        TextWithRedirect text = new TextWithRedirect();
+        RedirectDTO redirectDTO = new RedirectDTO();
+        redirectDTO.setRedirect(Redirect.MATCH_PARTICIPATION);
+        redirectDTO.setFootballMatch(footballMatchDetail.getFootballMatch());
+        text.setRedirect(redirectDTO);
+        text.setText("Účast: " + attending + " ano, " + maybe + " možná, " + notAttending + " ne.");
+        text.setWarningType(attending == 0 ? WarningType.WARNING : WarningType.INFO);
         return text;
     }
 
