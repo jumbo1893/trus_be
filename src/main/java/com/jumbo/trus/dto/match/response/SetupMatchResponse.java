@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -26,6 +27,12 @@ public class SetupMatchResponse {
 
     @NotNull
     private List<PlayerDTO> fanList;
+
+    @NotNull
+    private List<PlayerDTO> attendingPlayers = new ArrayList<>();
+
+    @NotNull
+    private List<PlayerDTO> attendingFans = new ArrayList<>();
 
     @NotNull
     private SeasonDTO primarySeason;

@@ -2,15 +2,22 @@ package com.jumbo.trus.repository;
 
 import com.jumbo.trus.dto.player.IPlayerBirthday;
 import com.jumbo.trus.entity.PlayerEntity;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public interface PlayerRepository extends JpaRepository<PlayerEntity, Long> {
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT p FROM PlayerEntity p WHERE p.id = :playerId")
+    Optional<PlayerEntity> findByIdForUpdate(@Param("playerId") Long playerId);
 
     @Query("""
             SELECT p

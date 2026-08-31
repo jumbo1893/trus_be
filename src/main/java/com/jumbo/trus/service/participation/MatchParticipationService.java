@@ -29,6 +29,7 @@ import com.jumbo.trus.repository.football.FootballMatchRepository;
 import com.jumbo.trus.repository.participation.MatchParticipationCommentReactionRepository;
 import com.jumbo.trus.repository.participation.MatchParticipationCommentRepository;
 import com.jumbo.trus.repository.participation.MatchParticipationRepository;
+import com.jumbo.trus.service.auth.AppTeamService;
 import com.jumbo.trus.service.exceptions.FieldValidationException;
 import com.jumbo.trus.service.football.match.FootballMatchService;
 import com.jumbo.trus.service.helper.ValidationField;
@@ -64,6 +65,7 @@ public class MatchParticipationService {
     private final PlayerMapper playerMapper;
     private final FootballMatchService footballMatchService;
     private final PlayerService playerService;
+    private final AppTeamService appTeamService;
 
     @Transactional
     public MatchParticipationPrompt getPrompt(
@@ -127,7 +129,7 @@ public class MatchParticipationService {
     ) {
         FootballMatchEntity footballMatch = getFootballMatchForTeam(request.getFootballMatchId(), appTeam);
         UserTeamRole role = getCurrentRole(userId, appTeam.getId());
-        PlayerEntity player = resolveAndPairParticipant(role, request.getPlayerId(), appTeam);
+        PlayerEntity player = resolveAndPairParticipant(userId, role, request.getPlayerId(), appTeam);
 
         MatchParticipationEntity participation = participationRepository
                 .findByFootballMatchIdAndAppTeamIdAndPlayerId(
@@ -456,6 +458,7 @@ public class MatchParticipationService {
     }
 
     private PlayerEntity resolveAndPairParticipant(
+            Long userId,
             UserTeamRole role,
             Long requestedPlayerId,
             AppTeamEntity appTeam
@@ -473,13 +476,7 @@ public class MatchParticipationService {
             throw validationError("playerId", "Nejdřív vyber hráče nebo fanouška, za kterého odpovídáš.");
         }
 
-        PlayerEntity player = playerRepository.findById(requestedPlayerId)
-                .filter(candidate -> isTeamParticipant(candidate, appTeam))
-                .orElseThrow(() -> new NotFoundException("Hráč nebo fanoušek v tomto týmu nebyl nalezen."));
-
-        role.setPlayer(player);
-        userTeamRoleRepository.save(role);
-        return player;
+        return appTeamService.pairPlayerToRole(role, userId, requestedPlayerId, appTeam);
     }
 
     private PlayerEntity requireCurrentParticipant(Long userId, AppTeamEntity appTeam) {

@@ -37,8 +37,15 @@ public class MatchController {
 
     @RoleRequired("READER")
     @GetMapping("/setup")
-    public SetupMatchResponse setupMatch(@RequestParam(required = false) Long matchId) {
-        return matchService.setupMatch(matchId, appTeamService.getCurrentAppTeamOrThrow());
+    public SetupMatchResponse setupMatch(
+            @RequestParam(required = false) Long matchId,
+            @RequestParam(required = false) Long footballMatchId
+    ) {
+        return matchService.setupMatch(
+                matchId,
+                footballMatchId,
+                appTeamService.getCurrentAppTeamOrThrow()
+        );
     }
 
     @RoleRequired("READER")

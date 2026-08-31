@@ -7,14 +7,20 @@ import com.jumbo.trus.entity.MatchEntity;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.filter.BaseSeasonFilter;
 import com.jumbo.trus.entity.filter.SeasonFilter;
+import com.jumbo.trus.entity.participation.MatchParticipationEntity;
+import com.jumbo.trus.entity.participation.MatchParticipationStatus;
 import com.jumbo.trus.mapper.MatchMapper;
 import com.jumbo.trus.mapper.football.FootballMatchMapper;
+import com.jumbo.trus.repository.participation.MatchParticipationRepository;
 import com.jumbo.trus.service.SeasonService;
 import com.jumbo.trus.service.football.match.FootballMatchService;
 import com.jumbo.trus.service.helper.PairSeasonMatch;
 import com.jumbo.trus.service.player.PlayerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.jumbo.trus.config.Config.ALL_SEASON_ID;
 
@@ -28,8 +34,13 @@ public class MatchSetupService {
     private final SeasonService seasonService;
     private final PlayerService playerService;
     private final FootballMatchService footballMatchService;
+    private final MatchParticipationRepository matchParticipationRepository;
 
-    public SetupMatchResponse setupMatch(Long matchId, AppTeamEntity appTeam) {
+    public SetupMatchResponse setupMatch(
+            Long matchId,
+            Long footballMatchId,
+            AppTeamEntity appTeam
+    ) {
         SetupMatchResponse response = new SetupMatchResponse();
 
         if (matchId == null) {
@@ -39,6 +50,9 @@ public class MatchSetupService {
         }
 
         fillSelectableValues(response, appTeam);
+        if (matchId == null && footballMatchId != null) {
+            fillAttendingParticipants(response, footballMatchId, appTeam);
+        }
         return response;
     }
 
@@ -114,5 +128,30 @@ public class MatchSetupService {
         response.setSeasonList(seasonService.getAll(seasonFilter));
         response.setFanList(playerService.getAllByFan(true, appTeam.getId()));
         response.setPlayerList(playerService.getAllByFan(false, appTeam.getId()));
+    }
+
+    private void fillAttendingParticipants(
+            SetupMatchResponse response,
+            Long footballMatchId,
+            AppTeamEntity appTeam
+    ) {
+        Set<Long> attendingPlayerIds = matchParticipationRepository
+                .findAllByFootballMatchIdAndAppTeamIdAndStatusOrderByPlayerNameAsc(
+                        footballMatchId,
+                        appTeam.getId(),
+                        MatchParticipationStatus.ATTENDING
+                )
+                .stream()
+                .map(MatchParticipationEntity::getPlayer)
+                .filter(player -> player != null && !player.isDeleted())
+                .map(player -> player.getId())
+                .collect(Collectors.toSet());
+
+        response.setAttendingPlayers(response.getPlayerList().stream()
+                .filter(player -> attendingPlayerIds.contains(player.getId()))
+                .toList());
+        response.setAttendingFans(response.getFanList().stream()
+                .filter(player -> attendingPlayerIds.contains(player.getId()))
+                .toList());
     }
 }

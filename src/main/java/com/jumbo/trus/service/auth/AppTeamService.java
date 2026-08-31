@@ -111,21 +111,70 @@ public class AppTeamService implements AppTeamProvider {
         appTeam.getTeamRoles().add(savedRole);
     }
 
+    @Transactional
     public void addPlayerToCurrentUser(UserEntity userEntity, PlayerDTO playerDTO) {
-        UserTeamRole userTeamRole = findCurrentTeamRole(userEntity.getTeamRoles());
-        if (userTeamRole == null) {
-            throw new NotFoundException("Nenalezena role pro user " + userEntity.getUsername());
-        }
-        PlayerEntity playerEntity;
+        AppTeamEntity appTeam = getCurrentAppTeamOrThrow();
+        UserTeamRole userTeamRole = userTeamRoleRepository
+                .findByUserIdAndAppTeamId(userEntity.getId(), appTeam.getId())
+                .orElseThrow(() -> new NotFoundException("Nenalezena role pro user " + userEntity.getUsername()));
+
         if (playerDTO.equals(PlayerService.noPlayer())) {
-            playerEntity = null;
+            userTeamRole.setPlayer(null);
+            userTeamRoleRepository.save(userTeamRole);
+            return;
         }
-        else {
-            playerEntity = getPlayerEntity(playerDTO.getId());
+
+        pairPlayerToRole(userTeamRole, userEntity.getId(), playerDTO.getId(), appTeam);
+    }
+
+    /**
+     * Jediné místo, které smí vytvořit vazbu uživatel–hráč. Díky zámku nad
+     * hráčem platí kontrola i pro souběžné požadavky z různých obrazovek.
+     */
+    @Transactional
+    public PlayerEntity pairPlayerToRole(
+            UserTeamRole userTeamRole,
+            Long userId,
+            Long playerId,
+            AppTeamEntity appTeam
+    ) {
+
+        // U již existující (i historicky duplicitní) vazby nejde o nové spárování.
+        if (userTeamRole.getPlayer() != null
+                && userTeamRole.getPlayer().getId() == playerId
+                && !userTeamRole.getPlayer().isDeleted()
+                && userTeamRole.getPlayer().getAppTeam() != null
+                && appTeam.getId().equals(userTeamRole.getPlayer().getAppTeam().getId())) {
+            return userTeamRole.getPlayer();
+        }
+
+        PlayerEntity playerEntity = playerRepository.findByIdForUpdate(playerId)
+                .filter(player -> !player.isDeleted())
+                .filter(player -> player.getAppTeam() != null
+                        && appTeam.getId().equals(player.getAppTeam().getId()))
+                .orElseThrow(() -> new EntityNotFoundException(String.valueOf(playerId)));
+
+        List<UserTeamRole> conflictingAssignments = userTeamRoleRepository.findPlayerAssignmentsOfOtherUsers(
+                appTeam.getId(),
+                playerEntity.getId(),
+                userId
+        );
+        if (!conflictingAssignments.isEmpty()) {
+            UserEntity pairedUser = conflictingAssignments.get(0).getUser();
+            String pairedUserName = pairedUser.getName();
+            if (pairedUserName == null || pairedUserName.isBlank()) {
+                pairedUserName = pairedUser.getMail();
+            }
+            String message = "Tento hráč je již spárovaný s uživatelem " + pairedUserName + ".";
+            throw new FieldValidationException(
+                    message,
+                    List.of(new ValidationField("player", message))
+            );
         }
 
         userTeamRole.setPlayer(playerEntity);
         userTeamRoleRepository.save(userTeamRole);
+        return playerEntity;
     }
 
     public PlayerEntity getPlayerEntity(long playerId) {

@@ -1,6 +1,7 @@
 package com.jumbo.trus.repository.participation;
 
 import com.jumbo.trus.entity.participation.MatchParticipationEntity;
+import com.jumbo.trus.entity.participation.MatchParticipationStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -22,12 +23,22 @@ public interface MatchParticipationRepository extends JpaRepository<MatchPartici
             Long appTeamId
     );
 
+    List<MatchParticipationEntity> findAllByFootballMatchIdAndAppTeamIdAndStatusOrderByPlayerNameAsc(
+            Long footballMatchId,
+            Long appTeamId,
+            MatchParticipationStatus status
+    );
+
     @Modifying
-    @Query("""
-            DELETE FROM MatchParticipationEntity participation
-            WHERE participation.footballMatch.league.id = :leagueId
-              AND participation.footballMatch.id NOT IN :footballMatchIds
-            """)
+    @Query(value = """
+            DELETE FROM match_participation
+            WHERE football_match_id IN (
+                SELECT football_match.id
+                FROM football_match football_match
+                WHERE football_match.league_id = :leagueId
+                  AND football_match.id NOT IN (:footballMatchIds)
+            )
+            """, nativeQuery = true)
     void deleteObsoleteByLeague(
             @Param("leagueId") Long leagueId,
             @Param("footballMatchIds") List<Long> footballMatchIds

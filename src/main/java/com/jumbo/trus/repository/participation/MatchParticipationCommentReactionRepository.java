@@ -27,11 +27,19 @@ public interface MatchParticipationCommentReactionRepository extends JpaReposito
     void deleteAllByCommentIds(@Param("commentIds") Collection<Long> commentIds);
 
     @Modifying
-    @Query("""
-            DELETE FROM MatchParticipationCommentReactionEntity reaction
-            WHERE reaction.comment.participation.footballMatch.league.id = :leagueId
-              AND reaction.comment.participation.footballMatch.id NOT IN :footballMatchIds
-            """)
+    @Query(value = """
+            DELETE FROM match_participation_comment_reaction
+            WHERE comment_id IN (
+                SELECT comment.id
+                FROM match_participation_comment comment
+                JOIN match_participation participation
+                  ON participation.id = comment.participation_id
+                JOIN football_match football_match
+                  ON football_match.id = participation.football_match_id
+                WHERE football_match.league_id = :leagueId
+                  AND football_match.id NOT IN (:footballMatchIds)
+            )
+            """, nativeQuery = true)
     void deleteObsoleteByLeague(
             @Param("leagueId") Long leagueId,
             @Param("footballMatchIds") List<Long> footballMatchIds

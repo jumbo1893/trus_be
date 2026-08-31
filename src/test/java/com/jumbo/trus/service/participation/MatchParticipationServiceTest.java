@@ -26,6 +26,7 @@ import com.jumbo.trus.repository.football.FootballMatchRepository;
 import com.jumbo.trus.repository.participation.MatchParticipationRepository;
 import com.jumbo.trus.repository.participation.MatchParticipationCommentRepository;
 import com.jumbo.trus.repository.participation.MatchParticipationCommentReactionRepository;
+import com.jumbo.trus.service.auth.AppTeamService;
 import com.jumbo.trus.service.football.match.FootballMatchService;
 import com.jumbo.trus.service.exceptions.FieldValidationException;
 import com.jumbo.trus.service.player.PlayerService;
@@ -58,6 +59,7 @@ class MatchParticipationServiceTest {
     private final PlayerMapper playerMapper = mock(PlayerMapper.class);
     private final FootballMatchService footballMatchService = mock(FootballMatchService.class);
     private final PlayerService playerService = mock(PlayerService.class);
+    private final AppTeamService appTeamService = mock(AppTeamService.class);
     private final MatchParticipationService service = new MatchParticipationService(
             participationRepository,
             commentRepository,
@@ -68,7 +70,8 @@ class MatchParticipationServiceTest {
             appTeamRepository,
             playerMapper,
             footballMatchService,
-            playerService
+            playerService,
+            appTeamService
     );
 
     @Test
@@ -197,7 +200,10 @@ class MatchParticipationServiceTest {
 
         when(footballMatchRepository.findById(20L)).thenReturn(Optional.of(footballMatch));
         when(userTeamRoleRepository.findByUserIdAndAppTeamId(2L, 1L)).thenReturn(Optional.of(role));
-        when(playerRepository.findById(3L)).thenReturn(Optional.of(player));
+        when(appTeamService.pairPlayerToRole(role, 2L, 3L, appTeam)).thenAnswer(invocation -> {
+            role.setPlayer(player);
+            return player;
+        });
         when(participationRepository.findByFootballMatchIdAndAppTeamIdAndPlayerId(20L, 1L, 3L))
                 .thenReturn(Optional.empty());
         when(participationRepository.findAllByFootballMatchIdAndAppTeamIdOrderByPlayerNameAsc(20L, 1L))
@@ -213,9 +219,33 @@ class MatchParticipationServiceTest {
 
         assertThat(role.getPlayer()).isSameAs(player);
         assertThat(detail.getCurrentPlayer()).isSameAs(playerDto);
-        verify(userTeamRoleRepository).save(role);
+        verify(appTeamService).pairPlayerToRole(role, 2L, 3L, appTeam);
         verify(participationRepository).save(any(MatchParticipationEntity.class));
         verify(commentRepository).save(any(MatchParticipationCommentEntity.class));
+    }
+
+    @Test
+    void refusesParticipationPairingWhenPlayerBelongsToAnotherUser() {
+        AppTeamEntity appTeam = appTeam(1L, 10L);
+        UserTeamRole role = role(appTeam, null);
+        FootballMatchEntity footballMatch = footballMatch(20L, 10L, 11L);
+        String message = "Tento hráč je již spárovaný s uživatelem Petr.";
+
+        when(footballMatchRepository.findById(20L)).thenReturn(Optional.of(footballMatch));
+        when(userTeamRoleRepository.findByUserIdAndAppTeamId(2L, 1L)).thenReturn(Optional.of(role));
+        when(appTeamService.pairPlayerToRole(role, 2L, 3L, appTeam))
+                .thenThrow(new FieldValidationException(message, List.of()));
+
+        assertThatThrownBy(() -> service.respond(
+                2L,
+                appTeam,
+                new MatchParticipationRequest(20L, 3L, MatchParticipationStatus.ATTENDING, null)
+        ))
+                .isInstanceOf(FieldValidationException.class)
+                .hasMessage(message);
+
+        verify(participationRepository, never()).save(any());
+        verify(commentRepository, never()).save(any());
     }
 
     @Test

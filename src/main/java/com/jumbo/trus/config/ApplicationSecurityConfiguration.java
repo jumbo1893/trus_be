@@ -36,6 +36,7 @@ public class ApplicationSecurityConfiguration {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.POST, "/user/create", "/user/auth").permitAll()
                         .requestMatchers(HttpMethod.GET,
+                                "/.well-known/apple-app-site-association",
                                 "/user/registration-setup",
                                 "/strava/callback",
                                 "/footbar/callback",

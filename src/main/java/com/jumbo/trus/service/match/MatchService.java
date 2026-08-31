@@ -64,8 +64,12 @@ public class MatchService {
         return matchQueryService.getPlayerListByFilteredByFansByMatchId(matchId, fan);
     }
 
-    public SetupMatchResponse setupMatch(Long matchId, AppTeamEntity appTeam) {
-        return matchSetupService.setupMatch(matchId, appTeam);
+    public SetupMatchResponse setupMatch(
+            Long matchId,
+            Long footballMatchId,
+            AppTeamEntity appTeam
+    ) {
+        return matchSetupService.setupMatch(matchId, footballMatchId, appTeam);
     }
 
     public MatchDTO getMatch(long matchId) {
