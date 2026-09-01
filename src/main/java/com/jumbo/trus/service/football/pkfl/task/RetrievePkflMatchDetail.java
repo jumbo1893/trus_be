@@ -35,7 +35,7 @@ public class RetrievePkflMatchDetail {
             detail.setRefereeComment(getRefereeComment(commentSection));
             if (upperPart != null) {
                 detail.setHomeTeamPlayers(getPlayersFromMatch(getTrsFromTables(lineUpPart, true), footballMatchDTO.getAwayGoalNumber()));
-                detail.setAwayTeamPlayers(getPlayersFromMatch(getTrsFromTables(lineUpPart, false), footballMatchDTO.getAwayGoalNumber()));
+                detail.setAwayTeamPlayers(getPlayersFromMatch(getTrsFromTables(lineUpPart, false), footballMatchDTO.getHomeGoalNumber()));
             }
             else {
                 detail.setHomeTeamPlayers(new ArrayList<>());

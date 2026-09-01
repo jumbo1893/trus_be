@@ -48,6 +48,13 @@ pkfl:
   login_page: ${PKFL_LOGIN_PAGE:https://pkfl.cz/admin/auth/in}
   login_mail: ${PKFL_LOGIN_MAIL}
   login_password: ${PKFL_LOGIN_PASSWORD}
+  jobs:
+    zone: ${PKFL_JOBS_ZONE:Europe/Prague}
+    reference-data-cron: ${PKFL_REFERENCE_DATA_CRON:0 30 2 * * *}
+    matches-weekday-cron: ${PKFL_MATCHES_WEEKDAY_CRON:0 0 1,13 * * MON-FRI}
+    matches-weekend-cron: ${PKFL_MATCHES_WEEKEND_CRON:0 0 7-23 * * SAT,SUN}
+    match-detail-refresh-hours: ${PKFL_MATCH_DETAIL_REFRESH_HOURS:72}
+    missing-referee-comment-refresh-hours: ${PKFL_MISSING_REFEREE_COMMENT_REFRESH_HOURS:168}
 
 strava:
   url: ${SERVER_URL:https://localhost:8443}

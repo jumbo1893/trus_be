@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
-import org.jsoup.select.Elements;
+import org.jsoup.nodes.Document;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -17,6 +17,7 @@ import java.util.Map;
 public class LoginToPkfl {
 
     private final PkflProperties pkflProperties;
+    private Map<String, String> sessionCookies = Map.of();
 
     /*@Value("${pkfl.login_page}")
     private static String PKFL_LOGIN_PAGE;
@@ -27,14 +28,28 @@ public class LoginToPkfl {
     @Value("${pkfl.login_password}")
     private static String PKFL_LOGIN_PASSWORD;*/
 
-    public Connection.Response getLoggedAccessToPkflWeb(String url) throws IOException {
-        Connection.Response res = Jsoup.connect(url).method(Connection.Method.GET).execute();
-        Elements logout = res.parse().getElementsByClass("fa fa-sign-out");
-        if (!logout.isEmpty()) {
-            return res;
+    public synchronized Document getLoggedDocument(String url) throws IOException {
+        if (!sessionCookies.isEmpty()) {
+            Document document = getDocument(url, sessionCookies);
+            if (isLoggedIn(document)) {
+                return document;
+            }
         }
-        return Jsoup.connect(url).method(Connection.Method.GET).cookies(loginToPkflWeb()).execute();
 
+        sessionCookies = Map.copyOf(loginToPkflWeb());
+        return getDocument(url, sessionCookies);
+    }
+
+    private Document getDocument(String url, Map<String, String> cookies) throws IOException {
+        return Jsoup.connect(url)
+                .method(Connection.Method.GET)
+                .cookies(cookies)
+                .execute()
+                .parse();
+    }
+
+    private boolean isLoggedIn(Document document) {
+        return document.selectFirst(".fa.fa-sign-out") != null;
     }
 
     private Map<String, String> loginToPkflWeb() throws IOException {

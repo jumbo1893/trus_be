@@ -12,11 +12,15 @@ import com.jumbo.trus.service.football.pkfl.task.RetrievePkflMatchesByLeague;
 import com.jumbo.trus.service.football.pkfl.task.helper.FootballMatchTaskHelper;
 import com.jumbo.trus.service.football.team.TeamService;
 import com.jumbo.trus.service.helper.Pair;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -38,6 +42,7 @@ public class FootballMatchService {
     private final UpdateService updateService;
     private final RetrievePkflMatchesByLeague retrievePkflMatches;
     private final FootballMatchDetailProcessor footballMatchDetailProcessor;
+    private final PlatformTransactionManager transactionManager;
 
     public List<FootballMatchDTO> getAllMatches() {
         return footballMatchProcessor.getAllMatches();
@@ -112,16 +117,25 @@ public class FootballMatchService {
         return footballMatchProcessor.getMatchById(id);
     }
 
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void updatePkflMatches() {
         logger.debug("Updating PKFL matches...");
         List<LeagueDTO> leagues = leagueService.getAllLeagues(Organization.PKFL, !isNeededToLoadAllLeagues());
         logger.debug("celkem načteno {} lig", leagues.size());
+        TransactionTemplate leagueTransaction = createLeagueTransaction();
         for (LeagueDTO league : leagues) {
-            processMatches(retrievePkflMatches.getMatches(league), league);
+            List<FootballMatchTaskHelper> matches = retrievePkflMatches.getMatches(league);
+            leagueTransaction.executeWithoutResult(status -> processMatches(matches, league));
         }
         if (isNeededToLoadAllLeagues()) {
             setUpdateTag();
         }
+    }
+
+    private TransactionTemplate createLeagueTransaction() {
+        TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager);
+        transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+        return transactionTemplate;
     }
 
     private void enhanceTeamsInFootballMatchWithTableMatch(FootballMatchDTO footballMatchDTO) {

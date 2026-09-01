@@ -14,15 +14,17 @@ import java.util.Map;
 
 public class SSLHelper {
 
+    private static final SSLSocketFactory SOCKET_FACTORY = createSocketFactory();
+
     static public Connection getConnection(String url){
-        return Jsoup.connect(url).ignoreHttpErrors(true).sslSocketFactory(SSLHelper.socketFactory());
+        return Jsoup.connect(url).ignoreHttpErrors(true).sslSocketFactory(SOCKET_FACTORY);
     }
 
     static public Connection getConnection(String url, Map<String, String> cookies){
-        return Jsoup.connect(url).cookies(cookies).ignoreHttpErrors(true).sslSocketFactory(SSLHelper.socketFactory());
+        return Jsoup.connect(url).cookies(cookies).ignoreHttpErrors(true).sslSocketFactory(SOCKET_FACTORY);
     }
 
-    static private SSLSocketFactory socketFactory() {
+    private static SSLSocketFactory createSocketFactory() {
         TrustManager[] trustAllCerts = new TrustManager[]{new X509TrustManager() {
             public java.security.cert.X509Certificate[] getAcceptedIssuers() {
                 return new X509Certificate[0];

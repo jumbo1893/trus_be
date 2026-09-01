@@ -4,7 +4,6 @@ import com.jumbo.trus.dto.football.FootballPlayerDTO;
 import com.jumbo.trus.dto.football.TeamDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jsoup.Connection;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -29,9 +28,8 @@ public class RetrieveTeamPlayers {
         List<FootballPlayerDTO> footballers = new ArrayList<>();
         try {
             log.debug("Zpracovávám tým {}", teamDTO.getName());
-            Connection.Response response = loginToPkfl.getLoggedAccessToPkflWeb(teamDTO.getUri());
+            Document document = loginToPkfl.getLoggedDocument(teamDTO.getUri());
             log.debug("načtena URL");
-            Document document = response.parse();
             Element playerTable = Objects.requireNonNull(document.getElementById("soupiska"));
             Elements players = playerTable.select("tr");
             for (Element player : players) {

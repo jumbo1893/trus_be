@@ -4,26 +4,20 @@ import com.jumbo.trus.service.football.league.LeagueService;
 import com.jumbo.trus.service.football.match.FootballMatchService;
 import com.jumbo.trus.service.football.player.FootballPlayerService;
 import com.jumbo.trus.service.football.team.TeamService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class PkflScheduledJob {
 
-    @Autowired
-    private LeagueService leagueService;
-
-    @Autowired
-    private TeamService teamService;
-
-    @Autowired
-    private FootballPlayerService footballPlayerService;
-
-    @Autowired
-    private FootballMatchService footballMatchService;
+    private final LeagueService leagueService;
+    private final TeamService teamService;
+    private final FootballPlayerService footballPlayerService;
+    private final FootballMatchService footballMatchService;
 
     public void runPkflLeagueJob() {
         leagueService.updatePkflLeagues();
@@ -41,14 +35,36 @@ public class PkflScheduledJob {
         footballMatchService.updatePkflMatches();
     }
 
-    @Scheduled(cron = "0 0 1,13 * * MON-FRI")  // každý pracovní den ve 01:00 a 13:00
-    @Scheduled(cron = "0 0 * * * SAT,SUN")     // každý víkend každou celou hodinu
+    @Scheduled(
+            cron = "${pkfl.jobs.reference-data-cron:0 30 2 * * *}",
+            zone = "${pkfl.jobs.zone:Europe/Prague}"
+    )
+    public void runReferenceDataJob() {
+        log.info("Spouštím denní PKFL synchronizaci lig, týmů a soupisek");
+        runPkflLeagueJob();
+        runPkflTeamJob();
+        runPkflPlayerJob();
+        log.info("Denní PKFL synchronizace lig, týmů a soupisek dokončena");
+    }
+
+    @Scheduled(
+            cron = "${pkfl.jobs.matches-weekday-cron:0 0 1,13 * * MON-FRI}",
+            zone = "${pkfl.jobs.zone:Europe/Prague}"
+    )
+    @Scheduled(
+            cron = "${pkfl.jobs.matches-weekend-cron:0 0 7-23 * * SAT,SUN}",
+            zone = "${pkfl.jobs.zone:Europe/Prague}"
+    )
+    public void runScheduledMatchJob() {
+        log.info("Spouštím PKFL synchronizaci výsledků a statistik zápasů");
+        runPkflMatchJob();
+        log.info("PKFL synchronizace výsledků a statistik zápasů dokončena");
+    }
+
     public void runFullPkflJob() {
-        log.debug("Spuštění plánovaného PKFL jobu");
-        runPkflLeagueJob();             // 1. Leagues
-        runPkflTeamJob();                     // 2. Teams
-        runPkflPlayerJob();         // 3. Players
-        runPkflMatchJob();      // 4. Matches
-        log.debug("PKFL job dokončen");
+        log.info("Spouštím kompletní PKFL synchronizaci");
+        runReferenceDataJob();
+        runPkflMatchJob();
+        log.info("Kompletní PKFL synchronizace dokončena");
     }
 }

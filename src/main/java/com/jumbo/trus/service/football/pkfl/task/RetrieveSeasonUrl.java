@@ -3,7 +3,6 @@ package com.jumbo.trus.service.football.pkfl.task;
 import com.jumbo.trus.dto.pkfl.PkflSeasonDTO;
 import com.jumbo.trus.service.task.SSLHelper;
 import lombok.RequiredArgsConstructor;
-import org.jsoup.Connection;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -23,8 +22,7 @@ public class RetrieveSeasonUrl {
         List<PkflSeasonDTO> returnSeasons = new ArrayList<>();
         try {
             //Connect to the website
-            Connection.Response res = loginToPkfl.getLoggedAccessToPkflWeb(trusUrl);
-            Document document = res.parse();
+            Document document = loginToPkfl.getLoggedDocument(trusUrl);
             Element matchesSpinnerDiv = document.getElementsByClass("dropdown-content").get(0);
             Elements spinnerSeason = matchesSpinnerDiv.select("a[href]");
 

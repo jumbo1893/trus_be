@@ -46,6 +46,7 @@ public class FootballMatchProcessor {
     private final MatchParticipationRepository matchParticipationRepository;
     private final MatchParticipationCommentRepository matchParticipationCommentRepository;
     private final MatchParticipationCommentReactionRepository matchParticipationCommentReactionRepository;
+    private final PkflMatchRefreshPolicy pkflMatchRefreshPolicy;
 
     public List<FootballMatchDTO> getAllMatches() {
         return footballMatchRepository.findAll().stream()
@@ -90,7 +91,7 @@ public class FootballMatchProcessor {
      */
     public Pair<MatchProcessingResult, Long> processMatch(FootballMatchDTO repositoryMatch, FootballMatchDTO footballMatchDTO) {
             //matchLog("----procesuji zápas----", footballMatchDTO, repositoryMatch);
-            if (isNeededToGetMatchDetails(repositoryMatch, footballMatchDTO)) {
+            if (pkflMatchRefreshPolicy.shouldFetchDetails(repositoryMatch, footballMatchDTO)) {
                 //logger.debug("procesuji úplný zápas");
 
                 long savedMatchId = enhanceFootballMatchWithDetailsAndSave(footballMatchDTO, repositoryMatch);
@@ -157,21 +158,8 @@ public class FootballMatchProcessor {
                 .orElse(null);
     }
 
-    private boolean isNeededToGetMatchDetails(FootballMatchDTO repositoryMatch, FootballMatchDTO newMatch) {
-        return (newMatch.isAlreadyPlayed() && (repositoryMatch == null ||
-                (repositoryMatch.isAlreadyPlayed() && isRefereeCommentNull(repositoryMatch)) || isNeededToUpdateDetailedMatch(repositoryMatch, newMatch)));
-    }
-
-    private boolean isRefereeCommentNull(FootballMatchDTO footballMatchDTO) {
-        return footballMatchDTO.getRefereeComment() == null || footballMatchDTO.getRefereeComment().isEmpty() || footballMatchDTO.getRefereeComment().equals(RetrievePkflMatchDetail.NO_REFEREE_COMMENT);
-    }
-
     private boolean isNeededToSaveSimpleMatch(FootballMatchDTO repositoryMatch, FootballMatchDTO newMatch) {
         return repositoryMatch == null || !repositoryMatch.equals(newMatch);
-    }
-
-    private boolean isNeededToUpdateDetailedMatch(FootballMatchDTO repositoryMatch, FootballMatchDTO newMatch) {
-        return repositoryMatch != null && (!isRefereeCommentNull(repositoryMatch) && !repositoryMatch.equals(newMatch));
     }
 
     private long enhanceFootballMatchWithDetailsAndSave(FootballMatchDTO footballMatchDTO, FootballMatchDTO repositoryMatch) {
