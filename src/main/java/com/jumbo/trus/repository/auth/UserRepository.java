@@ -17,20 +17,10 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
     Optional<UserEntity> findByMailIgnoreCase(String mail);
 
-    @EntityGraph(attributePaths = {
-            "teamRoles",
-            "teamRoles.appTeam",
-            "teamRoles.player",
-            "teamRoles.player.footballPlayer"
-    })
+    @EntityGraph(attributePaths = {"teamRoles", "teamRoles.appTeam"})
     Optional<UserEntity> findByFirebaseUid(String firebaseUid);
 
-    @EntityGraph(attributePaths = {
-            "teamRoles",
-            "teamRoles.appTeam",
-            "teamRoles.player",
-            "teamRoles.player.footballPlayer"
-    })
+    @EntityGraph(attributePaths = {"teamRoles", "teamRoles.appTeam"})
     Optional<UserEntity> findWithTeamRolesByMailIgnoreCase(String mail);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)

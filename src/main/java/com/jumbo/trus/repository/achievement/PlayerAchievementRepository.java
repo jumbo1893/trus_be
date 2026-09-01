@@ -70,17 +70,6 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
     List<PlayerAchievementEntity> findAllByPlayerIdIn(List<Long> playerIds);
 
     @Query("""
-            SELECT playerAchievement
-            FROM PlayerAchievementEntity playerAchievement
-            JOIN FETCH playerAchievement.achievement
-            JOIN FETCH playerAchievement.player
-            WHERE playerAchievement.player.id IN :playerIds
-            """)
-    List<PlayerAchievementEntity> findAllForDetailsByPlayerIds(
-            @Param("playerIds") Collection<Long> playerIds
-    );
-
-    @Query("""
     SELECT playerAchievement
     FROM PlayerAchievementEntity playerAchievement
     JOIN FETCH playerAchievement.achievement achievement

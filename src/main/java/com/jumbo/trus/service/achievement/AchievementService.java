@@ -209,22 +209,22 @@ public class AchievementService {
     }
 
 
-    @Transactional(readOnly = true)
     public List<AchievementDetail> getAllDetailedAchievements(long appTeamId) {
-        List<PlayerDTO> teamMembers = achievementDetailService.getPlayers(appTeamId);
-        List<Long> playerIdList = teamMembers.stream()
-                .map(PlayerDTO::getId)
-                .toList();
+        List<Long> playerIdList = achievementDetailService.getPlayerIdList(appTeamId);
 
-        List<AchievementDTO> achievements = achievementRepository.findAllWithTypes()
+        List<AchievementDTO> achievements = achievementRepository.findAll()
                 .stream()
                 .map(achievementMapper::toDTO)
                 .toList();
 
-        achievementRarityService.enrichWithRarity(achievements, appTeamId, teamMembers);
+        achievementRarityService.enrichWithRarity(achievements, appTeamId);
 
-        return achievementDetailService.returnAchievementDetails(achievements, playerIdList)
-                .stream()
+        return achievements.stream()
+                .map(achievement -> achievementDetailService.returnAchievementDetail(
+                        achievement,
+                        playerIdList,
+                        true
+                ))
                 .sorted(new OrderAchievementBySuccessRate())
                 .toList();
     }
