@@ -5,8 +5,20 @@ spring:
     password: ${PROD_DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
     name: trus-app
+    hikari:
+      maximum-pool-size: ${DB_POOL_MAX_SIZE:10}
+      minimum-idle: ${DB_POOL_MIN_IDLE:2}
+      connection-timeout: ${DB_CONNECTION_TIMEOUT_MS:5000}
+      validation-timeout: ${DB_VALIDATION_TIMEOUT_MS:2000}
+      leak-detection-threshold: ${DB_LEAK_DETECTION_THRESHOLD_MS:0}
+      data-source-properties:
+        connectTimeout: ${DB_CONNECT_TIMEOUT_SECONDS:5}
+        socketTimeout: ${DB_SOCKET_TIMEOUT_SECONDS:30}
+        tcpKeepAlive: true
 
 logging:
   level:
     root: "warn"
     com.jumbo.trus: "debug"
+
+spring.jpa.properties.hibernate.default_batch_fetch_size: 50

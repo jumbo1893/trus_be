@@ -21,16 +21,22 @@ public class AchievementRarityService {
     private final PlayerAchievementRepository playerAchievementRepository;
 
     public void enrichWithRarity(List<AchievementDTO> achievements, Long appTeamId) {
-        RarityContext context = createContext(appTeamId);
+        enrichWithRarity(achievements, appTeamId, playerService.getAll(appTeamId));
+    }
+
+    public void enrichWithRarity(
+            List<AchievementDTO> achievements,
+            Long appTeamId,
+            List<PlayerDTO> teamMembers
+    ) {
+        RarityContext context = createContext(appTeamId, teamMembers);
 
         for (AchievementDTO achievement : achievements) {
             enrichAchievement(achievement, context);
         }
     }
 
-    private RarityContext createContext(Long appTeamId) {
-        List<PlayerDTO> teamMembers = playerService.getAll(appTeamId);
-
+    private RarityContext createContext(Long appTeamId, List<PlayerDTO> teamMembers) {
         long totalPlayersOnly = teamMembers.stream()
                 .filter(player -> !Boolean.TRUE.equals(player.isFan()))
                 .count();

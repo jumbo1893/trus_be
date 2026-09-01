@@ -25,6 +25,8 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.webjars.NotFoundException;
 
@@ -52,7 +54,23 @@ public class AppTeamService implements AppTeamProvider {
         if (id == null) {
             throw new AuthException("Pro tuto operaci je třeba uvést ID týmu v hlavičce!", AuthException.MISSING_TEAM_ID);
         }
+        AppTeamEntity authenticatedUserTeam = findAuthenticatedUserTeam(id);
+        if (authenticatedUserTeam != null) {
+            return authenticatedUserTeam;
+        }
         return findAppTeamByIdOrThrow(id);
+    }
+
+    private AppTeamEntity findAuthenticatedUserTeam(Long appTeamId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !(authentication.getPrincipal() instanceof UserEntity user)) {
+            return null;
+        }
+        return user.getTeamRoles().stream()
+                .map(UserTeamRole::getAppTeam)
+                .filter(appTeam -> appTeamId.equals(appTeam.getId()))
+                .findFirst()
+                .orElse(null);
     }
 
     public List<AppTeamDTO> getAllAppTeams() {
@@ -183,8 +201,19 @@ public class AppTeamService implements AppTeamProvider {
 
 
     public UserTeamRoleDTO findCurrentTeamRoleByUserId(Long userId) {
-        UserEntity userEntity = userService.findById(userId);
+        UserEntity userEntity = getAuthenticatedUser(userId)
+                .orElseGet(() -> userService.findById(userId));
         return userTeamRoleMapper.toDTO(findCurrentTeamRole(userEntity.getTeamRoles()));
+    }
+
+    private Optional<UserEntity> getAuthenticatedUser(Long userId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null
+                && authentication.getPrincipal() instanceof UserEntity user
+                && userId.equals(user.getId())) {
+            return Optional.of(user);
+        }
+        return Optional.empty();
     }
 
     public void changeUserRole(Long userRoleId, String role) {

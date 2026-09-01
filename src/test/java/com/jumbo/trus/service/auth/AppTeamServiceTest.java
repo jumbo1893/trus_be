@@ -18,7 +18,10 @@ import com.jumbo.trus.service.exceptions.FieldValidationException;
 import com.jumbo.trus.service.header.HeaderManager;
 import com.jumbo.trus.service.player.PlayerService;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterEach;
 import org.mockito.ArgumentCaptor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
 import java.util.Optional;
@@ -55,6 +58,30 @@ class AppTeamServiceTest {
             headerManager,
             playerRepository
     );
+
+    @AfterEach
+    void clearSecurityContext() {
+        SecurityContextHolder.clearContext();
+    }
+
+    @Test
+    void reusesAppTeamAlreadyLoadedForAuthenticatedUser() {
+        AppTeamEntity appTeam = appTeam(12L);
+        UserEntity currentUser = user(7L, "Matěj", "matej@example.cz");
+        role(21L, currentUser, appTeam, null);
+        when(headerManager.getAppTeamIdHeader()).thenReturn(appTeam.getId());
+        SecurityContextHolder.getContext().setAuthentication(
+                UsernamePasswordAuthenticationToken.authenticated(
+                        currentUser,
+                        null,
+                        List.of()
+                )
+        );
+
+        assertSame(appTeam, service.getCurrentAppTeamOrThrow());
+
+        verify(appTeamRepository, never()).findById(appTeam.getId());
+    }
 
     @Test
     void createsStandaloneTeamWithoutPkflLink() {
@@ -233,6 +260,7 @@ class AppTeamServiceTest {
         role.setAppTeam(appTeam);
         role.setRole("READER");
         role.setPlayer(player);
+        user.getTeamRoles().add(role);
         return role;
     }
 

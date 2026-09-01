@@ -32,6 +32,9 @@ spring:
 notifications:
   enabled: ${NOTIFICATIONS_ENABLED:true}
 
+cache:
+  home-stats-ttl-seconds: ${HOME_STATS_CACHE_TTL_SECONDS:15}
+
 ai:
   openai:
     enabled: ${AI_ENABLED:false}

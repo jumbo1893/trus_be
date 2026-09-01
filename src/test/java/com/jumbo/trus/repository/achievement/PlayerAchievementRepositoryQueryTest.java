@@ -14,11 +14,16 @@ class PlayerAchievementRepositoryQueryTest {
     @Autowired
     private PlayerAchievementRepository repository;
 
+    @Autowired
+    private AchievementRepository achievementRepository;
+
     @Test
     void eventScopedQueriesAreValidPostgresSql() {
         long missingId = -1L;
 
         assertDoesNotThrow(() -> {
+            achievementRepository.findAllWithTypes();
+            repository.findAllForDetailsByPlayerIds(List.of(missingId));
             repository.findJardaKuzel(missingId, missingId, missingId);
             repository.findKlubSracu(missingId, missingId, missingId);
             repository.findOsamelyDrzak(missingId, missingId, missingId);

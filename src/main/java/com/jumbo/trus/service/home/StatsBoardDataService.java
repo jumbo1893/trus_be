@@ -26,6 +26,7 @@ import com.jumbo.trus.service.receivedFine.ReceivedFineGetter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.cache.annotation.Cacheable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,6 +36,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.jumbo.trus.config.Config.ALL_SEASON_ID;
+import static com.jumbo.trus.config.CacheConfig.HOME_STATS_CACHE;
 
 @Slf4j
 @Service
@@ -49,6 +51,7 @@ public class StatsBoardDataService {
     private final GoalService goalService;
     private final FootbarSessionGetter footbarSessionGetter;
 
+    @Cacheable(cacheNames = HOME_STATS_CACHE, key = "#appTeamEntity.id", sync = true)
     public List<StatsBoardData> getStatsBoardDataList(AppTeamEntity appTeamEntity) {
         long appTeamId = appTeamEntity.getId();
 
