@@ -4,6 +4,7 @@ import com.jumbo.trus.entity.outbox.OutboxEventEntity;
 import com.jumbo.trus.entity.outbox.OutboxEventStatus;
 import com.jumbo.trus.repository.OutboxEventRepository;
 import com.jumbo.trus.service.achievement.AchievementService;
+import com.jumbo.trus.service.achievement.AchievementProgressService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -20,6 +21,7 @@ public class OutboxEventProcessor {
     private final OutboxEventRepository outboxEventRepository;
     private final AchievementEventProcessor achievementEventProcessor;
     private final AchievementService achievementService;
+    private final AchievementProgressService achievementProgressService;
     private final OutboxProcessingProperties processingProperties;
 
 
@@ -46,6 +48,15 @@ public class OutboxEventProcessor {
         try {
             AchievementEventBatch calculationBatch = achievementEventProcessor.createCalculationBatch(events);
             achievementService.calculateEventBatch(calculationBatch);
+            try {
+                achievementProgressService.evaluateAndNotify(calculationBatch);
+            } catch (Exception progressException) {
+                log.error(
+                        "Achievement progress notifications failed for {} events; core achievement processing remains successful",
+                        events.size(),
+                        progressException
+                );
+            }
             events.forEach(OutboxEventEntity::markAsDone);
         } catch (Exception e) {
             log.error("Failed to prepare achievement calculation batch for {} events", events.size(), e);

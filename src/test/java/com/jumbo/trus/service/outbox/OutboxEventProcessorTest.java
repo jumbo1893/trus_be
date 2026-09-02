@@ -3,6 +3,7 @@ package com.jumbo.trus.service.outbox;
 import com.jumbo.trus.entity.outbox.OutboxEventEntity;
 import com.jumbo.trus.entity.outbox.OutboxEventStatus;
 import com.jumbo.trus.repository.OutboxEventRepository;
+import com.jumbo.trus.service.achievement.AchievementProgressService;
 import com.jumbo.trus.service.achievement.AchievementService;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Pageable;
@@ -25,11 +26,13 @@ class OutboxEventProcessorTest {
     private final OutboxEventRepository repository = mock(OutboxEventRepository.class);
     private final AchievementEventProcessor eventProcessor = mock(AchievementEventProcessor.class);
     private final AchievementService achievementService = mock(AchievementService.class);
+    private final AchievementProgressService achievementProgressService = mock(AchievementProgressService.class);
     private final OutboxProcessingProperties processingProperties = processingProperties();
     private final OutboxEventProcessor processor = new OutboxEventProcessor(
             repository,
             eventProcessor,
             achievementService,
+            achievementProgressService,
             processingProperties
     );
 
@@ -47,6 +50,7 @@ class OutboxEventProcessorTest {
         processor.processEvents();
 
         verify(achievementService).calculateEventBatch(batch);
+        verify(achievementProgressService).evaluateAndNotify(batch);
         assertThat(event.getStatus()).isEqualTo(OutboxEventStatus.DONE);
     }
 
@@ -81,6 +85,21 @@ class OutboxEventProcessorTest {
         assertThat(event.getStatus()).isEqualTo(OutboxEventStatus.RETRY);
         assertThat(event.getLastError()).isEqualTo("calculation failed");
         assertThat(event.getNextAttemptAt()).isAfter(Instant.now());
+    }
+
+    @Test
+    void progressNotificationFailureDoesNotRetrySuccessfulAchievementCalculation() {
+        OutboxEventEntity event = new OutboxEventEntity();
+        AchievementEventBatch batch = new AchievementEventBatch(Map.of(), Map.of());
+        whenReadyEvents(List.of(event));
+        when(eventProcessor.createCalculationBatch(List.of(event))).thenReturn(batch);
+        doThrow(new IllegalStateException("notification failed"))
+                .when(achievementProgressService).evaluateAndNotify(batch);
+
+        processor.processEvents();
+
+        verify(achievementService).calculateEventBatch(batch);
+        assertThat(event.getStatus()).isEqualTo(OutboxEventStatus.DONE);
     }
 
     @Test

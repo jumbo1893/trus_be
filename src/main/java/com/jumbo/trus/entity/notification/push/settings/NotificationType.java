@@ -12,6 +12,7 @@ public enum NotificationType {
     BEER(10),
     FINE(20),
     PLAYER_ACHIEVEMENT(70),
+    ACHIEVEMENT_PROGRESS(75),
     APP_TEAM_ACHIEVEMENT(80);
 
     private final int order;
