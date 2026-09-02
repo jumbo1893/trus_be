@@ -26,7 +26,7 @@ public class MatchController {
     private final MatchStatsService matchStatsService;
     private final AppTeamService appTeamService;
 
-    @RoleRequired("ADMIN")
+    @RoleRequired("EDITOR")
     @PostMapping("/add")
     @PostCommitTask
     @StoreAppTeam
@@ -55,7 +55,7 @@ public class MatchController {
         return matchService.getAll(matchFilter);
     }
 
-    @RoleRequired("ADMIN")
+    @RoleRequired("EDITOR")
     @PutMapping("/{matchId}")
     @PostCommitTask
     @StoreAppTeam
@@ -63,7 +63,7 @@ public class MatchController {
         return matchService.editMatch(matchId, matchDTO, appTeamService.getCurrentAppTeamOrThrow());
     }
 
-    @RoleRequired("ADMIN")
+    @RoleRequired("EDITOR")
     @DeleteMapping("/{matchId}")
     @PostCommitTask
     @StoreAppTeam
@@ -71,7 +71,7 @@ public class MatchController {
         matchService.deleteMatch(matchId, appTeamService.getCurrentAppTeamOrThrow());
     }
 
-    @RoleRequired("ADMIN")
+    @RoleRequired("EDITOR")
     @PostMapping("/update")
     public void pairFootballMatches() throws NotFoundException {
         matchService.pairAllFootballMatches(appTeamService.getCurrentAppTeamOrThrow());

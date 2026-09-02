@@ -82,25 +82,25 @@ public class FootballController {
         return footballPlayerService.getAllPlayersByCurrentTeam(appTeamService.getCurrentAppTeamOrThrow());
     }
 
-    @RoleRequired("ADMIN")
+    @RoleRequired("EDITOR")
     @PostMapping("/league")
     public void updateLeagues() {
         pkflScheduledJob.runPkflLeagueJob();
     }
 
-    @RoleRequired("ADMIN")
+    @RoleRequired("EDITOR")
     @PostMapping("/team")
     public void updateTeams() {
         pkflScheduledJob.runPkflTeamJob();
     }
 
-    @RoleRequired("ADMIN")
+    @RoleRequired("EDITOR")
     @PostMapping("/player")
     public void updatePlayers() {
         pkflScheduledJob.runPkflPlayerJob();
     }
 
-    @RoleRequired("ADMIN")
+    @RoleRequired("EDITOR")
     @PostMapping("/match")
     public void updateMatches() {
         pkflScheduledJob.runPkflMatchJob();

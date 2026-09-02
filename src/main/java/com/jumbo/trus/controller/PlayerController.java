@@ -26,7 +26,7 @@ public class PlayerController {
     private final PlayerStatsFacade playerStatsFacade;
     private final AppTeamService appTeamService;
 
-    @RoleRequired("ADMIN")
+    @RoleRequired("EDITOR")
     @PostMapping("/add")
     @PostCommitTask
     @StoreAppTeam
@@ -64,7 +64,7 @@ public class PlayerController {
         return playerService.getPlayer(playerId);
     }
 
-    @RoleRequired("ADMIN")
+    @RoleRequired("EDITOR")
     @PutMapping("/{playerId}")
     @PostCommitTask
     @StoreAppTeam
@@ -72,7 +72,7 @@ public class PlayerController {
         return playerService.editPlayer(playerId, playerDTO);
     }
 
-    @RoleRequired("ADMIN")
+    @RoleRequired("EDITOR")
     @DeleteMapping("/{playerId}")
     @PostCommitTask
     @StoreAppTeam

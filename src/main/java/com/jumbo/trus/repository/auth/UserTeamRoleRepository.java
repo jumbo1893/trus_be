@@ -12,6 +12,8 @@ public interface UserTeamRoleRepository extends JpaRepository<UserTeamRole, Long
 
     Optional<UserTeamRole> findByUserIdAndAppTeamId(Long userId, Long appTeamId);
 
+    List<UserTeamRole> findAllByAppTeamId(Long appTeamId);
+
     List<UserTeamRole> findAllByPlayerId(Long playerId);
 
     @Query("""

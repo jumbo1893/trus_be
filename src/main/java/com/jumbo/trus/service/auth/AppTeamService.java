@@ -7,6 +7,7 @@ import com.jumbo.trus.dto.auth.UserTeamRoleDTO;
 import com.jumbo.trus.dto.player.PlayerDTO;
 import com.jumbo.trus.entity.PlayerEntity;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
+import com.jumbo.trus.entity.auth.TeamRole;
 import com.jumbo.trus.entity.auth.UserEntity;
 import com.jumbo.trus.entity.auth.UserTeamRole;
 import com.jumbo.trus.entity.football.TeamEntity;
@@ -37,6 +38,8 @@ import java.util.UUID;
 @Slf4j
 public class AppTeamService implements AppTeamProvider {
 
+    public static final String PUBLIC_TEAM_NAME = "Liščí Trus";
+
     private final TeamRepository teamRepository;
     private final UserService userService;
     private final AppTeamRepository appTeamRepository;
@@ -45,6 +48,7 @@ public class AppTeamService implements AppTeamProvider {
     private final UserTeamRoleMapper userTeamRoleMapper;
     private final HeaderManager headerManager;
     private final PlayerRepository playerRepository;
+    private final TeamAccessService teamAccessService;
 
 
     public AppTeamEntity getCurrentAppTeamOrThrow() {
@@ -53,10 +57,6 @@ public class AppTeamService implements AppTeamProvider {
             throw new AuthException("Pro tuto operaci je třeba uvést ID týmu v hlavičce!", AuthException.MISSING_TEAM_ID);
         }
         return findAppTeamByIdOrThrow(id);
-    }
-
-    public List<AppTeamDTO> getAllAppTeams() {
-        return appTeamRepository.findAll().stream().map(appTeamMapper::toDTO).toList();
     }
 
     @Transactional
@@ -74,9 +74,22 @@ public class AppTeamService implements AppTeamProvider {
 
     @Transactional
     public UserDTO addCurrentUserToAppTeam(Long appTeamId) {
+        AppTeamEntity publicTeam = findAppTeamByName(PUBLIC_TEAM_NAME).orElseThrow();
+        if (!publicTeam.getId().equals(appTeamId)) {
+            throw new FieldValidationException(
+                    "Soukromé týmy vyžadují připojení kódem.",
+                    List.of(new ValidationField(
+                            "appTeam",
+                            "K soukromému týmu se připoj pomocí kódu v nové verzi aplikace."
+                    ))
+            );
+        }
+        return addCurrentUserToTeam(publicTeam);
+    }
+
+    private UserDTO addCurrentUserToTeam(AppTeamEntity appTeam) {
         UserEntity user = userService.getCurrentUserEntity();
-        AppTeamEntity appTeam = findAppTeamByIdOrThrow(appTeamId);
-        if (userTeamRoleRepository.findByUserIdAndAppTeamId(user.getId(), appTeamId).isPresent()) {
+        if (userTeamRoleRepository.findByUserIdAndAppTeamId(user.getId(), appTeam.getId()).isPresent()) {
             return userService.getCurrentUser();
         }
         createNewUserTeamRole(user, appTeam, "READER");
@@ -84,8 +97,14 @@ public class AppTeamService implements AppTeamProvider {
         return userService.getCurrentUser();
     }
 
+    @Transactional
+    public UserDTO addCurrentUserToPublicAppTeam() {
+        AppTeamEntity publicTeam = findAppTeamByName(PUBLIC_TEAM_NAME).orElseThrow();
+        return addCurrentUserToTeam(publicTeam);
+    }
+
     public AppTeamDTO getLisciTrusAppTeam() {
-        return appTeamMapper.toDTO(findAppTeamByName("Liščí Trus").orElseThrow());
+        return appTeamMapper.toDTO(findAppTeamByName(PUBLIC_TEAM_NAME).orElseThrow());
     }
 
     private Optional<AppTeamEntity> findAppTeamByName(String name) {
@@ -187,9 +206,38 @@ public class AppTeamService implements AppTeamProvider {
         return userTeamRoleMapper.toDTO(findCurrentTeamRole(userEntity.getTeamRoles()));
     }
 
+    @Transactional
     public void changeUserRole(Long userRoleId, String role) {
-        UserTeamRole userTeamRole = userTeamRoleRepository.findById(userRoleId).orElseThrow(() -> new NotFoundException("Role pro userRoleId " + userRoleId + " nenalezena!"));
-        userTeamRole.setRole(role);
+        AppTeamEntity currentAppTeam = getCurrentAppTeamOrThrow();
+        UserTeamRole userTeamRole = userTeamRoleRepository.findById(userRoleId)
+                .orElseThrow(() -> new NotFoundException("Role pro userRoleId " + userRoleId + " nenalezena!"));
+        if (!currentAppTeam.getId().equals(userTeamRole.getAppTeam().getId())) {
+            throw new AuthException("Role nepatří do aktuálního týmu.", AuthException.INSUFFICIENT_RIGHTS);
+        }
+
+        final TeamRole newRole;
+        try {
+            newRole = TeamRole.from(role);
+        } catch (RuntimeException exception) {
+            throw new FieldValidationException(
+                    "Neplatná týmová role.",
+                    List.of(new ValidationField("role", "Neplatná týmová role."))
+            );
+        }
+
+        UserEntity owner = currentAppTeam.getOwner();
+        if (owner != null
+                && owner.getId().equals(userTeamRole.getUser().getId())
+                && newRole != TeamRole.ADMIN) {
+            throw new FieldValidationException(
+                    "Zakladateli týmu nelze odebrat administrátorská práva.",
+                    List.of(new ValidationField(
+                            "role",
+                            "Zakladateli týmu nelze odebrat administrátorská práva."
+                    ))
+            );
+        }
+        userTeamRole.setRole(newRole.name());
         userTeamRoleRepository.save(userTeamRole);
     }
 
@@ -219,7 +267,9 @@ public class AppTeamService implements AppTeamProvider {
             );
             throw new FieldValidationException("Dané jméno již existuje", fields);
         }
-        createNewUserTeamRole(user, createNewAppTeam(appTeamRegistration, user, team), "ADMIN");
+        AppTeamEntity newAppTeam = createNewAppTeam(appTeamRegistration, user, team);
+        teamAccessService.createJoinCodes(newAppTeam);
+        createNewUserTeamRole(user, newAppTeam, TeamRole.ADMIN.name());
     }
 
     private TeamEntity createStandaloneTeam(String name) {

@@ -15,7 +15,6 @@ import com.jumbo.trus.entity.filter.StatisticsFilter;
 import com.jumbo.trus.service.auth.AppTeamService;
 import com.jumbo.trus.service.receivedFine.ReceivedFineService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 import org.webjars.NotFoundException;
 
@@ -29,7 +28,7 @@ public class ReceivedFineController {
     private final ReceivedFineService receivedFineService;
     private final AppTeamService appTeamService;
 
-    @Secured("ADMIN")
+    @RoleRequired("EDITOR")
     @PostMapping("/add")
     @PostCommitTask
     @StoreAppTeam
@@ -37,7 +36,7 @@ public class ReceivedFineController {
         return receivedFineService.addFine(receivedFineDTO, appTeamService.getCurrentAppTeamOrThrow());
     }
 
-    @RoleRequired("ADMIN")
+    @RoleRequired("EDITOR")
     @PostMapping("/player-add")
     @PostCommitTask
     @StoreAppTeam
@@ -59,7 +58,7 @@ public class ReceivedFineController {
         return receivedFineService.getAllDetailed(filter);
     }
 
-    @RoleRequired("ADMIN")
+    @RoleRequired("EDITOR")
     @PostMapping("/multiple-add")
     @PostCommitTask
     @StoreAppTeam
@@ -67,7 +66,7 @@ public class ReceivedFineController {
         return receivedFineService.addMultipleFines(receivedFineListDTO, appTeamService.getCurrentAppTeamOrThrow());
     }
 
-    @RoleRequired("ADMIN")
+    @RoleRequired("EDITOR")
     @DeleteMapping("/{fineId}")
     @PostCommitTask
     @StoreAppTeam

@@ -57,7 +57,7 @@ public class UserController {
         return userService.returnUserWithoutSensitiveData(user);
     }
 
-    @GetMapping("/registration-setup")
+    @GetMapping({"/registration-setup", "/registration-setup/v2"})
     public RegistrationSetup getRegistrationSetup() {
         return teamService.getRegistrationSetup();
     }

@@ -29,7 +29,7 @@ public class BeerController {
     private final BeerStatsService beerStatsService;
     private final AppTeamService appTeamService;
 
-    @RoleRequired("ADMIN")
+    @RoleRequired("EDITOR")
     @PostMapping("/add")
     @PostCommitTask
     @StoreAppTeam
@@ -51,7 +51,7 @@ public class BeerController {
         return beerService.getAllDetailed(filter);
     }
 
-    @RoleRequired("ADMIN")
+    @RoleRequired("EDITOR")
     @PostMapping("/multiple-add")
     @PostCommitTask
     @StoreAppTeam
@@ -59,7 +59,7 @@ public class BeerController {
         return beerService.addMultipleBeer(beerListDTO, appTeamService.getCurrentAppTeamOrThrow());
     }
 
-    @RoleRequired("ADMIN")
+    @RoleRequired("EDITOR")
     @DeleteMapping("/{beerId}")
     @PostCommitTask
     @StoreAppTeam

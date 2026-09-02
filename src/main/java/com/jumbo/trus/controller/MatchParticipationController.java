@@ -106,7 +106,7 @@ public class MatchParticipationController {
         return participationService.getPromptAudience(appTeamService.getCurrentAppTeamOrThrow());
     }
 
-    @RoleRequired("ADMIN")
+    @RoleRequired("EDITOR")
     @PutMapping("/prompt-audience")
     public MatchParticipationPromptAudienceConfig updatePromptAudience(
             @RequestBody @Valid MatchParticipationPromptAudienceConfig config

@@ -20,13 +20,13 @@ public class AchievementController {
     private final AchievementService achievementService;
     private final AppTeamService appTeamService;
 
-    @RoleRequired("ADMIN")
+    @RoleRequired("EDITOR")
     @PostMapping("/{playerId}")
     public void updatePlayer(@PathVariable Long playerId) {
         achievementService.updatePlayerAchievements(playerId, appTeamService.getCurrentAppTeamOrThrow());
     }
 
-    @RoleRequired("ADMIN")
+    @RoleRequired("EDITOR")
     @GetMapping("/test")
     public void testAllPlayers() {
         achievementService.updateAllPlayerAchievements(appTeamService.getCurrentAppTeamOrThrow(), AchievementType.ALL);
@@ -38,7 +38,7 @@ public class AchievementController {
         return achievementService.getAchievementDetail(playerAchievementId, appTeamService.getCurrentAppTeamOrThrow());
     }
 
-    @RoleRequired("ADMIN")
+    @RoleRequired("EDITOR")
     @PutMapping("/player/{playerAchievementId}")
     public PlayerAchievementDTO editPlayerAchievement(@PathVariable Long playerAchievementId, @RequestBody PlayerAchievementDTO playerAchievementDTO) throws NotFoundException {
         return achievementService.editPlayerAchievement(playerAchievementId, playerAchievementDTO, appTeamService.getCurrentAppTeamOrThrow());

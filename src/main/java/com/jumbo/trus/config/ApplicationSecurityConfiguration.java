@@ -38,6 +38,7 @@ public class ApplicationSecurityConfiguration {
                         .requestMatchers(HttpMethod.GET,
                                 "/.well-known/apple-app-site-association",
                                 "/user/registration-setup",
+                                "/user/registration-setup/v2",
                                 "/strava/callback",
                                 "/footbar/callback",
                                 "/api-docs/**",

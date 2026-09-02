@@ -56,7 +56,12 @@ public class TeamService {
     }
 
     public RegistrationSetup getRegistrationSetup() {
-        List<AppTeamDTO> appTeams = appTeamProvider.getAllAppTeams();
+        return buildRegistrationSetup();
+    }
+
+    private RegistrationSetup buildRegistrationSetup() {
+        AppTeamDTO primaryAppTeam = appTeamProvider.getLisciTrusAppTeam();
+        List<AppTeamDTO> appTeams = List.of(primaryAppTeam);
         List<LeagueWithTeams> currentLeagues = leagueService
                 .getAllLeagues(Organization.PKFL, true)
                 .stream()
@@ -74,7 +79,6 @@ public class TeamService {
             }
         });
 
-        AppTeamDTO primaryAppTeam = appTeamProvider.getLisciTrusAppTeam();
         return new RegistrationSetup(
                 currentLeagues,
                 appTeams,

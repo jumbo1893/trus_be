@@ -26,7 +26,7 @@ public class GoalController {
     private final GoalService goalService;
     private final AppTeamService appTeamService;
 
-    @RoleRequired("ADMIN")
+    @RoleRequired("EDITOR")
     @PostMapping("/add")
     @PostCommitTask
     @StoreAppTeam
@@ -55,7 +55,7 @@ public class GoalController {
         return goalService.getAllDetailed(filter);
     }
 
-    @RoleRequired("ADMIN")
+    @RoleRequired("EDITOR")
     @PostMapping("/multiple-add")
     @PostCommitTask
     @StoreAppTeam
@@ -63,7 +63,7 @@ public class GoalController {
         return goalService.addMultipleGoal(goalListDTO, appTeamService.getCurrentAppTeamOrThrow());
     }
 
-    @RoleRequired("ADMIN")
+    @RoleRequired("EDITOR")
     @DeleteMapping("/{goalId}")
     @PostCommitTask
     @StoreAppTeam

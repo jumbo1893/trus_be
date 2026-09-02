@@ -54,14 +54,14 @@ public class StravaController {
         }
     }
 
-    @RoleRequired("ADMIN")
+    @RoleRequired("EDITOR")
     @PostMapping("/sync/{athleteId}")
     public ResponseEntity<String> syncActivitiesForAthlete(@PathVariable Long athleteId) {
         stravaService.syncActivities(athleteId);
         return ResponseEntity.ok("Activities synced successfully.");
     }
 
-    @RoleRequired("ADMIN")
+    @RoleRequired("EDITOR")
     @PostMapping("/sync")
     public void syncActivities() {
         stravaService.syncActivities(appTeamService.getCurrentAppTeamOrThrow());

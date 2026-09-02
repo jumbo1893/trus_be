@@ -22,7 +22,7 @@ public class SeasonController {
     private final SeasonService seasonService;
     private final AppTeamService appTeamService;
 
-    @RoleRequired("ADMIN")
+    @RoleRequired("EDITOR")
     @PostMapping("/add")
     @PostCommitTask
     @StoreAppTeam
@@ -37,7 +37,7 @@ public class SeasonController {
         return seasonService.getAll(seasonFilter);
     }
 
-    @RoleRequired("ADMIN")
+    @RoleRequired("EDITOR")
     @PutMapping("/{seasonId}")
     @PostCommitTask
     @StoreAppTeam
@@ -45,7 +45,7 @@ public class SeasonController {
         return seasonService.editSeason(seasonId, seasonDTO, appTeamService.getCurrentAppTeamOrThrow());
     }
 
-    @RoleRequired("ADMIN")
+    @RoleRequired("EDITOR")
     @DeleteMapping("/{seasonId}")
     @PostCommitTask
     @StoreAppTeam

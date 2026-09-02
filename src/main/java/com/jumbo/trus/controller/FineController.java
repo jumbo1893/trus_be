@@ -24,7 +24,7 @@ public class FineController {
     private final FineService fineService;
     private final AppTeamService appTeamService;
 
-    @RoleRequired("ADMIN")
+    @RoleRequired("EDITOR")
     @PostMapping("/add")
     @PostCommitTask
     @StoreAppTeam
@@ -38,7 +38,7 @@ public class FineController {
         return fineService.getAll(limit, appTeamService.getCurrentAppTeamOrThrow().getId());
     }
 
-    @RoleRequired("ADMIN")
+    @RoleRequired("EDITOR")
     @PutMapping("/{fineId}")
     @PostCommitTask
     @StoreAppTeam
@@ -46,7 +46,7 @@ public class FineController {
         return fineService.editFine(fineId, fineDTO, appTeamService.getCurrentAppTeamOrThrow());
     }
 
-    @RoleRequired("ADMIN")
+    @RoleRequired("EDITOR")
     @DeleteMapping("/{fineId}")
     @PostCommitTask
     @StoreAppTeam

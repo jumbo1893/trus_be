@@ -59,7 +59,7 @@ public class FootbarController {
         }
     }
 
-    @RoleRequired("ADMIN")
+    @RoleRequired("EDITOR")
     @PostMapping("/sync/{athleteId}")
     @PostCommitTask
     @StoreAppTeam
@@ -68,7 +68,7 @@ public class FootbarController {
         return ResponseEntity.ok("Sessions synced successfully.");
     }
 
-    @RoleRequired("ADMIN")
+    @RoleRequired("EDITOR")
     @PostMapping("/sync")
     @PostCommitTask
     @StoreAppTeam

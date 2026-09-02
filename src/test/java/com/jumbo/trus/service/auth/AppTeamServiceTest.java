@@ -45,6 +45,7 @@ class AppTeamServiceTest {
     private final UserTeamRoleMapper userTeamRoleMapper = mock(UserTeamRoleMapper.class);
     private final HeaderManager headerManager = mock(HeaderManager.class);
     private final PlayerRepository playerRepository = mock(PlayerRepository.class);
+    private final TeamAccessService teamAccessService = mock(TeamAccessService.class);
     private final AppTeamService service = new AppTeamService(
             teamRepository,
             userService,
@@ -53,7 +54,8 @@ class AppTeamServiceTest {
             appTeamMapper,
             userTeamRoleMapper,
             headerManager,
-            playerRepository
+            playerRepository,
+            teamAccessService
     );
 
     @Test
@@ -96,6 +98,45 @@ class AppTeamServiceTest {
         assertSame(teamCaptor.getValue(), roleCaptor.getValue().getAppTeam().getTeam());
         assertTrue(owner.getTeamRoles().contains(roleCaptor.getValue()));
         assertTrue(roleCaptor.getValue().getAppTeam().getTeamRoles().contains(roleCaptor.getValue()));
+        verify(teamAccessService).createJoinCodes(roleCaptor.getValue().getAppTeam());
+    }
+
+    @Test
+    void legacyAddEndpointRefusesPrivateTeamId() {
+        AppTeamEntity publicTeam = appTeam(1L);
+        AppTeamEntity privateTeam = appTeam(99L);
+        when(appTeamRepository.findByName(AppTeamService.PUBLIC_TEAM_NAME))
+                .thenReturn(Optional.of(publicTeam));
+
+        FieldValidationException exception = assertThrows(
+                FieldValidationException.class,
+                () -> service.addCurrentUserToAppTeam(privateTeam.getId())
+        );
+
+        assertEquals("appTeam", exception.getFields().get(0).getField());
+        verify(userTeamRoleRepository, never()).save(any());
+    }
+
+    @Test
+    void newPublicJoinAlwaysUsesLisciTrus() {
+        UserEntity user = user(7L, "Matěj", "matej@example.cz");
+        AppTeamEntity publicTeam = appTeam(1L);
+        UserDTO response = new UserDTO();
+        when(userService.getCurrentUserEntity()).thenReturn(user);
+        when(appTeamRepository.findByName(AppTeamService.PUBLIC_TEAM_NAME))
+                .thenReturn(Optional.of(publicTeam));
+        when(userTeamRoleRepository.findByUserIdAndAppTeamId(user.getId(), publicTeam.getId()))
+                .thenReturn(Optional.empty());
+        when(userTeamRoleRepository.save(any(UserTeamRole.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(userService.getCurrentUser()).thenReturn(response);
+
+        assertSame(response, service.addCurrentUserToPublicAppTeam());
+
+        ArgumentCaptor<UserTeamRole> roleCaptor = ArgumentCaptor.forClass(UserTeamRole.class);
+        verify(userTeamRoleRepository).save(roleCaptor.capture());
+        assertEquals("READER", roleCaptor.getValue().getRole());
+        assertSame(publicTeam, roleCaptor.getValue().getAppTeam());
     }
 
     @Test
