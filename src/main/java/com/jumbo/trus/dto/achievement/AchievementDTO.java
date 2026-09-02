@@ -1,6 +1,7 @@
 package com.jumbo.trus.dto.achievement;
 
 import com.jumbo.trus.entity.achievement.AchievementCalculationScope;
+import com.jumbo.trus.entity.achievement.AchievementCategory;
 import com.jumbo.trus.entity.outbox.OutboxAggregateType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -28,6 +29,8 @@ public class AchievementDTO {
     private String secondaryCondition;
 
     private boolean manually;
+
+    private AchievementCategory category;
 
     private Set<OutboxAggregateType> achievementTypes;
 

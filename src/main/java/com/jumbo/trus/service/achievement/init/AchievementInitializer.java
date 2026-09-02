@@ -52,6 +52,7 @@ public class AchievementInitializer implements CommandLineRunner {
             existing.setDescription(definition.getDescription());
             existing.setSecondaryCondition(definition.getSecondaryCondition());
             existing.setManually(definition.getManually());
+            existing.setCategory(definition.getCategory());
 
             existing.setAchievementTypes(definition.getAchievementTypes());
             existing.setCalculationScope(definition.getCalculationScope());
@@ -63,7 +64,7 @@ public class AchievementInitializer implements CommandLineRunner {
     }
 
     private List<AchievementEntity> seedAchievements() {
-        return List.of(
+        List<AchievementEntity> achievements = List.of(
                 new AchievementEntity("Každému, co mu patří", KAZDEMU_CO_MU_PATRI, true, "Vypij přesně tolik piv/panáků, kolik si v zápase zaznamenal asistencí/gólů",
                         "Musí být více než 1", false, EnumSet.of(OutboxAggregateType.BEER, OutboxAggregateType.MATCH), AchievementCalculationScope.MATCH),
                 new AchievementEntity("Fotbal je jen záminka", FOTBAL_JE_JEN_ZAMINKA, false, "Nevynechej ani jednu návštěvu hospody v sezoně", "Alespoň v 8 zápasech",
@@ -260,5 +261,11 @@ public class AchievementInitializer implements CommandLineRunner {
                         false, EnumSet.of(OutboxAggregateType.OTHER), AchievementCalculationScope.OTHER)
 
         );
+
+        achievements.forEach(achievement ->
+                achievement.setCategory(AchievementCategoryResolver.resolve(achievement))
+        );
+
+        return achievements;
     }
 }

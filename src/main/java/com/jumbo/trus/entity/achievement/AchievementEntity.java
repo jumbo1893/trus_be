@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -35,6 +36,11 @@ public class AchievementEntity {
     private String secondaryCondition;
 
     private Boolean manually;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "category", nullable = false)
+    @ColumnDefault("'GENERAL'")
+    private AchievementCategory category = AchievementCategory.GENERAL;
 
     @OneToMany(mappedBy = "achievement")
     private List<PlayerAchievementEntity> playerAchievements;
