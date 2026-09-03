@@ -37,6 +37,8 @@ public class ApplicationSecurityConfiguration {
                         .requestMatchers(HttpMethod.POST, "/user/create", "/user/auth").permitAll()
                         .requestMatchers(HttpMethod.GET,
                                 "/.well-known/apple-app-site-association",
+                                "/privacy-policy",
+                                "/privacy-policy.html",
                                 "/user/registration-setup",
                                 "/user/registration-setup/v2",
                                 "/strava/callback",
