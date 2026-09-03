@@ -7,6 +7,7 @@ import com.jumbo.trus.entity.footbar.FootbarAccountEntity;
 import com.jumbo.trus.entity.footbar.FootbarSessionEntity;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -15,7 +16,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface FootbarSessionRepository extends JpaRepository<FootbarSessionEntity, Long> {
+public interface FootbarSessionRepository extends JpaRepository<FootbarSessionEntity, Long>, JpaSpecificationExecutor<FootbarSessionEntity> {
     List<FootbarSessionEntity> findByFootbarAccount(FootbarAccountEntity footbarAccount);
 
     Optional<FootbarSessionEntity> findByfootbarSessionIdAndFootbarAccount(Long footbarSessionId, FootbarAccountEntity footbarAccount);

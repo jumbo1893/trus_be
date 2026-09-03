@@ -1,6 +1,7 @@
 package com.jumbo.trus.repository.ai;
 
 import com.jumbo.trus.entity.ai.AiQuestionEntity;
+import com.jumbo.trus.entity.ai.AiQuestionStatus;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -18,6 +19,13 @@ public interface AiQuestionRepository extends JpaRepository<AiQuestionEntity, Lo
     List<AiQuestionEntity> findByUserIdAndAppTeamIdOrderByCreatedAtDesc(
             Long userId,
             Long appTeamId,
+            Pageable pageable
+    );
+
+    List<AiQuestionEntity> findByUserIdAndAppTeamIdAndStatusOrderByCreatedAtDesc(
+            Long userId,
+            Long appTeamId,
+            AiQuestionStatus status,
             Pageable pageable
     );
 }

@@ -7,20 +7,29 @@ import com.jumbo.trus.dto.achievement.AchievementDTO;
 import com.jumbo.trus.dto.achievement.AchievementDetail;
 import com.jumbo.trus.dto.ai.AiFineSummaryProjection;
 import com.jumbo.trus.dto.ai.AiRepeatOpponentProjection;
+import com.jumbo.trus.dto.participation.MatchParticipationDetail;
 import com.jumbo.trus.dto.player.PlayerDTO;
 import com.jumbo.trus.dto.step.StepLeaderboardDTO;
 import com.jumbo.trus.dto.step.StepLeaderboardResponseDTO;
 import com.jumbo.trus.dto.step.StepPeriod;
 import com.jumbo.trus.entity.MatchEntity;
+import com.jumbo.trus.entity.PlayerEntity;
+import com.jumbo.trus.entity.ai.AiQuestionEntity;
+import com.jumbo.trus.entity.ai.AiQuestionStatus;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.auth.UserEntity;
+import com.jumbo.trus.entity.footbar.FootbarSessionEntity;
+import com.jumbo.trus.entity.DynamicTextEntity;
+import com.jumbo.trus.repository.DynamicTextRepository;
 import com.jumbo.trus.entity.football.FootballMatchEntity;
 import com.jumbo.trus.entity.football.LeagueEntity;
 import com.jumbo.trus.entity.football.TeamEntity;
 import com.jumbo.trus.repository.MatchRepository;
 import com.jumbo.trus.repository.ReceivedFineRepository;
 import com.jumbo.trus.repository.TeamVisitedCountryProjection;
+import com.jumbo.trus.repository.ai.AiQuestionRepository;
 import com.jumbo.trus.repository.football.FootballMatchRepository;
+import com.jumbo.trus.repository.footbar.FootbarSessionRepository;
 import com.jumbo.trus.service.AttendanceService;
 import com.jumbo.trus.service.SeasonService;
 import com.jumbo.trus.service.StepService;
@@ -31,6 +40,7 @@ import com.jumbo.trus.service.football.match.FootballMatchService;
 import com.jumbo.trus.service.football.stats.FootballPlayerStatsService;
 import com.jumbo.trus.service.football.team.TeamService;
 import com.jumbo.trus.service.goal.GoalService;
+import com.jumbo.trus.service.participation.MatchParticipationService;
 import com.jumbo.trus.service.player.PlayerService;
 import com.jumbo.trus.service.player.PlayerAchievementService;
 import com.jumbo.trus.service.player.PlayerStatsFacade;
@@ -73,6 +83,10 @@ class AiReadOnlyToolServiceTest {
     private final StepService stepService = mock(StepService.class);
     private final UserVisitedCountryService userVisitedCountryService = mock(UserVisitedCountryService.class);
     private final TrusBotPersonFactService personFactService = mock(TrusBotPersonFactService.class);
+    private final MatchParticipationService matchParticipationService = mock(MatchParticipationService.class);
+    private final FootbarSessionRepository footbarSessionRepository = mock(FootbarSessionRepository.class);
+    private final DynamicTextRepository dynamicTextRepository = mock(DynamicTextRepository.class);
+    private final AiQuestionRepository aiQuestionRepository = mock(AiQuestionRepository.class);
 
     private AiReadOnlyToolService service;
     private AiToolContext context;
@@ -99,7 +113,11 @@ class AiReadOnlyToolServiceTest {
                 playerAchievementService,
                 stepService,
                 userVisitedCountryService,
-                personFactService
+                personFactService,
+                matchParticipationService,
+                footbarSessionRepository,
+                dynamicTextRepository,
+                aiQuestionRepository
         );
 
         appTeam = new AppTeamEntity();
@@ -244,6 +262,110 @@ class AiReadOnlyToolServiceTest {
         assertTrue(definitions.contains("read_visited_countries"));
         assertTrue(definitions.contains("read_person_facts"));
         assertTrue(definitions.contains("search_interviews"));
+        assertTrue(definitions.contains("read_match_participation"));
+        assertTrue(definitions.contains("read_footbar_statistics"));
+        assertTrue(definitions.contains("read_dynamic_texts"));
+        assertTrue(definitions.contains("read_conversation_history"));
+    }
+
+    @Test
+    void conversationHistoryIsRestrictedToCurrentUserAndTeam() throws Exception {
+        AiQuestionEntity older = completedQuestion("Kolik jsem dal gólů?", "Dal jsi dva.", 1);
+        AiQuestionEntity newer = completedQuestion("A loni?", "Loni jeden.", 2);
+        when(aiQuestionRepository.findByUserIdAndAppTeamIdAndStatusOrderByCreatedAtDesc(
+                eq(7L),
+                eq(11L),
+                eq(AiQuestionStatus.COMPLETED),
+                any(Pageable.class)
+        )).thenReturn(List.of(newer, older));
+
+        JsonNode result = objectMapper.readTree(service.execute(
+                "read_conversation_history",
+                objectMapper.readTree("{\"limit\":6}"),
+                context
+        ));
+
+        assertEquals("Kolik jsem dal gólů?", result.path("messages").get(0).path("question").asText());
+        assertEquals("A loni?", result.path("messages").get(1).path("question").asText());
+        verify(aiQuestionRepository).findByUserIdAndAppTeamIdAndStatusOrderByCreatedAtDesc(
+                eq(7L),
+                eq(11L),
+                eq(AiQuestionStatus.COMPLETED),
+                any(Pageable.class)
+        );
+    }
+
+    @Test
+    void dynamicTextsAreRestrictedToCurrentTeam() throws Exception {
+        DynamicTextEntity dynamicText = new DynamicTextEntity();
+        dynamicText.setName("RANDOM_FACT");
+        dynamicText.setRank(1);
+        dynamicText.setText("Trus umí překvapit.");
+        when(dynamicTextRepository.findAllByAppTeamOrderByNameAscRankAsc(
+                eq(appTeam),
+                any(Pageable.class)
+        )).thenReturn(List.of(dynamicText));
+
+        JsonNode result = objectMapper.readTree(service.execute(
+                "read_dynamic_texts",
+                objectMapper.readTree("{\"name\":null,\"limit\":20}"),
+                context
+        ));
+
+        assertEquals("RANDOM_FACT", result.get(0).path("name").asText());
+        verify(dynamicTextRepository).findAllByAppTeamOrderByNameAscRankAsc(
+                eq(appTeam),
+                any(Pageable.class)
+        );
+    }
+
+    @Test
+    void footbarSessionsExposeMetricsButNotSensitiveFields() throws Exception {
+        PlayerEntity player = new PlayerEntity();
+        player.setId(44L);
+        player.setName("Běžec");
+        FootbarSessionEntity session = new FootbarSessionEntity();
+        session.setId(91L);
+        session.setPlayer(player);
+        session.setDistance(5432.0);
+        session.setShotCount(4);
+        session.setLocation(Map.of("lat", 50.0));
+        session.setTrackerData(Map.of("serial", "secret"));
+        when(playerService.getAll(11L)).thenReturn(List.of(playerDto(44L, "Běžec")));
+        when(footbarSessionRepository.findAll(
+                any(Specification.class),
+                any(Pageable.class)
+        )).thenReturn(new PageImpl<>(List.of(session)));
+
+        String output = service.execute(
+                "read_footbar_statistics",
+                objectMapper.readTree("""
+                        {"dataset":"sessions","player_id":44,"match_id":null,"football_match_id":null,"season_id":null,"limit":20}
+                        """),
+                context
+        );
+        JsonNode result = objectMapper.readTree(output);
+
+        assertEquals(5432.0, result.get(0).path("distance_m").asDouble());
+        assertEquals(4, result.get(0).path("shots").asInt());
+        assertTrue(!output.contains("location"));
+        assertTrue(!output.contains("tracker"));
+        assertTrue(!output.contains("footbarAccount"));
+    }
+
+    @Test
+    void participationUsesLoggedInUserAndCurrentTeam() throws Exception {
+        MatchParticipationDetail detail = new MatchParticipationDetail();
+        when(matchParticipationService.getDetail(123L, 7L, appTeam)).thenReturn(detail);
+
+        JsonNode result = objectMapper.readTree(service.execute(
+                "read_match_participation",
+                objectMapper.readTree("{\"football_match_id\":123}"),
+                context
+        ));
+
+        assertTrue(result.has("attending_players"));
+        verify(matchParticipationService).getDetail(123L, 7L, appTeam);
     }
 
     @Test
@@ -460,6 +582,22 @@ class AiReadOnlyToolServiceTest {
         assertTrue(result.path("matches").toString().contains("fine_assign_one"));
         assertTrue(service.toolDefinitions().toString().contains("read_app_navigation"));
         verifyNoInteractions(matchRepository, receivedFineRepository, footballMatchRepository);
+    }
+
+    private AiQuestionEntity completedQuestion(String question, String answer, int minutesAgo) {
+        AiQuestionEntity entity = new AiQuestionEntity();
+        entity.setQuestion(question);
+        entity.setAnswer(answer);
+        entity.setStatus(AiQuestionStatus.COMPLETED);
+        entity.setCreatedAt(Instant.now().minus(minutesAgo, ChronoUnit.MINUTES));
+        return entity;
+    }
+
+    private PlayerDTO playerDto(long id, String name) {
+        PlayerDTO player = new PlayerDTO();
+        player.setId(id);
+        player.setName(name);
+        return player;
     }
 
     private AiFineSummaryProjection projection(

@@ -13,19 +13,28 @@ import com.jumbo.trus.dto.achievement.IPlayerAchievementStats;
 import com.jumbo.trus.dto.achievement.PlayerAchievementDTO;
 import com.jumbo.trus.dto.ai.AiFineSummaryProjection;
 import com.jumbo.trus.dto.ai.AiRepeatOpponentProjection;
+import com.jumbo.trus.dto.footbar.IPlayerRunningStats;
+import com.jumbo.trus.dto.participation.MatchParticipationDetail;
 import com.jumbo.trus.dto.player.PlayerDTO;
 import com.jumbo.trus.dto.step.StepPeriod;
+import com.jumbo.trus.entity.DynamicTextEntity;
 import com.jumbo.trus.entity.MatchEntity;
+import com.jumbo.trus.entity.ai.AiQuestionEntity;
+import com.jumbo.trus.entity.ai.AiQuestionStatus;
 import com.jumbo.trus.entity.football.FootballMatchEntity;
 import com.jumbo.trus.entity.football.FootballMatchPlayerEntity;
 import com.jumbo.trus.entity.football.LeagueEntity;
 import com.jumbo.trus.entity.football.TeamEntity;
 import com.jumbo.trus.entity.filter.SeasonFilter;
 import com.jumbo.trus.entity.filter.StatisticsFilter;
+import com.jumbo.trus.entity.footbar.FootbarSessionEntity;
+import com.jumbo.trus.repository.DynamicTextRepository;
 import com.jumbo.trus.repository.MatchRepository;
 import com.jumbo.trus.repository.ReceivedFineRepository;
 import com.jumbo.trus.repository.TeamVisitedCountryProjection;
+import com.jumbo.trus.repository.ai.AiQuestionRepository;
 import com.jumbo.trus.repository.football.FootballMatchRepository;
+import com.jumbo.trus.repository.footbar.FootbarSessionRepository;
 import com.jumbo.trus.service.AttendanceService;
 import com.jumbo.trus.service.SeasonService;
 import com.jumbo.trus.service.StepService;
@@ -36,6 +45,7 @@ import com.jumbo.trus.service.football.match.FootballMatchService;
 import com.jumbo.trus.service.football.stats.FootballPlayerStatsService;
 import com.jumbo.trus.service.football.team.TeamService;
 import com.jumbo.trus.service.goal.GoalService;
+import com.jumbo.trus.service.participation.MatchParticipationService;
 import com.jumbo.trus.service.player.PlayerService;
 import com.jumbo.trus.service.player.PlayerAchievementService;
 import com.jumbo.trus.service.player.PlayerStatsFacade;
@@ -83,6 +93,10 @@ public class AiReadOnlyToolService {
     private final StepService stepService;
     private final UserVisitedCountryService userVisitedCountryService;
     private final TrusBotPersonFactService personFactService;
+    private final MatchParticipationService matchParticipationService;
+    private final FootbarSessionRepository footbarSessionRepository;
+    private final DynamicTextRepository dynamicTextRepository;
+    private final AiQuestionRepository aiQuestionRepository;
 
     public ArrayNode toolDefinitions() {
         try {
@@ -107,6 +121,10 @@ public class AiReadOnlyToolService {
                 case "read_steps" -> readSteps(arguments, context);
                 case "read_visited_countries" -> readVisitedCountries(arguments, context);
                 case "read_player_profile" -> readPlayerProfile(arguments, context);
+                case "read_match_participation" -> readMatchParticipation(arguments, context);
+                case "read_footbar_statistics" -> readFootbarStatistics(arguments, context);
+                case "read_dynamic_texts" -> readDynamicTexts(arguments, context);
+                case "read_conversation_history" -> readConversationHistory(arguments, context);
                 case "read_person_facts" -> personFactService.readRandomFacts(
                         requiredText(arguments, "person"),
                         context
@@ -1039,6 +1057,238 @@ public class AiReadOnlyToolService {
         return playerStatsFacade.setupPlayerStats(playerId, context.appTeam(), currentSeason);
     }
 
+    private Object readMatchParticipation(JsonNode arguments, AiToolContext context) {
+        Long footballMatchId = requiredLong(arguments, "football_match_id");
+        MatchParticipationDetail detail = matchParticipationService.getDetail(
+                footballMatchId,
+                context.user().getId(),
+                context.appTeam()
+        );
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("football_match", detail.getFootballMatch());
+        result.put("current_player", detail.getCurrentPlayer() == null
+                ? null
+                : playerDirectoryRow(detail.getCurrentPlayer()));
+        result.put("current_status", detail.getCurrentStatus());
+        result.put("attending_players", detail.getAttendingPlayers());
+        result.put("attending_fans", detail.getAttendingFans());
+        result.put("maybe_players", detail.getMaybePlayers());
+        result.put("maybe_fans", detail.getMaybeFans());
+        result.put("not_attending_players", detail.getNotAttendingPlayers());
+        result.put("not_attending_fans", detail.getNotAttendingFans());
+        return result;
+    }
+
+    private Object readFootbarStatistics(JsonNode arguments, AiToolContext context) {
+        String dataset = requiredText(arguments, "dataset");
+        Long playerId = nullableLong(arguments, "player_id");
+        Long matchId = nullableLong(arguments, "match_id");
+        Long footballMatchId = nullableLong(arguments, "football_match_id");
+        Long seasonId = nullableLong(arguments, "season_id");
+        int limit = clamp(arguments.path("limit").asInt(20), 1, 100);
+
+        if (playerId != null && !belongsToCurrentTeam(playerId, context)) {
+            return Map.of("error", "Hráč nebyl v aktuálním týmu nalezen.");
+        }
+
+        Specification<FootbarSessionEntity> specification = (root, query, builder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            predicates.add(builder.equal(
+                    root.get("match").get("appTeam").get("id"),
+                    context.appTeam().getId()
+            ));
+            if (playerId != null) {
+                predicates.add(builder.equal(root.get("player").get("id"), playerId));
+            }
+            if (matchId != null) {
+                predicates.add(builder.equal(root.get("match").get("id"), matchId));
+            }
+            if (footballMatchId != null) {
+                predicates.add(builder.equal(
+                        root.get("match").get("footballMatch").get("id"),
+                        footballMatchId
+                ));
+            }
+            if (seasonId != null && seasonId != com.jumbo.trus.config.Config.ALL_SEASON_ID) {
+                predicates.add(builder.equal(root.get("match").get("season").get("id"), seasonId));
+            }
+            query.distinct(true);
+            return builder.and(predicates.toArray(Predicate[]::new));
+        };
+
+        if ("distance_leaderboard".equals(dataset)
+                && playerId == null
+                && matchId == null
+                && footballMatchId == null) {
+            return readFootbarDistanceLeaderboard(seasonId, limit, context);
+        }
+
+        int fetchLimit = "summary".equals(dataset) ? Math.max(500, limit) : limit;
+        List<FootbarSessionEntity> sessions = footbarSessionRepository.findAll(
+                specification,
+                PageRequest.of(0, fetchLimit, Sort.by(Sort.Direction.DESC, "startDate"))
+        ).getContent();
+
+        if ("sessions".equals(dataset)) {
+            return sessions.stream().map(this::footbarSessionRow).toList();
+        }
+        if (!"summary".equals(dataset) && !"distance_leaderboard".equals(dataset)) {
+            throw new IllegalArgumentException("Neznámý Footbar dataset: " + dataset);
+        }
+
+        long totalSessions = footbarSessionRepository.count(specification);
+        Map<Long, FootbarAggregate> byPlayer = new LinkedHashMap<>();
+        FootbarAggregate overall = new FootbarAggregate(null, "Celý tým");
+        for (FootbarSessionEntity session : sessions) {
+            overall.add(session);
+            Long key = session.getPlayer() == null ? Long.MIN_VALUE : session.getPlayer().getId();
+            String playerName = session.getPlayer() == null
+                    ? "Nespárované Footbar relace"
+                    : session.getPlayer().getName();
+            byPlayer.computeIfAbsent(key, ignored -> new FootbarAggregate(
+                    session.getPlayer() == null ? null : session.getPlayer().getId(),
+                    playerName
+            )).add(session);
+        }
+
+        if ("distance_leaderboard".equals(dataset)) {
+            return byPlayer.values().stream()
+                    .sorted(Comparator.comparingDouble(FootbarAggregate::averageDistance).reversed())
+                    .limit(limit)
+                    .map(FootbarAggregate::toMap)
+                    .toList();
+        }
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("total_sessions", totalSessions);
+        result.put("included_sessions", sessions.size());
+        result.put("truncated", totalSessions > sessions.size());
+        result.put("overall", overall.toMap());
+        result.put("players", byPlayer.values().stream()
+                .sorted(Comparator.comparingInt(FootbarAggregate::sessionCount).reversed())
+                .limit(limit)
+                .map(FootbarAggregate::toMap)
+                .toList());
+        return result;
+    }
+
+    private Object readFootbarDistanceLeaderboard(Long seasonId, int limit, AiToolContext context) {
+        List<IPlayerRunningStats> statistics = seasonId == null
+                || seasonId == com.jumbo.trus.config.Config.ALL_SEASON_ID
+                ? footbarSessionRepository.findTopRunningStatsByAppTeam(
+                        context.appTeam().getId(),
+                        PageRequest.of(0, limit)
+                )
+                : footbarSessionRepository.findTopRunningStatsByAppTeamAndSeason(
+                        context.appTeam().getId(),
+                        seasonId,
+                        PageRequest.of(0, limit)
+                );
+        Map<Long, String> playerNames = playerService.getAll(context.appTeam().getId()).stream()
+                .collect(java.util.stream.Collectors.toMap(
+                        PlayerDTO::getId,
+                        PlayerDTO::getName,
+                        (first, second) -> first
+                ));
+        return statistics.stream().map(row -> {
+            Map<String, Object> item = new LinkedHashMap<>();
+            item.put("player_id", row.getPlayerId());
+            item.put("player", playerNames.get(row.getPlayerId()));
+            item.put("average_distance_km", row.getAverageDistance());
+            item.put("total_distance_km", row.getTotalDistance());
+            return item;
+        }).toList();
+    }
+
+    private Map<String, Object> footbarSessionRow(FootbarSessionEntity session) {
+        Map<String, Object> row = new LinkedHashMap<>();
+        row.put("session_id", session.getId());
+        row.put("start", formatDateTime(session.getStartDate()));
+        row.put("stop", formatDateTime(session.getStopDate()));
+        row.put("title", session.getTitle());
+        row.put("match_type", session.getMatchType());
+        row.put("position", session.getPosition());
+        row.put("score_stars", session.getScoreStars());
+        row.put("playing_time", session.getPlayingTime());
+        row.put("distance_m", session.getDistance());
+        row.put("passes", session.getPassCount());
+        row.put("shots", session.getShotCount());
+        row.put("shot_speed", session.getShotSpeed());
+        row.put("average_shot_speed", session.getAvgShotSpeed());
+        row.put("dribbles", session.getDribbleCount());
+        row.put("time_with_ball", session.getTimeWithBall());
+        row.put("activity", session.getActivity());
+        row.put("running_time", session.getTimeRunning());
+        row.put("runs", session.getRunCount());
+        row.put("sprints", session.getSprintCount());
+        row.put("average_sprint_speed", session.getAvgSprintSpeed());
+        row.put("maximum_sprint_speed", session.getSprintSpeed());
+        row.put("high_intensity_running_distance", session.getHsrPlus());
+        row.put("stop_and_go", session.getStopAndGo());
+        row.put("accelerations", session.getAcceleration());
+        if (session.getPlayer() != null) {
+            row.put("player_id", session.getPlayer().getId());
+            row.put("player", session.getPlayer().getName());
+        }
+        if (session.getMatch() != null) {
+            row.put("match_id", session.getMatch().getId());
+            row.put("match", session.getMatch().getName());
+            row.put("match_date", formatDateTime(session.getMatch().getDate()));
+            if (session.getMatch().getSeason() != null) {
+                row.put("season_id", session.getMatch().getSeason().getId());
+                row.put("season", session.getMatch().getSeason().getName());
+            }
+        }
+        return row;
+    }
+
+    private Object readDynamicTexts(JsonNode arguments, AiToolContext context) {
+        String name = nullableText(arguments, "name");
+        int limit = clamp(arguments.path("limit").asInt(20), 1, 100);
+        List<DynamicTextEntity> texts = name == null
+                ? dynamicTextRepository.findAllByAppTeamOrderByNameAscRankAsc(
+                        context.appTeam(),
+                        PageRequest.of(0, limit)
+                )
+                : dynamicTextRepository.findAllByAppTeamAndNameContainingIgnoreCaseOrderByNameAscRankAsc(
+                        context.appTeam(),
+                        name,
+                        PageRequest.of(0, limit)
+                );
+        return texts.stream().map(item -> {
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("name", item.getName());
+            row.put("rank", item.getRank());
+            row.put("text", item.getText());
+            return row;
+        }).toList();
+    }
+
+    private Object readConversationHistory(JsonNode arguments, AiToolContext context) {
+        int limit = clamp(arguments.path("limit").asInt(6), 1, 12);
+        List<AiQuestionEntity> newestFirst = aiQuestionRepository
+                .findByUserIdAndAppTeamIdAndStatusOrderByCreatedAtDesc(
+                        context.user().getId(),
+                        context.appTeam().getId(),
+                        AiQuestionStatus.COMPLETED,
+                        PageRequest.of(0, limit)
+                );
+        List<Map<String, Object>> messages = new ArrayList<>();
+        for (int index = newestFirst.size() - 1; index >= 0; index--) {
+            AiQuestionEntity item = newestFirst.get(index);
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("question", item.getQuestion());
+            row.put("answer", item.getAnswer());
+            row.put("created_at", item.getCreatedAt() == null ? null : item.getCreatedAt().toString());
+            messages.add(row);
+        }
+        return Map.of(
+                "scope", "Pouze dokončená konverzace přihlášeného uživatele v aktuálním týmu.",
+                "messages", messages
+        );
+    }
+
     private boolean belongsToCurrentTeam(Long playerId, AiToolContext context) {
         return playerService.getAll(context.appTeam().getId())
                 .stream()
@@ -1097,6 +1347,14 @@ public class AiReadOnlyToolService {
     private Long nullableLong(JsonNode arguments, String field) {
         JsonNode value = arguments.get(field);
         return value == null || value.isNull() ? null : value.asLong();
+    }
+
+    private Long requiredLong(JsonNode arguments, String field) {
+        Long value = nullableLong(arguments, field);
+        if (value == null) {
+            throw new IllegalArgumentException("Chybí parametr " + field);
+        }
+        return value;
     }
 
     private String nullableText(JsonNode arguments, String field) {
@@ -1393,6 +1651,68 @@ public class AiReadOnlyToolService {
               },
               {
                 "type": "function",
+                "name": "read_match_participation",
+                "description": "Čte účasti hráčů a fanoušků a jejich komentáře u jednoho importovaného oficiálního zápasu aktuálního týmu. football_match_id nejprve zjisti přes find_official_matches. Nástroj vrací ANO/MOŽNÁ/NE skupiny, komentáře, odpovědi a reakce, ale nic nemění.",
+                "strict": true,
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "football_match_id": {"type": "integer", "description": "Interní ID z find_official_matches."}
+                  },
+                  "required": ["football_match_id"],
+                  "additionalProperties": false
+                }
+              },
+              {
+                "type": "function",
+                "name": "read_footbar_statistics",
+                "description": "Čte bezpečné sportovní metriky Footbar aktuálního týmu bez polohy, tracker dat, externích identifikátorů a přístupových tokenů. Pro předpovědi výkonu používej summary nebo distance_leaderboard, pro detail sessions.",
+                "strict": true,
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "dataset": {"type": "string", "enum": ["sessions", "summary", "distance_leaderboard"]},
+                    "player_id": {"type": ["integer", "null"]},
+                    "match_id": {"type": ["integer", "null"], "description": "ID ručně zadaného match, pokud je známé."},
+                    "football_match_id": {"type": ["integer", "null"], "description": "ID importovaného oficiálního zápasu z find_official_matches."},
+                    "season_id": {"type": ["integer", "null"], "description": "Null znamená všechny sezony."},
+                    "limit": {"type": "integer", "minimum": 1, "maximum": 100}
+                  },
+                  "required": ["dataset", "player_id", "match_id", "football_match_id", "season_id", "limit"],
+                  "additionalProperties": false
+                }
+              },
+              {
+                "type": "function",
+                "name": "read_dynamic_texts",
+                "description": "Čte dynamické texty nastavené pouze pro aktuální tým. Použij, když se uživatel ptá na týmové dynamické hlášky nebo obsah pojmenovaný v dynamic_text.",
+                "strict": true,
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "name": {"type": ["string", "null"], "description": "Celý název nebo jeho část; null vrátí přehled všech názvů."},
+                    "limit": {"type": "integer", "minimum": 1, "maximum": 100}
+                  },
+                  "required": ["name", "limit"],
+                  "additionalProperties": false
+                }
+              },
+              {
+                "type": "function",
+                "name": "read_conversation_history",
+                "description": "Čte pouze předchozí dokončené otázky a odpovědi právě přihlášeného uživatele v aktuálním týmu. Použij u navazujícího dotazu, který odkazuje na předchozí odpověď nebo neuvádí znovu osobu, období či téma. Nelze zadat cizího uživatele.",
+                "strict": true,
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "limit": {"type": "integer", "minimum": 1, "maximum": 12, "description": "Obvykle stačí 4 až 6 posledních výměn."}
+                  },
+                  "required": ["limit"],
+                  "additionalProperties": false
+                }
+              },
+              {
+                "type": "function",
                 "name": "read_person_facts",
                 "description": "Vyhledá hráče nebo fanouška výhradně v aktuálním app_team podle přezdívky z player, občanského jména z football_player nebo aliasu z týmového rozhovoru. Použij pro obecné dotazy typu řekni mi něco o osobě, co na ni říkáš nebo dej zajímavosti. Backend náhodně vybere přesně 2 databázové zajímavosti a u spárovaného rozhovoru další 2 odpovědi; osoba existující pouze v týmovém rozhovoru dostane 4 odpovědi. Vrať všechny vybrané položky přirozeně a rozhovory necenzuruj.",
                 "strict": true,
@@ -1447,5 +1767,110 @@ public class AiReadOnlyToolService {
     }
 
     private record NavigationMatch(int score, JsonNode entry) {
+    }
+
+    private static final class FootbarAggregate {
+        private final Long playerId;
+        private final String playerName;
+        private int sessionCount;
+        private double distance;
+        private int distanceSamples;
+        private double playingTime;
+        private int playingTimeSamples;
+        private long passes;
+        private int passSamples;
+        private long shots;
+        private int shotSamples;
+        private long dribbles;
+        private int dribbleSamples;
+        private long sprints;
+        private int sprintSamples;
+        private double runs;
+        private int runSamples;
+        private Double maximumShotSpeed;
+        private Double maximumSprintSpeed;
+
+        private FootbarAggregate(Long playerId, String playerName) {
+            this.playerId = playerId;
+            this.playerName = playerName;
+        }
+
+        private void add(FootbarSessionEntity session) {
+            sessionCount++;
+            if (session.getDistance() != null) {
+                distance += session.getDistance();
+                distanceSamples++;
+            }
+            if (session.getPlayingTime() != null) {
+                playingTime += session.getPlayingTime();
+                playingTimeSamples++;
+            }
+            if (session.getPassCount() != null) {
+                passes += session.getPassCount();
+                passSamples++;
+            }
+            if (session.getShotCount() != null) {
+                shots += session.getShotCount();
+                shotSamples++;
+            }
+            if (session.getDribbleCount() != null) {
+                dribbles += session.getDribbleCount();
+                dribbleSamples++;
+            }
+            if (session.getSprintCount() != null) {
+                sprints += session.getSprintCount();
+                sprintSamples++;
+            }
+            if (session.getRunCount() != null) {
+                runs += session.getRunCount();
+                runSamples++;
+            }
+            if (session.getShotSpeed() != null) {
+                maximumShotSpeed = maximumShotSpeed == null
+                        ? session.getShotSpeed()
+                        : Math.max(maximumShotSpeed, session.getShotSpeed());
+            }
+            if (session.getSprintSpeed() != null) {
+                maximumSprintSpeed = maximumSprintSpeed == null
+                        ? session.getSprintSpeed()
+                        : Math.max(maximumSprintSpeed, session.getSprintSpeed());
+            }
+        }
+
+        private int sessionCount() {
+            return sessionCount;
+        }
+
+        private double averageDistance() {
+            return average(distance, distanceSamples);
+        }
+
+        private Map<String, Object> toMap() {
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("player_id", playerId);
+            row.put("player", playerName);
+            row.put("sessions", sessionCount);
+            row.put("total_distance_km", distance / 1000.0);
+            row.put("average_distance_km", averageDistance() / 1000.0);
+            row.put("total_playing_time", playingTime);
+            row.put("average_playing_time", average(playingTime, playingTimeSamples));
+            row.put("total_passes", passes);
+            row.put("average_passes", average(passes, passSamples));
+            row.put("total_shots", shots);
+            row.put("average_shots", average(shots, shotSamples));
+            row.put("total_dribbles", dribbles);
+            row.put("average_dribbles", average(dribbles, dribbleSamples));
+            row.put("total_runs", runs);
+            row.put("average_runs", average(runs, runSamples));
+            row.put("total_sprints", sprints);
+            row.put("average_sprints", average(sprints, sprintSamples));
+            row.put("maximum_shot_speed", maximumShotSpeed);
+            row.put("maximum_sprint_speed", maximumSprintSpeed);
+            return row;
+        }
+
+        private static double average(double total, int samples) {
+            return samples == 0 ? 0.0 : total / samples;
+        }
     }
 }

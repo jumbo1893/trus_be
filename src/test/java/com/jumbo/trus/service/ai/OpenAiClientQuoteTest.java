@@ -88,6 +88,11 @@ class OpenAiClientQuoteTest {
         assertTrue(instructions.contains("použij místo náhodných zajímavostí search_interviews"));
         assertTrue(instructions.contains("předej person=null a limit=20"));
         assertTrue(instructions.contains("necenzuruj vulgarity"));
+        assertTrue(instructions.contains("vždy nejprve použij read_conversation_history"));
+        assertTrue(instructions.contains("používej read_footbar_statistics"));
+        assertTrue(instructions.contains("nikdy neodpověz pouze"));
+        assertTrue(instructions.contains("konkrétní nejlepší"));
+        assertTrue(instructions.contains("výsledek smíš dopočítat heuristicky"));
         assertFalse(instructions.contains("dotaz zakončíš tečkou"));
     }
 
