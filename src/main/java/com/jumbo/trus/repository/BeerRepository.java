@@ -418,7 +418,7 @@ public interface BeerRepository extends PagingAndSortingRepository<BeerEntity, L
                 JOIN fine f ON r.fine_id = f.id
                 WHERE b.player_id = :playerId
                 AND f.name = :fineName
-                AND b.beer_number > :beerNumber
+                AND b.beer_number + b.liquor_number > :beerNumber
                 ORDER BY m.date ASC
                 LIMIT 1
             """, nativeQuery = true)

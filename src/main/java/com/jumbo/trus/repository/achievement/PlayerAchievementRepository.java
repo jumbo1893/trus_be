@@ -153,8 +153,8 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
             FROM beer b
             JOIN goal g ON b.match_id = g.match_id AND b.player_id = g.player_id
             JOIN match m ON m.id = b.match_id
-            WHERE b.beer_number+b.liquor_number = g.goal_number
-            AND g.goal_number > 0
+            WHERE b.beer_number + b.liquor_number = g.goal_number + g.assist_number
+            AND g.goal_number + g.assist_number > 1
             AND b.player_id = :playerId
             ORDER BY m.date ASC
             LIMIT 1
@@ -165,16 +165,19 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
             SELECT b.match_id AS matchId,
                    b.beer_number AS beerNumber,
                    b.liquor_number AS liquorNumber,
-                   g.goal_number AS goalNumber,
+                   COALESCE(g.goal_number, 0) AS goalNumber,
                    r.fine_number AS fineNumber
             FROM beer b
-            JOIN goal g ON b.match_id = g.match_id AND b.player_id = g.player_id
+            LEFT JOIN goal g ON b.match_id = g.match_id AND b.player_id = g.player_id
             JOIN received_fine r ON b.match_id = r.match_id AND b.player_id = r.player_id
             JOIN match m ON m.id = b.match_id
             JOIN fine f ON r.fine_id = f.id
+            JOIN player p ON p.id = b.player_id
+            LEFT JOIN football_match_player fmp ON fmp.match_id = m.football_match_id
+                                                  AND fmp.player_id = p.football_player_id
             WHERE b.beer_number > 0
               AND b.liquor_number > 0
-              AND g.goal_number > 0
+              AND (COALESCE(g.goal_number, 0) > 0 OR fmp.clean_sheet IS TRUE)
               AND f.name = :fineName
               AND r.fine_number > 0
               AND b.player_id = :playerId
@@ -321,10 +324,29 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
                     'Pozdní příchod do začátku',
                     'Pozdní příchod po 10. minutě',
                     'Pozdní příchod po začátku',
-                    'Nepříchod'
+                    'Nepříchod',
+                    'Žlutá karta',
+                    'Červená karta',
+                    'Překop',
+                    'Nekompletní výbava',
+                    'Zapomenutí věcí',
+                    'Vlastní gól',
+                    'Vlastňák'
                 )
                 GROUP BY r.match_id, m.date
-                HAVING COUNT(DISTINCT f.id) >= 3
+                HAVING COUNT(DISTINCT CASE
+                    WHEN f.name IN (
+                        'Pozdní příchod do začátku',
+                        'Pozdní příchod po 10. minutě',
+                        'Pozdní příchod po začátku'
+                    ) THEN 'LATE_ARRIVAL'
+                    WHEN f.name = 'Nepříchod' THEN 'ABSENCE'
+                    WHEN f.name IN ('Žlutá karta', 'Červená karta') THEN 'CARD'
+                    WHEN f.name = 'Překop' THEN 'OVERKICK'
+                    WHEN f.name = 'Nekompletní výbava' THEN 'INCOMPLETE_EQUIPMENT'
+                    WHEN f.name = 'Zapomenutí věcí' THEN 'FORGOTTEN_THINGS'
+                    WHEN f.name IN ('Vlastní gól', 'Vlastňák') THEN 'OWN_GOAL'
+                END) >= 3
                 ORDER BY m.date ASC
                 LIMIT 1;
             
@@ -682,7 +704,7 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
                 SELECT player_id,
                        goals,
                        assist,
-                       RANK() OVER (ORDER BY goals DESC, assist DESC) AS rank_position
+                       RANK() OVER (ORDER BY goals DESC) AS rank_position
                 FROM goal_stats
                 WHERE goals > 0
             )
@@ -973,43 +995,19 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
 
     // Machýrek
     @Query(value = """
-            WITH attendees AS (
-                SELECT mp.match_id, mp.player_id
-                FROM match_players mp
-                JOIN player p ON p.id = mp.player_id
-                JOIN match m ON m.id = mp.match_id
-                WHERE p.fan = false
-                  AND m.app_team_id = :appTeamId
-            ), rabona_players AS (
-                SELECT DISTINCT rf.match_id, rf.player_id
-                FROM received_fine rf
-                JOIN fine f ON f.id = rf.fine_id
-                WHERE f.name = 'Rabona (gól)'
-                  AND rf.fine_number > 0
-            ), counts AS (
-                SELECT a.match_id,
-                       COUNT(DISTINCT a.player_id) AS players_count,
-                       COUNT(DISTINCT rp.player_id) AS rabona_fined_count
-                FROM attendees a
-                LEFT JOIN rabona_players rp ON rp.match_id = a.match_id AND rp.player_id = a.player_id
-                GROUP BY a.match_id
-            )
-            SELECT a.match_id AS matchId,
-                   CAST(c.players_count AS int) AS firstNumber,
-                   CAST(c.rabona_fined_count AS int) AS secondNumber
-            FROM attendees a
-            JOIN counts c ON c.match_id = a.match_id
-            JOIN match m ON m.id = a.match_id
-            WHERE a.player_id = :playerId
-              AND (:matchId IS NULL OR a.match_id = :matchId)
-              AND c.players_count > 1
-              AND c.rabona_fined_count = c.players_count - 1
-              AND NOT EXISTS (
-                  SELECT 1
-                  FROM rabona_players rp
-                  WHERE rp.match_id = a.match_id
-                    AND rp.player_id = :playerId
-              )
+            SELECT rf.match_id AS matchId,
+                   CAST(COUNT(DISTINCT mp.player_id) AS int) AS firstNumber,
+                   CAST(SUM(rf.fine_number) AS int) AS secondNumber
+            FROM received_fine rf
+            JOIN fine f ON f.id = rf.fine_id
+            JOIN match m ON m.id = rf.match_id
+            LEFT JOIN match_players mp ON mp.match_id = rf.match_id
+            WHERE rf.player_id = :playerId
+              AND m.app_team_id = :appTeamId
+              AND f.name = 'Rabona (gól)'
+              AND rf.fine_number > 0
+              AND (:matchId IS NULL OR rf.match_id = :matchId)
+            GROUP BY rf.match_id, m.date
             ORDER BY m.date ASC
             LIMIT 1
             """, nativeQuery = true)
@@ -1661,8 +1659,8 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
             JOIN goal g ON b.match_id = g.match_id AND b.player_id = g.player_id
             WHERE b.player_id = :playerId
               AND b.match_id = :matchId
-              AND b.beer_number + b.liquor_number = g.goal_number
-              AND g.goal_number > 0
+              AND b.beer_number + b.liquor_number = g.goal_number + g.assist_number
+              AND g.goal_number + g.assist_number > 1
             LIMIT 1
             """, nativeQuery = true)
     IGoalBeerMatch getMatchWithSameGoalsAndBeers(@Param("playerId") Long playerId,
@@ -1672,17 +1670,21 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
             SELECT b.match_id AS matchId,
                    b.beer_number AS beerNumber,
                    b.liquor_number AS liquorNumber,
-                   g.goal_number AS goalNumber,
+                   COALESCE(g.goal_number, 0) AS goalNumber,
                    r.fine_number AS fineNumber
             FROM beer b
-            JOIN goal g ON b.match_id = g.match_id AND b.player_id = g.player_id
+            LEFT JOIN goal g ON b.match_id = g.match_id AND b.player_id = g.player_id
             JOIN received_fine r ON b.match_id = r.match_id AND b.player_id = r.player_id
+            JOIN match m ON m.id = b.match_id
             JOIN fine f ON r.fine_id = f.id
+            JOIN player p ON p.id = b.player_id
+            LEFT JOIN football_match_player fmp ON fmp.match_id = m.football_match_id
+                                                  AND fmp.player_id = p.football_player_id
             WHERE b.player_id = :playerId
               AND b.match_id = :matchId
               AND b.beer_number > 0
               AND b.liquor_number > 0
-              AND g.goal_number > 0
+              AND (COALESCE(g.goal_number, 0) > 0 OR fmp.clean_sheet IS TRUE)
               AND f.name = :fineName
               AND r.fine_number > 0
             LIMIT 1
@@ -1915,10 +1917,29 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
                   'Pozdní příchod do začátku',
                   'Pozdní příchod po 10. minutě',
                   'Pozdní příchod po začátku',
-                  'Nepříchod'
+                  'Nepříchod',
+                  'Žlutá karta',
+                  'Červená karta',
+                  'Překop',
+                  'Nekompletní výbava',
+                  'Zapomenutí věcí',
+                  'Vlastní gól',
+                  'Vlastňák'
               )
             GROUP BY rf.match_id
-            HAVING COUNT(DISTINCT f.id) >= 3
+            HAVING COUNT(DISTINCT CASE
+                WHEN f.name IN (
+                    'Pozdní příchod do začátku',
+                    'Pozdní příchod po 10. minutě',
+                    'Pozdní příchod po začátku'
+                ) THEN 'LATE_ARRIVAL'
+                WHEN f.name = 'Nepříchod' THEN 'ABSENCE'
+                WHEN f.name IN ('Žlutá karta', 'Červená karta') THEN 'CARD'
+                WHEN f.name = 'Překop' THEN 'OVERKICK'
+                WHEN f.name = 'Nekompletní výbava' THEN 'INCOMPLETE_EQUIPMENT'
+                WHEN f.name = 'Zapomenutí věcí' THEN 'FORGOTTEN_THINGS'
+                WHEN f.name IN ('Vlastní gól', 'Vlastňák') THEN 'OWN_GOAL'
+            END) >= 3
             LIMIT 1
             """, nativeQuery = true)
     Long findMatchWherePlayerReceivedAtLeastXFines(
@@ -2249,12 +2270,100 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
             JOIN drinkers previous_two_drinker ON previous_two_drinker.match_id = om.previous_two_id
                                                 AND previous_two_drinker.player_id = :playerId
                                                 AND previous_two_drinker.position = 1
-            WHERE om.id = :matchId
+            WHERE (:matchId IS NULL OR om.id = :matchId)
+            ORDER BY om.date ASC, om.id ASC
             LIMIT 1
             """, nativeQuery = true)
     IMatchIdNumberOneNumberTwo findTahounAtMatch(@Param("playerId") Long playerId,
                                                  @Param("appTeamId") Long appTeamId,
                                                  @Param("matchId") Long matchId);
+
+    // Týmový hráč
+    @Query(value = """
+            WITH season_matches AS (
+                SELECT m.id
+                FROM match m
+                WHERE m.season_id = :seasonId
+                  AND m.app_team_id = :appTeamId
+            ), totals AS (
+                SELECT COUNT(*) AS match_count
+                FROM season_matches
+            ), attendance AS (
+                SELECT COUNT(DISTINCT mp.match_id) AS attended_count
+                FROM match_players mp
+                JOIN season_matches sm ON sm.id = mp.match_id
+                WHERE mp.player_id = :playerId
+            ), assists AS (
+                SELECT COALESCE(SUM(g.assist_number), 0) AS assist_count
+                FROM goal g
+                JOIN season_matches sm ON sm.id = g.match_id
+                WHERE g.player_id = :playerId
+            )
+            SELECT NULL AS matchId,
+                   CAST(t.match_count - a.attended_count AS int) AS firstNumber,
+                   CAST(ast.assist_count AS int) AS secondNumber
+            FROM totals t
+            CROSS JOIN attendance a
+            CROSS JOIN assists ast
+            WHERE t.match_count > 0
+              AND t.match_count - a.attended_count <= 1
+              AND ast.assist_count >= 5
+            """, nativeQuery = true)
+    IMatchIdNumberOneNumberTwo findTeamPlayerInSeason(@Param("playerId") Long playerId,
+                                                       @Param("seasonId") Long seasonId,
+                                                       @Param("appTeamId") Long appTeamId);
+
+    // Málo času, hodně muziky
+    @Query(value = """
+            SELECT m.id AS matchId,
+                   CAST(COALESCE(g.goal_number, 0) AS int) AS firstNumber,
+                   CAST(COALESCE(g.assist_number, 0) AS int) AS secondNumber,
+                   CAST(CASE WHEN EXISTS (
+                       SELECT 1
+                       FROM received_fine card_rf
+                       JOIN fine card_f ON card_f.id = card_rf.fine_id
+                       WHERE card_rf.match_id = m.id
+                         AND card_rf.player_id = :playerId
+                         AND card_rf.fine_number > 0
+                         AND card_f.name IN ('Žlutá karta', 'Červená karta')
+                   ) THEN 1 ELSE 0 END AS int) AS thirdNumber,
+                   '' AS text
+            FROM match m
+            LEFT JOIN goal g ON g.match_id = m.id AND g.player_id = :playerId
+            WHERE m.app_team_id = :appTeamId
+              AND (:matchId IS NULL OR m.id = :matchId)
+              AND EXISTS (
+                  SELECT 1
+                  FROM received_fine late_rf
+                  JOIN fine late_f ON late_f.id = late_rf.fine_id
+                  WHERE late_rf.match_id = m.id
+                    AND late_rf.player_id = :playerId
+                    AND late_rf.fine_number > 0
+                    AND late_f.name IN (
+                        'Pozdní příchod do začátku',
+                        'Pozdní příchod po začátku',
+                        'Pozdní příchod po 10. minutě'
+                    )
+              )
+              AND (
+                  CASE WHEN EXISTS (
+                      SELECT 1
+                      FROM received_fine card_rf
+                      JOIN fine card_f ON card_f.id = card_rf.fine_id
+                      WHERE card_rf.match_id = m.id
+                        AND card_rf.player_id = :playerId
+                        AND card_rf.fine_number > 0
+                        AND card_f.name IN ('Žlutá karta', 'Červená karta')
+                  ) THEN 1 ELSE 0 END
+                  + CASE WHEN COALESCE(g.goal_number, 0) > 0 THEN 1 ELSE 0 END
+                  + CASE WHEN COALESCE(g.assist_number, 0) > 0 THEN 1 ELSE 0 END
+              ) >= 2
+            ORDER BY m.date ASC NULLS LAST, m.id ASC
+            LIMIT 1
+            """, nativeQuery = true)
+    IMatchIdThreeNumbersAndText findMaloCasuHodneMuziky(@Param("playerId") Long playerId,
+                                                         @Param("appTeamId") Long appTeamId,
+                                                         @Param("matchId") Long matchId);
 
 }
 

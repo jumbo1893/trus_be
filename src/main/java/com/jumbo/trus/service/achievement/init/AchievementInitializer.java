@@ -66,11 +66,11 @@ public class AchievementInitializer implements CommandLineRunner {
     private List<AchievementEntity> seedAchievements() {
         List<AchievementEntity> achievements = List.of(
                 new AchievementEntity("Každému, co mu patří", KAZDEMU_CO_MU_PATRI, true, "Vypij přesně tolik piv/panáků, kolik si v zápase zaznamenal asistencí/gólů",
-                        "Musí být více než 1", false, EnumSet.of(OutboxAggregateType.BEER, OutboxAggregateType.MATCH), AchievementCalculationScope.MATCH),
+                        "Musí být více než 1", false, EnumSet.of(OutboxAggregateType.BEER, OutboxAggregateType.GOAL, OutboxAggregateType.MATCH), AchievementCalculationScope.MATCH),
                 new AchievementEntity("Fotbal je jen záminka", FOTBAL_JE_JEN_ZAMINKA, false, "Nevynechej ani jednu návštěvu hospody v sezoně", "Alespoň v 8 zápasech",
                         false, EnumSet.of(OutboxAggregateType.BEER, OutboxAggregateType.MATCH), AchievementCalculationScope.SEASON),
                 new AchievementEntity("Po pořádné práci pořádná oslava", PO_PORADNE_PRACI_PORADNA_OSLAVA, false, "Vyhraj zápas s prvním mužstvem tabulky a vypij po zápase nejvíc piv/panáků",
-                        "Případně souboj mezi prvním a druhým", false, EnumSet.of(OutboxAggregateType.BEER, OutboxAggregateType.MATCH), AchievementCalculationScope.MATCH),
+                        "Případně souboj mezi prvním a druhým", false, EnumSet.of(OutboxAggregateType.BEER, OutboxAggregateType.MATCH, OutboxAggregateType.FOOTBALL_MATCH), AchievementCalculationScope.MATCH),
                 new AchievementEntity("Tahoun", TAHOUN, false, "Vypij 3x po sobě nejvíce piv/panáků",
                         false, EnumSet.of(OutboxAggregateType.BEER), AchievementCalculationScope.MATCH),
                 new AchievementEntity("Kořala", KORALA, false, "Vypij po zápase více panáků než piv",
@@ -80,11 +80,11 @@ public class AchievementInitializer implements CommandLineRunner {
                 new AchievementEntity("Oslavenec", OSLAVENEC, false, "Vypij po zápase víc piv/panáků než zbytek týmu dohromady",
                         false, EnumSet.of(OutboxAggregateType.BEER), AchievementCalculationScope.MATCH),
                 new AchievementEntity("Úspěšný den", USPESNY_DEN, true, "Zaznamenej v zápase gól(čisté konto), žlutou kartu a v hospodě panáka a pivo",
-                        "Od každého aspoň jedno", false, EnumSet.of(OutboxAggregateType.BEER, OutboxAggregateType.RECEIVED_FINE, OutboxAggregateType.GOAL), AchievementCalculationScope.MATCH),
+                        "Od každého aspoň jedno", false, EnumSet.of(OutboxAggregateType.BEER, OutboxAggregateType.RECEIVED_FINE, OutboxAggregateType.GOAL, OutboxAggregateType.FOOTBALL_MATCH), AchievementCalculationScope.MATCH),
                 new AchievementEntity("Černá práce", CERNA_PRACE, true, "Dostaň hvězdu utkání i přes nulový počet vstřelených gólů",
                         false, EnumSet.of(OutboxAggregateType.GOAL, OutboxAggregateType.FOOTBALL_MATCH), AchievementCalculationScope.MATCH),
                 new AchievementEntity("Doping", DOPING, true, "Dej hattrick / vychytej nulu s pokutou za kocovinu",
-                        false, EnumSet.of(OutboxAggregateType.GOAL, OutboxAggregateType.RECEIVED_FINE), AchievementCalculationScope.MATCH),
+                        false, EnumSet.of(OutboxAggregateType.GOAL, OutboxAggregateType.RECEIVED_FINE, OutboxAggregateType.FOOTBALL_MATCH), AchievementCalculationScope.MATCH),
                 new AchievementEntity("Autíčko", AUTICKO, true, "Zaznamenej v zápase nejvíce kanadských bodů jako brankář",
                         false, EnumSet.of(OutboxAggregateType.GOAL, OutboxAggregateType.FOOTBALL_MATCH), AchievementCalculationScope.MATCH),
                 new AchievementEntity("Ožeň se, ožer se", OZEN_SE_OZER_SE, true, "Dej si aspoň 8 kousků po svatbě",
@@ -128,7 +128,7 @@ public class AchievementInitializer implements CommandLineRunner {
                 new AchievementEntity("Priority", PRIORITY, false, "Účast na všech zápasech v sezóně",
                         false, EnumSet.of(OutboxAggregateType.MATCH), AchievementCalculationScope.SEASON),
                 new AchievementEntity("Žlutá je dobrá", ZLUTA_JE_DOBRA, true, "Zaznamenej v sezoně jak vyprazdňování při zápase tak žlutou kartu",
-                        false, EnumSet.of(OutboxAggregateType.RECEIVED_FINE), AchievementCalculationScope.MATCH),
+                        false, EnumSet.of(OutboxAggregateType.RECEIVED_FINE), AchievementCalculationScope.SEASON),
                 new AchievementEntity("Ionťák", IONTAK, true, "Zaznamenej v zápase alespoň jedno pivo, ale vynechej třetí poločas",
                         false, EnumSet.of(OutboxAggregateType.BEER, OutboxAggregateType.RECEIVED_FINE), AchievementCalculationScope.MATCH),
                 new AchievementEntity("Sportovec", SPORTOVEC, true, "Vstřel v sezoně víc gólů než vypiješ piv",
@@ -158,7 +158,7 @@ public class AchievementInitializer implements CommandLineRunner {
                 new AchievementEntity("Maratonec", MARATONEC, true, "Uběhni v zápasech Trusu maraton", "Alespoň 42,1 km",
                         false, EnumSet.of(OutboxAggregateType.FOOTBAR), AchievementCalculationScope.ALL),
                 new AchievementEntity("Roberto Carlos", ROBERTO_CARLOS, true, "Zaznamenej v zápase střelu s rychlostí přes 80 km/h a gól",
-                        false, EnumSet.of(OutboxAggregateType.FOOTBAR), AchievementCalculationScope.MATCH),
+                        false, EnumSet.of(OutboxAggregateType.FOOTBAR, OutboxAggregateType.GOAL), AchievementCalculationScope.MATCH),
                 new AchievementEntity("Špílmachr", SPILMACHR, true, "Zaznamenej v zápase alespoň 40 přihrávek",
                         false, EnumSet.of(OutboxAggregateType.FOOTBAR), AchievementCalculationScope.MATCH),
                 new AchievementEntity("Já to za vás oběhal", JA_TO_ZA_VAS_OBEHAL, true, "Měj v zápase nejvíce naběhaných kilometrů ze všech", "Alespoň 2 hráči s Footbarem",
@@ -258,7 +258,13 @@ public class AchievementInitializer implements CommandLineRunner {
                 new AchievementEntity("TrusBot", TRUSBOT, false, "Trus na Botě? Ne - pokecej si s AI!",
                         false, EnumSet.of(OutboxAggregateType.OTHER), AchievementCalculationScope.OTHER),
                 new AchievementEntity("AI expert", AI_EXPERT, false, "Donuť TrusBota aby ti dal tento achievement.",
-                        false, EnumSet.of(OutboxAggregateType.OTHER), AchievementCalculationScope.OTHER)
+                        false, EnumSet.of(OutboxAggregateType.OTHER), AchievementCalculationScope.OTHER),
+                new AchievementEntity("Týmový hráč", TYMOVY_HRAC, true, "Vynechej v sezoně maximálně 1 zápas a připiš si alespoň 5 asistencí",
+                        false, EnumSet.of(OutboxAggregateType.MATCH, OutboxAggregateType.GOAL, OutboxAggregateType.PLAYER), AchievementCalculationScope.SEASON),
+                new AchievementEntity("Flákač", FLAKAC, true, "Přijď po začátku a vynechej třetí poločas",
+                        false, EnumSet.of(OutboxAggregateType.RECEIVED_FINE), AchievementCalculationScope.MATCH),
+                new AchievementEntity("Málo času, hodně muziky", MALO_CASU_HODNE_MUZIKY, true, "Přijď po začátku a získej alespoň 2 z těchto věcí: kartu, gól, asistenci",
+                        false, EnumSet.of(OutboxAggregateType.RECEIVED_FINE, OutboxAggregateType.GOAL), AchievementCalculationScope.MATCH)
 
         );
 

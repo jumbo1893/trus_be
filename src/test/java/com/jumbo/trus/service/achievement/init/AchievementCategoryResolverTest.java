@@ -8,6 +8,9 @@ import org.junit.jupiter.api.Test;
 import java.util.EnumSet;
 
 import static com.jumbo.trus.service.achievement.AchievementCodes.PERMICE_NA_TRUS;
+import static com.jumbo.trus.service.achievement.AchievementCodes.FLAKAC;
+import static com.jumbo.trus.service.achievement.AchievementCodes.MALO_CASU_HODNE_MUZIKY;
+import static com.jumbo.trus.service.achievement.AchievementCodes.TYMOVY_HRAC;
 import static com.jumbo.trus.service.achievement.AchievementCodes.ZAHRANICNI_POZOROVATEL;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -31,6 +34,17 @@ class AchievementCategoryResolverTest {
                 .isEqualTo(AchievementCategory.MATCH);
         assertThat(resolve("OTHER", OutboxAggregateType.OTHER))
                 .isEqualTo(AchievementCategory.GENERAL);
+    }
+
+    @Test
+    void assignsCategoriesRequestedForNewAchievements() {
+        assertThat(resolve(TYMOVY_HRAC, OutboxAggregateType.MATCH, OutboxAggregateType.GOAL))
+                .isEqualTo(AchievementCategory.MATCH);
+        assertThat(resolve(FLAKAC, OutboxAggregateType.RECEIVED_FINE))
+                .isEqualTo(AchievementCategory.FINE);
+        assertThat(resolve(MALO_CASU_HODNE_MUZIKY,
+                OutboxAggregateType.RECEIVED_FINE, OutboxAggregateType.GOAL))
+                .isEqualTo(AchievementCategory.FINE);
     }
 
     private AchievementCategory resolve(

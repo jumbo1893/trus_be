@@ -48,6 +48,9 @@ class PlayerAchievementRepositoryQueryTest {
             repository.findFirstAttendanceIfMatch(missingId, missingId);
             repository.findCirhozaAtMatch(missingId, missingId, missingId);
             repository.findTahounAtMatch(missingId, missingId, missingId);
+            repository.getMatchWithGoalYellowBeerAndLiquor(missingId, "test", missingId);
+            repository.findTeamPlayerInSeason(missingId, missingId, missingId);
+            repository.findMaloCasuHodneMuziky(missingId, missingId, missingId);
         });
     }
 }

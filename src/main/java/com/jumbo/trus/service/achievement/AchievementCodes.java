@@ -284,6 +284,15 @@ public final class AchievementCodes {
     public static final String AI_EXPERT =
             "AI_EXPERT";
 
+    public static final String TYMOVY_HRAC =
+            "TYMOVY_HRAC";
+
+    public static final String FLAKAC =
+            "FLAKAC";
+
+    public static final String MALO_CASU_HODNE_MUZIKY =
+            "MALO_CASU_HODNE_MUZIKY";
+
     private AchievementCodes() {
     }
 }
