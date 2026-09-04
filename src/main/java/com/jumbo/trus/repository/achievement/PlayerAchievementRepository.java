@@ -722,7 +722,7 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
                   AND rf.fine_number > 0
                   AND f.name IN ('Červená karta', 'Žlutá karta')
                 GROUP BY rf.player_id
-            ), first_match_with_both AS (
+            ), first_birth AS (
                 SELECT rf.match_id,
                        m.date
                 FROM received_fine rf
@@ -731,30 +731,31 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
                 WHERE rf.player_id = :playerId
                   AND m.app_team_id = :appTeamId
                   AND rf.fine_number > 0
-                  AND f.name IN (
-                      'Narození dítěte (holka)',
-                      'Narození dítěte (kluk)',
-                      'Červená karta',
-                      'Žlutá karta'
+                  AND f.name IN ('Narození dítěte (holka)', 'Narození dítěte (kluk)')
+                ORDER BY m.date ASC NULLS LAST, m.id ASC
+                LIMIT 1
+            ), first_card_after_birth AS (
+                SELECT rf.match_id,
+                       m.date
+                FROM received_fine rf
+                JOIN fine f ON f.id = rf.fine_id
+                JOIN match m ON m.id = rf.match_id
+                CROSS JOIN first_birth fb
+                WHERE rf.player_id = :playerId
+                  AND m.app_team_id = :appTeamId
+                  AND rf.fine_number > 0
+                  AND f.name IN ('Červená karta', 'Žlutá karta')
+                  AND (
+                      m.date > fb.date
+                      OR (m.date = fb.date AND m.id > fb.match_id)
                   )
-                GROUP BY rf.match_id, m.date
-                HAVING SUM(CASE
-                           WHEN f.name IN ('Narození dítěte (holka)', 'Narození dítěte (kluk)')
-                           THEN COALESCE(rf.fine_number, 0)
-                           ELSE 0
-                       END) > 0
-                   AND SUM(CASE
-                           WHEN f.name IN ('Červená karta', 'Žlutá karta')
-                           THEN COALESCE(rf.fine_number, 0)
-                           ELSE 0
-                       END) > 0
-                ORDER BY m.date ASC
+                ORDER BY m.date ASC NULLS LAST, m.id ASC
                 LIMIT 1
             )
-            SELECT fm.match_id AS matchId,
+            SELECT fc.match_id AS matchId,
                    CAST(bt.birth_count AS int) AS firstNumber,
                    CAST(ct.card_count AS int) AS secondNumber
-            FROM first_match_with_both fm
+            FROM first_card_after_birth fc
             JOIN birth_total bt ON true
             JOIN card_total ct ON true
             """, nativeQuery = true)
