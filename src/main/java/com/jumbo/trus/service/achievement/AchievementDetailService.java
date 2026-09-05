@@ -17,6 +17,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -74,9 +76,18 @@ public class AchievementDetailService {
         ));
 
         if (includeOtherPlayers && achievementDetail.getAccomplishedCount() > 0) {
+            List<PlayerDTO> accomplishedPlayers =
+                    getPlayersWhoAccomplishedAchievement(achievement, playerIdList);
             achievementDetail.setAccomplishedPlayers(
-                    getListOfPlayersWhoAccomplishedAchievement(achievement, playerIdList)
+                    playerService.getListOfNamesFromListOfPlayers(accomplishedPlayers)
             );
+            achievementDetail.setAccomplishedPlayerIds(
+                    accomplishedPlayers.stream()
+                            .map(PlayerDTO::getId)
+                            .collect(Collectors.toSet())
+            );
+        } else {
+            achievementDetail.setAccomplishedPlayerIds(Set.of());
         }
 
         return achievementDetail;
@@ -88,7 +99,7 @@ public class AchievementDetailService {
         );
     }
 
-    private String getListOfPlayersWhoAccomplishedAchievement(
+    private List<PlayerDTO> getPlayersWhoAccomplishedAchievement(
             AchievementDTO achievement,
             List<Long> playerIdList
     ) {
@@ -104,7 +115,7 @@ public class AchievementDetailService {
 
         accomplishedPlayers.sort(new OrderPlayerByName());
 
-        return playerService.getListOfNamesFromListOfPlayers(accomplishedPlayers);
+        return accomplishedPlayers;
     }
 
     private IMatchIdNumberOneNumberTwo getAchievementCount(

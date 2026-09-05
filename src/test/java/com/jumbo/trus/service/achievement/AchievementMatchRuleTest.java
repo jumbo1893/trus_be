@@ -1,5 +1,6 @@
 package com.jumbo.trus.service.achievement;
 
+import com.jumbo.trus.service.fine.FineCodes;
 import com.jumbo.trus.dto.achievement.AchievementDTO;
 import com.jumbo.trus.dto.achievement.PlayerAchievementDTO;
 import com.jumbo.trus.dto.match.MatchDTO;
@@ -114,46 +115,46 @@ class AchievementMatchRuleTest {
                         () -> when(playerAchievementRepository.getMatchWithSameGoalsAndBeers(PLAYER_ID, MATCH_ID))
                                 .thenReturn(goalBeer(MATCH_ID, 2, 1, 3))),
                 scenario(AchievementCodes.USPESNY_DEN, "calculateUSPESNY_DENAchievementForMatch",
-                        () -> when(playerAchievementRepository.getMatchWithGoalYellowBeerAndLiquor(PLAYER_ID, "Žlutá karta", MATCH_ID))
+                        () -> when(playerAchievementRepository.getMatchWithGoalYellowBeerAndLiquor(PLAYER_ID, FineCodes.YELLOW_CARD, MATCH_ID))
                                 .thenReturn(goalBeerFine(MATCH_ID, 1, 1, 1, 1))),
                 scenario(AchievementCodes.DOPING, "calculateDOPINGAchievementForMatch",
                         () -> when(playerAchievementRepository.getMatchWithHangoverAndHattrickOrCleanSheet(
-                                PLAYER_ID, "Zbytkáč či kocovina", MATCH_ID)).thenReturn(MATCH_ID)),
+                                PLAYER_ID, FineCodes.HANGOVER, MATCH_ID)).thenReturn(MATCH_ID)),
                 scenario(AchievementCodes.ZASTRELOVANI, "calculateZASTRELOVANIAchievementForMatch",
                         () -> when(playerAchievementRepository.getMatchWithAtLeastXFines(
-                                PLAYER_ID, MATCH_ID, "Překop", "Gól", 2, 2)).thenReturn(numbers(MATCH_ID, 2, 2))),
+                                PLAYER_ID, MATCH_ID, FineCodes.OVERKICK, FineCodes.GOAL, 2, 2)).thenReturn(numbers(MATCH_ID, 2, 2))),
                 scenario(AchievementCodes.JEN_NA_SKOK, "calculateJEN_NA_SKOKAchievementForMatch",
                         () -> when(playerAchievementRepository.getMatchWithAtLeastOneOfFinesAndXSecondFines(
-                                PLAYER_ID, MATCH_ID, "Pozdní příchod do začátku", "Pozdní příchod po začátku",
-                                "Pozdní příchod po 10. minutě", "Červená karta", 1)).thenReturn(numbers(MATCH_ID, 1, 1))),
+                                PLAYER_ID, MATCH_ID, FineCodes.LATE_BEFORE_START, FineCodes.LATE_AFTER_START,
+                                FineCodes.LATE_AFTER_TEN_MINUTES, FineCodes.RED_CARD, 1)).thenReturn(numbers(MATCH_ID, 1, 1))),
                 scenario(AchievementCodes.DLOUHA_NOC, "calculateDLOUHA_NOCAchievementForMatch",
                         () -> when(playerAchievementRepository.getMatchWithAtLeastOneOfFinesAndXSecondFines(
-                                PLAYER_ID, MATCH_ID, "Pozdní příchod do začátku", "Pozdní příchod po začátku",
-                                "Pozdní příchod po 10. minutě", "Zbytkáč či kocovina", 1)).thenReturn(numbers(MATCH_ID, 1, 1))),
+                                PLAYER_ID, MATCH_ID, FineCodes.LATE_BEFORE_START, FineCodes.LATE_AFTER_START,
+                                FineCodes.LATE_AFTER_TEN_MINUTES, FineCodes.HANGOVER, 1)).thenReturn(numbers(MATCH_ID, 1, 1))),
                 scenario(AchievementCodes.FLAKAC, "calculateFLAKACAchievementForMatch",
                         () -> when(playerAchievementRepository.getMatchWithAtLeastOneOfFinesAndXSecondFines(
-                                PLAYER_ID, MATCH_ID, "Pozdní příchod do začátku", "Pozdní příchod po začátku",
-                                "Pozdní příchod po 10. minutě", "Třetí poločas", 1)).thenReturn(numbers(MATCH_ID, 1, 1))),
+                                PLAYER_ID, MATCH_ID, FineCodes.LATE_BEFORE_START, FineCodes.LATE_AFTER_START,
+                                FineCodes.LATE_AFTER_TEN_MINUTES, FineCodes.THIRD_HALF, 1)).thenReturn(numbers(MATCH_ID, 1, 1))),
                 scenario(AchievementCodes.MALO_CASU_HODNE_MUZIKY, "calculateMALO_CASU_HODNE_MUZIKYAchievementForMatch",
                         () -> when(playerAchievementRepository.findMaloCasuHodneMuziky(PLAYER_ID, TEAM_ID, MATCH_ID))
                                 .thenReturn(threeNumbers(MATCH_ID, 1, 1, 0, ""))),
                 scenario(AchievementCodes.ZLUTY_HNEDY_POPLACH, "calculateZLUTY_HNEDY_POPLACHAchievementForMatch",
                         () -> when(playerAchievementRepository.getMatchWithAtLeastXFines(
-                                PLAYER_ID, MATCH_ID, "Zbytkáč či kocovina", "Vyprazdňování při zápase", 1, 1))
+                                PLAYER_ID, MATCH_ID, FineCodes.HANGOVER, FineCodes.BATHROOM_DURING_MATCH, 1, 1))
                                 .thenReturn(numbers(MATCH_ID, 1, 1))),
                 scenario(AchievementCodes.IONTAK, "calculateIONTAKAchievementForMatch",
                         () -> when(playerAchievementRepository.findMatchWhereFineExistsAndPlayerHasBeer(
-                                PLAYER_ID, "Třetí poločas", MATCH_ID)).thenReturn(numbers(MATCH_ID, 1, 1))),
+                                PLAYER_ID, FineCodes.THIRD_HALF, MATCH_ID)).thenReturn(numbers(MATCH_ID, 1, 1))),
                 scenario(AchievementCodes.PROC, "calculatePROCAchievementForMatch",
                         () -> when(playerAchievementRepository.getMatchWithAtLeastOneOfFinesAndXSecondFines(
-                                PLAYER_ID, MATCH_ID, "Žlutá karta", "Červená karta", "Červená karta",
-                                "Zbytkáč či kocovina", 1)).thenReturn(numbers(MATCH_ID, 1, 1))),
+                                PLAYER_ID, MATCH_ID, FineCodes.YELLOW_CARD, FineCodes.RED_CARD, FineCodes.RED_CARD,
+                                FineCodes.HANGOVER, 1)).thenReturn(numbers(MATCH_ID, 1, 1))),
                 scenario(AchievementCodes.HLADINKA, "calculateHLADINKAAchievementForMatch",
                         () -> when(playerAchievementRepository.findMatchWhereFineExistsAndPlayerHasLiquor(
-                                PLAYER_ID, "Zbytkáč či kocovina", MATCH_ID)).thenReturn(numbers(MATCH_ID, 1, 1))),
+                                PLAYER_ID, FineCodes.HANGOVER, MATCH_ID)).thenReturn(numbers(MATCH_ID, 1, 1))),
                 scenario(AchievementCodes.TEN_TO_PERFEKTNE_KOPE, "calculateTEN_TO_PERFEKTNE_KOPEAchievementForMatch",
                         () -> when(playerAchievementRepository.findFineInMatch(
-                                PLAYER_ID, MATCH_ID, List.of("Nedal penaltu"), 1)).thenReturn(numbers(MATCH_ID, 1, 1))),
+                                PLAYER_ID, MATCH_ID, List.of(FineCodes.MISSED_PENALTY), 1)).thenReturn(numbers(MATCH_ID, 1, 1))),
                 scenario(AchievementCodes.KOMPLEXNI_HRAC, "calculateKOMPLEXNI_HRACAchievementForMatch",
                         () -> when(playerAchievementRepository.findMatchWithGoalAndAssist(PLAYER_ID, MATCH_ID, TEAM_ID))
                                 .thenReturn(numbers(MATCH_ID, 1, 1))),
@@ -162,14 +163,14 @@ class AchievementMatchRuleTest {
                                 .thenReturn(numbers(MATCH_ID, 3, 1))),
                 scenario(AchievementCodes.HVEZDNE_MANYRY, "calculateHVEZDNE_MANYRYAchievementForMatch",
                         () -> when(playerAchievementRepository.findBestPlayerWithFineInMatch(
-                                PLAYER_ID, MATCH_ID, List.of("Pozdní příchod do začátku", "Pozdní příchod po začátku", "Pozdní příchod po 10. minutě")))
+                                PLAYER_ID, MATCH_ID, List.of(FineCodes.LATE_BEFORE_START, FineCodes.LATE_AFTER_START, FineCodes.LATE_AFTER_TEN_MINUTES)))
                                 .thenReturn(numbers(MATCH_ID, 1, 1))),
                 scenario(AchievementCodes.DAVID_BECKHAM, "calculateDAVID_BECKHAMAchievementForMatch",
                         () -> when(playerAchievementRepository.findBestPlayerWithFineInMatch(
-                                PLAYER_ID, MATCH_ID, List.of("Zmínka v tisku"))).thenReturn(numbers(MATCH_ID, 1, 1))),
+                                PLAYER_ID, MATCH_ID, List.of(FineCodes.PRESS_MENTION))).thenReturn(numbers(MATCH_ID, 1, 1))),
                 scenario(AchievementCodes.ZBYTECNE_PRASE, "calculateZBYTECNE_PRASEAchievementForMatch",
                         () -> when(playerAchievementRepository.findWinningMatchWithFine(
-                                PLAYER_ID, MATCH_ID, "Červená karta", FOOTBALL_TEAM_ID)).thenReturn(MATCH_ID)),
+                                PLAYER_ID, MATCH_ID, FineCodes.RED_CARD, FOOTBALL_TEAM_ID)).thenReturn(MATCH_ID)),
                 scenario(AchievementCodes.DEN_BLBEC, "calculateDEN_BLBECAchievementForMatch",
                         () -> when(playerAchievementRepository.findMatchWherePlayerReceivedAtLeastXFines(PLAYER_ID, MATCH_ID))
                                 .thenReturn(MATCH_ID)),
@@ -202,7 +203,7 @@ class AchievementMatchRuleTest {
                                 .thenReturn(numbers(MATCH_ID, 1, 0))),
                 scenario(AchievementCodes.HATTRICK_GORDIEHO_HOWA, "calculateHATTRICK_GORDIEHO_HOWAAchievementForMatch",
                         () -> when(playerAchievementRepository.findHattrickGordiehoHowaInMatch(PLAYER_ID, MATCH_ID))
-                                .thenReturn(threeNumbers(MATCH_ID, 1, 1, 1, "Žlutá karta"))),
+                                .thenReturn(threeNumbers(MATCH_ID, 1, 1, 1, FineCodes.YELLOW_CARD))),
                 scenario(AchievementCodes.TAHOUN, "calculateTAHOUNAAchievementForMatch",
                         () -> when(playerAchievementRepository.findTahounAtMatch(PLAYER_ID, TEAM_ID, MATCH_ID))
                                 .thenReturn(numbers(MATCH_ID, 3, 0))),
@@ -245,9 +246,9 @@ class AchievementMatchRuleTest {
                                 .thenReturn(threeNumbers(MATCH_ID, 0, 0, 0, "2025/2026"))),
                 scenario(AchievementCodes.ALZHEIMER, "calculateFineInMatchAchievement",
                         () -> when(playerAchievementRepository.findFineInMatch(
-                                PLAYER_ID, MATCH_ID, List.of("Zapomenutí věcí", "Nekompletní výbava"), 1))
+                                PLAYER_ID, MATCH_ID, List.of(FineCodes.FORGOTTEN_THINGS, FineCodes.INCOMPLETE_EQUIPMENT), 1))
                                 .thenReturn(numbers(MATCH_ID, 1, 1)),
-                        List.of("Zapomenutí věcí", "Nekompletní výbava"), 1, ""),
+                        List.of(FineCodes.FORGOTTEN_THINGS, FineCodes.INCOMPLETE_EQUIPMENT), 1, ""),
                 scenario(AchievementCodes.LEO_BERANEK, "calculateFineInMatchAchievement",
                         () -> when(playerAchievementRepository.findFineInMatch(
                                 PLAYER_ID, MATCH_ID, List.of("Nový kopačky"), 1))

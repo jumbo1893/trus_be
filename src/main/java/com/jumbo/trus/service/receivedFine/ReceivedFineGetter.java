@@ -159,28 +159,26 @@ public class ReceivedFineGetter {
         return receivedFines;
     }
 
-    public List<ReceivedFineDTO> getReceivedFinesInMatchesByFineNameAndPlayer(
+    public List<ReceivedFineDTO> getReceivedFinesInMatchesByFineCodeAndPlayer(
             Long playerId,
             List<Long> matchIds,
-            String fineName,
+            String fineCode,
             long appTeamId
     ) {
-        Long fineId = fineService.getFineByName(fineName, appTeamId).getId();
-
         return receivedFineRepository
-                .findAllByPlayerIdFineIdAndMatchesId(playerId, fineId, matchIds)
+                .findAllByPlayerIdFineCodeAndMatchesId(playerId, fineCode, matchIds)
                 .stream()
                 .map(receivedFineMapper::toDTO)
                 .toList();
     }
 
-    public Integer getAtLeastNumberOfFineInHistory(Long playerId, String fineName, int fineNumber) {
-        return receivedFineRepository.findAtLeastNumberOfFineInHistory(playerId, fineName, fineNumber);
+    public Integer getAtLeastNumberOfFineInHistory(Long playerId, String fineCode, int fineNumber) {
+        return receivedFineRepository.findAtLeastNumberOfFineInHistory(playerId, fineCode, fineNumber);
     }
 
-    public ReceivedFineDTO getFirstOccurrenceOfFine(Long playerId, String fineName) {
+    public ReceivedFineDTO getFirstOccurrenceOfFine(Long playerId, String fineCode) {
         return receivedFineRepository
-                .findFirstOccurrenceOfFine(playerId, fineName)
+                .findFirstOccurrenceOfFine(playerId, fineCode)
                 .map(receivedFineMapper::toDTO)
                 .orElse(null);
     }

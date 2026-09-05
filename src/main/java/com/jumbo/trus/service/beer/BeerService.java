@@ -247,8 +247,8 @@ public class BeerService {
                 .orElse(null);
     }
 
-    public BeerDTO getFirstMatchWhereAtLeastBeersWithFine(Long playerId, String fineName, int beerNumber) {
-        return beerRepository.findFirstMatchWhereAtLeastBeersAfterFine(playerId, fineName, beerNumber)
+    public BeerDTO getFirstMatchWhereAtLeastBeersWithFine(Long playerId, String fineCode, int beerNumber) {
+        return beerRepository.findFirstMatchWhereAtLeastBeersAfterFine(playerId, fineCode, beerNumber)
                 .map(beerMapper::toDTO)
                 .orElse(null);
     }

@@ -71,8 +71,8 @@ public class ReceivedFineService {
         return receivedFineGetter.getAllForSetup(playerId, matchId, appTeam);
     }
 
-    public int getReceivedFineCount(Long playerId, List<Long> matchIds, String fineName, long appTeamId) {
-        List<ReceivedFineDTO> fines = receivedFineGetter.getReceivedFinesInMatchesByFineNameAndPlayer(playerId, matchIds, fineName, appTeamId);
+    public int getReceivedFineCount(Long playerId, List<Long> matchIds, String fineCode, long appTeamId) {
+        List<ReceivedFineDTO> fines = receivedFineGetter.getReceivedFinesInMatchesByFineCodeAndPlayer(playerId, matchIds, fineCode, appTeamId);
         return fines.size();
     }
 
@@ -80,12 +80,12 @@ public class ReceivedFineService {
         receivedFineRepository.deleteById(fineId);
     }
 
-    public Integer getAtLeastNumberOfFineInHistory(Long playerId, String fineName, int fineNumber) {
-        return receivedFineGetter.getAtLeastNumberOfFineInHistory(playerId, fineName, fineNumber);
+    public Integer getAtLeastNumberOfFineInHistory(Long playerId, String fineCode, int fineNumber) {
+        return receivedFineGetter.getAtLeastNumberOfFineInHistory(playerId, fineCode, fineNumber);
     }
 
-    public ReceivedFineDTO getFirstOccurrenceOfFine(Long playerId, String fineName) {
-        return receivedFineGetter.getFirstOccurrenceOfFine(playerId, fineName);
+    public ReceivedFineDTO getFirstOccurrenceOfFine(Long playerId, String fineCode) {
+        return receivedFineGetter.getFirstOccurrenceOfFine(playerId, fineCode);
     }
 
 
@@ -102,16 +102,18 @@ public class ReceivedFineService {
 
     public ReceivedFineMatchDetailResponse getMatchStatsDetail(
             Long matchId,
-            AppTeamEntity appTeam
+            AppTeamEntity appTeam,
+            StatisticsFilter filter
     ) {
-        return receivedFineStatsDetailGetter.getMatchDetail(matchId, appTeam);
+        return receivedFineStatsDetailGetter.getMatchDetail(matchId, appTeam, filter);
     }
 
     public ReceivedFinePlayerDetailResponse getPlayerStatsDetail(
             Long playerId,
             Long seasonId,
-            AppTeamEntity appTeam
+            AppTeamEntity appTeam,
+            StatisticsFilter filter
     ) {
-        return receivedFineStatsDetailGetter.getPlayerDetail(playerId, seasonId, appTeam);
+        return receivedFineStatsDetailGetter.getPlayerDetail(playerId, seasonId, appTeam, filter);
     }
 }

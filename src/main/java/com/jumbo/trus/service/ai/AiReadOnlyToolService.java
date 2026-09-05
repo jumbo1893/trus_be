@@ -477,14 +477,14 @@ public class AiReadOnlyToolService {
 
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("query", fineName);
-        result.put("matched_fine_count", rows.stream().map(AiFineSummaryProjection::getFineId).distinct().count());
+        result.put("matched_fine_count", rows.stream().map(AiFineSummaryProjection::getFineCode).distinct().count());
         result.put("all_time", aggregateFineRows(rows));
         result.put("current_season", seasonSummary(seasonWindow.current(), rows));
         result.put("previous_season", seasonSummary(seasonWindow.previous(), rows));
 
-        Map<Long, List<AiFineSummaryProjection>> rowsByFine = new LinkedHashMap<>();
+        Map<String, List<AiFineSummaryProjection>> rowsByFine = new LinkedHashMap<>();
         for (AiFineSummaryProjection row : rows) {
-            rowsByFine.computeIfAbsent(row.getFineId(), ignored -> new ArrayList<>()).add(row);
+            rowsByFine.computeIfAbsent(row.getFineCode(), ignored -> new ArrayList<>()).add(row);
         }
 
         List<Map<String, Object>> matchedFines = new ArrayList<>();
@@ -493,7 +493,8 @@ public class AiReadOnlyToolService {
             Map<String, Object> fine = new LinkedHashMap<>();
             fine.put("fine_id", firstRow.getFineId());
             fine.put("fine_name", firstRow.getFineName());
-            fine.put("exact_name_match", firstRow.getFineName().equalsIgnoreCase(fineName));
+            fine.put("exact_name_match", fineRows.stream()
+                    .anyMatch(row -> row.getFineName().equalsIgnoreCase(fineName)));
             fine.put("all_time", aggregateFineRows(fineRows));
             fine.put("current_season", seasonSummary(seasonWindow.current(), fineRows));
             fine.put("previous_season", seasonSummary(seasonWindow.previous(), fineRows));

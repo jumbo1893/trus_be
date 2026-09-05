@@ -26,6 +26,12 @@ public class MatchController {
     private final MatchStatsService matchStatsService;
     private final AppTeamService appTeamService;
 
+    @RoleRequired("READER")
+    @GetMapping("/statistics/opponents")
+    public List<String> getStatisticsOpponents() {
+        return matchService.getStatisticsOpponents(appTeamService.getCurrentAppTeamOrThrow().getId());
+    }
+
     @RoleRequired("EDITOR")
     @PostMapping("/add")
     @PostCommitTask

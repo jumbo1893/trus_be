@@ -8,12 +8,12 @@ import com.jumbo.trus.entity.PlayerEntity;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.mapper.FineMapper;
 import com.jumbo.trus.mapper.PlayerMapper;
-import com.jumbo.trus.repository.FineRepository;
 import com.jumbo.trus.repository.PlayerRepository;
 import com.jumbo.trus.repository.ReceivedFineRepository;
+import com.jumbo.trus.service.fine.FineCodes;
+import com.jumbo.trus.service.fine.FineService;
 import com.jumbo.trus.service.player.PlayerService;
 import com.jumbo.trus.service.receivedFine.ReceivedFineUpdater;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,8 +27,17 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MatchResultFineService {
 
+    private static final List<String> AUTOMATIC_RESULT_FINE_CODES = List.of(
+            FineCodes.LOSS_BY_FIVE_PLAYING,
+            FineCodes.LOSS_PLAYING,
+            FineCodes.ABSENT_WHEN_SEVEN_OR_FEWER,
+            FineCodes.ABSENT_WIN,
+            FineCodes.ABSENT_DRAW,
+            FineCodes.ABSENT_LOSS
+    );
+
     private final ReceivedFineRepository receivedFineRepository;
-    private final FineRepository fineRepository;
+    private final FineService fineService;
     private final PlayerRepository playerRepository;
     private final ReceivedFineUpdater receivedFineService;
     private final PlayerService playerService;
@@ -66,21 +75,21 @@ public class MatchResultFineService {
                 : match.getHomeGoalNumber();
 
         if (ourScore < opponentScore) {
-            addFineToPlayers(match, playingPlayers, appTeam, "Prohra (pro hrající)");
+            addFineToPlayers(match, playingPlayers, appTeam, FineCodes.LOSS_PLAYING);
 
             if (opponentScore - ourScore >= 5) {
-                addFineToPlayers(match, playingPlayers, appTeam, "Prohra o 5 a více (pro hrající)");
+                addFineToPlayers(match, playingPlayers, appTeam, FineCodes.LOSS_BY_FIVE_PLAYING);
             }
 
-            addFineToPlayers(match, absentPlayers, appTeam, "Neúčast v zápase (prohra)");
+            addFineToPlayers(match, absentPlayers, appTeam, FineCodes.ABSENT_LOSS);
         } else if (ourScore > opponentScore) {
-            addFineToPlayers(match, absentPlayers, appTeam, "Neúčast v zápase (výhra)");
+            addFineToPlayers(match, absentPlayers, appTeam, FineCodes.ABSENT_WIN);
         } else {
-            addFineToPlayers(match, absentPlayers, appTeam, "Neúčast v zápase (remíza)");
+            addFineToPlayers(match, absentPlayers, appTeam, FineCodes.ABSENT_DRAW);
         }
 
         if (playingPlayers.size() <= 7) {
-            addFineToPlayers(match, absentPlayers, appTeam, "Neúčast při 7. a méně lidech");
+            addFineToPlayers(match, absentPlayers, appTeam, FineCodes.ABSENT_WHEN_SEVEN_OR_FEWER);
         }
     }
 
@@ -88,13 +97,9 @@ public class MatchResultFineService {
             MatchEntity match,
             List<PlayerEntity> players,
             AppTeamEntity appTeam,
-            String fineName
+            String fineCode
     ) {
-        FineEntity fine = fineRepository
-                .findByNameAndAppTeamId(fineName, appTeam.getId())
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Nenalezena automatická pokuta: " + fineName
-                ));
+        FineEntity fine = fineService.getActiveFineEntityByCode(fineCode, appTeam.getId());
        receivedFineService.addMultipleFines(createReceivedFineForPlayer(match, players, fine), appTeam);
     }
 
@@ -116,6 +121,7 @@ public class MatchResultFineService {
     }
 
     private void deleteExistingAutomaticResultFines(Long matchId, Long appTeamId) {
-        receivedFineRepository.deleteAutomaticResultFinesFromMatch(matchId, appTeamId);
+        receivedFineRepository.deleteAutomaticResultFinesFromMatch(
+                matchId, appTeamId, AUTOMATIC_RESULT_FINE_CODES);
     }
 }

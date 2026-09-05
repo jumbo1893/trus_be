@@ -9,8 +9,10 @@ import com.jumbo.trus.entity.filter.StatisticsFilter;
 import com.jumbo.trus.mapper.MatchMapper;
 import com.jumbo.trus.mapper.PlayerMapper;
 import com.jumbo.trus.repository.MatchRepository;
+import com.jumbo.trus.repository.specification.StatisticsPredicates;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.JoinType;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -28,28 +30,41 @@ public class AttendanceService {
         List<MatchEntity> matches = getMatches(filter);
 
         if (filter.getPlayerId() != null) {
-            return getMatchesForPlayer(filter.getPlayerId(), matches);
+            return getMatchesForPlayer(filter.getPlayerId(), matches, filter);
         }
 
         if (filter.getMatchId() != null) {
-            return getPlayersForMatch(filter.getMatchId(), matches);
+            return getPlayersForMatch(filter.getMatchId(), matches, filter);
         }
 
         if (Boolean.TRUE.equals(filter.getMatchStatsOrPlayerStats())) {
-            return getMatchAttendance(matches);
+            return getMatchAttendance(matches, filter);
         }
 
         return getPlayerAttendance(matches, filter);
     }
 
     private List<MatchEntity> getMatches(StatisticsFilter filter) {
-        Long appTeamId = filter.getAppTeam().getId();
-
-        if (filter.getSeasonId() == null || filter.getSeasonId() == Config.ALL_SEASON_ID) {
-            return matchRepository.getMatchesOrderByDateDesc(appTeamId, PageRequest.of(0, 1000));
-        }
-
-        return matchRepository.findAllBySeasonId(filter.getSeasonId(), appTeamId);
+        return matchRepository.findAll((root, query, cb) -> {
+            root.fetch("playerList", JoinType.LEFT);
+            query.distinct(true);
+            query.orderBy(cb.desc(root.get("date")));
+            List<Predicate> predicates = new ArrayList<>();
+            predicates.add(cb.equal(root.get("appTeam").get("id"), filter.getAppTeam().getId()));
+            if (filter.getSeasonId() != null && filter.getSeasonId() != Config.ALL_SEASON_ID) {
+                predicates.add(cb.equal(root.get("season").get("id"), filter.getSeasonId()));
+            }
+            if (filter.getMatchId() != null) {
+                predicates.add(cb.equal(root.get("id"), filter.getMatchId()));
+            }
+            StatisticsPredicates.addMatch(predicates, root, cb, filter);
+            if (Boolean.TRUE.equals(filter.getMatchStatsOrPlayerStats())
+                    && filter.getStringFilter() != null && !filter.getStringFilter().isBlank()) {
+                predicates.add(cb.like(cb.lower(root.get("name")),
+                        "%" + filter.getStringFilter().trim().toLowerCase(Locale.ROOT) + "%"));
+            }
+            return cb.and(predicates.toArray(new Predicate[0]));
+        });
     }
 
     private AttendanceDetailedResponse getPlayerAttendance(
@@ -63,7 +78,7 @@ public class AttendanceService {
             matchIds.add(match.getId());
 
             for (PlayerEntity player : match.getPlayerList()) {
-                if (matchesFilter(player, filter.getStringFilter())) {
+                if (matchesPlayer(player, filter)) {
                     resultMap.compute(player.getId(), (id, oldValue) -> {
                         if (oldValue == null) {
                             AttendanceDetailedDTO dto = new AttendanceDetailedDTO();
@@ -96,13 +111,14 @@ public class AttendanceService {
         return response;
     }
 
-    private AttendanceDetailedResponse getMatchAttendance(List<MatchEntity> matches) {
+    private AttendanceDetailedResponse getMatchAttendance(List<MatchEntity> matches, StatisticsFilter filter) {
         List<AttendanceDetailedDTO> list = matches.stream()
                 .map(match -> {
                     int playerCount = 0;
                     int fanCount = 0;
 
                     for (PlayerEntity player : match.getPlayerList()) {
+                        if (!matchesPlayer(player, filter)) continue;
                         if (player.isFan()) {
                             fanCount++;
                         } else {
@@ -119,6 +135,7 @@ public class AttendanceService {
                     dto.setAttendanceCount(playerCount + fanCount);
                     return dto;
                 })
+                .filter(dto -> filter.getPlayerIds().isEmpty() || dto.getTotalCount() > 0)
                 .sorted(
                         Comparator.comparing(
                                 dto -> dto.getMatch().getDate(),
@@ -129,21 +146,22 @@ public class AttendanceService {
 
         Set<Long> uniquePlayers = matches.stream()
                 .flatMap(match -> match.getPlayerList().stream())
+                .filter(player -> matchesPlayer(player, filter))
                 .map(PlayerEntity::getId)
                 .collect(Collectors.toSet());
 
         AttendanceDetailedResponse response = new AttendanceDetailedResponse();
         response.setAttendanceList(list);
         response.setPlayersCount(uniquePlayers.size());
-        response.setMatchesCount(matches.size());
+        response.setMatchesCount(list.size());
         return response;
     }
 
-    private AttendanceDetailedResponse getMatchesForPlayer(Long playerId, List<MatchEntity> matches) {
+    private AttendanceDetailedResponse getMatchesForPlayer(Long playerId, List<MatchEntity> matches, StatisticsFilter filter) {
         List<AttendanceDetailedDTO> list = matches.stream()
                 .filter(match -> match.getPlayerList()
                         .stream()
-                        .anyMatch(player -> Objects.equals(player.getId(), playerId)))
+                        .anyMatch(player -> Objects.equals(player.getId(), playerId) && matchesPlayer(player, filter)))
                 .map(match -> {
                     AttendanceDetailedDTO dto = new AttendanceDetailedDTO();
                     dto.setId(match.getId());
@@ -162,19 +180,28 @@ public class AttendanceService {
 
         AttendanceDetailedResponse response = new AttendanceDetailedResponse();
         response.setAttendanceList(list);
-        response.setPlayersCount(playerId == null ? 0 : 1);
+        response.setPlayersCount(list.isEmpty() ? 0 : 1);
         response.setMatchesCount(list.size());
         return response;
     }
 
-    private AttendanceDetailedResponse getPlayersForMatch(Long matchId, List<MatchEntity> matches) {
+    private AttendanceDetailedResponse getPlayersForMatch(Long matchId, List<MatchEntity> matches, StatisticsFilter filter) {
         MatchEntity selectedMatch = matches.stream()
                 .filter(match -> Objects.equals(match.getId(), matchId))
                 .findFirst()
-                .orElseThrow(() -> new NoSuchElementException("Zápas nenalezen: " + matchId));
+                .orElse(null);
+
+        if (selectedMatch == null) {
+            AttendanceDetailedResponse empty = new AttendanceDetailedResponse();
+            empty.setAttendanceList(List.of());
+            empty.setPlayersCount(0);
+            empty.setMatchesCount(0);
+            return empty;
+        }
 
         List<AttendanceDetailedDTO> list = selectedMatch.getPlayerList()
                 .stream()
+                .filter(player -> matchesPlayer(player, filter))
                 .sorted(
                         Comparator.comparing(PlayerEntity::isFan)
                                 .thenComparing(PlayerEntity::getName)
@@ -204,5 +231,11 @@ public class AttendanceService {
         return player.getName()
                 .toLowerCase(Locale.ROOT)
                 .contains(filter.toLowerCase(Locale.ROOT));
+    }
+
+    private boolean matchesPlayer(PlayerEntity player, StatisticsFilter filter) {
+        return (filter.getPlayerIds().isEmpty() || filter.getPlayerIds().contains(player.getId()))
+                && (!Boolean.FALSE.equals(filter.getMatchStatsOrPlayerStats())
+                    || matchesFilter(player, filter.getStringFilter()));
     }
 }

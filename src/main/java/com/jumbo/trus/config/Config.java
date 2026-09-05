@@ -17,8 +17,4 @@ public class Config {
     public static final String OTHER_SEASON_NAME = "Ostatní";
     public static final Date OTHER_SEASON_DATE = Date.from(Instant.EPOCH);
 
-    public static final long GOAL_FINE_ID = -1;
-
-    public static final long HATTRICK_FINE_ID = -2;
-
 }

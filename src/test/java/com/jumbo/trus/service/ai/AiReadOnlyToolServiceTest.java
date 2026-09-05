@@ -57,6 +57,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -229,7 +230,8 @@ class AiReadOnlyToolServiceTest {
                 3,
                 0.15F,
                 null,
-                "Pepa, Karel, Matěj"
+                "Pepa, Karel, Matěj",
+                Set.of(1L, 2L, 3L)
         );
         when(achievementService.getAllDetailedAchievements(11L)).thenReturn(List.of(detail));
 
@@ -609,6 +611,7 @@ class AiReadOnlyToolServiceTest {
     ) {
         return new AiFineSummaryProjection() {
             public Long getFineId() { return fineId; }
+            public String getFineCode() { return "FINE_" + fineId; }
             public String getFineName() { return fineName; }
             public Long getSeasonId() { return season.getId(); }
             public String getSeasonName() { return season.getName(); }

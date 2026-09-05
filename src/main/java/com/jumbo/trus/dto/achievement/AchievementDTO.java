@@ -39,4 +39,5 @@ public class AchievementDTO {
     private Float teamSuccessRate;
 
     private AchievementRarity rarity;
+
 }

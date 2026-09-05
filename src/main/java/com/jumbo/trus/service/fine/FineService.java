@@ -10,6 +10,7 @@ import com.jumbo.trus.repository.FineRepository;
 import com.jumbo.trus.repository.ReceivedFineRepository;
 import com.jumbo.trus.service.outbox.OutboxEventPayloadFactory;
 import com.jumbo.trus.service.outbox.OutboxEventService;
+import com.jumbo.trus.service.exceptions.NonEditableEntityException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ import org.webjars.NotFoundException;
 
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,9 +29,7 @@ public class FineService {
     private final FineRepository fineRepository;
     private final ReceivedFineRepository receivedFineRepository;
     private final FineMapper fineMapper;
-    private final NonEditableFineHandler nonEditableFineHandler;
     private final FineNotificationService fineNotificationService;
-    private final FineValidator fineValidator;
     private final OutboxEventService outboxEventService;
 
     /**
@@ -40,7 +40,11 @@ public class FineService {
     @Transactional
     public FineDTO addFine(FineDTO fineDTO, AppTeamEntity appTeam) {
         FineEntity entity = fineMapper.toEntity(fineDTO);
+        entity.setId(null);
         entity.setAppTeam(appTeam);
+        entity.setCode(FineCodes.CUSTOM_PREFIX + UUID.randomUUID().toString().replace("-", "").toUpperCase());
+        entity.setEditable(true);
+        entity.setInactive(false);
         FineEntity savedEntity = fineRepository.save(entity);
         fineNotificationService.notifyFineAdded(fineDTO.getName(), fineDTO.getAmount());
         outboxEventService.createEvent(OutboxEventType.FINE_CREATED, OutboxAggregateType.FINE, savedEntity.getId(), OutboxEventPayloadFactory.fineCreated(Set.of()));
@@ -62,50 +66,74 @@ public class FineService {
         return fineMapper.toDTO(getFineEntity(fineId));
     }
 
-    public FineDTO getFineByName(String name, long appTeamId) {
-        return fineMapper.toDTO(fineRepository.findByNameAndAppTeamId(name, appTeamId).orElseThrow(() -> new EntityNotFoundException(String.valueOf(name))));
+    public FineDTO getFineByCode(String code, long appTeamId) {
+        return fineMapper.toDTO(getActiveFineEntityByCode(code, appTeamId));
+    }
+
+    public List<FineDTO> getStatisticsOptions(Long appTeamId) {
+        return fineRepository.findAllByAppTeamIdOrderByNameAsc(appTeamId).stream()
+                .map(fineMapper::toDTO).toList();
+    }
+
+    public FineEntity getActiveFineEntityByCode(String code, long appTeamId) {
+        return fineRepository.findFirstByCodeAndAppTeamIdAndInactiveFalse(code, appTeamId)
+                .orElseThrow(() -> new EntityNotFoundException(code));
     }
 
     public FineEntity getFineEntity(long fineId) {
         return fineRepository.findById(fineId).orElseThrow(() -> new EntityNotFoundException(String.valueOf(fineId)));
     }
 
+    public FineEntity getFineEntityForAssignment(long fineId, long appTeamId) {
+        FineEntity fine = getFineEntity(fineId);
+        validateBelongsToTeam(fine, appTeamId);
+        if (fine.isInactive()) {
+            throw new NonEditableEntityException("Neaktivní historickou verzi pokuty nelze udělit ani upravit");
+        }
+        return fine;
+    }
+
     /**
-     * metoda upraví všechny pokuty. Pokud přijde parametr inactive,
-     * tak se založí nová pokuta, která přepíše zbylé pokuty s původní částkou.
-     * Pokud inactive=false, tak se pokuty přepíšou i s původní cenou
-     * @param fineId id pokuty, kterou chceme změnit
-     * @param fineDTO nové hodnoty pokuty
-     * @return Pokutu nově uloženou v db
-     * @throws NotFoundException pokud není pokuta dle id nalezena
+     * Updates an active fine definition. Every amount change creates a new
+     * active version; already awarded fines keep referencing the old version.
+     * Core fine names are immutable, while custom fine names may be changed.
      */
     @Transactional
     public FineDTO editFine(Long fineId, FineDTO fineDTO, AppTeamEntity appTeam) {
-        fineValidator.validateExists(fineId);
+        FineEntity existingFine = getFineForUpdate(fineId, appTeam.getId());
+        if (existingFine.isInactive()) {
+            throw new NonEditableEntityException("Neaktivní historickou verzi pokuty nelze upravit");
+        }
         Set<Long> affectedMatchIds = receivedFineRepository.findMatchIdsByFineId(fineId);
         Set<Long> affectedPlayerIds = receivedFineRepository.findPlayerIdsByFineId(fineId);
-        FineDTO updatedFine;
-        if (fineDTO.isInactive()) {
-            updatedFine = processInactiveFine(fineId, fineDTO, appTeam);
-        } else if (nonEditableFineHandler.isNonEditableFine(fineId)) {
-            updatedFine = processNonEditableFine(fineId, fineDTO);
+        String updatedName = existingFine.isEditable() ? fineDTO.getName() : existingFine.getName();
+        FineEntity savedFine;
+
+        if (existingFine.getAmount() != fineDTO.getAmount()) {
+            savedFine = createNewAmountVersion(existingFine, updatedName, fineDTO.getAmount());
         } else {
-            updatedFine = processRegularFine(fineId, fineDTO, appTeam);
-            fineNotificationService.notifyFineUpdated(fineDTO.getName(), fineDTO.getAmount());
+            existingFine.setName(updatedName);
+            savedFine = fineRepository.save(existingFine);
         }
+        fineNotificationService.notifyFineUpdated(savedFine.getName(), savedFine.getAmount());
         outboxEventService.createEvent(OutboxEventType.FINE_UPDATED, OutboxAggregateType.FINE, fineId, OutboxEventPayloadFactory.fineUpdated(affectedMatchIds, affectedPlayerIds));
-        return updatedFine;
+        return fineMapper.toDTO(savedFine);
     }
 
     @Transactional
-    public void deleteFine(Long fineId) {
-        fineValidator.validateNotNonEditable(fineId);
-        FineEntity fineEntity = fineRepository.findById(fineId).orElseThrow(() -> new NotFoundException("Pokuta nenalezena v db"));
+    public void deleteFine(Long fineId, AppTeamEntity appTeam) {
+        FineEntity fineEntity = getFineForUpdate(fineId, appTeam.getId());
+        if (!fineEntity.isEditable()) {
+            throw new NonEditableEntityException("Core pokutu nelze smazat ani přejmenovat");
+        }
+        if (fineEntity.isInactive()) {
+            throw new NonEditableEntityException("Neaktivní historickou verzi pokuty nelze smazat");
+        }
         Set<Long> affectedMatchIds = receivedFineRepository.findMatchIdsByFineId(fineId);
         Set<Long> affectedPlayerIds = receivedFineRepository.findPlayerIdsByFineId(fineId);
         fineNotificationService.notifyFineDeleted(fineEntity.getName(), fineEntity.getAmount());
-        receivedFineRepository.deleteByFineId(fineId);
-        fineRepository.deleteById(fineId);
+        fineEntity.setInactive(true);
+        fineRepository.save(fineEntity);
         outboxEventService.createEvent(OutboxEventType.FINE_DELETED, OutboxAggregateType.FINE, fineId, OutboxEventPayloadFactory.fineDeleted(affectedMatchIds, affectedPlayerIds));
 
     }
@@ -120,35 +148,30 @@ public class FineService {
 
     }
 
-    private FineDTO processInactiveFine(Long fineId, FineDTO fineDTO, AppTeamEntity appTeam) {
-        FineEntity existingFine = fineRepository.findById(fineId).orElseThrow(() -> new NotFoundException("Pokuta nenalezena v db"));
-        if (nonEditableFineHandler.isNonEditableFine(fineId)) {
-            FineEntity savedFine = duplicateAndDeactivateFine(existingFine);
-            receivedFineRepository.updateByFineId(fineId, savedFine.getId());
-            fineDTO.setInactive(false);
-            return processNonEditableFine(fineId, fineDTO);
-        }
+    private FineEntity createNewAmountVersion(FineEntity existingFine, String name, int amount) {
         existingFine.setInactive(true);
-        fineRepository.save(existingFine);
-        FineEntity newFine = fineMapper.toEntity(fineDTO);
-        newFine.setId(null);
+        fineRepository.saveAndFlush(existingFine);
+
+        FineEntity newFine = new FineEntity();
+        newFine.setName(name);
+        newFine.setCode(existingFine.getCode());
+        newFine.setAmount(amount);
+        newFine.setEditable(existingFine.isEditable());
         newFine.setInactive(false);
-        newFine.setAppTeam(appTeam);
-        return fineMapper.toDTO(fineRepository.save(newFine));
+        newFine.setAppTeam(existingFine.getAppTeam());
+        return fineRepository.save(newFine);
     }
 
-    private FineEntity duplicateAndDeactivateFine(FineEntity fineEntity) {
-        return nonEditableFineHandler.duplicateAndDeactivate(fineEntity);
+    private FineEntity getFineForUpdate(Long fineId, long appTeamId) {
+        FineEntity fine = fineRepository.findByIdForUpdate(fineId)
+                .orElseThrow(() -> new NotFoundException("Pokuta nenalezena v db"));
+        validateBelongsToTeam(fine, appTeamId);
+        return fine;
     }
 
-    private FineDTO processNonEditableFine(Long fineId, FineDTO fineDTO) {
-        return nonEditableFineHandler.process(fineId, fineDTO);
-    }
-
-    private FineDTO processRegularFine(Long fineId, FineDTO fineDTO, AppTeamEntity appTeam) {
-        FineEntity entity = fineMapper.toEntity(fineDTO);
-        entity.setId(fineId);
-        entity.setAppTeam(appTeam);
-        return fineMapper.toDTO(fineRepository.save(entity));
+    private void validateBelongsToTeam(FineEntity fine, long appTeamId) {
+        if (fine.getAppTeam() == null || !fine.getAppTeam().getId().equals(appTeamId)) {
+            throw new EntityNotFoundException(String.valueOf(fine.getId()));
+        }
     }
 }

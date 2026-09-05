@@ -417,12 +417,12 @@ public interface BeerRepository extends PagingAndSortingRepository<BeerEntity, L
                 JOIN received_fine r ON b.match_id = r.match_id AND b.player_id = r.player_id
                 JOIN fine f ON r.fine_id = f.id
                 WHERE b.player_id = :playerId
-                AND f.name = :fineName
+                AND f.code = :fineCode
                 AND b.beer_number + b.liquor_number > :beerNumber
                 ORDER BY m.date ASC
                 LIMIT 1
             """, nativeQuery = true)
-    Optional<BeerEntity> findFirstMatchWhereAtLeastBeersAfterFine(@Param("playerId") Long playerId, @Param("fineName") String fineName, @Param("beerNumber") int beerNumber);
+    Optional<BeerEntity> findFirstMatchWhereAtLeastBeersAfterFine(@Param("playerId") Long playerId, @Param("fineCode") String fineCode, @Param("beerNumber") int beerNumber);
 
     @Query(value = """
                 SELECT b.*

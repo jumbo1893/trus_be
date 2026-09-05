@@ -8,6 +8,7 @@ import com.jumbo.trus.dto.receivedfine.response.stats.player.*;
 import com.jumbo.trus.dto.receivedfine.response.stats.projection.IMatchReceivedFineDetail;
 import com.jumbo.trus.dto.receivedfine.response.stats.projection.IPlayerReceivedFineDetail;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
+import com.jumbo.trus.entity.filter.StatisticsFilter;
 import com.jumbo.trus.repository.ReceivedFineRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -21,6 +22,10 @@ public class ReceivedFineStatsDetailGetter {
     private final ReceivedFineRepository receivedFineRepository;
 
     public ReceivedFineMatchDetailResponse getMatchDetail(Long matchId, AppTeamEntity appTeam) {
+        return getMatchDetail(matchId, appTeam, new StatisticsFilter());
+    }
+
+    public ReceivedFineMatchDetailResponse getMatchDetail(Long matchId, AppTeamEntity appTeam, StatisticsFilter filter) {
         List<IMatchReceivedFineDetail> rows =
                 receivedFineRepository.findMatchFineDetail(matchId, appTeam.getId());
 
@@ -28,6 +33,8 @@ public class ReceivedFineStatsDetailGetter {
         Map<Long, MutableFinePlayersGroup> fines = new LinkedHashMap<>();
 
         for (IMatchReceivedFineDetail row : rows) {
+            if (!includes(filter.getPlayerIds(), row.getPlayerId())
+                    || !includes(filter.getFineIds(), row.getFineId())) continue;
             StatsPlayerDTO player = new StatsPlayerDTO(row.getPlayerId(), row.getPlayerName());
             FineStatsDTO fine = new FineStatsDTO(
                     row.getFineId(),
@@ -78,6 +85,11 @@ public class ReceivedFineStatsDetailGetter {
             Long seasonId,
             AppTeamEntity appTeam
     ) {
+        return getPlayerDetail(playerId, seasonId, appTeam, new StatisticsFilter());
+    }
+
+    public ReceivedFinePlayerDetailResponse getPlayerDetail(
+            Long playerId, Long seasonId, AppTeamEntity appTeam, StatisticsFilter filter) {
         List<IPlayerReceivedFineDetail> rows =
                 receivedFineRepository.findPlayerFineDetail(
                         playerId,
@@ -90,6 +102,11 @@ public class ReceivedFineStatsDetailGetter {
         Map<Long, MutableFineMatchesGroup> fines = new LinkedHashMap<>();
 
         for (IPlayerReceivedFineDetail row : rows) {
+            if (!includes(filter.getFineIds(), row.getFineId())
+                    || (!filter.getSeasonIds().contains(Config.ALL_SEASON_ID)
+                        && !includes(filter.getSeasonIds(), row.getSeasonId()))
+                    || (!filter.getOpponentNames().isEmpty() && filter.getOpponentNames().stream()
+                        .noneMatch(name -> name.trim().equalsIgnoreCase(row.getMatchName().trim())))) continue;
             StatsMatchDTO match = new StatsMatchDTO(
                     row.getMatchId(),
                     row.getMatchName(),
@@ -142,6 +159,10 @@ public class ReceivedFineStatsDetailGetter {
                 .toList();
 
         return new ReceivedFinePlayerDetailResponse(matchList, fineList);
+    }
+
+    private static boolean includes(List<Long> ids, Long id) {
+        return ids.isEmpty() || ids.contains(id);
     }
 
     private static class MutablePlayerGroup {

@@ -90,11 +90,11 @@ public class ReceivedFineController {
     @RoleRequired("READER")
     @GetMapping("/statistics/match-detail")
     public ReceivedFineMatchDetailResponse getMatchStatsDetail(
-            @RequestParam Long matchId
+            @RequestParam Long matchId, StatisticsFilter filter
     ) {
         return receivedFineService.getMatchStatsDetail(
                 matchId,
-                appTeamService.getCurrentAppTeamOrThrow()
+                appTeamService.getCurrentAppTeamOrThrow(), filter
         );
     }
 
@@ -102,12 +102,12 @@ public class ReceivedFineController {
     @GetMapping("/statistics/player-detail")
     public ReceivedFinePlayerDetailResponse getPlayerStatsDetail(
             @RequestParam Long playerId,
-            @RequestParam(required = false) Long seasonId
+            @RequestParam(required = false) Long seasonId, StatisticsFilter filter
     ) {
         return receivedFineService.getPlayerStatsDetail(
                 playerId,
                 seasonId,
-                appTeamService.getCurrentAppTeamOrThrow()
+                appTeamService.getCurrentAppTeamOrThrow(), filter
         );
     }
 }

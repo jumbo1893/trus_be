@@ -48,6 +48,10 @@ public class MatchService {
         return matchQueryService.getAll(matchFilter);
     }
 
+    public List<String> getStatisticsOpponents(Long appTeamId) {
+        return matchQueryService.getStatisticsOpponents(appTeamId);
+    }
+
     public List<MatchEntity> getAllEntitiesBySeasonId(AppTeamEntity appTeam, Long seasonId) {
         return matchQueryService.getAllEntitiesBySeasonId(appTeam, seasonId);
     }

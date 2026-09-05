@@ -19,6 +19,8 @@ public class BeerStatsSpecification implements Specification<BeerEntity> {
     @Override
     public Predicate toPredicate(@NotNull Root<BeerEntity> root, @NotNull CriteriaQuery<?> query, @NotNull CriteriaBuilder criteriaBuilder) {
         List<Predicate> predicates = new ArrayList<>();
+        StatisticsPredicates.addMatch(predicates, root.get("match"), criteriaBuilder, filter);
+        StatisticsPredicates.addPlayer(predicates, root.get("player"), filter);
 
         if (filter.getAppTeam() != null) {
             predicates.add(criteriaBuilder.equal(root.get(BeerEntity_.APP_TEAM), filter.getAppTeam()));

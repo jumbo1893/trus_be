@@ -19,6 +19,13 @@ public class FineEntity {
     @Column(nullable = false)
     private String name;
 
+    /**
+     * Stable logical identifier shared by all amount versions of this fine.
+     * Names are presentation data and must never be used by business rules.
+     */
+    @Column(length = 100, updatable = false)
+    private String code;
+
     @Column(nullable = false)
     private int amount;
 

@@ -19,6 +19,11 @@ public class ReceivedFineStatsSpecification implements Specification<ReceivedFin
     @Override
     public Predicate toPredicate(@NotNull Root<ReceivedFineEntity> root, @NotNull CriteriaQuery<?> query, @NotNull CriteriaBuilder criteriaBuilder) {
         List<Predicate> predicates = new ArrayList<>();
+        StatisticsPredicates.addMatch(predicates, root.get("match"), criteriaBuilder, filter);
+        StatisticsPredicates.addPlayer(predicates, root.get("player"), filter);
+        if (filter.getFineIds() != null && !filter.getFineIds().isEmpty()) {
+            predicates.add(root.get("fine").get("id").in(filter.getFineIds()));
+        }
 
 
         if (filter.getAppTeam() != null) {

@@ -28,6 +28,10 @@ import static com.jumbo.trus.config.Config.ALL_SEASON_ID;
 @RequiredArgsConstructor
 public class MatchQueryService {
 
+    public List<String> getStatisticsOpponents(Long appTeamId) {
+        return matchRepository.findStatisticsOpponents(appTeamId);
+    }
+
     private final MatchRepository matchRepository;
     private final MatchMapper matchMapper;
     private final PlayerMapper playerMapper;

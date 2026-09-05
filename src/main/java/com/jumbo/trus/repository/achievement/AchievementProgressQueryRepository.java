@@ -52,13 +52,13 @@ public interface AchievementProgressQueryRepository extends Repository<PlayerEnt
             JOIN match m ON m.id = rf.match_id
             WHERE rf.player_id = :playerId
               AND m.app_team_id = :appTeamId
-              AND f.name IN (:fineNames)
+              AND f.code IN (:fineCodes)
               AND rf.fine_number > 0
             """, nativeQuery = true)
     Long sumFineCount(
             @Param("playerId") Long playerId,
             @Param("appTeamId") Long appTeamId,
-            @Param("fineNames") Collection<String> fineNames
+            @Param("fineCodes") Collection<String> fineCodes
     );
 
     @Query(value = """
@@ -69,14 +69,14 @@ public interface AchievementProgressQueryRepository extends Repository<PlayerEnt
             WHERE rf.player_id = :playerId
               AND m.app_team_id = :appTeamId
               AND m.season_id = :seasonId
-              AND f.name IN (:fineNames)
+              AND f.code IN (:fineCodes)
               AND rf.fine_number > 0
             """, nativeQuery = true)
     Long sumFineCountInSeason(
             @Param("playerId") Long playerId,
             @Param("appTeamId") Long appTeamId,
             @Param("seasonId") Long seasonId,
-            @Param("fineNames") Collection<String> fineNames
+            @Param("fineCodes") Collection<String> fineCodes
     );
 
     @Query(value = """

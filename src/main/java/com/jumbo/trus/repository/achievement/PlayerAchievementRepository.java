@@ -178,7 +178,7 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
             WHERE b.beer_number > 0
               AND b.liquor_number > 0
               AND (COALESCE(g.goal_number, 0) > 0 OR fmp.clean_sheet IS TRUE)
-              AND f.name = :fineName
+              AND f.code = :fineCode
               AND r.fine_number > 0
               AND b.player_id = :playerId
             ORDER BY m.date ASC
@@ -186,7 +186,7 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
             """, nativeQuery = true)
     IGoalBeerFineMatch getFirstMatchWithGoalYellowBeerAndLiquor(
             @Param("playerId") Long playerId,
-            @Param("fineName") String fineName
+            @Param("fineCode") String fineCode
     );
 
     @Query(value = """
@@ -198,37 +198,37 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
                     JOIN football_match fm ON m.football_match_id = fm.id
                     JOIN football_match_player fmp ON fm.id = fmp.match_id AND p.football_player_id = fmp.player_id
                     WHERE (fmp.hattrick is true OR fmp.clean_sheet is true)
-                    AND f.name = :fineName
+                    AND f.code = :fineCode
                     AND r.fine_number > 0
                     AND r.player_id = :playerId
                     ORDER BY m.date ASC
                     LIMIT 1
             """, nativeQuery = true)
-    Long getFirstMatchWithHangoverAndHattrickOrCleanSheet(@Param("playerId") Long playerId, @Param("fineName") String fineName);
+    Long getFirstMatchWithHangoverAndHattrickOrCleanSheet(@Param("playerId") Long playerId, @Param("fineCode") String fineCode);
 
     @Query(value = """
             SELECT r.match_id AS matchId,
-            SUM(CASE WHEN f.name = :firstFineName THEN r.fine_number ELSE 0 END) AS firstNumber,
-            SUM(CASE WHEN f.name = :secondFineName THEN r.fine_number ELSE 0 END) AS secondNumber
+            SUM(CASE WHEN f.code = :firstFineCode THEN r.fine_number ELSE 0 END) AS firstNumber,
+            SUM(CASE WHEN f.code = :secondFineCode THEN r.fine_number ELSE 0 END) AS secondNumber
             FROM received_fine r
             JOIN fine f ON r.fine_id = f.id
             JOIN match m ON r.match_id = m.id
             WHERE r.player_id = :playerId
             GROUP BY r.match_id, m.date
-            HAVING SUM(CASE WHEN f.name = :firstFineName THEN r.fine_number ELSE 0 END) >= :firstFineCount
-            AND SUM(CASE WHEN f.name = :secondFineName THEN r.fine_number ELSE 0 END) >= :secondFineCount
+            HAVING SUM(CASE WHEN f.code = :firstFineCode THEN r.fine_number ELSE 0 END) >= :firstFineCount
+            AND SUM(CASE WHEN f.code = :secondFineCode THEN r.fine_number ELSE 0 END) >= :secondFineCount
             ORDER BY m.date ASC
             LIMIT 1;
             
             """, nativeQuery = true)
-    IMatchIdNumberOneNumberTwo getFirstMatchWithAtLeastXFines(@Param("playerId") Long playerId, @Param("firstFineName") String firstFineName, @Param("secondFineName") String secondFineName,
+    IMatchIdNumberOneNumberTwo getFirstMatchWithAtLeastXFines(@Param("playerId") Long playerId, @Param("firstFineCode") String firstFineCode, @Param("secondFineCode") String secondFineCode,
                                                               @Param("firstFineCount") int firstFineCount, @Param("secondFineCount") int secondFineCount);
 
     @Query(value = """
             SELECT r.match_id AS matchId,
                    r.player_id AS playerId,
                    CAST(best_player_matches.isBestPlayer AS INT) AS firstNumber,
-                   SUM(CASE WHEN f.name = :firstFineName THEN r.fine_number ELSE 0 END) AS secondNumber
+                   SUM(CASE WHEN f.code = :firstFineCode THEN r.fine_number ELSE 0 END) AS secondNumber
             FROM received_fine r
             JOIN fine f ON r.fine_id = f.id
             JOIN match m ON r.match_id = m.id
@@ -243,17 +243,17 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
             WHERE p.id = :playerId
             GROUP BY r.match_id, r.player_id, best_player_matches.isBestPlayer, m.date
             HAVING best_player_matches.isBestPlayer = true
-               AND SUM(CASE WHEN f.name = :firstFineName THEN r.fine_number ELSE 0 END) >= 1
+               AND SUM(CASE WHEN f.code = :firstFineCode THEN r.fine_number ELSE 0 END) >= 1
             ORDER BY m.date ASC
             LIMIT 1;
             """, nativeQuery = true)
-    IMatchIdNumberOneNumberTwo getFirstMatchWherePlayerIsBestPlayerWithFine(@Param("playerId") Long playerId, @Param("firstFineName") String firstFineName);
+    IMatchIdNumberOneNumberTwo getFirstMatchWherePlayerIsBestPlayerWithFine(@Param("playerId") Long playerId, @Param("firstFineCode") String firstFineCode);
 
     @Query(value = """
             SELECT r.match_id AS matchId,
                    r.player_id AS playerId,
                    CAST(best_player_matches.isBestPlayer AS INT) AS firstNumber,
-                   SUM(CASE WHEN f.name IN (:firstFineName, :firstFineName2, :firstFineName3) THEN r.fine_number ELSE 0 END) AS secondNumber
+                   SUM(CASE WHEN f.code IN (:firstFineCode, :firstFineCode2, :firstFineCode3) THEN r.fine_number ELSE 0 END) AS secondNumber
             FROM received_fine r
             JOIN fine f ON r.fine_id = f.id
             JOIN match m ON r.match_id = m.id
@@ -268,31 +268,31 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
             WHERE p.id = :playerId
             GROUP BY r.match_id, r.player_id, best_player_matches.isBestPlayer, m.date
             HAVING best_player_matches.isBestPlayer = true
-               AND SUM(CASE WHEN f.name IN (:firstFineName, :firstFineName2, :firstFineName3) THEN r.fine_number ELSE 0 END) >= 1
+               AND SUM(CASE WHEN f.code IN (:firstFineCode, :firstFineCode2, :firstFineCode3) THEN r.fine_number ELSE 0 END) >= 1
             ORDER BY m.date ASC
             LIMIT 1;
             """, nativeQuery = true)
-    IMatchIdNumberOneNumberTwo getFirstMatchWherePlayerIsBestPlayerWithFine(@Param("playerId") Long playerId, @Param("firstFineName") String firstFineName,
-                                                                            @Param("firstFineName2") String firstFineName2, @Param("firstFineName3") String firstFineName3);
+    IMatchIdNumberOneNumberTwo getFirstMatchWherePlayerIsBestPlayerWithFine(@Param("playerId") Long playerId, @Param("firstFineCode") String firstFineCode,
+                                                                            @Param("firstFineCode2") String firstFineCode2, @Param("firstFineCode3") String firstFineCode3);
 
     @Query(value = """
             SELECT r.match_id AS matchId,
-                   SUM(CASE WHEN f.name IN (:firstFineName, :firstFineName2, :firstFineName3) THEN r.fine_number ELSE 0 END) AS firstNumber,
-                   SUM(CASE WHEN f.name = :secondFineName THEN r.fine_number ELSE 0 END) AS secondNumber
+                   SUM(CASE WHEN f.code IN (:firstFineCode, :firstFineCode2, :firstFineCode3) THEN r.fine_number ELSE 0 END) AS firstNumber,
+                   SUM(CASE WHEN f.code = :secondFineCode THEN r.fine_number ELSE 0 END) AS secondNumber
             FROM received_fine r
             JOIN fine f ON r.fine_id = f.id
             JOIN match m ON r.match_id = m.id
             WHERE r.player_id = :playerId
             GROUP BY r.match_id, m.date
-            HAVING SUM(CASE WHEN f.name IN (:firstFineName, :firstFineName2, :firstFineName3) THEN r.fine_number ELSE 0 END) >= 1
-               AND SUM(CASE WHEN f.name = :secondFineName THEN r.fine_number ELSE 0 END) >= :secondFineCount
+            HAVING SUM(CASE WHEN f.code IN (:firstFineCode, :firstFineCode2, :firstFineCode3) THEN r.fine_number ELSE 0 END) >= 1
+               AND SUM(CASE WHEN f.code = :secondFineCode THEN r.fine_number ELSE 0 END) >= :secondFineCount
             ORDER BY m.date ASC
             LIMIT 1;
             
             """, nativeQuery = true)
-    IMatchIdNumberOneNumberTwo getFirstMatchWithAtLeastOneOfFinesAndXSecondFines(@Param("playerId") Long playerId, @Param("firstFineName") String firstFineName,
-                                                                                 @Param("firstFineName2") String firstFineName2, @Param("firstFineName3") String firstFineName3,
-                                                                                 @Param("secondFineName") String secondFineName, @Param("secondFineCount") int secondFineCount);
+    IMatchIdNumberOneNumberTwo getFirstMatchWithAtLeastOneOfFinesAndXSecondFines(@Param("playerId") Long playerId, @Param("firstFineCode") String firstFineCode,
+                                                                                 @Param("firstFineCode2") String firstFineCode2, @Param("firstFineCode3") String firstFineCode3,
+                                                                                 @Param("secondFineCode") String secondFineCode, @Param("secondFineCount") int secondFineCount);
 
     @Query(value = """
             SELECT r.match_id
@@ -301,7 +301,7 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
             JOIN fine f ON r.fine_id = f.id
             JOIN match m ON m.id = r.match_id
             JOIN football_match fm ON m.football_match_id = fm.id
-            WHERE f.name = :fineName
+            WHERE f.code = :fineCode
             AND r.fine_number > 0
             AND r.player_id = :playerId
             AND (
@@ -312,7 +312,7 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
             ORDER BY m.date ASC
             LIMIT 1;
             """, nativeQuery = true)
-    Long getFirstWinningMatchWithFine(@Param("playerId") Long playerId, @Param("fineName") String fineName, @Param("teamId") Long teamId);
+    Long getFirstWinningMatchWithFine(@Param("playerId") Long playerId, @Param("fineCode") String fineCode, @Param("teamId") Long teamId);
 
     @Query(value = """
                 SELECT r.match_id
@@ -320,32 +320,32 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
                 JOIN fine f ON r.fine_id = f.id
                 JOIN match m ON m.id = r.match_id
                 WHERE r.player_id = :playerId
-                AND f.name IN (
-                    'Pozdní příchod do začátku',
-                    'Pozdní příchod po 10. minutě',
-                    'Pozdní příchod po začátku',
-                    'Nepříchod',
-                    'Žlutá karta',
-                    'Červená karta',
-                    'Překop',
-                    'Nekompletní výbava',
-                    'Zapomenutí věcí',
-                    'Vlastní gól',
-                    'Vlastňák'
+                AND f.code IN (
+                    'LATE_BEFORE_START',
+                    'LATE_AFTER_TEN_MINUTES',
+                    'LATE_AFTER_START',
+                    'NO_SHOW',
+                    'YELLOW_CARD',
+                    'RED_CARD',
+                    'OVERKICK',
+                    'INCOMPLETE_EQUIPMENT',
+                    'FORGOTTEN_THINGS',
+                    'OWN_GOAL',
+                    'OWN_GOAL'
                 )
                 GROUP BY r.match_id, m.date
                 HAVING COUNT(DISTINCT CASE
-                    WHEN f.name IN (
-                        'Pozdní příchod do začátku',
-                        'Pozdní příchod po 10. minutě',
-                        'Pozdní příchod po začátku'
+                    WHEN f.code IN (
+                        'LATE_BEFORE_START',
+                        'LATE_AFTER_TEN_MINUTES',
+                        'LATE_AFTER_START'
                     ) THEN 'LATE_ARRIVAL'
-                    WHEN f.name = 'Nepříchod' THEN 'ABSENCE'
-                    WHEN f.name IN ('Žlutá karta', 'Červená karta') THEN 'CARD'
-                    WHEN f.name = 'Překop' THEN 'OVERKICK'
-                    WHEN f.name = 'Nekompletní výbava' THEN 'INCOMPLETE_EQUIPMENT'
-                    WHEN f.name = 'Zapomenutí věcí' THEN 'FORGOTTEN_THINGS'
-                    WHEN f.name IN ('Vlastní gól', 'Vlastňák') THEN 'OWN_GOAL'
+                    WHEN f.code = 'NO_SHOW' THEN 'ABSENCE'
+                    WHEN f.code IN ('YELLOW_CARD', 'RED_CARD') THEN 'CARD'
+                    WHEN f.code = 'OVERKICK' THEN 'OVERKICK'
+                    WHEN f.code = 'INCOMPLETE_EQUIPMENT' THEN 'INCOMPLETE_EQUIPMENT'
+                    WHEN f.code = 'FORGOTTEN_THINGS' THEN 'FORGOTTEN_THINGS'
+                    WHEN f.code IN ('OWN_GOAL', 'OWN_GOAL') THEN 'OWN_GOAL'
                 END) >= 3
                 ORDER BY m.date ASC
                 LIMIT 1;
@@ -357,11 +357,11 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
                 WITH FineCounts AS (
                 SELECT r.match_id,
                        m.date,
-                       SUM(CASE WHEN f.name IN (
-                            'Pozdní příchod do začátku',
-                            'Pozdní příchod po 10. minutě',
-                            'Pozdní příchod po začátku',
-                            'Nepříchod'
+                       SUM(CASE WHEN f.code IN (
+                            'LATE_BEFORE_START',
+                            'LATE_AFTER_TEN_MINUTES',
+                            'LATE_AFTER_START',
+                            'NO_SHOW'
                        ) THEN r.fine_number ELSE 0 END) AS total_fines
                 FROM received_fine r
                 JOIN fine f ON r.fine_id = f.id
@@ -402,8 +402,8 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
 
     @Query(value = """
             SELECT
-                        COUNT(CASE WHEN f.name = :firstFineName THEN r.fine_number END) AS firstNumber,
-                        COUNT(CASE WHEN f.name = :secondFineName THEN r.fine_number END) AS secondNumber,
+                        COUNT(CASE WHEN f.code = :firstFineCode THEN r.fine_number END) AS firstNumber,
+                        COUNT(CASE WHEN f.code = :secondFineCode THEN r.fine_number END) AS secondNumber,
                         MAX(m.id) AS matchId
                     FROM received_fine r
                     JOIN fine f ON r.fine_id = f.id
@@ -411,14 +411,14 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
                     JOIN season s ON m.season_id = s.id
                     WHERE r.player_id = :playerId
                     AND s.id = :seasonId
-                    AND f.name IN (:firstFineName, :secondFineName)
+                    AND f.code IN (:firstFineCode, :secondFineCode)
             """, nativeQuery = true)
-    IMatchIdNumberOneNumberTwo findLastMatchInSeasonWherePlayerGetsTwoFines(@Param("playerId") Long playerId, @Param("firstFineName") String firstFineName,
-                                                                            @Param("secondFineName") String secondFineName, @Param("seasonId") Long seasonId);
+    IMatchIdNumberOneNumberTwo findLastMatchInSeasonWherePlayerGetsTwoFines(@Param("playerId") Long playerId, @Param("firstFineCode") String firstFineCode,
+                                                                            @Param("secondFineCode") String secondFineCode, @Param("seasonId") Long seasonId);
 
     @Query(value = """
             SELECT r.match_id AS matchId,
-                        SUM(CASE WHEN f.name = :firstFineName THEN r.fine_number ELSE 0 END) AS firstNumber,
+                        SUM(CASE WHEN f.code = :firstFineCode THEN r.fine_number ELSE 0 END) AS firstNumber,
                         SUM(b.beer_number) AS secondNumber
                         FROM received_fine r
                         JOIN fine f ON r.fine_id = f.id
@@ -426,16 +426,16 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
             			JOIN beer b ON r.match_id = b.match_id AND r.player_id = b.player_id
                         WHERE r.player_id = :playerId
                         GROUP BY r.match_id, m.date
-                        HAVING SUM(CASE WHEN f.name = :firstFineName THEN r.fine_number ELSE 0 END) >= 1
+                        HAVING SUM(CASE WHEN f.code = :firstFineCode THEN r.fine_number ELSE 0 END) >= 1
                         AND SUM(b.beer_number) >= 1
                         ORDER BY m.date ASC
                         LIMIT 1;
             """, nativeQuery = true)
-    IMatchIdNumberOneNumberTwo findFirstMatchWhereFineExistsAndPlayerHasBeer(@Param("playerId") Long playerId, @Param("firstFineName") String firstFineName);
+    IMatchIdNumberOneNumberTwo findFirstMatchWhereFineExistsAndPlayerHasBeer(@Param("playerId") Long playerId, @Param("firstFineCode") String firstFineCode);
 
     @Query(value = """
             SELECT r.match_id AS matchId,
-                        SUM(CASE WHEN f.name = :firstFineName THEN r.fine_number ELSE 0 END) AS firstNumber,
+                        SUM(CASE WHEN f.code = :firstFineCode THEN r.fine_number ELSE 0 END) AS firstNumber,
                         SUM(b.liquor_number) AS secondNumber
                         FROM received_fine r
                         JOIN fine f ON r.fine_id = f.id
@@ -443,12 +443,12 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
             			JOIN beer b ON r.match_id = b.match_id AND r.player_id = b.player_id
                         WHERE r.player_id = :playerId
                         GROUP BY r.match_id, m.date
-                        HAVING SUM(CASE WHEN f.name = :firstFineName THEN r.fine_number ELSE 0 END) >= 1
+                        HAVING SUM(CASE WHEN f.code = :firstFineCode THEN r.fine_number ELSE 0 END) >= 1
                         AND SUM(b.liquor_number) >= 1
                         ORDER BY m.date ASC
                         LIMIT 1;
             """, nativeQuery = true)
-    IMatchIdNumberOneNumberTwo findFirstMatchWhereFineExistsAndPlayerHasLiquor(@Param("playerId") Long playerId, @Param("firstFineName") String firstFineName);
+    IMatchIdNumberOneNumberTwo findFirstMatchWhereFineExistsAndPlayerHasLiquor(@Param("playerId") Long playerId, @Param("firstFineCode") String firstFineCode);
 
     @Query(value = """
             SELECT
@@ -510,7 +510,7 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
                 JOIN fine f ON f.id = rf.fine_id
                 JOIN player p ON p.id = rf.player_id
                 JOIN match m ON m.id = rf.match_id
-                WHERE f.name = 'Třetí poločas'
+                WHERE f.code = 'THIRD_HALF'
                   AND rf.fine_number > 0
                   AND p.fan = false
                   AND m.app_team_id = :appTeamId
@@ -556,7 +556,7 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
                 JOIN fine f ON f.id = rf.fine_id
                 JOIN player p ON p.id = rf.player_id
                 JOIN match m ON m.id = rf.match_id
-                WHERE f.name = 'Třetí poločas'
+                WHERE f.code = 'THIRD_HALF'
                   AND rf.fine_number > 0
                   AND p.fan = false
                   AND m.app_team_id = :appTeamId
@@ -581,7 +581,7 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
                   JOIN fine f ON f.id = rf.fine_id
                   WHERE rf.match_id = mp.match_id
                     AND rf.player_id = :playerId
-                    AND f.name = 'Třetí poločas'
+                    AND f.code = 'THIRD_HALF'
                     AND rf.fine_number > 0
               )
             ORDER BY m.date ASC
@@ -609,7 +609,7 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
                 FROM received_fine rf
                 JOIN fine f ON f.id = rf.fine_id
                 JOIN match m ON m.id = rf.match_id
-                WHERE f.name = 'Třetí poločas'
+                WHERE f.code = 'THIRD_HALF'
                   AND rf.fine_number > 0
                   AND m.app_team_id = :appTeamId
             ), not_fined AS (
@@ -731,7 +731,7 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
                 WHERE rf.player_id = :playerId
                   AND m.app_team_id = :appTeamId
                   AND rf.fine_number > 0
-                  AND f.name IN ('Narození dítěte (holka)', 'Narození dítěte (kluk)')
+                  AND f.code IN ('CHILD_BORN_GIRL', 'CHILD_BORN_BOY')
                 GROUP BY rf.player_id
             ), card_total AS (
                 SELECT rf.player_id,
@@ -742,7 +742,7 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
                 WHERE rf.player_id = :playerId
                   AND m.app_team_id = :appTeamId
                   AND rf.fine_number > 0
-                  AND f.name IN ('Červená karta', 'Žlutá karta')
+                  AND f.code IN ('RED_CARD', 'YELLOW_CARD')
                 GROUP BY rf.player_id
             ), first_birth AS (
                 SELECT rf.match_id,
@@ -753,7 +753,7 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
                 WHERE rf.player_id = :playerId
                   AND m.app_team_id = :appTeamId
                   AND rf.fine_number > 0
-                  AND f.name IN ('Narození dítěte (holka)', 'Narození dítěte (kluk)')
+                  AND f.code IN ('CHILD_BORN_GIRL', 'CHILD_BORN_BOY')
                 ORDER BY m.date ASC NULLS LAST, m.id ASC
                 LIMIT 1
             ), first_card_after_birth AS (
@@ -766,7 +766,7 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
                 WHERE rf.player_id = :playerId
                   AND m.app_team_id = :appTeamId
                   AND rf.fine_number > 0
-                  AND f.name IN ('Červená karta', 'Žlutá karta')
+                  AND f.code IN ('RED_CARD', 'YELLOW_CARD')
                   AND (
                       m.date > fb.date
                       OR (m.date = fb.date AND m.id > fb.match_id)
@@ -1004,7 +1004,7 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
             LEFT JOIN match_players mp ON mp.match_id = rf.match_id
             WHERE rf.player_id = :playerId
               AND m.app_team_id = :appTeamId
-              AND f.name = 'Rabona (gól)'
+              AND f.code = 'RABONA_GOAL'
               AND rf.fine_number > 0
               AND (:matchId IS NULL OR rf.match_id = :matchId)
             GROUP BY rf.match_id, m.date
@@ -1507,7 +1507,7 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
               AND g.goal_number > 0
               AND g.assist_number > 0
               AND rf.fine_number > 0
-              AND f.name IN ('Žlutá karta', 'Červená karta')
+              AND f.code IN ('YELLOW_CARD', 'RED_CARD')
             GROUP BY g.match_id, g.goal_number, g.assist_number, m.date
             ORDER BY m.date ASC NULLS LAST, g.match_id ASC
             LIMIT 1
@@ -1526,7 +1526,7 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
                 JOIN match m ON m.id = rf.match_id
                 WHERE rf.player_id = :playerId
                   AND m.app_team_id = :appTeamId
-                  AND f.name IN (:fineNames)
+                  AND f.code IN (:fineCodes)
                   AND rf.fine_number > 0
                 GROUP BY rf.match_id, m.date
             ), cumulative AS (
@@ -1547,7 +1547,7 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
             """, nativeQuery = true)
     IMatchIdNumberOneNumberTwo findFineMilestone(@Param("playerId") Long playerId,
                                                  @Param("appTeamId") Long appTeamId,
-                                                 @Param("fineNames") List<String> fineNames,
+                                                 @Param("fineCodes") List<String> fineCodes,
                                                  @Param("threshold") int threshold);
 
     // Černé geny
@@ -1685,12 +1685,12 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
               AND b.beer_number > 0
               AND b.liquor_number > 0
               AND (COALESCE(g.goal_number, 0) > 0 OR fmp.clean_sheet IS TRUE)
-              AND f.name = :fineName
+              AND f.code = :fineCode
               AND r.fine_number > 0
             LIMIT 1
             """, nativeQuery = true)
     IGoalBeerFineMatch getMatchWithGoalYellowBeerAndLiquor(@Param("playerId") Long playerId,
-                                                           @Param("fineName") String fineName,
+                                                           @Param("fineCode") String fineCode,
                                                            @Param("matchId") Long matchId);
 
     @Query(value = """
@@ -1704,54 +1704,54 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
             WHERE r.player_id = :playerId
               AND r.match_id = :matchId
               AND (fmp.hattrick IS TRUE OR fmp.clean_sheet IS TRUE)
-              AND f.name = :fineName
+              AND f.code = :fineCode
               AND r.fine_number > 0
             LIMIT 1
             """, nativeQuery = true)
     Long getMatchWithHangoverAndHattrickOrCleanSheet(@Param("playerId") Long playerId,
-                                                     @Param("fineName") String fineName,
+                                                     @Param("fineCode") String fineCode,
                                                      @Param("matchId") Long matchId);
 
     @Query(value = """
             SELECT r.match_id AS matchId,
-                   SUM(CASE WHEN f.name = :firstFineName THEN r.fine_number ELSE 0 END) AS firstNumber,
-                   SUM(CASE WHEN f.name = :secondFineName THEN r.fine_number ELSE 0 END) AS secondNumber
+                   SUM(CASE WHEN f.code = :firstFineCode THEN r.fine_number ELSE 0 END) AS firstNumber,
+                   SUM(CASE WHEN f.code = :secondFineCode THEN r.fine_number ELSE 0 END) AS secondNumber
             FROM received_fine r
             JOIN fine f ON r.fine_id = f.id
             WHERE r.player_id = :playerId
               AND r.match_id = :matchId
             GROUP BY r.match_id
-            HAVING SUM(CASE WHEN f.name = :firstFineName THEN r.fine_number ELSE 0 END) >= :firstFineCount
-               AND SUM(CASE WHEN f.name = :secondFineName THEN r.fine_number ELSE 0 END) >= :secondFineCount
+            HAVING SUM(CASE WHEN f.code = :firstFineCode THEN r.fine_number ELSE 0 END) >= :firstFineCount
+               AND SUM(CASE WHEN f.code = :secondFineCode THEN r.fine_number ELSE 0 END) >= :secondFineCount
             LIMIT 1
             """, nativeQuery = true)
     IMatchIdNumberOneNumberTwo getMatchWithAtLeastXFines(@Param("playerId") Long playerId,
                                                          @Param("matchId") Long matchId,
-                                                         @Param("firstFineName") String firstFineName,
-                                                         @Param("secondFineName") String secondFineName,
+                                                         @Param("firstFineCode") String firstFineCode,
+                                                         @Param("secondFineCode") String secondFineCode,
                                                          @Param("firstFineCount") int firstFineCount,
                                                          @Param("secondFineCount") int secondFineCount);
 
     @Query(value = """
             SELECT r.match_id AS matchId,
-                   SUM(CASE WHEN f.name IN (:firstFineName, :firstFineName2, :firstFineName3) THEN r.fine_number ELSE 0 END) AS firstNumber,
-                   SUM(CASE WHEN f.name = :secondFineName THEN r.fine_number ELSE 0 END) AS secondNumber
+                   SUM(CASE WHEN f.code IN (:firstFineCode, :firstFineCode2, :firstFineCode3) THEN r.fine_number ELSE 0 END) AS firstNumber,
+                   SUM(CASE WHEN f.code = :secondFineCode THEN r.fine_number ELSE 0 END) AS secondNumber
             FROM received_fine r
             JOIN fine f ON r.fine_id = f.id
             WHERE r.player_id = :playerId
               AND r.match_id = :matchId
             GROUP BY r.match_id
-            HAVING SUM(CASE WHEN f.name IN (:firstFineName, :firstFineName2, :firstFineName3) THEN r.fine_number ELSE 0 END) >= 1
-               AND SUM(CASE WHEN f.name = :secondFineName THEN r.fine_number ELSE 0 END) >= :secondFineCount
+            HAVING SUM(CASE WHEN f.code IN (:firstFineCode, :firstFineCode2, :firstFineCode3) THEN r.fine_number ELSE 0 END) >= 1
+               AND SUM(CASE WHEN f.code = :secondFineCode THEN r.fine_number ELSE 0 END) >= :secondFineCount
             LIMIT 1
             """, nativeQuery = true)
     IMatchIdNumberOneNumberTwo getMatchWithAtLeastOneOfFinesAndXSecondFines(
             @Param("playerId") Long playerId,
             @Param("matchId") Long matchId,
-            @Param("firstFineName") String firstFineName,
-            @Param("firstFineName2") String firstFineName2,
-            @Param("firstFineName3") String firstFineName3,
-            @Param("secondFineName") String secondFineName,
+            @Param("firstFineCode") String firstFineCode,
+            @Param("firstFineCode2") String firstFineCode2,
+            @Param("firstFineCode3") String firstFineCode3,
+            @Param("secondFineCode") String secondFineCode,
             @Param("secondFineCount") int secondFineCount
     );
 
@@ -1764,14 +1764,14 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
             LEFT JOIN beer b ON b.match_id = r.match_id AND b.player_id = r.player_id
             WHERE r.player_id = :playerId
               AND r.match_id = :matchId
-              AND f.name = :fineName
+              AND f.code = :fineCode
               AND r.fine_number > 0
               AND COALESCE(b.beer_number, 0) > 0
             GROUP BY r.match_id
             LIMIT 1
             """, nativeQuery = true)
     IMatchIdNumberOneNumberTwo findMatchWhereFineExistsAndPlayerHasBeer(@Param("playerId") Long playerId,
-                                                                        @Param("fineName") String fineName,
+                                                                        @Param("fineCode") String fineCode,
                                                                         @Param("matchId") Long matchId);
 
     @Query(value = """
@@ -1783,14 +1783,14 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
             LEFT JOIN beer b ON b.match_id = r.match_id AND b.player_id = r.player_id
             WHERE r.player_id = :playerId
               AND r.match_id = :matchId
-              AND f.name = :fineName
+              AND f.code = :fineCode
               AND r.fine_number > 0
               AND COALESCE(b.liquor_number, 0) > 0
             GROUP BY r.match_id
             LIMIT 1
             """, nativeQuery = true)
     IMatchIdNumberOneNumberTwo findMatchWhereFineExistsAndPlayerHasLiquor(@Param("playerId") Long playerId,
-                                                                          @Param("fineName") String fineName,
+                                                                          @Param("fineCode") String fineCode,
                                                                           @Param("matchId") Long matchId);
 
     @Query(value = """
@@ -1801,7 +1801,7 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
             JOIN fine f ON r.fine_id = f.id
             WHERE r.player_id = :playerId
               AND r.match_id = :matchId
-              AND f.name IN (:fineNames)
+              AND f.code IN (:fineCodes)
               AND r.fine_number > 0
             GROUP BY r.match_id
             HAVING SUM(r.fine_number) >= :threshold
@@ -1809,7 +1809,7 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
             """, nativeQuery = true)
     IMatchIdNumberOneNumberTwo findFineInMatch(@Param("playerId") Long playerId,
                                                @Param("matchId") Long matchId,
-                                               @Param("fineNames") List<String> fineNames,
+                                               @Param("fineCodes") List<String> fineCodes,
                                                @Param("threshold") int threshold);
 
     @Query(value = """
@@ -1874,7 +1874,7 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
             JOIN fine f ON f.id = rf.fine_id
             WHERE m.id = :matchId
               AND fmp.best_player = true
-              AND f.name IN (:fineNames)
+              AND f.code IN (:fineCodes)
               AND rf.fine_number > 0
             GROUP BY m.id
             LIMIT 1
@@ -1882,7 +1882,7 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
     IMatchIdNumberOneNumberTwo findBestPlayerWithFineInMatch(
             @Param("playerId") Long playerId,
             @Param("matchId") Long matchId,
-            @Param("fineNames") List<String> fineNames
+            @Param("fineCodes") List<String> fineCodes
     );
 
     @Query(value = """
@@ -1893,7 +1893,7 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
             JOIN fine f ON f.id = rf.fine_id
             WHERE m.id = :matchId
               AND rf.player_id = :playerId
-              AND f.name = :fineName
+              AND f.code = :fineCode
               AND rf.fine_number > 0
               AND ((fm.home_team_id = :teamId AND fm.home_goal_number > fm.away_goal_number)
                 OR (fm.away_team_id = :teamId AND fm.away_goal_number > fm.home_goal_number))
@@ -1902,7 +1902,7 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
     Long findWinningMatchWithFine(
             @Param("playerId") Long playerId,
             @Param("matchId") Long matchId,
-            @Param("fineName") String fineName,
+            @Param("fineCode") String fineCode,
             @Param("teamId") Long teamId
     );
 
@@ -1913,32 +1913,32 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
             WHERE rf.player_id = :playerId
               AND rf.match_id = :matchId
               AND rf.fine_number > 0
-              AND f.name IN (
-                  'Pozdní příchod do začátku',
-                  'Pozdní příchod po 10. minutě',
-                  'Pozdní příchod po začátku',
-                  'Nepříchod',
-                  'Žlutá karta',
-                  'Červená karta',
-                  'Překop',
-                  'Nekompletní výbava',
-                  'Zapomenutí věcí',
-                  'Vlastní gól',
-                  'Vlastňák'
+              AND f.code IN (
+                  'LATE_BEFORE_START',
+                  'LATE_AFTER_TEN_MINUTES',
+                  'LATE_AFTER_START',
+                  'NO_SHOW',
+                  'YELLOW_CARD',
+                  'RED_CARD',
+                  'OVERKICK',
+                  'INCOMPLETE_EQUIPMENT',
+                  'FORGOTTEN_THINGS',
+                  'OWN_GOAL',
+                  'OWN_GOAL'
               )
             GROUP BY rf.match_id
             HAVING COUNT(DISTINCT CASE
-                WHEN f.name IN (
-                    'Pozdní příchod do začátku',
-                    'Pozdní příchod po 10. minutě',
-                    'Pozdní příchod po začátku'
+                WHEN f.code IN (
+                    'LATE_BEFORE_START',
+                    'LATE_AFTER_TEN_MINUTES',
+                    'LATE_AFTER_START'
                 ) THEN 'LATE_ARRIVAL'
-                WHEN f.name = 'Nepříchod' THEN 'ABSENCE'
-                WHEN f.name IN ('Žlutá karta', 'Červená karta') THEN 'CARD'
-                WHEN f.name = 'Překop' THEN 'OVERKICK'
-                WHEN f.name = 'Nekompletní výbava' THEN 'INCOMPLETE_EQUIPMENT'
-                WHEN f.name = 'Zapomenutí věcí' THEN 'FORGOTTEN_THINGS'
-                WHEN f.name IN ('Vlastní gól', 'Vlastňák') THEN 'OWN_GOAL'
+                WHEN f.code = 'NO_SHOW' THEN 'ABSENCE'
+                WHEN f.code IN ('YELLOW_CARD', 'RED_CARD') THEN 'CARD'
+                WHEN f.code = 'OVERKICK' THEN 'OVERKICK'
+                WHEN f.code = 'INCOMPLETE_EQUIPMENT' THEN 'INCOMPLETE_EQUIPMENT'
+                WHEN f.code = 'FORGOTTEN_THINGS' THEN 'FORGOTTEN_THINGS'
+                WHEN f.code IN ('OWN_GOAL', 'OWN_GOAL') THEN 'OWN_GOAL'
             END) >= 3
             LIMIT 1
             """, nativeQuery = true)
@@ -2130,7 +2130,7 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
               AND g.goal_number > 0
               AND g.assist_number > 0
               AND rf.fine_number > 0
-              AND f.name IN ('Žlutá karta', 'Červená karta')
+              AND f.code IN ('YELLOW_CARD', 'RED_CARD')
             GROUP BY g.match_id, g.goal_number, g.assist_number
             LIMIT 1
             """, nativeQuery = true)
@@ -2188,7 +2188,7 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
             JOIN match m ON m.id = rf.match_id
             JOIN match changed ON changed.id = :matchId
             WHERE rf.player_id = :playerId
-              AND f.name = 'Svatba'
+              AND f.code = 'WEDDING'
               AND rf.fine_number > 0
               AND (m.date < changed.date OR (m.date = changed.date AND m.id <= changed.id))
             HAVING SUM(rf.fine_number) >= 3
@@ -2325,7 +2325,7 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
                        WHERE card_rf.match_id = m.id
                          AND card_rf.player_id = :playerId
                          AND card_rf.fine_number > 0
-                         AND card_f.name IN ('Žlutá karta', 'Červená karta')
+                         AND card_f.code IN ('YELLOW_CARD', 'RED_CARD')
                    ) THEN 1 ELSE 0 END AS int) AS thirdNumber,
                    '' AS text
             FROM match m
@@ -2339,10 +2339,10 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
                   WHERE late_rf.match_id = m.id
                     AND late_rf.player_id = :playerId
                     AND late_rf.fine_number > 0
-                    AND late_f.name IN (
-                        'Pozdní příchod do začátku',
-                        'Pozdní příchod po začátku',
-                        'Pozdní příchod po 10. minutě'
+                    AND late_f.code IN (
+                        'LATE_BEFORE_START',
+                        'LATE_AFTER_START',
+                        'LATE_AFTER_TEN_MINUTES'
                     )
               )
               AND (
@@ -2353,7 +2353,7 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
                       WHERE card_rf.match_id = m.id
                         AND card_rf.player_id = :playerId
                         AND card_rf.fine_number > 0
-                        AND card_f.name IN ('Žlutá karta', 'Červená karta')
+                        AND card_f.code IN ('YELLOW_CARD', 'RED_CARD')
                   ) THEN 1 ELSE 0 END
                   + CASE WHEN COALESCE(g.goal_number, 0) > 0 THEN 1 ELSE 0 END
                   + CASE WHEN COALESCE(g.assist_number, 0) > 0 THEN 1 ELSE 0 END

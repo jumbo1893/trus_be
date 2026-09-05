@@ -15,6 +15,7 @@ import com.jumbo.trus.repository.achievement.AchievementProgressQueryRepository.
 import com.jumbo.trus.repository.achievement.AchievementProgressQueryRepository.ScorerProgressProjection;
 import com.jumbo.trus.repository.achievement.PlayerAchievementRepository;
 import com.jumbo.trus.service.auth.AppTeamService;
+import com.jumbo.trus.service.fine.FineCodes;
 import com.jumbo.trus.service.notification.push.maker.AchievementProgressNotificationMaker;
 import com.jumbo.trus.service.outbox.AchievementEventBatch;
 import com.jumbo.trus.service.outbox.AchievementPlayerWork;
@@ -62,11 +63,11 @@ public class AchievementProgressService {
             new CountMilestone(ULTRUS, 30, ProgressUnit.ATTENDANCE)
     );
 
-    private static final List<String> LATE_ARRIVAL_FINE_NAMES = List.of(
-            "Pozdní příchod do začátku",
-            "Pozdní příchod po 10. minutě",
-            "Pozdní příchod po začátku",
-            "Nepříchod"
+    private static final List<String> LATE_ARRIVAL_FINE_CODES = List.of(
+            FineCodes.LATE_BEFORE_START,
+            FineCodes.LATE_AFTER_TEN_MINUTES,
+            FineCodes.LATE_AFTER_START,
+            FineCodes.NO_SHOW
     );
 
     private final AppTeamService appTeamService;
@@ -385,7 +386,7 @@ public class AchievementProgressService {
                 player,
                 appTeam,
                 eligibleAchievement(player, achievements, ROSS_GELLER),
-                List.of("Svatba"),
+                List.of(FineCodes.WEDDING),
                 3,
                 "chybí 1 pokuta za svatbu",
                 candidates
@@ -394,7 +395,7 @@ public class AchievementProgressService {
                 player,
                 appTeam,
                 eligibleAchievement(player, achievements, AMERICKY_FOTBALISTA),
-                List.of("Překop"),
+                List.of(FineCodes.OVERKICK),
                 10,
                 "chybí 1 pokuta za překop",
                 candidates
@@ -406,7 +407,7 @@ public class AchievementProgressService {
                     appTeam,
                     eligibleAchievement(player, achievements, POROUCHANY_BUDIK),
                     seasonId,
-                    LATE_ARRIVAL_FINE_NAMES,
+                    LATE_ARRIVAL_FINE_CODES,
                     3,
                     "chybí 1 pozdní příchod",
                     candidates
@@ -416,7 +417,7 @@ public class AchievementProgressService {
                     appTeam,
                     eligibleAchievement(player, achievements, MEDMRDKA),
                     seasonId,
-                    List.of("Zmínka v tisku"),
+                    List.of(FineCodes.PRESS_MENTION),
                     2,
                     "chybí 1 zmínka v tisku",
                     candidates
@@ -428,7 +429,7 @@ public class AchievementProgressService {
             PlayerDTO player,
             AppTeamEntity appTeam,
             PlayerAchievementEntity achievement,
-            List<String> fineNames,
+            List<String> fineCodes,
             long target,
             String missingText,
             List<ProgressCandidate> candidates
@@ -437,7 +438,7 @@ public class AchievementProgressService {
             return;
         }
         long count = safeLong(progressQueryRepository.sumFineCount(
-                player.getId(), appTeam.getId(), fineNames));
+                player.getId(), appTeam.getId(), fineCodes));
         addFineCandidate(achievement, ALL_CONTEXT, target - count, missingText, candidates);
     }
 
@@ -446,7 +447,7 @@ public class AchievementProgressService {
             AppTeamEntity appTeam,
             PlayerAchievementEntity achievement,
             Long seasonId,
-            List<String> fineNames,
+            List<String> fineCodes,
             long target,
             String missingText,
             List<ProgressCandidate> candidates
@@ -455,7 +456,7 @@ public class AchievementProgressService {
             return;
         }
         long count = safeLong(progressQueryRepository.sumFineCountInSeason(
-                player.getId(), appTeam.getId(), seasonId, fineNames));
+                player.getId(), appTeam.getId(), seasonId, fineCodes));
         addFineCandidate(
                 achievement,
                 seasonContext(seasonId),

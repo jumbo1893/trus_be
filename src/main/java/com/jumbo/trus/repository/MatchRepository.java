@@ -21,6 +21,14 @@ import static com.jumbo.trus.config.Config.OTHER_SEASON_ID;
 public interface MatchRepository extends PagingAndSortingRepository<MatchEntity, Long>, JpaRepository<MatchEntity, Long>, JpaSpecificationExecutor<MatchEntity> {
 
     @Query("""
+            SELECT min(trim(m.name)) FROM match m
+            WHERE m.appTeam.id = :appTeamId AND trim(m.name) <> ''
+            GROUP BY lower(trim(m.name))
+            ORDER BY min(trim(m.name))
+            """)
+    List<String> findStatisticsOpponents(@Param("appTeamId") Long appTeamId);
+
+    @Query("""
             SELECT m
             FROM match m
             WHERE m.id = :matchId

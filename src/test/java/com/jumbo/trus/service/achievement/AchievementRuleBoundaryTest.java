@@ -1,5 +1,6 @@
 package com.jumbo.trus.service.achievement;
 
+import com.jumbo.trus.service.fine.FineCodes;
 import com.jumbo.trus.dto.SeasonDTO;
 import com.jumbo.trus.dto.achievement.AchievementDTO;
 import com.jumbo.trus.dto.achievement.PlayerAchievementDTO;
@@ -121,8 +122,8 @@ class AchievementRuleBoundaryTest {
 
     static Stream<Arguments> fineMilestones() {
         return Stream.of(
-                Arguments.of(AchievementCodes.AMERICKY_FOTBALISTA, List.of("Překop"), 10),
-                Arguments.of(AchievementCodes.ALZHEIMER, List.of("Zapomenutí věcí", "Nekompletní výbava"), 1),
+                Arguments.of(AchievementCodes.AMERICKY_FOTBALISTA, List.of(FineCodes.OVERKICK), 10),
+                Arguments.of(AchievementCodes.ALZHEIMER, List.of(FineCodes.FORGOTTEN_THINGS, FineCodes.INCOMPLETE_EQUIPMENT), 1),
                 Arguments.of(AchievementCodes.LEO_BERANEK, List.of("Nový kopačky"), 1)
         );
     }
@@ -214,7 +215,7 @@ class AchievementRuleBoundaryTest {
     @Test
     void weddingCelebrationCountsEightBeersOrShotsTogether() {
         when(playerAchievementRepository.findFineInMatch(
-                player.getId(), 104L, List.of("Svatba"), 1))
+                player.getId(), 104L, List.of(FineCodes.WEDDING), 1))
                 .thenReturn(numbers(104L, 1, 1));
         when(playerAchievementRepository.findBeerInMatch(player.getId(), 104L))
                 .thenReturn(numbers(104L, 3, 5));
@@ -231,7 +232,7 @@ class AchievementRuleBoundaryTest {
     @Test
     void weddingCelebrationFailsWithOnlySevenDrinks() {
         when(playerAchievementRepository.findFineInMatch(
-                player.getId(), 105L, List.of("Svatba"), 1))
+                player.getId(), 105L, List.of(FineCodes.WEDDING), 1))
                 .thenReturn(numbers(105L, 1, 1));
         when(playerAchievementRepository.findBeerInMatch(player.getId(), 105L))
                 .thenReturn(numbers(105L, 3, 4));

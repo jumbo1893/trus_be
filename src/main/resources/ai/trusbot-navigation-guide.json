@@ -60,8 +60,8 @@
     "title": "Přidání nebo úprava typu pokuty",
     "aliases": ["nová pokuta", "přidat pokutu do číselníku", "typ pokuty", "částka pokuty", "upravit pokutu", "pouze nové pokuty"],
     "paths": ["Menu → Přidat/upravit pokutu → +", "Menu → Přidat/upravit pokutu → klepnout na řádek pokuty"],
-    "steps": ["Pro nový typ stiskněte +, zadejte Název pokuty a Výši pokuty v Kč a stiskněte Uložit pokutu.", "Pro úpravu klepněte na existující typ, změňte název nebo částku a stiskněte Uložit.", "Smazat odstraní typ až po potvrzení."],
-    "conditions": ["Přepínač Pouze nové pokuty zapnutý mění jen budoucí udělení; vypnutý může změnu propsat i do historicky udělených pokut."]
+    "steps": ["Pro nový typ stiskněte +, zadejte Název pokuty a Výši pokuty v Kč a stiskněte Uložit pokutu.", "Pro úpravu klepněte na existující typ a změňte částku; u vlastních typů lze změnit i název.", "Vlastní typ lze odstranit po potvrzení."],
+    "conditions": ["Změna částky platí vždy jen pro nově udělené pokuty; historické částky zůstanou beze změny.", "Core pokuty nelze přejmenovat ani odstranit."]
   },
   {
     "id": "fine_assign_one",

@@ -1,19 +1,76 @@
 -- data.sql
 
+ALTER TABLE fine ADD COLUMN IF NOT EXISTS code VARCHAR(100);
+
 -- Vložení hardcodované sezony Ostatní, pokud neexistuje
 INSERT INTO season (id, from_date, name, to_date, editable)
 SELECT -1, '1970-01-01', 'Ostatní', '1970-12-31', false
 WHERE NOT EXISTS (SELECT 1 FROM season WHERE id = -1);
 
 -- Vložení hardcodované pokuty Gól, pokud neexistuje
-INSERT INTO fine (id, amount, name, editable, inactive)
-SELECT -1, 10, 'Gol', false, false
+INSERT INTO fine (id, amount, name, code, editable, inactive)
+SELECT -1, 10, 'Gól', 'GOAL', false, false
 WHERE NOT EXISTS (SELECT 1 FROM fine WHERE id = -1);
 
 -- Vložení hardcodované pokuty Hattrick, pokud neexistuje
-INSERT INTO fine (id, amount, name, editable, inactive)
-SELECT -2, 50, 'Hattrick', false, false
+INSERT INTO fine (id, amount, name, code, editable, inactive)
+SELECT -2, 50, 'Hattrick', 'HATTRICK', false, false
 WHERE NOT EXISTS (SELECT 1 FROM fine WHERE id = -2);
+
+-- Jednorázová migrace existujícího katalogu. Nově přidané uživatelské
+-- pokuty dostávají kód už v aplikační službě, takže další starty je nemění.
+UPDATE fine
+SET editable = false
+WHERE code IS NULL;
+
+UPDATE fine
+SET inactive = false
+WHERE inactive IS NULL;
+
+UPDATE fine
+SET code = CASE
+    WHEN id = -1 OR name IN ('Gól', 'Gol') THEN 'GOAL'
+    WHEN id = -2 OR name = 'Hattrick' THEN 'HATTRICK'
+    WHEN name = 'Prohra o 5 a více (pro hrající)' THEN 'LOSS_BY_FIVE_PLAYING'
+    WHEN name = 'Nevyjádření na FB' THEN 'NO_FACEBOOK_RESPONSE'
+    WHEN name = 'Pozdní příchod po 10. minutě' THEN 'LATE_AFTER_TEN_MINUTES'
+    WHEN name = 'Rabona' THEN 'RABONA'
+    WHEN name = 'Neúčast při 7. a méně lidech' THEN 'ABSENT_WHEN_SEVEN_OR_FEWER'
+    WHEN name = 'Narození dítěte (kluk)' THEN 'CHILD_BORN_BOY'
+    WHEN name = 'Neúčast v zápase (prohra)' THEN 'ABSENT_LOSS'
+    WHEN name = 'Pozdní příchod do začátku' THEN 'LATE_BEFORE_START'
+    WHEN name = 'Pozdní nahlášení pozdního příchodu' THEN 'LATE_NOTICE'
+    WHEN name = 'Rabona (gól)' THEN 'RABONA_GOAL'
+    WHEN name = 'Zmínka v tisku' THEN 'PRESS_MENTION'
+    WHEN name IN ('Vlastní gól', 'Vlastňák') THEN 'OWN_GOAL'
+    WHEN name = 'Nové kopačky' THEN 'NEW_BOOTS'
+    WHEN name = 'Svatba' THEN 'WEDDING'
+    WHEN name = 'Zapomenutí věcí' THEN 'FORGOTTEN_THINGS'
+    WHEN name = 'Zbytkáč či kocovina' THEN 'HANGOVER'
+    WHEN name = 'Zásnuby' THEN 'ENGAGEMENT'
+    WHEN name = 'Nedal penaltu' THEN 'MISSED_PENALTY'
+    WHEN name = 'Vyprazdňování při zápase' THEN 'BATHROOM_DURING_MATCH'
+    WHEN name = 'Nekompletní výbava' THEN 'INCOMPLETE_EQUIPMENT'
+    WHEN name = 'Prohra (pro hrající)' THEN 'LOSS_PLAYING'
+    WHEN name = 'Narození dítěte (holka)' THEN 'CHILD_BORN_GIRL'
+    WHEN name = 'Překop' THEN 'OVERKICK'
+    WHEN name = 'Třetí poločas' THEN 'THIRD_HALF'
+    WHEN name = 'Neúčast v zápase (výhra)' THEN 'ABSENT_WIN'
+    WHEN name = 'Žlutá karta' THEN 'YELLOW_CARD'
+    WHEN name = 'Pozdní příchod po začátku' THEN 'LATE_AFTER_START'
+    WHEN name = 'Nepříchod' THEN 'NO_SHOW'
+    WHEN name = 'Nula v zápase' THEN 'ZERO_IN_MATCH'
+    WHEN name = 'Neúčast v zápase (remíza)' THEN 'ABSENT_DRAW'
+    WHEN name = 'Červená karta' THEN 'RED_CARD'
+    ELSE 'CORE_' || UPPER(SUBSTRING(MD5(name) FROM 1 FOR 16))
+END
+WHERE code IS NULL;
+
+CREATE INDEX IF NOT EXISTS idx_fine_code ON fine (code);
+
+CREATE UNIQUE INDEX IF NOT EXISTS uk_fine_active_code_team
+    ON fine (COALESCE(app_team_id, -1), code)
+    WHERE inactive = false OR inactive IS NULL;
 
 DROP VIEW IF EXISTS best_scorer_view;
 

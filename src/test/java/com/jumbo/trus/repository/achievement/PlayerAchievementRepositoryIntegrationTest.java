@@ -1,5 +1,6 @@
 package com.jumbo.trus.repository.achievement;
 
+import com.jumbo.trus.service.fine.FineCodes;
 import com.jumbo.trus.entity.FineEntity;
 import com.jumbo.trus.entity.BeerEntity;
 import com.jumbo.trus.entity.MatchEntity;
@@ -92,8 +93,8 @@ class PlayerAchievementRepositoryIntegrationTest {
         player.setAppTeam(appTeam);
         player = playerRepository.saveAndFlush(player);
 
-        FineEntity childbirth = fine("Narození dítěte (holka)", appTeam);
-        FineEntity yellowCard = fine("Žlutá karta", appTeam);
+        FineEntity childbirth = fine(FineCodes.CHILD_BORN_GIRL, appTeam);
+        FineEntity yellowCard = fine(FineCodes.YELLOW_CARD, appTeam);
         MatchEntity cardBeforeBirth = match("Karta před narozením", date(2024, 1, 1), appTeam);
         MatchEntity birth = match("Narození dítěte", date(2024, 2, 1), appTeam);
         MatchEntity cardAfterBirth = match("Karta po narození", date(2024, 3, 1), appTeam);
@@ -128,9 +129,9 @@ class PlayerAchievementRepositoryIntegrationTest {
         player = playerRepository.saveAndFlush(player);
 
         MatchEntity match = match("Den blbec", date(2025, 1, 1), appTeam);
-        receivedFine(player, fine("Žlutá karta", appTeam), match, appTeam);
-        receivedFine(player, fine("Zapomenutí věcí", appTeam), match, appTeam);
-        receivedFine(player, fine("Překop", appTeam), match, appTeam);
+        receivedFine(player, fine(FineCodes.YELLOW_CARD, appTeam), match, appTeam);
+        receivedFine(player, fine(FineCodes.FORGOTTEN_THINGS, appTeam), match, appTeam);
+        receivedFine(player, fine(FineCodes.OVERKICK, appTeam), match, appTeam);
 
         assertThat(achievementRepository.findMatchWherePlayerReceivedAtLeastXFines(
                 player.getId(), match.getId()))
@@ -145,9 +146,9 @@ class PlayerAchievementRepositoryIntegrationTest {
 
         PlayerEntity player = player("Smolař se dvěma kategoriemi", appTeam);
         MatchEntity match = match("Pouze dvě kategorie", date(2025, 1, 2), appTeam);
-        receivedFine(player, fine("Žlutá karta", appTeam), match, appTeam);
-        receivedFine(player, fine("Červená karta", appTeam), match, appTeam);
-        receivedFine(player, fine("Překop", appTeam), match, appTeam);
+        receivedFine(player, fine(FineCodes.YELLOW_CARD, appTeam), match, appTeam);
+        receivedFine(player, fine(FineCodes.RED_CARD, appTeam), match, appTeam);
+        receivedFine(player, fine(FineCodes.OVERKICK, appTeam), match, appTeam);
 
         assertThat(achievementRepository.findMatchWherePlayerReceivedAtLeastXFines(
                 player.getId(), match.getId())).isNull();
@@ -183,10 +184,10 @@ class PlayerAchievementRepositoryIntegrationTest {
         MatchEntity match = match("Svatební oslava", date(2025, 1, 4), appTeam);
 
         beer(player, match, appTeam, 3, 5);
-        receivedFine(player, fine("Svatba", appTeam), match, appTeam);
+        receivedFine(player, fine(FineCodes.WEDDING, appTeam), match, appTeam);
 
         assertThat(beerRepository.findFirstMatchWhereAtLeastBeersAfterFine(
-                player.getId(), "Svatba", 7)).isPresent();
+                player.getId(), FineCodes.WEDDING, 7)).isPresent();
     }
 
     @Test
@@ -222,7 +223,7 @@ class PlayerAchievementRepositoryIntegrationTest {
         MatchEntity match = match("Rabona", date(2025, 2, 1), appTeam);
         match.setPlayerList(new ArrayList<>(List.of(scorer, teammate)));
         match = matchRepository.saveAndFlush(match);
-        receivedFine(scorer, fine("Rabona (gól)", appTeam), match, appTeam);
+        receivedFine(scorer, fine(FineCodes.RABONA_GOAL, appTeam), match, appTeam);
 
         IMatchIdNumberOneNumberTwo result = achievementRepository.findMachyrek(
                 scorer.getId(), appTeam.getId(), match.getId());
@@ -296,10 +297,10 @@ class PlayerAchievementRepositoryIntegrationTest {
         drinks.setBeerNumber(1);
         drinks.setLiquorNumber(1);
         beerRepository.saveAndFlush(drinks);
-        receivedFine(goalkeeper, fine("Žlutá karta", appTeam), match, appTeam);
+        receivedFine(goalkeeper, fine(FineCodes.YELLOW_CARD, appTeam), match, appTeam);
 
         IGoalBeerFineMatch result = achievementRepository.getMatchWithGoalYellowBeerAndLiquor(
-                goalkeeper.getId(), "Žlutá karta", match.getId());
+                goalkeeper.getId(), FineCodes.YELLOW_CARD, match.getId());
 
         assertThat(result).isNotNull();
         assertThat(result.getMatchId()).isEqualTo(match.getId());
@@ -351,8 +352,8 @@ class PlayerAchievementRepositoryIntegrationTest {
         PlayerEntity accomplished = player("Flákač", appTeam);
         PlayerEntity onlyLate = player("Jen pozdní příchod", appTeam);
         MatchEntity match = match("Flákání", date(2025, 2, 1), appTeam);
-        FineEntity late = fine("Pozdní příchod po 10. minutě", appTeam);
-        FineEntity thirdHalf = fine("Třetí poločas", appTeam);
+        FineEntity late = fine(FineCodes.LATE_AFTER_TEN_MINUTES, appTeam);
+        FineEntity thirdHalf = fine(FineCodes.THIRD_HALF, appTeam);
         receivedFine(accomplished, late, match, appTeam);
         receivedFine(accomplished, thirdHalf, match, appTeam);
         receivedFine(onlyLate, late, match, appTeam);
@@ -371,9 +372,9 @@ class PlayerAchievementRepositoryIntegrationTest {
         PlayerEntity goalAndAssist = player("Gól a asistence", appTeam);
         PlayerEntity noLateArrival = player("Bez pozdního příchodu", appTeam);
         MatchEntity match = match("Hodně muziky", date(2025, 3, 1), appTeam);
-        FineEntity late = fine("Pozdní příchod po začátku", appTeam);
-        FineEntity yellow = fine("Žlutá karta", appTeam);
-        FineEntity red = fine("Červená karta", appTeam);
+        FineEntity late = fine(FineCodes.LATE_AFTER_START, appTeam);
+        FineEntity yellow = fine(FineCodes.YELLOW_CARD, appTeam);
+        FineEntity red = fine(FineCodes.RED_CARD, appTeam);
 
         for (PlayerEntity player : List.of(cardAndAssist, twoCardsOnly, goalAndAssist)) {
             receivedFine(player, late, match, appTeam);
@@ -399,16 +400,17 @@ class PlayerAchievementRepositoryIntegrationTest {
     private IMatchIdNumberOneNumberTwo findFlakac(PlayerEntity player, MatchEntity match) {
         return achievementRepository.getMatchWithAtLeastOneOfFinesAndXSecondFines(
                 player.getId(), match.getId(),
-                "Pozdní příchod do začátku",
-                "Pozdní příchod po začátku",
-                "Pozdní příchod po 10. minutě",
-                "Třetí poločas", 1
+                FineCodes.LATE_BEFORE_START,
+                FineCodes.LATE_AFTER_START,
+                FineCodes.LATE_AFTER_TEN_MINUTES,
+                FineCodes.THIRD_HALF, 1
         );
     }
 
-    private FineEntity fine(String name, AppTeamEntity appTeam) {
+    private FineEntity fine(String code, AppTeamEntity appTeam) {
         FineEntity fine = new FineEntity();
-        fine.setName(name);
+        fine.setName(code);
+        fine.setCode(code);
         fine.setAmount(100);
         fine.setAppTeam(appTeam);
         return fineRepository.saveAndFlush(fine);

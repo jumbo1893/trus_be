@@ -6,6 +6,8 @@ public interface AiFineSummaryProjection {
 
     Long getFineId();
 
+    String getFineCode();
+
     String getFineName();
 
     Long getSeasonId();

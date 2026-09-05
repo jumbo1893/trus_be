@@ -17,4 +17,18 @@ public class FineDTO {
 
     private boolean inactive;
 
+    private String code;
+
+    private boolean editable;
+
+    /**
+     * Kept for source and wire compatibility with the original four-field DTO.
+     */
+    public FineDTO(long id, String name, int amount, boolean inactive) {
+        this.id = id;
+        this.name = name;
+        this.amount = amount;
+        this.inactive = inactive;
+    }
+
 }

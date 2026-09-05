@@ -46,12 +46,18 @@ public class FineController {
         return fineService.editFine(fineId, fineDTO, appTeamService.getCurrentAppTeamOrThrow());
     }
 
+    @RoleRequired("READER")
+    @GetMapping("/statistics/options")
+    public List<FineDTO> getStatisticsOptions() {
+        return fineService.getStatisticsOptions(appTeamService.getCurrentAppTeamOrThrow().getId());
+    }
+
     @RoleRequired("EDITOR")
     @DeleteMapping("/{fineId}")
     @PostCommitTask
     @StoreAppTeam
     public void deleteFine(@PathVariable Long fineId) throws NotFoundException {
-        fineService.deleteFine(fineId);
+        fineService.deleteFine(fineId, appTeamService.getCurrentAppTeamOrThrow());
     }
 
     @ExceptionHandler({NonEditableEntityException.class})

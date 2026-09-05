@@ -32,6 +32,7 @@ import com.jumbo.trus.service.SeasonService;
 import com.jumbo.trus.service.achievement.helper.*;
 import com.jumbo.trus.service.beer.BeerService;
 import com.jumbo.trus.service.fine.FineService;
+import com.jumbo.trus.service.fine.FineCodes;
 import com.jumbo.trus.service.football.match.FootballMatchService;
 import com.jumbo.trus.service.football.stats.FootballPlayerStatsService;
 import com.jumbo.trus.service.goal.GoalService;
@@ -148,9 +149,9 @@ public class AchievementCalculator {
                     Map.entry("PERMICE_NA_TRUS", (p, a, at, t) -> calculateFanAttendanceMilestoneAchievement(p, a, at, t, 10)),
                     Map.entry("DO_POCTU", this::calculateDO_POCTUAchievement),
                     Map.entry("HATTRICK_GORDIEHO_HOWA", this::calculateHATTRICK_GORDIEHO_HOWAAchievement),
-                    Map.entry("AMERICKY_FOTBALISTA", (p, a, at, t) -> calculateFineMilestoneAchievement(p, a, at, t, List.of("Překop"), 10)),
-                    Map.entry("ALZHEIMER", (p, a, at, t) -> calculateFineMilestoneAchievement(p, a, at, t, List.of("Zapomenutí věcí", "Nekompletní výbava"), 1)),
-                    Map.entry("LEO_BERANEK", (p, a, at, t) -> calculateFineMilestoneAchievement(p, a, at, t, List.of("Nový kopačky"), 1)),
+                    Map.entry("AMERICKY_FOTBALISTA", (p, a, at, t) -> calculateFineMilestoneAchievement(p, a, at, t, List.of(FineCodes.OVERKICK), 10)),
+                    Map.entry("ALZHEIMER", (p, a, at, t) -> calculateFineMilestoneAchievement(p, a, at, t, List.of(FineCodes.FORGOTTEN_THINGS, FineCodes.INCOMPLETE_EQUIPMENT), 1)),
+                    Map.entry("LEO_BERANEK", (p, a, at, t) -> calculateFineMilestoneAchievement(p, a, at, t, List.of(FineCodes.NEW_BOOTS), 1)),
                     Map.entry("CERNE_GENY", this::calculateCERNE_GENYAchievement),
                     Map.entry(AchievementCodes.NAVSTEVA_SAHARY, (p, a, at, t) -> returnFailedPlayerAchievement(a, p)),
                     Map.entry(AchievementCodes.LEDOVY_MUZ, (p, a, at, t) -> returnFailedPlayerAchievement(a, p)),
@@ -218,8 +219,8 @@ public class AchievementCalculator {
                     Map.entry("NASTUP_JAKO_HROM", this::calculateNASTUP_JAKO_HROMAchievementForMatch),
                     Map.entry("MACHYREK", this::calculateMACHYREKAchievementForMatch),
                     Map.entry("DO_POCTU", this::calculateDO_POCTUAchievementForMatch),
-                    Map.entry("ALZHEIMER", (p, a, at, t, m) -> calculateFineInMatchAchievement(p, a, m, List.of("Zapomenutí věcí", "Nekompletní výbava"), 1, "Možná by to chtělo navštívit doktora.")),
-                    Map.entry("LEO_BERANEK", (p, a, at, t, m) -> calculateFineInMatchAchievement(p, a, m, List.of("Nový kopačky"), 1, "Hráč si pořídil nové kopačky.")),
+                    Map.entry("ALZHEIMER", (p, a, at, t, m) -> calculateFineInMatchAchievement(p, a, m, List.of(FineCodes.FORGOTTEN_THINGS, FineCodes.INCOMPLETE_EQUIPMENT), 1, "Možná by to chtělo navštívit doktora.")),
+                    Map.entry("LEO_BERANEK", (p, a, at, t, m) -> calculateFineInMatchAchievement(p, a, m, List.of(FineCodes.NEW_BOOTS), 1, "Hráč si pořídil nové kopačky.")),
                     Map.entry(AchievementCodes.NAVSTEVA_SAHARY, (p, a, at, t, m) -> calculateTROPICKY_ZAPASAchievementForMatch(p, a, at, t, m, HOT_MATCH_TEMPERATURE_THRESHOLD, true)),
                     Map.entry(AchievementCodes.LEDOVY_MUZ, (p, a, at, t, m) -> calculateTROPICKY_ZAPASAchievementForMatch(p, a, at, t, m, COLD_MATCH_TEMPERATURE_THRESHOLD, false)),
                     Map.entry(AchievementCodes.POSETRENI_SIL, this::calculatePOSETRENI_SILAchievementForMatch),
@@ -943,8 +944,8 @@ public class AchievementCalculator {
     ) {
         IMatchIdNumberOneNumberTwo result = playerAchievementRepository.getMatchWithAtLeastOneOfFinesAndXSecondFines(
                 playerDTO.getId(), matchId,
-                "Pozdní příchod do začátku", "Pozdní příchod po začátku", "Pozdní příchod po 10. minutě",
-                "Třetí poločas", 1
+                FineCodes.LATE_BEFORE_START, FineCodes.LATE_AFTER_START, FineCodes.LATE_AFTER_TEN_MINUTES,
+                FineCodes.THIRD_HALF, 1
         );
         return result == null
                 ? returnFailedPlayerAchievement(achievement, playerDTO)
@@ -993,7 +994,7 @@ public class AchievementCalculator {
             AchievementType achievementType,
             Long matchId
     ) {
-        IGoalBeerFineMatch result = playerAchievementRepository.getMatchWithGoalYellowBeerAndLiquor(playerDTO.getId(), "Žlutá karta", matchId);
+        IGoalBeerFineMatch result = playerAchievementRepository.getMatchWithGoalYellowBeerAndLiquor(playerDTO.getId(), FineCodes.YELLOW_CARD, matchId);
         if (result != null) {
             return returnPlayerAchievement(achievement, playerDTO, result.getMatchId(),
                     "Počer gólů: " + result.getGoalNumber() + ", počet piv: " + result.getBeerNumber() +
@@ -1010,7 +1011,7 @@ public class AchievementCalculator {
             Long matchId
     ) {
         Long resultMatchId = playerAchievementRepository.getMatchWithHangoverAndHattrickOrCleanSheet(
-                playerDTO.getId(), "Zbytkáč či kocovina", matchId);
+                playerDTO.getId(), FineCodes.HANGOVER, matchId);
         if (resultMatchId != null) {
             return returnPlayerAchievement(achievement, playerDTO, resultMatchId, "");
         }
@@ -1024,7 +1025,7 @@ public class AchievementCalculator {
             AchievementType achievementType,
             Long matchId
     ) {
-        IMatchIdNumberOneNumberTwo result = playerAchievementRepository.findFineInMatch(playerDTO.getId(), matchId, List.of("Svatba"), 1);
+        IMatchIdNumberOneNumberTwo result = playerAchievementRepository.findFineInMatch(playerDTO.getId(), matchId, List.of(FineCodes.WEDDING), 1);
         BeerDTO beerDTO = getBeerForPlayerAndMatch(playerDTO.getId(), matchId);
         if (result != null && beerDTO != null
                 && beerDTO.getBeerNumber() + beerDTO.getLiquorNumber() >= 8) {
@@ -1042,7 +1043,7 @@ public class AchievementCalculator {
             Long matchId
     ) {
         IMatchIdNumberOneNumberTwo result = playerAchievementRepository.getMatchWithAtLeastXFines(
-                playerDTO.getId(), matchId, "Překop", "Gól", 2, 2);
+                playerDTO.getId(), matchId, FineCodes.OVERKICK, FineCodes.GOAL, 2, 2);
         if (result != null) {
             return returnPlayerAchievement(achievement, playerDTO, result.getMatchId(),
                     "Překopy: " + result.getFirstNumber() + ", góly: " + result.getSecondNumber());
@@ -1059,8 +1060,8 @@ public class AchievementCalculator {
     ) {
         IMatchIdNumberOneNumberTwo result = playerAchievementRepository.getMatchWithAtLeastOneOfFinesAndXSecondFines(
                 playerDTO.getId(), matchId,
-                "Pozdní příchod do začátku", "Pozdní příchod po začátku", "Pozdní příchod po 10. minutě",
-                "Červená karta", 1);
+                FineCodes.LATE_BEFORE_START, FineCodes.LATE_AFTER_START, FineCodes.LATE_AFTER_TEN_MINUTES,
+                FineCodes.RED_CARD, 1);
         if (result != null) {
             return returnPlayerAchievement(achievement, playerDTO, result.getMatchId(), "");
         }
@@ -1076,8 +1077,8 @@ public class AchievementCalculator {
     ) {
         IMatchIdNumberOneNumberTwo result = playerAchievementRepository.getMatchWithAtLeastOneOfFinesAndXSecondFines(
                 playerDTO.getId(), matchId,
-                "Pozdní příchod do začátku", "Pozdní příchod po začátku", "Pozdní příchod po 10. minutě",
-                "Zbytkáč či kocovina", 1);
+                FineCodes.LATE_BEFORE_START, FineCodes.LATE_AFTER_START, FineCodes.LATE_AFTER_TEN_MINUTES,
+                FineCodes.HANGOVER, 1);
         if (result != null) {
             return returnPlayerAchievement(achievement, playerDTO, result.getMatchId(), "");
         }
@@ -1092,7 +1093,7 @@ public class AchievementCalculator {
             Long matchId
     ) {
         IMatchIdNumberOneNumberTwo result = playerAchievementRepository.getMatchWithAtLeastXFines(
-                playerDTO.getId(), matchId, "Zbytkáč či kocovina", "Vyprazdňování při zápase", 1, 1);
+                playerDTO.getId(), matchId, FineCodes.HANGOVER, FineCodes.BATHROOM_DURING_MATCH, 1, 1);
         if (result != null) {
             return returnPlayerAchievement(achievement, playerDTO, result.getMatchId(), "");
         }
@@ -1107,7 +1108,7 @@ public class AchievementCalculator {
             Long matchId
     ) {
         IMatchIdNumberOneNumberTwo result = playerAchievementRepository.findMatchWhereFineExistsAndPlayerHasBeer(
-                playerDTO.getId(), "Třetí poločas", matchId);
+                playerDTO.getId(), FineCodes.THIRD_HALF, matchId);
         if (result != null) {
             return returnPlayerAchievement(achievement, playerDTO, result.getMatchId(), "Hráč si dal " + result.getSecondNumber() + " piv");
         }
@@ -1160,7 +1161,7 @@ public class AchievementCalculator {
     ) {
         IMatchIdNumberOneNumberTwo result = playerAchievementRepository.getMatchWithAtLeastOneOfFinesAndXSecondFines(
                 playerDTO.getId(), matchId,
-                "Žlutá karta", "Červená karta", "Červená karta", "Zbytkáč či kocovina", 1);
+                FineCodes.YELLOW_CARD, FineCodes.RED_CARD, FineCodes.RED_CARD, FineCodes.HANGOVER, 1);
         if (result != null) {
             return returnPlayerAchievement(achievement, playerDTO, result.getMatchId(), "");
         }
@@ -1175,7 +1176,7 @@ public class AchievementCalculator {
             Long matchId
     ) {
         IMatchIdNumberOneNumberTwo result = playerAchievementRepository.findMatchWhereFineExistsAndPlayerHasLiquor(
-                playerDTO.getId(), "Zbytkáč či kocovina", matchId);
+                playerDTO.getId(), FineCodes.HANGOVER, matchId);
         if (result != null) {
             return returnPlayerAchievement(achievement, playerDTO, result.getMatchId(), "Hráč si dal " + result.getSecondNumber() + " panáků");
         }
@@ -1189,7 +1190,7 @@ public class AchievementCalculator {
             AchievementType achievementType,
             Long matchId
     ) {
-        return calculateFineInMatchAchievement(playerDTO, achievement, matchId, List.of("Nedal penaltu"), 1, "");
+        return calculateFineInMatchAchievement(playerDTO, achievement, matchId, List.of(FineCodes.MISSED_PENALTY), 1, "");
     }
 
     private PlayerAchievementDTO calculateKOMPLEXNI_HRACAchievementForMatch(
@@ -1215,7 +1216,7 @@ public class AchievementCalculator {
             Long matchId
     ) {
         IMatchIdNumberOneNumberTwo result = playerAchievementRepository.getMatchWithAtLeastXFines(
-                playerDTO.getId(), matchId, "Vyprazdňování při zápase", "Žlutá karta", 1, 1
+                playerDTO.getId(), matchId, FineCodes.BATHROOM_DURING_MATCH, FineCodes.YELLOW_CARD, 1, 1
         );
         if (result != null) {
             return returnPlayerAchievement(achievement, playerDTO, result.getMatchId(),
@@ -1273,7 +1274,7 @@ public class AchievementCalculator {
     ) {
         IMatchIdNumberOneNumberTwo result = playerAchievementRepository.findBestPlayerWithFineInMatch(
                 playerDTO.getId(), matchId,
-                List.of("Pozdní příchod do začátku", "Pozdní příchod po začátku", "Pozdní příchod po 10. minutě")
+                List.of(FineCodes.LATE_BEFORE_START, FineCodes.LATE_AFTER_START, FineCodes.LATE_AFTER_TEN_MINUTES)
         );
         return result == null
                 ? returnFailedPlayerAchievement(achievement, playerDTO)
@@ -1285,7 +1286,7 @@ public class AchievementCalculator {
             AchievementType achievementType, Long matchId
     ) {
         IMatchIdNumberOneNumberTwo result = playerAchievementRepository.findBestPlayerWithFineInMatch(
-                playerDTO.getId(), matchId, List.of("Zmínka v tisku")
+                playerDTO.getId(), matchId, List.of(FineCodes.PRESS_MENTION)
         );
         return result == null
                 ? returnFailedPlayerAchievement(achievement, playerDTO)
@@ -1297,7 +1298,7 @@ public class AchievementCalculator {
             AchievementType achievementType, Long matchId
     ) {
         Long result = playerAchievementRepository.findWinningMatchWithFine(
-                playerDTO.getId(), matchId, "Červená karta", appTeam.getTeam().getId()
+                playerDTO.getId(), matchId, FineCodes.RED_CARD, appTeam.getTeam().getId()
         );
         return result == null
                 ? returnFailedPlayerAchievement(achievement, playerDTO)
@@ -1637,11 +1638,11 @@ public class AchievementCalculator {
             PlayerDTO playerDTO,
             AchievementDTO achievement,
             Long matchId,
-            List<String> fineNames,
+            List<String> fineCodes,
             int threshold,
             String detail
     ) {
-        IMatchIdNumberOneNumberTwo result = playerAchievementRepository.findFineInMatch(playerDTO.getId(), matchId, fineNames, threshold);
+        IMatchIdNumberOneNumberTwo result = playerAchievementRepository.findFineInMatch(playerDTO.getId(), matchId, fineCodes, threshold);
         if (result != null) {
             return returnPlayerAchievement(achievement, playerDTO, result.getMatchId(), detail);
         }
@@ -1696,8 +1697,8 @@ public class AchievementCalculator {
         }
         IMatchIdNumberOneNumberTwo result = playerAchievementRepository.getFirstMatchWithAtLeastOneOfFinesAndXSecondFines(
                 playerDTO.getId(),
-                "Pozdní příchod do začátku", "Pozdní příchod po začátku", "Pozdní příchod po 10. minutě",
-                "Třetí poločas", 1
+                FineCodes.LATE_BEFORE_START, FineCodes.LATE_AFTER_START, FineCodes.LATE_AFTER_TEN_MINUTES,
+                FineCodes.THIRD_HALF, 1
         );
         return result == null
                 ? returnFailedPlayerAchievement(achievement, playerDTO)
@@ -1748,7 +1749,7 @@ public class AchievementCalculator {
                         return returnPlayerAchievement(achievement, playerDTO, matches.get(matches.size() - 1).getId(),
                                 "V sezoně " + season.getName() + ", počet zápasů: " + matches.size());
                     } else {
-                        long fineCount = receivedFineService.getReceivedFineCount(playerDTO.getId(), matchService.convertMatchesToIds(matches), "Třetí poločas", appTeam.getId());
+                        long fineCount = receivedFineService.getReceivedFineCount(playerDTO.getId(), matchService.convertMatchesToIds(matches), FineCodes.THIRD_HALF, appTeam.getId());
                         if (fineCount == 0) {
                             return returnPlayerAchievement(achievement, playerDTO, matches.get(matches.size() - 1).getId(),
                                     "V sezoně " + season.getName() + ", počet zápasů: " + matches.size());
@@ -1840,7 +1841,7 @@ public class AchievementCalculator {
 
     private PlayerAchievementDTO calculateUSPESNY_DENAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AchievementType achievementType) {
         if (achievementType == AchievementType.ALL || achievementType == AchievementType.BEER || achievementType == AchievementType.RECEIVED_FINE || achievementType == AchievementType.MATCH) {
-            IGoalBeerFineMatch iGoalBeerMatch = playerAchievementRepository.getFirstMatchWithGoalYellowBeerAndLiquor(playerDTO.getId(), "Žlutá karta");
+            IGoalBeerFineMatch iGoalBeerMatch = playerAchievementRepository.getFirstMatchWithGoalYellowBeerAndLiquor(playerDTO.getId(), FineCodes.YELLOW_CARD);
             if (iGoalBeerMatch != null) {
                 return returnPlayerAchievement(achievement, playerDTO, iGoalBeerMatch.getMatchId(),
                         "Počer gólů: " + iGoalBeerMatch.getGoalNumber() + ", počet piv: " + iGoalBeerMatch.getBeerNumber() +
@@ -1869,7 +1870,7 @@ public class AchievementCalculator {
 
     private PlayerAchievementDTO calculateDOPINGAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AchievementType achievementType) {
         if (achievementType == AchievementType.ALL || achievementType == AchievementType.RECEIVED_FINE || achievementType == AchievementType.MATCH) {
-            Long matchId = playerAchievementRepository.getFirstMatchWithHangoverAndHattrickOrCleanSheet(playerDTO.getId(), "Zbytkáč či kocovina");
+            Long matchId = playerAchievementRepository.getFirstMatchWithHangoverAndHattrickOrCleanSheet(playerDTO.getId(), FineCodes.HANGOVER);
             if (matchId != null) {
                 return returnPlayerAchievement(achievement, playerDTO, matchId, "");
             }
@@ -1891,7 +1892,7 @@ public class AchievementCalculator {
 
     private PlayerAchievementDTO calculateOZEN_SE_OZER_SEAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AchievementType achievementType) {
         if (achievementType == AchievementType.ALL || achievementType == AchievementType.BEER || achievementType == AchievementType.RECEIVED_FINE) {
-            BeerDTO beerDTO = beerService.getFirstMatchWhereAtLeastBeersWithFine(playerDTO.getId(), "Svatba", 7);
+            BeerDTO beerDTO = beerService.getFirstMatchWhereAtLeastBeersWithFine(playerDTO.getId(), FineCodes.WEDDING, 7);
             if (beerDTO != null) {
                 return returnPlayerAchievement(achievement, playerDTO, beerDTO.getMatchId(), "Vypil " + beerDTO.getBeerNumber() + " piv a " + beerDTO.getLiquorNumber() + " kořalek");
 
@@ -1903,7 +1904,7 @@ public class AchievementCalculator {
 
     private PlayerAchievementDTO calculateROSS_GELLERAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AchievementType achievementType) {
         if (achievementType == AchievementType.ALL || achievementType == AchievementType.RECEIVED_FINE) {
-            Integer weddingNumber = receivedFineService.getAtLeastNumberOfFineInHistory(playerDTO.getId(), "Svatba", 3);
+            Integer weddingNumber = receivedFineService.getAtLeastNumberOfFineInHistory(playerDTO.getId(), FineCodes.WEDDING, 3);
             if (weddingNumber != null) {
                 return returnPlayerAchievement(achievement, playerDTO, null, "Hráč byl již " + weddingNumber + "x ženatý");
 
@@ -1915,7 +1916,7 @@ public class AchievementCalculator {
 
     private PlayerAchievementDTO calculateZASTRELOVANIAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AchievementType achievementType) {
         if (achievementType == AchievementType.ALL || achievementType == AchievementType.GOAL || achievementType == AchievementType.RECEIVED_FINE) {
-            IMatchIdNumberOneNumberTwo iMatchIdNumberOneNumberTwo = playerAchievementRepository.getFirstMatchWithAtLeastXFines(playerDTO.getId(), "Překop", "Gól", 2, 2);
+            IMatchIdNumberOneNumberTwo iMatchIdNumberOneNumberTwo = playerAchievementRepository.getFirstMatchWithAtLeastXFines(playerDTO.getId(), FineCodes.OVERKICK, FineCodes.GOAL, 2, 2);
             if (iMatchIdNumberOneNumberTwo != null) {
                 return returnPlayerAchievement(achievement, playerDTO, iMatchIdNumberOneNumberTwo.getMatchId(), "Překopy: " + iMatchIdNumberOneNumberTwo.getFirstNumber() + ", góly: " + iMatchIdNumberOneNumberTwo.getSecondNumber());
             }
@@ -1969,7 +1970,7 @@ public class AchievementCalculator {
 
     private PlayerAchievementDTO calculateJEN_NA_SKOKAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AchievementType achievementType) {
         if (achievementType == AchievementType.ALL || achievementType == AchievementType.RECEIVED_FINE) {
-            IMatchIdNumberOneNumberTwo iMatchIdNumberOneNumberTwo = playerAchievementRepository.getFirstMatchWithAtLeastOneOfFinesAndXSecondFines(playerDTO.getId(), "Pozdní příchod do začátku", "Pozdní příchod po začátku", "Pozdní příchod po 10. minutě", "Červená karta", 1);
+            IMatchIdNumberOneNumberTwo iMatchIdNumberOneNumberTwo = playerAchievementRepository.getFirstMatchWithAtLeastOneOfFinesAndXSecondFines(playerDTO.getId(), FineCodes.LATE_BEFORE_START, FineCodes.LATE_AFTER_START, FineCodes.LATE_AFTER_TEN_MINUTES, FineCodes.RED_CARD, 1);
             if (iMatchIdNumberOneNumberTwo != null) {
                 return returnPlayerAchievement(achievement, playerDTO, iMatchIdNumberOneNumberTwo.getMatchId(), "");
             }
@@ -1980,7 +1981,7 @@ public class AchievementCalculator {
 
     private PlayerAchievementDTO calculateHVEZDNE_MANYRYAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AchievementType achievementType) {
         if (achievementType == AchievementType.ALL || achievementType == AchievementType.RECEIVED_FINE || achievementType == AchievementType.MATCH) {
-            IMatchIdNumberOneNumberTwo iMatchIdNumberOneNumberTwo = playerAchievementRepository.getFirstMatchWherePlayerIsBestPlayerWithFine(playerDTO.getId(), "Pozdní příchod do začátku", "Pozdní příchod po začátku", "Pozdní příchod po 10. minutě");
+            IMatchIdNumberOneNumberTwo iMatchIdNumberOneNumberTwo = playerAchievementRepository.getFirstMatchWherePlayerIsBestPlayerWithFine(playerDTO.getId(), FineCodes.LATE_BEFORE_START, FineCodes.LATE_AFTER_START, FineCodes.LATE_AFTER_TEN_MINUTES);
             if (iMatchIdNumberOneNumberTwo != null) {
                 return returnPlayerAchievement(achievement, playerDTO, iMatchIdNumberOneNumberTwo.getMatchId(), "");
             }
@@ -2036,7 +2037,7 @@ public class AchievementCalculator {
 
     private PlayerAchievementDTO calculateDAVID_BECKHAMAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AchievementType achievementType) {
         if (achievementType == AchievementType.ALL || achievementType == AchievementType.MATCH || achievementType == AchievementType.RECEIVED_FINE) {
-            IMatchIdNumberOneNumberTwo iMatchIdNumberOneNumberTwo = playerAchievementRepository.getFirstMatchWherePlayerIsBestPlayerWithFine(playerDTO.getId(), "Zmínka v tisku");
+            IMatchIdNumberOneNumberTwo iMatchIdNumberOneNumberTwo = playerAchievementRepository.getFirstMatchWherePlayerIsBestPlayerWithFine(playerDTO.getId(), FineCodes.PRESS_MENTION);
             if (iMatchIdNumberOneNumberTwo != null) {
                 return returnPlayerAchievement(achievement, playerDTO, iMatchIdNumberOneNumberTwo.getMatchId(), "");
             }
@@ -2049,10 +2050,10 @@ public class AchievementCalculator {
         if (achievementType == AchievementType.ALL || achievementType == AchievementType.RECEIVED_FINE) {
             IMatchIdNumberOneNumberTwo iMatchIdNumberOneNumberTwo = playerAchievementRepository.getFirstMatchWithAtLeastOneOfFinesAndXSecondFines(
                     playerDTO.getId(),
-                    "Pozdní příchod do začátku",
-                    "Pozdní příchod po začátku",
-                    "Pozdní příchod po 10. minutě",
-                    "Zbytkáč či kocovina",
+                    FineCodes.LATE_BEFORE_START,
+                    FineCodes.LATE_AFTER_START,
+                    FineCodes.LATE_AFTER_TEN_MINUTES,
+                    FineCodes.HANGOVER,
                     1);
             if (iMatchIdNumberOneNumberTwo != null) {
                 return returnPlayerAchievement(achievement, playerDTO, iMatchIdNumberOneNumberTwo.getMatchId(), "");
@@ -2064,7 +2065,7 @@ public class AchievementCalculator {
 
     private PlayerAchievementDTO calculateZBYTECNE_PRASEAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AppTeamEntity appTeam, AchievementType achievementType) {
         if (achievementType == AchievementType.ALL || achievementType == AchievementType.RECEIVED_FINE) {
-            Long matchId = playerAchievementRepository.getFirstWinningMatchWithFine(playerDTO.getId(), "Červená karta", appTeam.getId());
+            Long matchId = playerAchievementRepository.getFirstWinningMatchWithFine(playerDTO.getId(), FineCodes.RED_CARD, appTeam.getId());
             if (matchId != null) {
                 return returnPlayerAchievement(achievement, playerDTO, matchId, "");
 
@@ -2103,7 +2104,7 @@ public class AchievementCalculator {
 
     private PlayerAchievementDTO calculateZLUTY_HNEDY_POPLACHAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AchievementType achievementType) {
         if (achievementType == AchievementType.ALL || achievementType == AchievementType.RECEIVED_FINE) {
-            IMatchIdNumberOneNumberTwo iMatchIdNumberOneNumberTwo = playerAchievementRepository.getFirstMatchWithAtLeastXFines(playerDTO.getId(), "Zbytkáč či kocovina", "Vyprazdňování při zápase", 1, 1);
+            IMatchIdNumberOneNumberTwo iMatchIdNumberOneNumberTwo = playerAchievementRepository.getFirstMatchWithAtLeastXFines(playerDTO.getId(), FineCodes.HANGOVER, FineCodes.BATHROOM_DURING_MATCH, 1, 1);
             if (iMatchIdNumberOneNumberTwo != null) {
                 return returnPlayerAchievement(achievement, playerDTO, iMatchIdNumberOneNumberTwo.getMatchId(), "");
             }
@@ -2125,7 +2126,7 @@ public class AchievementCalculator {
 
     private PlayerAchievementDTO calculateMEDMRDKAAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AppTeamEntity appTeam, AchievementType achievementType) {
         if (achievementType == AchievementType.ALL || achievementType == AchievementType.RECEIVED_FINE) {
-            FineDTO fineDTO = fineService.getFineByName("Zmínka v tisku", appTeam.getId());
+            FineDTO fineDTO = fineService.getFineByCode(FineCodes.PRESS_MENTION, appTeam.getId());
             SeasonFilter seasonFilter = new SeasonFilter();
             seasonFilter.setAppTeam(appTeam);
             for (SeasonDTO season : seasonsForCalculation(seasonFilter)) {
@@ -2178,13 +2179,12 @@ public class AchievementCalculator {
             SeasonFilter seasonFilter = new SeasonFilter();
             seasonFilter.setAppTeam(appTeam);
             for (SeasonDTO season : seasonsForCalculation(seasonFilter)) {
-                String firstFineName = "Vyprazdňování při zápase";
-                String secondFineName = "Žlutá karta";
-                IMatchIdNumberOneNumberTwo iMatchIdNumberOneNumberTwo = playerAchievementRepository.findLastMatchInSeasonWherePlayerGetsTwoFines(playerDTO.getId(), firstFineName,
-                        secondFineName, season.getId());
+                IMatchIdNumberOneNumberTwo iMatchIdNumberOneNumberTwo = playerAchievementRepository.findLastMatchInSeasonWherePlayerGetsTwoFines(
+                        playerDTO.getId(), FineCodes.BATHROOM_DURING_MATCH, FineCodes.YELLOW_CARD, season.getId());
                 if (iMatchIdNumberOneNumberTwo.getFirstNumber() != 0 && iMatchIdNumberOneNumberTwo.getSecondNumber() != 0 && iMatchIdNumberOneNumberTwo.getMatchId() != null) {
                     return returnPlayerAchievement(achievement, playerDTO, iMatchIdNumberOneNumberTwo.getMatchId(),
-                            iMatchIdNumberOneNumberTwo.getFirstNumber() + "x " + firstFineName + ", " + iMatchIdNumberOneNumberTwo.getSecondNumber() + "x " + secondFineName);
+                            iMatchIdNumberOneNumberTwo.getFirstNumber() + "x vyprazdňování při zápase, "
+                                    + iMatchIdNumberOneNumberTwo.getSecondNumber() + "x žlutá karta");
                 }
             }
             return returnFailedPlayerAchievement(achievement, playerDTO);
@@ -2194,7 +2194,7 @@ public class AchievementCalculator {
 
     private PlayerAchievementDTO calculateIONTAKAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AchievementType achievementType) {
         if (achievementType == AchievementType.ALL || achievementType == AchievementType.RECEIVED_FINE || achievementType == AchievementType.BEER) {
-            IMatchIdNumberOneNumberTwo iMatchIdNumberOneNumberTwo = playerAchievementRepository.findFirstMatchWhereFineExistsAndPlayerHasBeer(playerDTO.getId(), "Třetí poločas");
+            IMatchIdNumberOneNumberTwo iMatchIdNumberOneNumberTwo = playerAchievementRepository.findFirstMatchWhereFineExistsAndPlayerHasBeer(playerDTO.getId(), FineCodes.THIRD_HALF);
             if (iMatchIdNumberOneNumberTwo != null) {
                 return returnPlayerAchievement(achievement, playerDTO, iMatchIdNumberOneNumberTwo.getMatchId(), "Hráč si dal " + iMatchIdNumberOneNumberTwo.getSecondNumber() + " piv");
             }
@@ -2251,7 +2251,7 @@ public class AchievementCalculator {
     private PlayerAchievementDTO calculatePROCAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AchievementType achievementType) {
         if (achievementType == AchievementType.ALL || achievementType == AchievementType.RECEIVED_FINE) {
             IMatchIdNumberOneNumberTwo iMatchIdNumberOneNumberTwo = playerAchievementRepository.getFirstMatchWithAtLeastOneOfFinesAndXSecondFines(playerDTO.getId(),
-                    "Žlutá karta", "Červená karta", "Červená karta", "Zbytkáč či kocovina", 1);
+                    FineCodes.YELLOW_CARD, FineCodes.RED_CARD, FineCodes.RED_CARD, FineCodes.HANGOVER, 1);
             if (iMatchIdNumberOneNumberTwo != null) {
                 return returnPlayerAchievement(achievement, playerDTO, iMatchIdNumberOneNumberTwo.getMatchId(), "");
             }
@@ -2262,7 +2262,7 @@ public class AchievementCalculator {
 
     private PlayerAchievementDTO calculateHLADINKAAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AchievementType achievementType) {
         if (achievementType == AchievementType.ALL || achievementType == AchievementType.RECEIVED_FINE || achievementType == AchievementType.BEER) {
-            IMatchIdNumberOneNumberTwo iMatchIdNumberOneNumberTwo = playerAchievementRepository.findFirstMatchWhereFineExistsAndPlayerHasLiquor(playerDTO.getId(), "Zbytkáč či kocovina");
+            IMatchIdNumberOneNumberTwo iMatchIdNumberOneNumberTwo = playerAchievementRepository.findFirstMatchWhereFineExistsAndPlayerHasLiquor(playerDTO.getId(), FineCodes.HANGOVER);
             if (iMatchIdNumberOneNumberTwo != null) {
                 return returnPlayerAchievement(achievement, playerDTO, iMatchIdNumberOneNumberTwo.getMatchId(), "Hráč si dal " + iMatchIdNumberOneNumberTwo.getSecondNumber() + " panáků");
             }
@@ -2307,7 +2307,7 @@ public class AchievementCalculator {
 
     private PlayerAchievementDTO calculateTEN_TO_PERFEKTNE_KOPEAchievement(PlayerDTO playerDTO, AchievementDTO achievement, AchievementType achievementType) {
         if (achievementType == AchievementType.ALL || achievementType == AchievementType.RECEIVED_FINE) {
-            ReceivedFineDTO receivedFine = receivedFineService.getFirstOccurrenceOfFine(playerDTO.getId(), "Nedal penaltu");
+            ReceivedFineDTO receivedFine = receivedFineService.getFirstOccurrenceOfFine(playerDTO.getId(), FineCodes.MISSED_PENALTY);
             if (receivedFine != null) {
                 return returnPlayerAchievement(achievement, playerDTO, receivedFine.getMatchId(), "");
 
@@ -2682,12 +2682,12 @@ public class AchievementCalculator {
             AchievementDTO achievement,
             AppTeamEntity appTeam,
             AchievementType achievementType,
-            List<String> fineNames,
+            List<String> fineCodes,
             int threshold
     ) {
         if (!shouldCalculate(achievementType, AchievementType.RECEIVED_FINE)) return null;
         IMatchIdNumberOneNumberTwo result = playerAchievementRepository.findFineMilestone(
-                playerDTO.getId(), appTeam.getId(), fineNames, threshold);
+                playerDTO.getId(), appTeam.getId(), fineCodes, threshold);
         if (result != null) {
             return returnPlayerAchievement(
                     achievement,

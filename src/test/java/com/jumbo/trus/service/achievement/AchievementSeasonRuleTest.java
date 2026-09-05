@@ -25,6 +25,7 @@ import com.jumbo.trus.service.achievement.helper.IMatchIdNumberOneNumberTwo;
 import com.jumbo.trus.service.achievement.helper.ISeasonDrinkAverage;
 import com.jumbo.trus.service.beer.BeerService;
 import com.jumbo.trus.service.fine.FineService;
+import com.jumbo.trus.service.fine.FineCodes;
 import com.jumbo.trus.service.football.match.FootballMatchService;
 import com.jumbo.trus.service.football.stats.FootballPlayerStatsService;
 import com.jumbo.trus.service.goal.GoalService;
@@ -124,7 +125,7 @@ class AchievementSeasonRuleTest {
                         () -> when(receivedFineService.getReceivedFineCount(
                                 PLAYER_ID,
                                 eightMatches.stream().map(MatchDTO::getId).toList(),
-                                "Třetí poločas",
+                                FineCodes.THIRD_HALF,
                                 TEAM_ID)).thenReturn(0)),
                 scenario(AchievementCodes.MECENAS, "calculateMECENASAchievement",
                         () -> when(receivedFineService.getAllDetailed(any()))
@@ -141,8 +142,8 @@ class AchievementSeasonRuleTest {
                                 .thenReturn(LAST_MATCH_ID)),
                 scenario(AchievementCodes.MEDMRDKA, "calculateMEDMRDKAAchievement",
                         () -> {
-                            FineDTO fine = new FineDTO(60L, "Zmínka v tisku", 100, false);
-                            when(fineService.getFineByName("Zmínka v tisku", TEAM_ID)).thenReturn(fine);
+                            FineDTO fine = new FineDTO(60L, FineCodes.PRESS_MENTION, 100, false);
+                            when(fineService.getFineByCode(FineCodes.PRESS_MENTION, TEAM_ID)).thenReturn(fine);
                             when(receivedFineService.getAll(any())).thenReturn(List.of(
                                     new ReceivedFineDTO(1L, 1, fine, PLAYER_ID, 107L),
                                     new ReceivedFineDTO(2L, 1, fine, PLAYER_ID, LAST_MATCH_ID)
@@ -168,7 +169,7 @@ class AchievementSeasonRuleTest {
                                 .thenReturn(numbers(null, 3, 1))),
                 scenario(AchievementCodes.ZLUTA_JE_DOBRA, "calculateZLUTA_JE_DOBRAAchievement",
                         () -> when(playerAchievementRepository.findLastMatchInSeasonWherePlayerGetsTwoFines(
-                                PLAYER_ID, "Vyprazdňování při zápase", "Žlutá karta", SEASON_ID))
+                                PLAYER_ID, FineCodes.BATHROOM_DURING_MATCH, FineCodes.YELLOW_CARD, SEASON_ID))
                                 .thenReturn(numbers(LAST_MATCH_ID, 1, 1))),
                 scenario(AchievementCodes.TYMOVY_HRAC, "calculateTYMOVY_HRACAchievement",
                         () -> when(playerAchievementRepository.findTeamPlayerInSeason(PLAYER_ID, SEASON_ID, TEAM_ID))
