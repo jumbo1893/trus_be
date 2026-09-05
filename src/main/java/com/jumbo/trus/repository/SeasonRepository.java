@@ -10,6 +10,21 @@ import java.util.Optional;
 
 public interface SeasonRepository extends JpaRepository<SeasonEntity, Long> {
 
+    Optional<SeasonEntity> findByAppTeamIdAndAutomaticKey(Long appTeamId, String automaticKey);
+
+    Optional<SeasonEntity> findFirstByAppTeamIdAndName(Long appTeamId, String name);
+
+    @Query(value = """
+            SELECT * FROM season
+            WHERE to_date < :tomorrow
+              AND app_team_id IS NOT NULL
+              AND (achievement_event_for_end IS NULL OR achievement_event_for_end <> to_date)
+            ORDER BY to_date, id
+            LIMIT 100
+            FOR UPDATE SKIP LOCKED
+            """, nativeQuery = true)
+    List<SeasonEntity> findDueForAchievements(@Param("tomorrow") java.util.Date tomorrow);
+
     @Query("""
             SELECT s
             FROM season s

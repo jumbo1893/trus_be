@@ -61,7 +61,7 @@ public interface FootbarSessionRepository extends JpaRepository<FootbarSessionEn
     );
 
     @Query("""
-            SELECT COALESCE(SUM(fs.distance), 0.0)
+            SELECT COALESCE(MAX(fs.distance), 0.0)
             FROM FootbarSessionEntity fs
             WHERE fs.player.id = :playerId
               AND fs.match.id = :matchId

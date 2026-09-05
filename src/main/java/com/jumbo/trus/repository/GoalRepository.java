@@ -42,7 +42,7 @@ public interface GoalRepository extends PagingAndSortingRepository<GoalEntity, L
              AND g.player_id = p.id
             WHERE p.id = :playerId
               AND m.app_team_id = :appTeamId
-              AND fmp.goalkeeping_minutes > 59
+              AND fmp.goalkeeping_minutes > 0
               AND COALESCE(g.goal_number, 0) + COALESCE(g.assist_number, 0) > 0
               AND COALESCE(g.goal_number, 0) + COALESCE(g.assist_number, 0) = (
                   SELECT MAX(
@@ -186,4 +186,3 @@ public interface GoalRepository extends PagingAndSortingRepository<GoalEntity, L
     );
 
 }
-

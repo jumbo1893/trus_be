@@ -11,6 +11,9 @@ public abstract class SeasonMapper {
     @Mapping(target = "matchList", ignore = true)
     @Mapping(target = "editable", ignore = true)
     @Mapping(target = "appTeam", ignore = true)
+    @Mapping(target = "achievementEventForEnd", ignore = true)
+    @Mapping(target = "automaticKey", ignore = true)
+    @Mapping(target = "datesManuallyEdited", ignore = true)
     public abstract SeasonEntity toEntity(SeasonDTO source);
     public abstract SeasonDTO toDTO(SeasonEntity source);
 }

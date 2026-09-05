@@ -363,7 +363,9 @@ public class AchievementCalculator {
     private Set<Long> relevantMatchIds(AchievementDTO achievement, AchievementPlayerWork work) {
         Set<Long> result = new LinkedHashSet<>();
         work.changesByMatch().forEach((matchId, changedTypes) -> {
-            if (isTriggeredBy(achievement.getAchievementTypes(), changedTypes)) {
+            if ((achievement.getCalculationScope() == AchievementCalculationScope.SEASON
+                    && changedTypes.contains(OutboxAggregateType.SEASON))
+                    || isTriggeredBy(achievement.getAchievementTypes(), changedTypes)) {
                 result.add(matchId);
             }
         });
@@ -781,11 +783,14 @@ public class AchievementCalculator {
 
     private List<SeasonDTO> seasonsForCalculation(SeasonFilter seasonFilter) {
         Long seasonId = eventSeasonId.get();
-        if (seasonId != null) {
-            return List.of(seasonService.getSeason(seasonId));
-        }
-        return seasonService.getAll(seasonFilter);
+        List<SeasonDTO> seasons = seasonId != null
+                ? List.of(seasonService.getSeason(seasonId)) : seasonService.getAll(seasonFilter);
+        return seasons.stream()
+                .filter(season -> SeasonAchievementTiming.isDue(season.getToDate(), seasonClock))
+                .toList();
     }
+
+    private java.time.Clock seasonClock = java.time.Clock.system(SeasonAchievementTiming.ZONE);
 
     private PlayerAchievementDTO calculateMatchScopedAchievementForPlayer(
             AchievementDTO achievement,
@@ -1567,7 +1572,8 @@ public class AchievementCalculator {
     ) {
         IMatchIdNumberOneNumberTwo result = playerAchievementRepository.findOsamelyDrzak(playerDTO.getId(), appTeam.getId(), matchId);
         BeerDTO beer = getBeerForPlayerAndMatch(playerDTO.getId(), matchId);
-        if (result != null && beer != null) {
+        if (result != null) {
+            if (beer == null) beer = new BeerDTO();
             return returnPlayerAchievement(achievement, playerDTO, matchId,
                     "Zápasu se účastnilo celkem " + result.getSecondNumber() +
                             " lidí a ty jako jediný jsi šel do hospody. Dal sis " + beer.getBeerNumber() +
@@ -2006,6 +2012,7 @@ public class AchievementCalculator {
                         .findFirst();
                 int lowestFineAmount = response.getFineList().stream()
                         .mapToInt(ReceivedFineDetailedDTO::getFineAmount)
+                        .filter(amount -> amount > 0)
                         .min()
                         .orElse(Integer.MAX_VALUE);
                 if (playerFine.isPresent() && playerFine.get().getFineAmount() == lowestFineAmount) {
@@ -2136,8 +2143,9 @@ public class AchievementCalculator {
                 receivedFineFilter.setPlayerId(playerDTO.getId());
                 receivedFineFilter.setAppTeam(appTeam);
                 List<ReceivedFineDTO> receivedFines = receivedFineService.getAll(receivedFineFilter);
-                if (receivedFines.size() > 1) {
-                    return returnPlayerAchievement(achievement, playerDTO, receivedFines.get(receivedFines.size() - 1).getMatchId(), "V sezoně " + season.getName() + " byl hráč zmíněn celkem " + receivedFines.size() + "x.");
+                int mentionCount = receivedFines.stream().mapToInt(ReceivedFineDTO::getFineNumber).sum();
+                if (mentionCount > 1) {
+                    return returnPlayerAchievement(achievement, playerDTO, receivedFines.get(receivedFines.size() - 1).getMatchId(), "V sezoně " + season.getName() + " byl hráč zmíněn celkem " + mentionCount + "x.");
 
                 }
             }

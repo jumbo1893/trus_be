@@ -88,7 +88,8 @@ public class AchievementEventProcessor {
 
         return new EventWork(
                 event.getAppTeamId(),
-                changedTypes(event.getAggregateType()),
+                event.getEventType() == com.jumbo.trus.entity.outbox.OutboxEventType.SEASON_ACHIEVEMENTS_DUE
+                        ? Set.of(OutboxAggregateType.SEASON) : changedTypes(event.getAggregateType()),
                 matchIds,
                 explicitPlayerIds,
                 explicitPlayerIds.isEmpty() && !matchIds.isEmpty()

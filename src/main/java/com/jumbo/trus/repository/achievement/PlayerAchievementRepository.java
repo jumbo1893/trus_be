@@ -177,7 +177,7 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
                                                   AND fmp.player_id = p.football_player_id
             WHERE b.beer_number > 0
               AND b.liquor_number > 0
-              AND (COALESCE(g.goal_number, 0) > 0 OR fmp.clean_sheet IS TRUE)
+              AND (COALESCE(g.goal_number, 0) > 0 OR (fmp.goalkeeping_minutes > 0 AND fmp.clean_sheet IS TRUE))
               AND f.code = :fineCode
               AND r.fine_number > 0
               AND b.player_id = :playerId
@@ -195,9 +195,11 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
             		JOIN received_fine r ON p.id = r.player_id
                     JOIN fine f ON r.fine_id = f.id
                     JOIN match m ON m.id = r.match_id
-                    JOIN football_match fm ON m.football_match_id = fm.id
-                    JOIN football_match_player fmp ON fm.id = fmp.match_id AND p.football_player_id = fmp.player_id
-                    WHERE (fmp.hattrick is true OR fmp.clean_sheet is true)
+                    LEFT JOIN football_match fm ON m.football_match_id = fm.id
+                    LEFT JOIN football_match_player fmp ON fm.id = fmp.match_id AND p.football_player_id = fmp.player_id
+                    LEFT JOIN goal g ON g.match_id = m.id AND g.player_id = p.id
+            WHERE (COALESCE(g.goal_number, 0) >= 3 OR fmp.hattrick IS TRUE
+                   OR (fmp.goalkeeping_minutes > 0 AND fmp.clean_sheet IS TRUE))
                     AND f.code = :fineCode
                     AND r.fine_number > 0
                     AND r.player_id = :playerId
@@ -319,7 +321,7 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
                 FROM received_fine r
                 JOIN fine f ON r.fine_id = f.id
                 JOIN match m ON m.id = r.match_id
-                WHERE r.player_id = :playerId
+                WHERE r.player_id = :playerId AND r.fine_number > 0
                 AND f.code IN (
                     'LATE_BEFORE_START',
                     'LATE_AFTER_TEN_MINUTES',
@@ -330,22 +332,21 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
                     'OVERKICK',
                     'INCOMPLETE_EQUIPMENT',
                     'FORGOTTEN_THINGS',
-                    'OWN_GOAL',
-                    'OWN_GOAL'
+                    'OWN_GOAL', 'MISSED_PENALTY'
                 )
                 GROUP BY r.match_id, m.date
                 HAVING COUNT(DISTINCT CASE
                     WHEN f.code IN (
                         'LATE_BEFORE_START',
                         'LATE_AFTER_TEN_MINUTES',
-                        'LATE_AFTER_START'
-                    ) THEN 'LATE_ARRIVAL'
-                    WHEN f.code = 'NO_SHOW' THEN 'ABSENCE'
+                        'LATE_AFTER_START', 'NO_SHOW'
+                ) THEN 'LATE_ARRIVAL'
                     WHEN f.code IN ('YELLOW_CARD', 'RED_CARD') THEN 'CARD'
                     WHEN f.code = 'OVERKICK' THEN 'OVERKICK'
                     WHEN f.code = 'INCOMPLETE_EQUIPMENT' THEN 'INCOMPLETE_EQUIPMENT'
                     WHEN f.code = 'FORGOTTEN_THINGS' THEN 'FORGOTTEN_THINGS'
-                    WHEN f.code IN ('OWN_GOAL', 'OWN_GOAL') THEN 'OWN_GOAL'
+                    WHEN f.code = 'OWN_GOAL' THEN 'OWN_GOAL'
+                WHEN f.code = 'MISSED_PENALTY' THEN 'MISSED_PENALTY'
                 END) >= 3
                 ORDER BY m.date ASC
                 LIMIT 1;
@@ -411,6 +412,7 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
                     JOIN season s ON m.season_id = s.id
                     WHERE r.player_id = :playerId
                     AND s.id = :seasonId
+                    AND r.fine_number > 0
                     AND f.code IN (:firstFineCode, :secondFineCode)
             """, nativeQuery = true)
     IMatchIdNumberOneNumberTwo findLastMatchInSeasonWherePlayerGetsTwoFines(@Param("playerId") Long playerId, @Param("firstFineCode") String firstFineCode,
@@ -501,18 +503,16 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
                 FROM match_players mp
                 JOIN player p ON p.id = mp.player_id
                 JOIN match m ON m.id = mp.match_id
-                WHERE p.fan = false
-                  AND m.app_team_id = :appTeamId
+                WHERE m.app_team_id = :appTeamId
                 GROUP BY mp.match_id
             ), third_half AS (
                 SELECT rf.match_id, COUNT(DISTINCT rf.player_id) AS fined_count
                 FROM received_fine rf
                 JOIN fine f ON f.id = rf.fine_id
-                JOIN player p ON p.id = rf.player_id
+                JOIN match_players present ON present.match_id = rf.match_id AND present.player_id = rf.player_id
                 JOIN match m ON m.id = rf.match_id
                 WHERE f.code = 'THIRD_HALF'
                   AND rf.fine_number > 0
-                  AND p.fan = false
                   AND m.app_team_id = :appTeamId
                 GROUP BY rf.match_id
             )
@@ -525,7 +525,6 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
             JOIN attendees a ON a.match_id = mp.match_id
             LEFT JOIN third_half th ON th.match_id = mp.match_id
             WHERE mp.player_id = :playerId
-              AND p.fan = false
               AND m.app_team_id = :appTeamId
               AND (:matchId IS NULL OR m.id = :matchId)
               AND a.player_count > 0
@@ -547,18 +546,16 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
                 FROM match_players mp
                 JOIN player p ON p.id = mp.player_id
                 JOIN match m ON m.id = mp.match_id
-                WHERE p.fan = false
-                  AND m.app_team_id = :appTeamId
+                WHERE m.app_team_id = :appTeamId
                 GROUP BY mp.match_id
             ), third_half AS (
                 SELECT rf.match_id, COUNT(DISTINCT rf.player_id) AS fined_count
                 FROM received_fine rf
                 JOIN fine f ON f.id = rf.fine_id
-                JOIN player p ON p.id = rf.player_id
+                JOIN match_players present ON present.match_id = rf.match_id AND present.player_id = rf.player_id
                 JOIN match m ON m.id = rf.match_id
                 WHERE f.code = 'THIRD_HALF'
                   AND rf.fine_number > 0
-                  AND p.fan = false
                   AND m.app_team_id = :appTeamId
                 GROUP BY rf.match_id
             )
@@ -571,7 +568,6 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
             JOIN attendees a ON a.match_id = mp.match_id
             LEFT JOIN third_half th ON th.match_id = mp.match_id
             WHERE mp.player_id = :playerId
-              AND p.fan = false
               AND m.app_team_id = :appTeamId
               AND (:matchId IS NULL OR m.id = :matchId)
               AND a.player_count - COALESCE(th.fined_count, 0) = 1
@@ -602,8 +598,7 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
                 FROM match_players mp
                 JOIN player p ON p.id = mp.player_id
                 JOIN match m ON m.id = mp.match_id
-                WHERE p.fan = false
-                  AND m.app_team_id = :appTeamId
+                WHERE m.app_team_id = :appTeamId
             ), third_half_players AS (
                 SELECT DISTINCT rf.match_id, rf.player_id
                 FROM received_fine rf
@@ -786,19 +781,17 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
 
     // Maratonec
     @Query(value = """
-            WITH ordered_sessions AS (
-                SELECT fs.match_id,
-                       fs.player_id,
-                       COALESCE(fs.distance, 0) AS distance,
-                       COALESCE(m.date, fs.start_date) AS event_date,
-                       SUM(COALESCE(fs.distance, 0)) OVER (
-                           PARTITION BY fs.player_id
-                           ORDER BY COALESCE(m.date, fs.start_date), fs.id
-                       ) AS cumulative_distance
+            WITH match_distances AS (
+                SELECT fs.match_id, m.date AS event_date, MAX(COALESCE(fs.distance, 0)) AS distance
                 FROM footbar_session fs
-                LEFT JOIN match m ON m.id = fs.match_id
+                JOIN match m ON m.id = fs.match_id
                 WHERE fs.player_id = :playerId
-                  AND (:appTeamId IS NULL OR m.app_team_id = :appTeamId OR fs.match_id IS NULL)
+                  AND (:appTeamId IS NULL OR m.app_team_id = :appTeamId)
+                GROUP BY fs.match_id, m.date
+            ), ordered_sessions AS (
+                SELECT match_id, event_date,
+                       SUM(distance) OVER (ORDER BY event_date, match_id) AS cumulative_distance
+                FROM match_distances
             )
             SELECT match_id AS matchId,
                    CAST(ROUND(cumulative_distance) AS int) AS firstNumber,
@@ -814,8 +807,8 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
     // Roberto Carlos
     @Query(value = """
             SELECT fs.match_id AS matchId,
-                   CAST(ROUND(fs.shot_speed * 3.6) AS int) AS firstNumber,
-                   CAST(g.goal_number AS int) AS secondNumber
+                   CAST(ROUND(MAX(fs.shot_speed) * 3.6) AS int) AS firstNumber,
+                   CAST(MAX(g.goal_number) AS int) AS secondNumber
             FROM footbar_session fs
             JOIN goal g ON g.match_id = fs.match_id
                        AND g.player_id = fs.player_id
@@ -823,7 +816,8 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
             JOIN match m ON m.id = fs.match_id
             WHERE fs.player_id = :playerId
               AND m.app_team_id = :appTeamId
-              AND fs.shot_speed > (80.0 / 3.6)
+            GROUP BY fs.match_id, m.date
+            HAVING MAX(fs.shot_speed) > (80.0 / 3.6)
             ORDER BY m.date ASC
             LIMIT 1
             """, nativeQuery = true)
@@ -833,16 +827,16 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
     // Špílmachr
     @Query(value = """
             SELECT fs.match_id AS matchId,
-                   CAST(fs.pass_count AS int) AS firstNumber,
-                   CAST(COALESCE(SUM(g.assist_number), 0) AS int) AS secondNumber
+                   CAST(MAX(fs.pass_count) AS int) AS firstNumber,
+                   CAST(COALESCE(MAX(g.assist_number), 0) AS int) AS secondNumber
             FROM footbar_session fs
             JOIN match m ON m.id = fs.match_id
             LEFT JOIN goal g ON g.match_id = fs.match_id
                             AND g.player_id = fs.player_id
             WHERE fs.player_id = :playerId
               AND m.app_team_id = :appTeamId
-              AND fs.pass_count >= 40
-            GROUP BY fs.match_id, fs.pass_count, m.date
+            GROUP BY fs.match_id, m.date
+            HAVING MAX(fs.pass_count) >= 40
             ORDER BY m.date ASC
             LIMIT 1
             """, nativeQuery = true)
@@ -854,7 +848,7 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
             WITH match_distances AS (
                 SELECT fs.match_id,
                        fs.player_id,
-                       SUM(COALESCE(fs.distance, 0)) AS distance
+                       MAX(COALESCE(fs.distance, 0)) AS distance
                 FROM footbar_session fs
                 JOIN match m ON m.id = fs.match_id
                 WHERE m.app_team_id = :appTeamId
@@ -882,16 +876,17 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
     // Doplnění tekutin
     @Query(value = """
             SELECT fs.match_id AS matchId,
-                   CAST(fs.distance / 1000.0 AS double precision) AS firstNumber,
-                   CAST(b.beer_number AS int) AS secondNumber
+                   CAST(MAX(fs.distance) / 1000.0 AS double precision) AS firstNumber,
+                   CAST(MAX(b.beer_number) AS int) AS secondNumber
             FROM footbar_session fs
             JOIN beer b ON b.match_id = fs.match_id
                        AND b.player_id = fs.player_id
             JOIN match m ON m.id = fs.match_id
             WHERE fs.player_id = :playerId
               AND m.app_team_id = :appTeamId
-              AND fs.distance >= 3000
-              AND b.beer_number >= (fs.distance / 1000.0)
+            GROUP BY fs.match_id, m.date
+            HAVING MAX(fs.distance) >= 3000
+               AND MAX(b.beer_number) >= MAX(fs.distance) / 1000.0
             ORDER BY m.date ASC
             LIMIT 1
             """, nativeQuery = true)
@@ -1365,7 +1360,6 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
                        ON g.match_id = m.id
                       AND g.player_id = :playerId
                 WHERE m.app_team_id = :appTeamId
-                  AND m.football_match_id IS NOT NULL
                 GROUP BY m.id, m.date
             ), match_windows AS (
                 SELECT om.*,
@@ -1554,7 +1548,7 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
     @Query(value = """
             SELECT fs.match_id AS matchId,
                    CAST(MAX(fs.sprint_speed) * 3.6 AS double precision) AS firstNumber,
-                   CAST(COALESCE(SUM(fs.sprint_count), 0) AS int) AS secondNumber
+                   CAST(COALESCE(MAX(fs.sprint_count), 0) AS int) AS secondNumber
             FROM footbar_session fs
             JOIN match m ON m.id = fs.match_id
             WHERE fs.player_id = :playerId
@@ -1684,7 +1678,7 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
               AND b.match_id = :matchId
               AND b.beer_number > 0
               AND b.liquor_number > 0
-              AND (COALESCE(g.goal_number, 0) > 0 OR fmp.clean_sheet IS TRUE)
+              AND (COALESCE(g.goal_number, 0) > 0 OR (fmp.goalkeeping_minutes > 0 AND fmp.clean_sheet IS TRUE))
               AND f.code = :fineCode
               AND r.fine_number > 0
             LIMIT 1
@@ -1699,11 +1693,13 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
             JOIN received_fine r ON p.id = r.player_id
             JOIN fine f ON r.fine_id = f.id
             JOIN match m ON m.id = r.match_id
-            JOIN football_match fm ON m.football_match_id = fm.id
-            JOIN football_match_player fmp ON fm.id = fmp.match_id AND p.football_player_id = fmp.player_id
+            LEFT JOIN football_match fm ON m.football_match_id = fm.id
+            LEFT JOIN football_match_player fmp ON fm.id = fmp.match_id AND p.football_player_id = fmp.player_id
+            LEFT JOIN goal g ON g.match_id = m.id AND g.player_id = p.id
             WHERE r.player_id = :playerId
               AND r.match_id = :matchId
-              AND (fmp.hattrick IS TRUE OR fmp.clean_sheet IS TRUE)
+              AND (COALESCE(g.goal_number, 0) >= 3 OR fmp.hattrick IS TRUE
+                   OR (fmp.goalkeeping_minutes > 0 AND fmp.clean_sheet IS TRUE))
               AND f.code = :fineCode
               AND r.fine_number > 0
             LIMIT 1
@@ -1923,22 +1919,21 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
                   'OVERKICK',
                   'INCOMPLETE_EQUIPMENT',
                   'FORGOTTEN_THINGS',
-                  'OWN_GOAL',
-                  'OWN_GOAL'
+                  'OWN_GOAL', 'MISSED_PENALTY'
               )
             GROUP BY rf.match_id
             HAVING COUNT(DISTINCT CASE
                 WHEN f.code IN (
                     'LATE_BEFORE_START',
                     'LATE_AFTER_TEN_MINUTES',
-                    'LATE_AFTER_START'
+                    'LATE_AFTER_START', 'NO_SHOW'
                 ) THEN 'LATE_ARRIVAL'
-                WHEN f.code = 'NO_SHOW' THEN 'ABSENCE'
                 WHEN f.code IN ('YELLOW_CARD', 'RED_CARD') THEN 'CARD'
                 WHEN f.code = 'OVERKICK' THEN 'OVERKICK'
                 WHEN f.code = 'INCOMPLETE_EQUIPMENT' THEN 'INCOMPLETE_EQUIPMENT'
                 WHEN f.code = 'FORGOTTEN_THINGS' THEN 'FORGOTTEN_THINGS'
-                WHEN f.code IN ('OWN_GOAL', 'OWN_GOAL') THEN 'OWN_GOAL'
+                WHEN f.code = 'OWN_GOAL' THEN 'OWN_GOAL'
+                WHEN f.code = 'MISSED_PENALTY' THEN 'MISSED_PENALTY'
             END) >= 3
             LIMIT 1
             """, nativeQuery = true)
@@ -1993,7 +1988,7 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
 
     @Query(value = """
             WITH distances AS (
-                SELECT player_id, SUM(COALESCE(distance, 0)) AS distance
+                SELECT player_id, MAX(COALESCE(distance, 0)) AS distance
                 FROM footbar_session
                 WHERE match_id = :matchId
                 GROUP BY player_id
@@ -2023,9 +2018,9 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
             JOIN beer b ON b.match_id = fs.match_id AND b.player_id = fs.player_id
             WHERE fs.player_id = :playerId
               AND fs.match_id = :matchId
-              AND fs.distance >= 3000
-              AND b.beer_number >= (fs.distance / 1000.0)
             GROUP BY fs.match_id
+            HAVING MAX(fs.distance) >= 3000
+               AND MAX(b.beer_number) >= MAX(fs.distance) / 1000.0
             LIMIT 1
             """, nativeQuery = true)
     IMatchIdDecimalAndNumber findDoplneniTekutinInMatch(@Param("playerId") Long playerId,
@@ -2034,7 +2029,7 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
     @Query(value = """
             SELECT fs.match_id AS matchId,
                    CAST(MAX(fs.sprint_speed) * 3.6 AS double precision) AS firstNumber,
-                   CAST(COALESCE(SUM(fs.sprint_count), 0) AS int) AS secondNumber
+                   CAST(COALESCE(MAX(fs.sprint_count), 0) AS int) AS secondNumber
             FROM footbar_session fs
             WHERE fs.player_id = :playerId
               AND fs.match_id = :matchId
@@ -2155,25 +2150,24 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
                                                       @Param("matchId") Long matchId);
 
     @Query(value = """
-            WITH goalkeeper_points AS (
-                SELECT p.id AS player_id,
-                       COALESCE(g.goal_number, 0) AS goals,
-                       COALESCE(g.assist_number, 0) AS assists,
-                       COALESCE(g.goal_number, 0) + COALESCE(g.assist_number, 0) AS points
-                FROM match m
-                JOIN player p ON p.football_player_id IS NOT NULL
-                JOIN football_match_player fmp ON fmp.match_id = m.football_match_id
-                                                 AND fmp.player_id = p.football_player_id
-                LEFT JOIN goal g ON g.match_id = m.id AND g.player_id = p.id
-                WHERE m.id = :matchId
-                  AND fmp.goalkeeping_minutes > 0
-            )
-            SELECT :matchId AS matchId,
-                   CAST(goals AS int) AS firstNumber,
-                   CAST(assists AS int) AS secondNumber
-            FROM goalkeeper_points
-            WHERE player_id = :playerId
-              AND points = (SELECT MAX(points) FROM goalkeeper_points)
+            SELECT m.id AS matchId,
+                   CAST(COALESCE(g.goal_number, 0) AS int) AS firstNumber,
+                   CAST(COALESCE(g.assist_number, 0) AS int) AS secondNumber
+            FROM match m
+            JOIN player p ON p.id = :playerId AND p.app_team_id = m.app_team_id
+            JOIN goal g ON g.match_id = m.id AND g.player_id = p.id
+            WHERE m.id = :matchId
+              AND EXISTS (
+                  SELECT 1 FROM football_match_player fmp
+                  WHERE fmp.match_id = m.football_match_id
+                    AND fmp.player_id = p.football_player_id
+                    AND fmp.goalkeeping_minutes > 0
+              )
+              AND COALESCE(g.goal_number, 0) + COALESCE(g.assist_number, 0) > 0
+              AND COALESCE(g.goal_number, 0) + COALESCE(g.assist_number, 0) = (
+                  SELECT MAX(COALESCE(g2.goal_number, 0) + COALESCE(g2.assist_number, 0))
+                  FROM goal g2 WHERE g2.match_id = m.id
+              )
             LIMIT 1
             """, nativeQuery = true)
     IMatchIdNumberOneNumberTwo findAutickoInMatch(@Param("playerId") Long playerId,

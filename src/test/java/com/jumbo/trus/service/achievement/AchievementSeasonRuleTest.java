@@ -95,7 +95,9 @@ class AchievementSeasonRuleTest {
 
         appTeam = new AppTeamEntity();
         appTeam.setId(TEAM_ID);
-        season = new SeasonDTO(SEASON_ID, "2025/2026", new Date(), new Date());
+        season = new SeasonDTO(SEASON_ID, "2025/2026", new Date(0), Date.from(java.time.Instant.parse("2026-06-30T21:59:59Z")));
+        ReflectionTestUtils.setField(calculator, "seasonClock", java.time.Clock.fixed(
+                java.time.Instant.parse("2026-06-29T22:00:00Z"), java.time.ZoneOffset.UTC));
         eightMatches = LongStream.rangeClosed(101L, LAST_MATCH_ID)
                 .mapToObj(id -> {
                     MatchDTO match = new MatchDTO();
@@ -176,6 +178,11 @@ class AchievementSeasonRuleTest {
                                 .thenReturn(numbers(null, 1, 5)))
         ).map(scenario -> DynamicTest.dynamicTest(scenario.code(), () -> {
             scenario.arrange().run();
+            ReflectionTestUtils.setField(calculator, "seasonClock", java.time.Clock.fixed(
+                    java.time.Instant.parse("2026-06-29T21:59:59Z"), java.time.ZoneOffset.UTC));
+            assertThat(invoke(scenario).getAccomplished()).as(scenario.code() + " before final day").isFalse();
+            ReflectionTestUtils.setField(calculator, "seasonClock", java.time.Clock.fixed(
+                    java.time.Instant.parse("2026-06-29T22:00:00Z"), java.time.ZoneOffset.UTC));
             PlayerAchievementDTO result = invoke(scenario);
             assertThat(result).as(scenario.code()).isNotNull();
             assertThat(result.getAccomplished()).as(scenario.code()).isTrue();
@@ -264,6 +271,37 @@ class AchievementSeasonRuleTest {
         assertThat(invoke(scenario(
                 AchievementCodes.MIREK_DUSIN, "calculateMIREK_DUSINAchievement", () -> { }
         )).getAccomplished()).isTrue();
+    }
+
+    @Test
+    void mirekDusinIgnoresParticipantsWithZeroAmount() {
+        when(receivedFineService.getAllDetailed(any())).thenReturn(fineStats(List.of(
+                fineStatsRow(player(8L, "Zero amount"), 0),
+                fineStatsRow(player, 100),
+                fineStatsRow(player(9L, "Higher amount"), 200)
+        )));
+        assertThat(invoke(scenario(AchievementCodes.MIREK_DUSIN,
+                "calculateMIREK_DUSINAchievement", () -> { })).getAccomplished()).isTrue();
+    }
+
+    @Test
+    void mirekDusinDoesNotAwardZeroAmountParticipant() {
+        when(receivedFineService.getAllDetailed(any())).thenReturn(fineStats(List.of(
+                fineStatsRow(player, 0), fineStatsRow(player(8L, "Positive amount"), 100)
+        )));
+        assertThat(invoke(scenario(AchievementCodes.MIREK_DUSIN,
+                "calculateMIREK_DUSINAchievement", () -> { })).getAccomplished()).isFalse();
+    }
+
+    @Test
+    void medmrdkaCountsFineQuantityNotDatabaseRows() {
+        FineDTO fine = new FineDTO(60L, FineCodes.PRESS_MENTION, 100, false);
+        when(fineService.getFineByCode(FineCodes.PRESS_MENTION, TEAM_ID)).thenReturn(fine);
+        when(receivedFineService.getAll(any())).thenReturn(List.of(
+                new ReceivedFineDTO(1L, 2, fine, PLAYER_ID, LAST_MATCH_ID)
+        ));
+        assertThat(invoke(scenario(AchievementCodes.MEDMRDKA,
+                "calculateMEDMRDKAAchievement", () -> { })).getAccomplished()).isTrue();
     }
 
     private PlayerAchievementDTO invoke(Scenario scenario) {

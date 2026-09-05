@@ -26,8 +26,11 @@ import com.jumbo.trus.repository.football.FootballPlayerRepository;
 import com.jumbo.trus.service.achievement.helper.IGoalBeerFineMatch;
 import com.jumbo.trus.service.achievement.helper.IMatchIdNumberOneNumberTwo;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -38,7 +41,8 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
+@DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Transactional
 class PlayerAchievementRepositoryIntegrationTest {
 
@@ -414,6 +418,93 @@ class PlayerAchievementRepositoryIntegrationTest {
         fine.setAmount(100);
         fine.setAppTeam(appTeam);
         return fineRepository.saveAndFlush(fine);
+    }
+
+    @ParameterizedTest(name = "Autíčko: minutes={0}, goalkeeper={1}+{2}, teammate={3}+{4}, awarded={5}")
+    @CsvSource({
+            "1, 1, 2, 2, 0, true",   // Any time in goal suffices; assists count.
+            "1, 0, 1, 0, 0, true",   // A single assist is enough when leading.
+            "90, 1, 1, 2, 1, false", // Compare with field players, not only goalkeepers.
+            "1, 1, 2, 3, 0, true",   // Shared first place also qualifies.
+            "90, 0, 0, 0, 0, false", // A zero-point tie must not award the achievement.
+            "90, 0, 0, 1, 0, false",
+            "0, 3, 0, 1, 0, false"  // Leading scorer who never kept goal does not qualify.
+    })
+    void autickoRequiresPositiveTeamLeadingPointsAndAnyTimeInGoal(
+            int minutes, int goals, int assists, int teammateGoals, int teammateAssists, boolean awarded) {
+        AppTeamEntity team = new AppTeamEntity();
+        team.setName("Autíčko rule test");
+        team = appTeamRepository.saveAndFlush(team);
+        MatchEntity match = footballMatch(team);
+        PlayerEntity keeper = goalkeeper(team, match, minutes);
+        // Deliberately no football-player link: this player's points still count in the ranking.
+        PlayerEntity teammate = player("Hráč v poli", team);
+        goal(keeper, match, team, goals, assists);
+        goal(teammate, match, team, teammateGoals, teammateAssists);
+
+        var result = achievementRepository.findAutickoInMatch(keeper.getId(), match.getId());
+        assertThat(result != null).isEqualTo(awarded);
+        if (awarded) {
+            assertThat(result.getMatchId()).isEqualTo(match.getId());
+            assertThat(result.getFirstNumber()).isEqualTo(goals);
+            assertThat(result.getSecondNumber()).isEqualTo(assists);
+        }
+        assertThat(goalRepository.findGoalkeeperWithMostPointsInMatch(keeper.getId(), team.getId()).isPresent())
+                .as("Legacy calculation must agree with the event-scoped calculation").isEqualTo(awarded);
+        assertThat(achievementRepository.findAutickoInMatch(teammate.getId(), match.getId())).isNull();
+    }
+
+    @Test
+    void autickoDoesNotAwardGoalkeeperWithoutGoalRecord() {
+        AppTeamEntity team = new AppTeamEntity();
+        team.setName("Autíčko missing points test");
+        team = appTeamRepository.saveAndFlush(team);
+        MatchEntity match = footballMatch(team);
+        PlayerEntity keeper = goalkeeper(team, match, 1);
+        assertThat(achievementRepository.findAutickoInMatch(keeper.getId(), match.getId())).isNull();
+    }
+
+    @Test
+    void autickoAwardsBothTiedGoalkeepersAndOnlyUsesRequestedMatch() {
+        AppTeamEntity team = new AppTeamEntity();
+        team.setName("Autíčko tied goalkeepers test");
+        team = appTeamRepository.saveAndFlush(team);
+        MatchEntity match = footballMatch(team);
+        PlayerEntity first = goalkeeper(team, match, 1);
+        PlayerEntity second = goalkeeper(team, match, 59);
+        goal(first, match, team, 1, 1);
+        goal(second, match, team, 0, 2);
+        MatchEntity otherMatch = footballMatch(team);
+        goal(first, otherMatch, team, 20, 0);
+
+        assertThat(achievementRepository.findAutickoInMatch(first.getId(), match.getId())).isNotNull();
+        assertThat(achievementRepository.findAutickoInMatch(second.getId(), match.getId())).isNotNull();
+        // Goalkeeping in one match must not qualify the player in another.
+        assertThat(achievementRepository.findAutickoInMatch(first.getId(), otherMatch.getId())).isNull();
+    }
+
+    private MatchEntity footballMatch(AppTeamEntity team) {
+        FootballMatchEntity footballMatch = new FootballMatchEntity();
+        footballMatch.setDate(date(2025, 4, 1));
+        footballMatch = footballMatchRepository.saveAndFlush(footballMatch);
+        MatchEntity match = match("Autíčko", date(2025, 4, 1), team);
+        match.setFootballMatch(footballMatch);
+        return matchRepository.saveAndFlush(match);
+    }
+
+    private PlayerEntity goalkeeper(AppTeamEntity team, MatchEntity match, int minutes) {
+        FootballPlayerEntity footballPlayer = new FootballPlayerEntity();
+        footballPlayer.setName("Brankář");
+        footballPlayer = footballPlayerRepository.saveAndFlush(footballPlayer);
+        PlayerEntity player = player("Brankář", team);
+        player.setFootballPlayer(footballPlayer);
+        player = playerRepository.saveAndFlush(player);
+        FootballMatchPlayerEntity performance = new FootballMatchPlayerEntity();
+        performance.setMatch(match.getFootballMatch());
+        performance.setPlayer(footballPlayer);
+        performance.setGoalkeepingMinutes(minutes);
+        footballMatchPlayerRepository.saveAndFlush(performance);
+        return player;
     }
 
     private PlayerEntity player(String name, AppTeamEntity appTeam) {

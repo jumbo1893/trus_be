@@ -171,6 +171,19 @@ class AchievementEventProcessorTest {
                 .containsExactlyInAnyOrder(OutboxAggregateType.FINE, OutboxAggregateType.RECEIVED_FINE);
     }
 
+    @Test
+    void finalSeasonDayEventTriggersOnlySeasonScopedWork() {
+        MatchPlayerIdProjection affectedPlayer = row(100L, 7L);
+        when(matchRepository.findAffectedPlayersByMatchIds(Set.of(100L)))
+                .thenReturn(List.of(affectedPlayer));
+        OutboxEventEntity event = event(1L, OutboxAggregateType.SEASON, 50L,
+                payload(null, Set.of(), Map.of(OutboxRelatedEntityType.MATCH, Set.of(100L))));
+        event.setEventType(OutboxEventType.SEASON_ACHIEVEMENTS_DUE);
+
+        assertThat(processor.createCalculationBatch(List.of(event)).matchWorkByTeam().get(1L))
+                .containsOnlyKeys(OutboxAggregateType.SEASON);
+    }
+
     private OutboxEventEntity event(
             Long appTeamId,
             OutboxAggregateType aggregateType,
