@@ -154,6 +154,29 @@ public class OpenAiClient {
         payload.put("max_output_tokens", Math.max(200, properties.getMaxOutputTokens()));
         payload.putObject("reasoning").put("effort", properties.getReasoningEffort());
 
+        return sendResponse(payload);
+    }
+
+    public OpenAiAnswer generateMatchReport(String instructions, String data) {
+        requireConfigured();
+        ObjectNode payload = objectMapper.createObjectNode();
+        payload.put("model", properties.getModel());
+        payload.put("instructions", instructions);
+        payload.put("input", data);
+        payload.put("store", false);
+        payload.put("max_output_tokens", Math.max(2500, properties.getMaxOutputTokens()));
+        payload.putObject("reasoning").put("effort", properties.getReasoningEffort());
+        JsonNode response = sendResponse(payload);
+        String text = extractOutputText(response.path("output"));
+        if (!"completed".equals(response.path("status").asText()) || text.isBlank()) {
+            throw new AiUnavailableException("Report se nepodařilo dokončit. Zkuste ho vygenerovat znovu.");
+        }
+        return new OpenAiAnswer(text.trim(), response.path("model").asText(properties.getModel()),
+                response.path("usage").path("input_tokens").asInt(0),
+                response.path("usage").path("output_tokens").asInt(0));
+    }
+
+    private JsonNode sendResponse(ObjectNode payload) {
         String requestJson;
         try {
             requestJson = objectMapper.writeValueAsString(payload);

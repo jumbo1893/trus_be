@@ -15,6 +15,16 @@ import java.util.Optional;
 public interface FootballMatchRepository extends JpaRepository<FootballMatchEntity, Long>, JpaSpecificationExecutor<FootballMatchEntity> {
 
     @Query("""
+            SELECT m FROM FootballMatchEntity m
+            WHERE (m.homeTeam.id = :teamId OR m.awayTeam.id = :teamId)
+              AND m.alreadyPlayed = true AND m.date < :before
+              AND m.homeGoalNumber IS NOT NULL AND m.awayGoalNumber IS NOT NULL
+            ORDER BY m.date DESC, m.id DESC
+            """)
+    List<FootballMatchEntity> findReportForm(@Param("teamId") Long teamId, @Param("before") Date before,
+                                           org.springframework.data.domain.Pageable pageable);
+
+    @Query("""
             SELECT fm.date FROM FootballMatchEntity fm
             WHERE fm.date IS NOT NULL
               AND (fm.homeTeam.id = :teamId OR fm.awayTeam.id = :teamId)
