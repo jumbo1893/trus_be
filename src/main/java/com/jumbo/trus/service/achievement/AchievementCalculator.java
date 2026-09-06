@@ -72,6 +72,7 @@ public class AchievementCalculator {
     private final AchievementNotificationMaker achievementNotificationMaker;
     private final StepAchievementCalculator stepAchievementCalculator;
     private final MembershipService membershipService;
+    private final AchievementMatchReadiness matchReadiness;
     private final ThreadLocal<Long> eventSeasonId = new ThreadLocal<>();
     private final Map<String, AchievementFunction> achievementCalculators =
             Map.<String, AchievementFunction>ofEntries(
@@ -499,6 +500,11 @@ public class AchievementCalculator {
             }
 
             if (Boolean.TRUE.equals(calculated.getAccomplished())) {
+                if (matchReadiness.deferIfPending(achievementCode, calculated, appTeam.getId())) {
+                    stats.skippedNull++;
+                    summary.skippedNull++;
+                    continue;
+                }
                 stats.accomplished++;
                 summary.accomplished++;
             } else {

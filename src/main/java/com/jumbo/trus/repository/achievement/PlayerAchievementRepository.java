@@ -1232,6 +1232,7 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
               AND p.football_player_id IS NOT NULL
               AND m.football_match_id IS NOT NULL
               AND m.app_team_id = :appTeamId
+              AND EXISTS (SELECT 1 FROM football_match_player roster WHERE roster.match_id = m.football_match_id)
               AND NOT EXISTS (
                   SELECT 1
                   FROM football_match_player fmp
@@ -1268,6 +1269,7 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
                   AND m.football_match_id IS NOT NULL
                   AND m.season_id = :seasonId
                   AND m.app_team_id = :appTeamId
+                  AND EXISTS (SELECT 1 FROM football_match_player roster WHERE roster.match_id = m.football_match_id)
                   AND NOT EXISTS (
                       SELECT 1
                       FROM football_match_player fmp
@@ -2106,6 +2108,7 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
               AND p.fan = false
               AND p.football_player_id IS NOT NULL
               AND m.football_match_id IS NOT NULL
+              AND EXISTS (SELECT 1 FROM football_match_player roster WHERE roster.match_id = m.football_match_id)
               AND NOT EXISTS (
                   SELECT 1 FROM football_match_player fmp
                   WHERE fmp.match_id = m.football_match_id

@@ -16,7 +16,7 @@ public interface OutboxEventRepository
     @Query("""
             SELECT event
             FROM OutboxEventEntity event
-            WHERE event.status = :newStatus
+            WHERE (event.status = :newStatus AND (event.nextAttemptAt IS NULL OR event.nextAttemptAt <= :now))
                OR (event.status = :retryStatus
                    AND (event.nextAttemptAt IS NULL OR event.nextAttemptAt <= :now))
             ORDER BY event.createdAt ASC
@@ -32,4 +32,7 @@ public interface OutboxEventRepository
             OutboxEventStatus status,
             Instant processingStartedBefore
     );
+
+    boolean existsByAppTeamIdAndAggregateIdAndEventTypeAndStatusIn(Long appTeamId, Long aggregateId,
+            com.jumbo.trus.entity.outbox.OutboxEventType eventType, List<OutboxEventStatus> statuses);
 }

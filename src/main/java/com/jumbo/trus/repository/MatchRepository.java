@@ -283,6 +283,20 @@ public interface MatchRepository extends PagingAndSortingRepository<MatchEntity,
             @Param("completedBefore") Date completedBefore);
 
     @Query("""
+            SELECT m FROM match m LEFT JOIN FETCH m.footballMatch fm
+            WHERE m.appTeam.id = :teamId
+              AND ((:matchId IS NOT NULL AND m.id = :matchId)
+                OR (:seasonId IS NOT NULL AND m.season.id = :seasonId))
+              AND m.date > :cutoff
+              AND (m.date > :now OR (
+                (m.homeGoalNumber IS NULL OR m.awayGoalNumber IS NULL)
+                AND (fm.homeGoalNumber IS NULL OR fm.awayGoalNumber IS NULL)))
+            """)
+    List<MatchEntity> findAwaitingFinalStatistics(@Param("teamId") Long teamId,
+            @Param("matchId") Long matchId, @Param("seasonId") Long seasonId,
+            @Param("cutoff") Date cutoff, @Param("now") Date now);
+
+    @Query("""
             SELECT m.id
             FROM match m
             WHERE m.appTeam.id = :appTeamId

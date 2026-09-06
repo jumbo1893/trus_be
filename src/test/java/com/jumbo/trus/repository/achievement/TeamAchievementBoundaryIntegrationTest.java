@@ -48,6 +48,7 @@ class TeamAchievementBoundaryIntegrationTest extends AchievementDatabaseFixture 
     @CsvSource({"true,false,false", "false,false,true", "false,true,false"})
     void moralSupportMeansLocalAttendanceWithoutFootballRosterEntry(boolean onRoster, boolean fan, boolean expected) {
         var entry = performance(player, match, 0, false, false);
+        performance(teammate, match, 0, false, false);
         if (!onRoster) em.remove(entry);
         player.setFan(fan); em.flush();
         assertMatch(AchievementCodes.MORALNI_PODPORA, expected);
@@ -62,6 +63,7 @@ class TeamAchievementBoundaryIntegrationTest extends AchievementDatabaseFixture 
             if (i > 0) current = match(player);
             current.setSeason(season);
             var entry = performance(player, current, 0, false, false); em.remove(entry); em.flush();
+            performance(teammate, current, 0, false, false);
         }
         assertThat(calculateSeason(AchievementCodes.LAZAR_NA_TRIBUNACH, season).getAccomplished()).isEqualTo(expected);
     }

@@ -79,6 +79,7 @@ class AchievementSeasonRuleTest {
     @Mock private StepAchievementCalculator stepAchievementCalculator;
     @Mock private MembershipService membershipService;
 
+    @Mock private AchievementMatchReadiness matchReadiness;
     @InjectMocks private AchievementCalculator calculator;
 
     private PlayerDTO player;
