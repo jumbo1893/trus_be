@@ -251,6 +251,34 @@ public class AchievementCalculator {
 
 
 
+    /** Pure audit entry point: never saves, sends notifications or changes membership credits. */
+    public PlayerAchievementDTO auditAward(PlayerAchievementDTO existing, AppTeamEntity appTeam,
+                                           List<Long> matchIds) {
+        AchievementDTO achievement = existing.getAchievement();
+        PlayerDTO player = existing.getPlayer();
+        if (achievement.isManually() || achievement.getCalculationScope() == null
+                || achievement.getCalculationScope() == AchievementCalculationScope.OTHER) return null;
+        if (achievement.getCalculationScope() == AchievementCalculationScope.SEASON) {
+            if (!scopedSeasonAchievementCalculators.containsKey(achievement.getCode())) return null;
+            return calculateSeasonAchievementAcrossAllSeasons(achievement, player, appTeam, AchievementType.ALL);
+        }
+        ScopedAchievementFunction scoped = scopedAchievementCalculators.get(achievement.getCode());
+        if (achievement.getCalculationScope() == AchievementCalculationScope.MATCH && scoped != null) {
+            Set<Long> candidates = new LinkedHashSet<>();
+            Long originalMatchId = getMatchId(existing);
+            if (matchIds.contains(originalMatchId)) candidates.add(originalMatchId);
+            candidates.addAll(matchIds);
+            for (Long matchId : candidates) {
+                PlayerAchievementDTO result = scoped.apply(player, achievement, appTeam, AchievementType.ALL, matchId);
+                if (result == null) throw new IllegalStateException("Audit calculator returned no result: " + achievement.getCode());
+                if (Boolean.TRUE.equals(result.getAccomplished())) return result;
+            }
+            return returnFailedPlayerAchievement(achievement, player);
+        }
+        AchievementFunction calculator = achievementCalculators.get(achievement.getCode());
+        return calculator == null ? null : calculator.apply(player, achievement, appTeam, AchievementType.ALL);
+    }
+
     public void calculateAllAchievements(List<PlayerDTO> playerList, AppTeamEntity appTeam, AchievementType achievementType) {
         stepAchievementCalculator.beginCalculationBatch();
         try {

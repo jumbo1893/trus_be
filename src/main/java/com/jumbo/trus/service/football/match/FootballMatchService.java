@@ -12,6 +12,7 @@ import com.jumbo.trus.service.football.pkfl.task.RetrievePkflMatchesByLeague;
 import com.jumbo.trus.service.football.pkfl.task.helper.FootballMatchTaskHelper;
 import com.jumbo.trus.service.football.team.TeamService;
 import com.jumbo.trus.service.helper.Pair;
+import com.jumbo.trus.service.season.AutomaticSeasonService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +44,7 @@ public class FootballMatchService {
     private final RetrievePkflMatchesByLeague retrievePkflMatches;
     private final FootballMatchDetailProcessor footballMatchDetailProcessor;
     private final PlatformTransactionManager transactionManager;
+    private final AutomaticSeasonService automaticSeasonService;
 
     public List<FootballMatchDTO> getAllMatches() {
         return footballMatchProcessor.getAllMatches();
@@ -130,6 +132,7 @@ public class FootballMatchService {
         if (isNeededToLoadAllLeagues()) {
             setUpdateTag();
         }
+        automaticSeasonService.synchronizeAfterMatchImport();
     }
 
     private TransactionTemplate createLeagueTransaction() {

@@ -19,6 +19,12 @@ import java.util.Optional;
 
 public interface PlayerAchievementRepository extends JpaRepository<PlayerAchievementEntity, Long> {
 
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT pa FROM PlayerAchievementEntity pa WHERE pa.player.appTeam.id = :teamId "
+            + "AND pa.accomplished = true AND pa.id > :afterId ORDER BY pa.id")
+    List<PlayerAchievementEntity> findAwardAuditBatch(@Param("teamId") Long teamId,
+            @Param("afterId") long afterId, Pageable pageable);
+
     @Query("""
             SELECT pa.achievement.id,
                    SUM(CASE WHEN pa.player.fan = false THEN 1 ELSE 0 END),

@@ -15,6 +15,14 @@ import java.util.Optional;
 public interface FootballMatchRepository extends JpaRepository<FootballMatchEntity, Long>, JpaSpecificationExecutor<FootballMatchEntity> {
 
     @Query("""
+            SELECT fm.date FROM FootballMatchEntity fm
+            WHERE fm.date IS NOT NULL
+              AND (fm.homeTeam.id = :teamId OR fm.awayTeam.id = :teamId)
+            ORDER BY fm.date
+            """)
+    List<Date> findAllMatchDatesByTeamId(@Param("teamId") Long teamId);
+
+    @Query("""
             SELECT fm
             FROM FootballMatchEntity fm
             WHERE fm.league.id = :leagueId

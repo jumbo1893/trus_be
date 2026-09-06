@@ -152,6 +152,21 @@ public interface MatchRepository extends PagingAndSortingRepository<MatchEntity,
     @Query(value = "Update match SET season_id=" + OTHER_SEASON_ID + " WHERE season_id=:#{#seasonId}", nativeQuery = true)
     void updateSeasonId(@Param("seasonId") long seasonId);
 
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query(value = """
+            UPDATE match SET season_id = :seasonId
+            WHERE app_team_id = :appTeamId
+              AND (season_id IS NULL OR season_id = :otherSeasonId)
+              AND date >= :fromDate AND date <= :toDate
+            """, nativeQuery = true)
+    int assignUnclassifiedMatchesToSeason(
+            @Param("appTeamId") Long appTeamId,
+            @Param("seasonId") Long seasonId,
+            @Param("otherSeasonId") Long otherSeasonId,
+            @Param("fromDate") Date fromDate,
+            @Param("toDate") Date toDate
+    );
+
     @Query("""
             SELECT DISTINCT m
             FROM match m
