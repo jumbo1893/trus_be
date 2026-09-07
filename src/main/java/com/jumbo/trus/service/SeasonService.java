@@ -22,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.webjars.NotFoundException;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -104,13 +105,22 @@ public class SeasonService {
     private SeasonDTO getSeasonByDate(Date inputDate, AppTeamEntity appTeam) {
         SeasonFilter seasonFilter = new SeasonFilter();
         seasonFilter.setAppTeam(appTeam);
+        LocalDate inputDay = toPragueDate(inputDate);
         List<SeasonDTO> seasonList = getAll(seasonFilter);
         for (SeasonDTO season : seasonList) {
-            if (!season.getFromDate().after(inputDate) && !season.getToDate().before(inputDate)) {
+            LocalDate firstDay = toPragueDate(season.getFromDate());
+            LocalDate lastDay = toPragueDate(season.getToDate());
+            if (!inputDay.isBefore(firstDay) && !inputDay.isAfter(lastDay)) {
                 return season;
             }
         }
         return null;
+    }
+
+    private LocalDate toPragueDate(Date date) {
+        return date.toInstant()
+                .atZone(com.jumbo.trus.service.achievement.SeasonAchievementTiming.ZONE)
+                .toLocalDate();
     }
 
     @Transactional

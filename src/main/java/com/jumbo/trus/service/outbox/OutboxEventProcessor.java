@@ -5,6 +5,7 @@ import com.jumbo.trus.entity.outbox.OutboxEventStatus;
 import com.jumbo.trus.repository.OutboxEventRepository;
 import com.jumbo.trus.service.achievement.AchievementService;
 import com.jumbo.trus.service.achievement.AchievementProgressService;
+import com.jumbo.trus.service.websocket.WebSocketSender;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -22,6 +23,7 @@ public class OutboxEventProcessor {
     private final AchievementEventProcessor achievementEventProcessor;
     private final AchievementService achievementService;
     private final AchievementProgressService achievementProgressService;
+    private final WebSocketSender webSocketSender;
     private final OutboxProcessingProperties processingProperties;
 
 
@@ -55,6 +57,15 @@ public class OutboxEventProcessor {
                         "Achievement progress notifications failed for {} events; core achievement processing remains successful",
                         events.size(),
                         progressException
+                );
+            }
+            try {
+                webSocketSender.sendPlayerStatsUpdates(calculationBatch);
+            } catch (Exception webSocketException) {
+                log.error(
+                        "Player stats websocket update failed for {} events; core achievement processing remains successful",
+                        events.size(),
+                        webSocketException
                 );
             }
             events.forEach(OutboxEventEntity::markAsDone);

@@ -5,6 +5,7 @@ import com.jumbo.trus.entity.outbox.OutboxEventStatus;
 import com.jumbo.trus.repository.OutboxEventRepository;
 import com.jumbo.trus.service.achievement.AchievementProgressService;
 import com.jumbo.trus.service.achievement.AchievementService;
+import com.jumbo.trus.service.websocket.WebSocketSender;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Pageable;
 
@@ -27,12 +28,14 @@ class OutboxEventProcessorTest {
     private final AchievementEventProcessor eventProcessor = mock(AchievementEventProcessor.class);
     private final AchievementService achievementService = mock(AchievementService.class);
     private final AchievementProgressService achievementProgressService = mock(AchievementProgressService.class);
+    private final WebSocketSender webSocketSender = mock(WebSocketSender.class);
     private final OutboxProcessingProperties processingProperties = processingProperties();
     private final OutboxEventProcessor processor = new OutboxEventProcessor(
             repository,
             eventProcessor,
             achievementService,
             achievementProgressService,
+            webSocketSender,
             processingProperties
     );
 
@@ -51,6 +54,7 @@ class OutboxEventProcessorTest {
 
         verify(achievementService).calculateEventBatch(batch);
         verify(achievementProgressService).evaluateAndNotify(batch);
+        verify(webSocketSender).sendPlayerStatsUpdates(batch);
         assertThat(event.getStatus()).isEqualTo(OutboxEventStatus.DONE);
     }
 
