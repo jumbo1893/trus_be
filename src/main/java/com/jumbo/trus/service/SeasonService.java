@@ -153,7 +153,7 @@ public class SeasonService {
         SeasonEntity seasonEntity = seasonRepository.getReferenceById(seasonId);
         Set<Long> affectedMatchIds = matchRepository.findMatchIdsBySeason(seasonId);
         matchRepository.updateSeasonId(seasonId);
-        notificationService.addNotification("Přidána nová sezona", seasonEntity.getName() + " se začátkem " + seasonEntity.getFromDate() + " a koncem " + seasonEntity.getToDate());
+        notificationService.addNotification("Smazána sezona", seasonEntity.getName() + " se začátkem " + seasonEntity.getFromDate() + " a koncem " + seasonEntity.getToDate());
         seasonRepository.deleteById(seasonId);
         outboxEventService.createEvent(OutboxEventType.SEASON_DELETED, OutboxAggregateType.SEASON, seasonId, OutboxEventPayloadFactory.seasonDeleted(affectedMatchIds));
     }
