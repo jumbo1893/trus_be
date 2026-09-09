@@ -55,14 +55,18 @@ public class SeasonService {
     public List<SeasonDTO> getAll(SeasonFilter seasonFilter){
         List<SeasonEntity> seasonEntities = seasonRepository.getAllWithoutNonEditable(seasonFilter.getLimit(), seasonFilter.getAppTeam().getId());
         List<SeasonDTO> result = new ArrayList<>();
+        Set<Long> playedSeasonIds = seasonFilter.isPlayedOnly()
+                ? matchRepository.findPlayedSeasonIds(seasonFilter.getAppTeam().getId(), new Date())
+                : null;
         for(SeasonEntity e : seasonEntities){
+            if (playedSeasonIds != null && !playedSeasonIds.contains(e.getId())) continue;
             result.add(seasonMapper.toDTO(e));
         }
         result.sort(new OrderSeasonByDate());
         if (seasonFilter.isAllSeason()) {
             result.add(0, getAllSeason());
         }
-        if (seasonFilter.isOtherSeason()) {
+        if (seasonFilter.isOtherSeason() && (playedSeasonIds == null || playedSeasonIds.contains(OTHER_SEASON_ID))) {
             result.add(getOtherSeason());
         }
         if (seasonFilter.isAutomaticSeason()) {

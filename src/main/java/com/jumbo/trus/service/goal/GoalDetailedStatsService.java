@@ -22,11 +22,20 @@ public class GoalDetailedStatsService {
     public GoalDetailedResponse getAllDetailed(StatisticsFilter filter) {
         List<IGoalAttendanceDetail> rows = goalRepository.findGoalAttendanceDetails(
                 filter.getAppTeam().getId(),
-                normalizeSeasonId(filter.getSeasonId()),
+                filter.getSeasonIds().isEmpty() ? normalizeSeasonId(filter.getSeasonId()) : Config.ALL_SEASON_ID,
                 filter.getPlayerId(),
                 filter.getMatchId(),
                 normalizeFilter(filter.getStringFilter())
         );
+        // Apply multi-selection before both row aggregation and overall totals.
+        rows = rows.stream()
+                .filter(row -> filter.getSeasonIds().isEmpty()
+                        || filter.getSeasonIds().contains(Config.ALL_SEASON_ID)
+                        || filter.getSeasonIds().contains(row.getSeasonId()))
+                .filter(row -> filter.getPlayerIds().isEmpty() || filter.getPlayerIds().contains(row.getPlayerId()))
+                .filter(row -> filter.getOpponentNames().isEmpty() || filter.getOpponentNames().stream()
+                        .anyMatch(name -> name.trim().equalsIgnoreCase(row.getMatchName().trim())))
+                .toList();
 
         if (Boolean.TRUE.equals(filter.getMatchStatsOrPlayerStats())) {
             return buildMatchStats(rows);

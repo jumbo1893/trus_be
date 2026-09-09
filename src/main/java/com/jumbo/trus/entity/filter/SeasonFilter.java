@@ -16,6 +16,8 @@ public class SeasonFilter {
 
     private boolean automaticSeason = false;
 
+    private boolean playedOnly = false;
+
     private AppTeamEntity appTeam;
 
     //defaultní hodnota

@@ -14,6 +14,10 @@ import org.junit.jupiter.api.Test;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
+import com.jumbo.trus.entity.filter.SeasonFilter;
+import static com.jumbo.trus.config.Config.OTHER_SEASON_ID;
+import static org.mockito.ArgumentMatchers.any;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -35,6 +39,26 @@ class SeasonServiceTest {
             notificationService,
             outboxEventService
     );
+
+    @Test
+    void playedFilterHidesEmptySeasonsButManagementKeepsThem() {
+        var team = new AppTeamEntity(); team.setId(7L);
+        var played = new SeasonEntity(); played.setId(10L);
+        var empty = new SeasonEntity(); empty.setId(11L);
+        var date = new Date();
+        when(seasonRepository.getAllWithoutNonEditable(anyInt(), eq(7L))).thenReturn(List.of(played, empty));
+        when(seasonMapper.toDTO(played)).thenReturn(new SeasonDTO(10L, "Odehraná", date, date));
+        when(seasonMapper.toDTO(empty)).thenReturn(new SeasonDTO(11L, "Prázdná", date, date));
+        when(matchRepository.findPlayedSeasonIds(eq(7L), any(Date.class))).thenReturn(Set.of(10L));
+        var filter = new SeasonFilter(false, true, false);
+        filter.setAppTeam(team);
+        filter.setPlayedOnly(true);
+        assertThat(service.getAll(filter)).extracting(SeasonDTO::getId).containsExactly(10L);
+        when(matchRepository.findPlayedSeasonIds(eq(7L), any(Date.class))).thenReturn(Set.of(10L, OTHER_SEASON_ID));
+        assertThat(service.getAll(filter)).extracting(SeasonDTO::getId).containsExactly(10L, OTHER_SEASON_ID);
+        filter.setPlayedOnly(false);
+        assertThat(service.getAll(filter)).extracting(SeasonDTO::getId).containsExactlyInAnyOrder(10L, 11L, OTHER_SEASON_ID);
+    }
 
     @Test
     void currentSeasonIncludesTheWholeLastCalendarDay() {
