@@ -91,7 +91,7 @@
 <body>
 <main>
     <h1>Privacy Policy for Trusí appka</h1>
-    <p class="updated"><strong>Last updated:</strong> September 9, 2026</p>
+    <p class="updated"><strong>Last updated:</strong> September 10, 2026</p>
 
     <p class="summary">
         This Privacy Policy explains how Trusí appka ("the Application", "we", "us", or "our")
@@ -118,15 +118,17 @@
         </p>
 
         <p>
-            When you first enable the feature, the Application requests access to historical
-            Health Data and reads daily step totals for up to the previous 30 days. This
-            historical access is used to populate your initial step history, team statistics,
+            When you first enable the feature, the Application reads daily step totals for up
+            to the previous 30 days, which is the standard Health Connect access window. This
+            initial import is used to populate your step history, team statistics,
             step-related achievements, and leaderboard instead of starting with an empty
             history. While the feature remains enabled, the Application updates the totals when
-            you use it. If you separately allow background health-data access, the Application
-            may also synchronize your latest daily totals approximately every six hours,
-            including when the Application is closed or not actively in use. Operating system
-            scheduling may delay or prevent a background synchronization.
+            you use it. On Android, if you separately allow background health-data access, the
+            Application may also synchronize your latest daily totals approximately every six
+            hours, including when the Application is closed or not actively in use. On Apple
+            devices, iOS may perform a similar best-effort background refresh under the Apple
+            Health read authorization you granted. Operating system scheduling may delay or
+            prevent a background synchronization.
         </p>
 
         <p>The following information is transmitted to and stored on the Trusí appka server:</p>
@@ -158,6 +160,13 @@
         </p>
 
         <h3>Android Health Connect permissions and justification</h3>
+        <p>
+            <strong>Activity Recognition:</strong> Android requires this runtime permission as a
+            prerequisite for the Application to access step-count data. The Application uses it
+            only for the optional Team Step Challenge and only after the user has read the
+            in-app disclosure and affirmatively enabled the feature. The Application does not
+            use this permission to collect location, routes, or unrelated motion data.
+        </p>
         <p>
             <strong>StepsCadence/Steps (read access):</strong> The Application requires read
             access to Steps because Health Connect is the source of step-count data for the

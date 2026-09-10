@@ -38,6 +38,8 @@ class PrivacyPolicyControllerTest {
                 .andExpect(content().string(containsString("Privacy Policy for Trusí appka")))
                 .andExpect(content().string(containsString("Health and fitness data (Health Data)")))
                 .andExpect(content().string(containsString("Health Connect")))
+                .andExpect(content().string(containsString("Activity Recognition")))
+                .andExpect(content().string(containsString("StepsCadence/Steps")))
                 .andExpect(content().string(containsString("background health-data access")))
                 .andExpect(content().string(containsString("Delete your personal data")));
     }
