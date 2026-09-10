@@ -106,15 +106,19 @@ public class StatsBoardDataService {
         List<StatsBoardRow> statsBoardRows = new ArrayList<>();
 
         for (PlayerAchievementDTO playerAchievement : playerAchievementDTOList) {
-            statsBoardRows.add(
+            StatsBoardRow row =
                     createPlayerRow(
                             playerAchievement.getPlayer(),
                             playerAchievement.getAchievement().getName(),
                             DateFormatter.formatDateForFrontend(
                                     playerAchievement.getAccomplishedDate()
                             )
-                    )
-            );
+                    );
+            RedirectDTO redirect = new RedirectDTO();
+            redirect.setRedirect(Redirect.ACHIEVEMENTS);
+            redirect.setPlayerAchievement(playerAchievement);
+            row.setRedirect(redirect);
+            statsBoardRows.add(row);
         }
 
         statsBoardData.setRows(statsBoardRows);

@@ -5,6 +5,7 @@ import com.jumbo.trus.dto.SeasonDTO;
 import com.jumbo.trus.dto.football.FootballMatchDTO;
 import com.jumbo.trus.dto.match.MatchDTO;
 import com.jumbo.trus.dto.player.PlayerDTO;
+import com.jumbo.trus.dto.achievement.PlayerAchievementDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -28,4 +29,7 @@ public class RedirectDTO {
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private MatchDTO match;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private PlayerAchievementDTO playerAchievement;
 }

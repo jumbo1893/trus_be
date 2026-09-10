@@ -267,6 +267,7 @@ public class HomeService {
             TextWithRedirect text = new TextWithRedirect();
             RedirectDTO redirectDTO = new RedirectDTO();
             redirectDTO.setRedirect(Redirect.ACHIEVEMENTS);
+            redirectDTO.setPlayerAchievement(achievement);
             text.setRedirect(redirectDTO);
             text.setWarningType(WarningType.INFO);
             text.setText("V zápase byl získaný achievement "
