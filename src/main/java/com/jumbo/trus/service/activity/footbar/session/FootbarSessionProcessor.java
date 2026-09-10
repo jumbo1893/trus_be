@@ -91,6 +91,9 @@ public class FootbarSessionProcessor {
             FootbarSessionEntity savedSession;
             if(repoEntity == null) {
                 FootbarSessionDTO detailedSession = fetchFootbarSessionDetail(session.getFootbarSessionId(), validAccessToken);
+                if (detailedSession == null) {
+                    throw new IllegalStateException("Footbar neposkytl detail aktivity " + session.getFootbarSessionId());
+                }
                 FootbarSessionEntity newSession = getFootbarSessionEntity(footbarAccount, detailedSession);
                 newSession.setId(null);
                 pairSessionWithMatch(newSession, appTeam);
@@ -101,6 +104,14 @@ public class FootbarSessionProcessor {
                 pairSessionWithMatch(repoEntity, appTeam);
                 pairSessionWithPlayer(footbarAccount, repoEntity, appTeam);
                 savedSession = footbarSessionRepository.save(repoEntity);
+            }
+            // A training session need not belong to a team match, and an account
+            // need not be paired with a player yet. Keep the imported activity;
+            // a later sync can pair it and then request achievement calculation.
+            if (savedSession.getMatch() == null || savedSession.getMatch().getSeason() == null
+                    || savedSession.getPlayer() == null) {
+                log.debug("Footbar session {} saved without complete match/player pairing", savedSession.getId());
+                continue;
             }
             outboxEventService.createEvent(OutboxEventType.FOOTBAR_SESSION_SAVED, OutboxAggregateType.FOOTBAR, null,
                     OutboxEventPayloadFactory.footbarUpdated(

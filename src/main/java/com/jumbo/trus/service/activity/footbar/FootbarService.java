@@ -69,7 +69,7 @@ public class FootbarService {
                 log.warn("Footbar account {} requires reconnection", account.getId());
             } catch (RuntimeException e) {
                 failed++;
-                log.warn("Footbar session import failed for account {} ({})", account.getId(), e.getClass().getSimpleName());
+                log.warn("Footbar session import failed for account {}", account.getId(), e);
             }
         }
         // Successful accounts have committed independently. Do not advertise a
