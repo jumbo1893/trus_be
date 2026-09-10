@@ -13,6 +13,7 @@ import com.jumbo.trus.repository.footbar.FootbarAccountRepository;
 import com.jumbo.trus.service.SeasonService;
 import com.jumbo.trus.service.UpdateService;
 import com.jumbo.trus.service.activity.footbar.connect.FootbarConnect;
+import com.jumbo.trus.service.activity.footbar.connect.FootbarReconnectRequiredException;
 import com.jumbo.trus.service.activity.footbar.profile.FootbarProfileProcessor;
 import com.jumbo.trus.service.activity.footbar.session.FootbarSessionGetter;
 import com.jumbo.trus.service.activity.footbar.session.FootbarSessionProcessor;
@@ -56,12 +57,25 @@ public class FootbarService {
         footbarSessionProcessor.saveSessions(account, appTeam);
     }
 
-    @Transactional
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.NOT_SUPPORTED)
     public Date syncSessions(AppTeamEntity appTeam) {
         List<FootbarAccountEntity> accountEntities = footbarAccountRepository.findAllAccountsByAppTeam(appTeam);
+        int failed = 0;
         for (FootbarAccountEntity account : accountEntities) {
-            footbarSessionProcessor.saveSessions(account, appTeam);
+            try {
+                footbarSessionProcessor.saveSessions(account, appTeam);
+            } catch (FootbarReconnectRequiredException e) {
+                failed++;
+                log.warn("Footbar account {} requires reconnection", account.getId());
+            } catch (RuntimeException e) {
+                failed++;
+                log.warn("Footbar session import failed for account {} ({})", account.getId(), e.getClass().getSimpleName());
+            }
         }
+        // Successful accounts have committed independently. Do not advertise a
+        // complete team sync when any account was skipped or failed.
+        if (failed > 0) throw new IllegalStateException("Footbar: nepodařilo se synchronizovat " + failed
+                + " účtů. Ostatní účty byly zpracovány; zkontrolujte propojení s Footbarem.");
         return updateService.saveNewUniqueUpdate(FOOTBAR_SESSION_UPDATE, appTeam.getId()).getDate();
     }
 
@@ -77,7 +91,11 @@ public class FootbarService {
     public FootbarProfile getFootbalProfile(Long userId) {
         FootbarAccountEntity footbarAccount = footbarAccountRepository.findByUserId(userId).orElse(null);
         if (footbarAccount != null) {
-            return footbarProfileProcessor.fetchFootbarProfileDetail(footbarAccount.getFootbarUserId(), footbarConnect.getValidAccessToken(footbarAccount));
+            try {
+                return footbarProfileProcessor.fetchFootbarProfileDetail(footbarAccount.getFootbarUserId(), footbarConnect.getValidAccessToken(footbarAccount));
+            } catch (FootbarReconnectRequiredException ignored) {
+                // Existing clients show the connect button for inactive profiles.
+            }
         }
         FootbarProfile inactiveProfile = new FootbarProfile();
         inactiveProfile.setActive(false);

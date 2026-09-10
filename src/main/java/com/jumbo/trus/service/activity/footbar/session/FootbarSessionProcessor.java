@@ -37,6 +37,7 @@ import java.util.*;
 @RequiredArgsConstructor
 @Slf4j
 public class FootbarSessionProcessor {
+    private final com.jumbo.trus.repository.footbar.FootbarAccountRepository footbarAccountRepository;
 
     private final FootbarSessionRepository footbarSessionRepository;
     private final RestTemplate restTemplate;
@@ -79,8 +80,10 @@ public class FootbarSessionProcessor {
         return allSessions;
     }
 
-    @Transactional
+    @Transactional(Transactional.TxType.REQUIRES_NEW)
     public void saveSessions(FootbarAccountEntity footbarAccount, AppTeamEntity appTeam) {
+        // Reload in this account's transaction so lazy user/team relations are available.
+        footbarAccount = footbarAccountRepository.findById(footbarAccount.getId()).orElseThrow();
         String validAccessToken = footbarConnect.getValidAccessToken(footbarAccount);
         List<FootbarSessionDTO> sessions = fetchSessions(validAccessToken);
         for (FootbarSessionDTO session : sessions) {

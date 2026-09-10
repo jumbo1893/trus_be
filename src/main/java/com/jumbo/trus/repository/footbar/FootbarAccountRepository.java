@@ -10,6 +10,10 @@ import java.util.List;
 import java.util.Optional;
 
 public interface FootbarAccountRepository extends JpaRepository<FootbarAccountEntity, Long> {
+  @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+  @Query("SELECT a FROM FootbarAccountEntity a WHERE a.id = :id")
+  Optional<FootbarAccountEntity> findLockedById(@Param("id") Long id);
+
   Optional<FootbarAccountEntity> findByUserId(Long userId);
   Optional<FootbarAccountEntity> findByFootbarUserId(Long footbarUserId);
 

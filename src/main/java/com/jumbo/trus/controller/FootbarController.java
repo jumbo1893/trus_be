@@ -72,13 +72,14 @@ public class FootbarController {
     @PostMapping("/sync")
     @PostCommitTask
     @StoreAppTeam
-    public ResponseEntity<Map<String, Date>> syncActivities() {
+    public ResponseEntity<Map<String, Object>> syncActivities() {
         try {
             Date date = footbarService.syncSessions(appTeamService.getCurrentAppTeamOrThrow());
             return ResponseEntity.ok(Map.of("date", date));
         } catch (Exception e) {
             log.error("Neočekávaná chyba REST volání: {}", e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("date", new Date()));
+            return ResponseEntity.internalServerError().body(Map.of("message",
+                    "Synchronizace Footbaru nebyla dokončena pro všechny účty. Zkontrolujte propojení s Footbarem a zkuste to znovu."));
         }
     }
 

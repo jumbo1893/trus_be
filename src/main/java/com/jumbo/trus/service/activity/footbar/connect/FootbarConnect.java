@@ -20,6 +20,8 @@ import org.springframework.web.client.RestTemplate;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.transaction.annotation.Propagation;
 
 @Component
 @RequiredArgsConstructor
@@ -103,7 +105,7 @@ public class FootbarConnect {
     }
 
 
-    public FootbarAccountEntity refreshAccessToken(FootbarAccountEntity footbarAccountEntity) {
+    private FootbarAccountEntity refreshAccessToken(FootbarAccountEntity footbarAccountEntity) {
         try {
             String tokenUrl = footbarProperties.getTokenUrl();
 
@@ -116,35 +118,64 @@ public class FootbarConnect {
             if (response.getStatusCode().is2xxSuccessful()) {
                 FootbarTokenResponse tokenData = response.getBody();
 
-                assert tokenData != null;
+                if (tokenData == null || tokenData.getAccessToken() == null
+                        || tokenData.getAccessToken().isBlank() || tokenData.getExpiresIn() == null
+                        || tokenData.getExpiresIn() <= 0) {
+                    throw new IllegalStateException("Footbar vrátil neplatnou odpověď při obnově přístupu.");
+                }
                 footbarAccountEntity.setAccessToken(tokenData.getAccessToken());
-                footbarAccountEntity.setRefreshToken(tokenData.getRefreshToken());
+                // OAuth servers may omit the refresh token when it is unchanged.
+                if (tokenData.getRefreshToken() != null && !tokenData.getRefreshToken().isBlank()) {
+                    footbarAccountEntity.setRefreshToken(tokenData.getRefreshToken());
+                }
                 footbarAccountEntity.setTokenExpiry(Instant.now().getEpochSecond() + tokenData.getExpiresIn());
-                footbarAccountEntity.setLastSyncAt(Instant.now());
                 footbarAccountRepository.save(footbarAccountEntity);
 
                 return footbarAccountEntity;
             }
         } catch (RestClientResponseException e) {
-            String body = e.getResponseBodyAsString();
-            if (e.getStatusCode().isSameCodeAs(HttpStatus.UNAUTHORIZED)) {
-                deleteByFootbarUserId(footbarAccountEntity.getFootbarUserId());
-                log.debug("Footbar footbarUserId {} smazán z důvodu chybějících autentizací. Nejspíš se odpároval", footbarAccountEntity.getFootbarUserId());
-
+            if (isInvalidGrant(e)) {
+                // Clear credentials only; account and historical sessions must survive.
+                footbarAccountEntity.setAccessToken(null);
+                footbarAccountEntity.setRefreshToken(null);
+                footbarAccountEntity.setTokenExpiry(null);
+                footbarAccountRepository.save(footbarAccountEntity);
+                throw new FootbarReconnectRequiredException();
             }
-            log.debug("chyba {}", body);
-            throw new RuntimeException("Nepodařilo se obnovit Strava access token. Kód: " + e.getStatusCode());
+            // A 401/invalid_client or a temporary server failure does not prove
+            // that this user's grant was revoked. Do not discard their tokens.
+            throw new RuntimeException("Nepodařilo se obnovit Footbar access token. Kód: " + e.getStatusCode());
 
         }
-        return null;
+        throw new IllegalStateException("Footbar neobnovil přístupový token.");
     }
 
+    // Commit token rotation even if the caller later rolls back session import.
+    // The database lock serializes refreshes across all application instances.
+    @Transactional(propagation = Propagation.REQUIRES_NEW,
+            noRollbackFor = FootbarReconnectRequiredException.class)
     public String getValidAccessToken(FootbarAccountEntity footbarAccountEntity) {
+        footbarAccountEntity = footbarAccountRepository.findLockedById(footbarAccountEntity.getId())
+                .orElseThrow(FootbarReconnectRequiredException::new);
+        if (footbarAccountEntity.getRefreshToken() == null || footbarAccountEntity.getRefreshToken().isBlank()) {
+            throw new FootbarReconnectRequiredException();
+        }
         long now = Instant.now().getEpochSecond();
-        if (footbarAccountEntity.getTokenExpiry() == null || footbarAccountEntity.getTokenExpiry() < now) {
+        if (footbarAccountEntity.getAccessToken() == null || footbarAccountEntity.getTokenExpiry() == null
+                || footbarAccountEntity.getTokenExpiry() <= now + 30) {
             footbarAccountEntity = refreshAccessToken(footbarAccountEntity);
         }
         return footbarAccountEntity.getAccessToken();
+    }
+
+    private boolean isInvalidGrant(RestClientResponseException error) {
+        if (!error.getStatusCode().isSameCodeAs(HttpStatus.BAD_REQUEST)) return false;
+        try {
+            return "invalid_grant".equals(new ObjectMapper()
+                    .readTree(error.getResponseBodyAsString()).path("error").asText());
+        } catch (Exception ignored) {
+            return false;
+        }
     }
 
     private MultiValueMap<String, String> getValueMapWithClient() {
