@@ -78,9 +78,11 @@ class FootbarSessionPairingTest {
         match.setSeason(season);
         when(matches.findMatchByAroundTime(eq(team), any(), any())).thenReturn(match);
         processor.saveSessions(account, team);
-        verify(events).createEvent(any(), any(), isNull(), any());
+        verify(events).createEventForTeam(any(), any(), isNull(), any(), eq(team.getId()), isNull());
         assertSame(player, stored.getPlayer());
         assertSame(match, stored.getMatch());
+        processor.saveSessions(account, team);
+        verify(events, times(1)).createEventForTeam(any(), any(), isNull(), any(), eq(team.getId()), isNull());
     }
 
     @Test void missingDetailProducesDescriptiveErrorInsteadOfNullPointer() {

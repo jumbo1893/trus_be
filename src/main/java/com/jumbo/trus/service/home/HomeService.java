@@ -56,9 +56,23 @@ public class HomeService {
     private final CountryAchievementCalculator countryAchievementCalculator;
     private final WeatherService weatherService;
     private final MatchParticipationService matchParticipationService;
+    private final com.jumbo.trus.repository.footbar.FootbarAccountRepository footbarAccounts;
+    private final com.jumbo.trus.repository.footbar.FootbarSyncStateRepository footbarSyncStates;
 
     public HomeSetup setup(Long userId, AppTeamEntity appTeamEntity) {
         HomeSetup homeSetup = new HomeSetup();
+        footbarAccounts.findByUserId(userId).ifPresent(account -> {
+            if (account.getRefreshToken() == null || account.getRefreshToken().isBlank()) {
+                homeSetup.setFootbarWarning(com.jumbo.trus.service.activity.footbar.FootbarAutoSyncJob.RECONNECT);
+            } else {
+                footbarSyncStates.findById(account.getId()).ifPresent(sync -> {
+                    if (account.getLinkedAt() == null || (sync.getLastAttemptAt() != null
+                            && !sync.getLastAttemptAt().isBefore(account.getLinkedAt()))) {
+                        homeSetup.setFootbarWarning(sync.getWarning());
+                    }
+                });
+            }
+        });
         PlayerDTO player = getCurrentPlayerId(userId);
 
         homeSetup.setNextBirthday(getUpcomingBirthday(appTeamEntity.getId()));

@@ -19,6 +19,9 @@ import java.util.Set;
 import static com.jumbo.trus.config.Config.OTHER_SEASON_ID;
 
 public interface MatchRepository extends PagingAndSortingRepository<MatchEntity, Long>, JpaRepository<MatchEntity, Long>, JpaSpecificationExecutor<MatchEntity> {
+    @Query("SELECT DISTINCT m FROM match m LEFT JOIN FETCH m.playerList JOIN FETCH m.appTeam "
+            + "WHERE m.date >= :from AND m.date <= :to")
+    List<MatchEntity> findFootbarSyncWindow(@Param("from") Date from, @Param("to") Date to);
 
     @Query("""
             SELECT DISTINCT m.season.id FROM match m

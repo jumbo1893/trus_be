@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface FootballMatchRepository extends JpaRepository<FootballMatchEntity, Long>, JpaSpecificationExecutor<FootballMatchEntity> {
+    @Query("SELECT m FROM FootballMatchEntity m WHERE m.date >= :from AND m.date <= :to")
+    List<FootballMatchEntity> findFootbarSyncWindow(@Param("from") Date from, @Param("to") Date to);
 
     @Query("""
             SELECT m FROM FootballMatchEntity m

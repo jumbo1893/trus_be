@@ -20,14 +20,14 @@ import static org.mockito.ArgumentMatchers.*;
 class FootbarRecoveryTest {
     FootbarAccountRepository accounts;
     FootbarSessionRepository sessions;
-    RestTemplate http;
+    FootbarRestTemplate http;
     FootbarConnect connect;
     FootbarAccountEntity account;
 
     @BeforeEach void setup() {
         accounts = mock(FootbarAccountRepository.class);
         sessions = mock(FootbarSessionRepository.class);
-        http = mock(RestTemplate.class);
+        http = mock(FootbarRestTemplate.class);
         FootbarProperties properties = new FootbarProperties();
         properties.setTokenUrl("https://example.test/token");
         properties.setClientId("client");

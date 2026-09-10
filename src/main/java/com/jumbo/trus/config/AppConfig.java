@@ -26,6 +26,7 @@ public class AppConfig {
     }
 
     @Bean
+    @org.springframework.context.annotation.Primary
     public RestTemplate restTemplate() {
         return new RestTemplate();
     }

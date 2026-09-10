@@ -40,7 +40,7 @@ public class FootbarSessionProcessor {
     private final com.jumbo.trus.repository.footbar.FootbarAccountRepository footbarAccountRepository;
 
     private final FootbarSessionRepository footbarSessionRepository;
-    private final RestTemplate restTemplate;
+    private final com.jumbo.trus.service.activity.footbar.FootbarRestTemplate restTemplate;
     private final FootbarConnect footbarConnect;
     private final FootbarProperties footbarProperties;
     private final ObjectMapper mapper;
@@ -49,10 +49,12 @@ public class FootbarSessionProcessor {
     private final OutboxEventService outboxEventService;
 
     public List<FootbarSessionDTO> fetchSessions(String accessToken) {
+        Instant deadline = Instant.now().plusSeconds(20 * 60);
         List<FootbarSessionDTO> allSessions = new ArrayList<>();
         int page = 1;
 
         while (true) {
+            if (Instant.now().isAfter(deadline)) throw new IllegalStateException("Footbar import překročil časový limit.");
             String url = String.format(
                     footbarProperties.returnSessionListUrl()+"?page=%d",
                     page
@@ -82,12 +84,19 @@ public class FootbarSessionProcessor {
 
     @Transactional(Transactional.TxType.REQUIRES_NEW)
     public void saveSessions(FootbarAccountEntity footbarAccount, AppTeamEntity appTeam) {
+        Instant deadline = Instant.now().plusSeconds(20 * 60);
         // Reload in this account's transaction so lazy user/team relations are available.
         footbarAccount = footbarAccountRepository.findById(footbarAccount.getId()).orElseThrow();
         String validAccessToken = footbarConnect.getValidAccessToken(footbarAccount);
         List<FootbarSessionDTO> sessions = fetchSessions(validAccessToken);
         for (FootbarSessionDTO session : sessions) {
+            if (Instant.now().isAfter(deadline)) throw new IllegalStateException("Footbar import překročil časový limit.");
             FootbarSessionEntity repoEntity = findByAccountAndSessionId(session, footbarAccount);
+            // A session already assigned to another team must not be stolen or
+            // unpaired by importing this account's history for another membership.
+            if (repoEntity != null && repoEntity.getMatch() != null
+                    && repoEntity.getMatch().getAppTeam() != null
+                    && !appTeam.getId().equals(repoEntity.getMatch().getAppTeam().getId())) continue;
             FootbarSessionEntity savedSession;
             if(repoEntity == null) {
                 FootbarSessionDTO detailedSession = fetchFootbarSessionDetail(session.getFootbarSessionId(), validAccessToken);
@@ -113,13 +122,19 @@ public class FootbarSessionProcessor {
                 log.debug("Footbar session {} saved without complete match/player pairing", savedSession.getId());
                 continue;
             }
-            outboxEventService.createEvent(OutboxEventType.FOOTBAR_SESSION_SAVED, OutboxAggregateType.FOOTBAR, null,
+            if (Objects.equals(savedSession.getNotifiedMatchId(), savedSession.getMatch().getId())
+                    && Objects.equals(savedSession.getNotifiedPlayerId(), savedSession.getPlayer().getId())
+                    && Objects.equals(savedSession.getNotifiedSeasonId(), savedSession.getMatch().getSeason().getId())) continue;
+            outboxEventService.createEventForTeam(OutboxEventType.FOOTBAR_SESSION_SAVED, OutboxAggregateType.FOOTBAR, null,
                     OutboxEventPayloadFactory.footbarUpdated(
                             savedSession.getMatch().getId(),
                             savedSession.getMatch().getSeason().getId(),
                             Set.of(savedSession.getPlayer().getId()),
                             Set.of(savedSession.getId())
-                            ));
+                            ), appTeam.getId(), null);
+            savedSession.setNotifiedMatchId(savedSession.getMatch().getId());
+            savedSession.setNotifiedPlayerId(savedSession.getPlayer().getId());
+            savedSession.setNotifiedSeasonId(savedSession.getMatch().getSeason().getId());
         }
     }
 

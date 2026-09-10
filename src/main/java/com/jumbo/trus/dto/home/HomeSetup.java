@@ -40,5 +40,7 @@ public class HomeSetup {
     private MatchParticipationPrompt participationPrompt;
 
     private List<StatsBoardData> statsBoards;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String footbarWarning;
 
 }

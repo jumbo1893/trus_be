@@ -29,7 +29,7 @@ import org.springframework.transaction.annotation.Propagation;
 public class FootbarConnect {
 
     private final FootbarAccountRepository footbarAccountRepository;
-    private final RestTemplate restTemplate;
+    private final com.jumbo.trus.service.activity.footbar.FootbarRestTemplate restTemplate;
     private final FootbarProperties footbarProperties;
     private final UserService userService;
     private final PKCEGenerator pkceGenerator;

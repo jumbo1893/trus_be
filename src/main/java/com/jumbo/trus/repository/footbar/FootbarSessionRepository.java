@@ -17,6 +17,11 @@ import java.util.Optional;
 
 @Repository
 public interface FootbarSessionRepository extends JpaRepository<FootbarSessionEntity, Long>, JpaSpecificationExecutor<FootbarSessionEntity> {
+    boolean existsByFootbarAccount_IdAndMatch_Id(Long accountId, Long matchId);
+    @Query("SELECT count(s) > 0 FROM FootbarSessionEntity s WHERE s.footbarAccount.id = :accountId "
+            + "AND s.startDate < :end AND s.stopDate > :start")
+    boolean existsForTimeWindow(@Param("accountId") Long accountId, @Param("start") java.util.Date start,
+                               @Param("end") java.util.Date end);
     List<FootbarSessionEntity> findByFootbarAccount(FootbarAccountEntity footbarAccount);
 
     Optional<FootbarSessionEntity> findByfootbarSessionIdAndFootbarAccount(Long footbarSessionId, FootbarAccountEntity footbarAccount);

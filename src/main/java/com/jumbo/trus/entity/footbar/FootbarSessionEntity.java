@@ -30,6 +30,11 @@ public class FootbarSessionEntity {
      */
     @Column(name = "footbar_session_id", nullable = false, unique = true)
     private Long footbarSessionId;
+    // Last pairing for which an achievement event was queued; prevents repeat
+    // notifications/calculations on every automatic five-minute poll.
+    private Long notifiedMatchId;
+    private Long notifiedPlayerId;
+    private Long notifiedSeasonId;
     private Date startDate;
     private Date stopDate;
     private Double playingTime;
