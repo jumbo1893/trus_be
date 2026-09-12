@@ -22,4 +22,11 @@ public class MatchParticipationRequest {
 
     @Size(max = 1000)
     private String comment;
+
+    private Boolean playing;
+
+    public MatchParticipationRequest(Long footballMatchId, Long playerId,
+                                     MatchParticipationStatus status, String comment) {
+        this(footballMatchId, playerId, status, comment, null);
+    }
 }

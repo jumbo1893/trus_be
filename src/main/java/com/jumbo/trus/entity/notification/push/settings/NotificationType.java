@@ -13,7 +13,8 @@ public enum NotificationType {
     FINE(20),
     PLAYER_ACHIEVEMENT(70),
     ACHIEVEMENT_PROGRESS(75),
-    APP_TEAM_ACHIEVEMENT(80);
+    APP_TEAM_ACHIEVEMENT(80),
+    MATCH_PARTICIPATION(45);
 
     private final int order;
     NotificationType(int order) { this.order = order; }

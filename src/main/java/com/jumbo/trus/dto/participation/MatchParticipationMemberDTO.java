@@ -15,4 +15,12 @@ public class MatchParticipationMemberDTO {
 
     private PlayerDTO player;
     private List<MatchParticipationCommentDTO> comments = new ArrayList<>();
+    private boolean playing;
+    private PlayerDTO respondedBy;
+    private boolean canDelete;
+
+    public MatchParticipationMemberDTO(PlayerDTO player, List<MatchParticipationCommentDTO> comments) {
+        this.player = player;
+        this.comments = comments;
+    }
 }

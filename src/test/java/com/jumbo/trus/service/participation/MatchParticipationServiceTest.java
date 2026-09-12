@@ -49,6 +49,74 @@ import static org.mockito.Mockito.when;
 
 class MatchParticipationServiceTest {
 
+    @Test
+    void fanDefaultsToNonPlayingAndAuthorCanDeleteProxyResponse() {
+        var team = appTeam(1L, 10L);
+        var actor = player(3L, team);
+        var fan = player(4L, team); fan.setFan(true);
+        when(footballMatchRepository.findById(20L)).thenReturn(Optional.of(footballMatch(20L, 10L, 11L)));
+        when(userTeamRoleRepository.findByUserIdAndAppTeamId(2L, 1L))
+                .thenReturn(Optional.of(role(team, actor)));
+        when(playerRepository.findById(4L)).thenReturn(Optional.of(fan));
+        service.respond(2L, team, new MatchParticipationRequest(20L, 4L, MatchParticipationStatus.ATTENDING, null));
+        var captor = ArgumentCaptor.forClass(MatchParticipationEntity.class);
+        verify(participationRepository).save(captor.capture());
+        assertThat(captor.getValue().getPlaying()).isFalse();
+        when(participationRepository.findByFootballMatchIdAndAppTeamIdAndPlayerId(20L, 1L, 4L))
+                .thenReturn(Optional.of(captor.getValue()));
+        service.deleteResponse(2L, team, 20L, 4L);
+        verify(participationRepository).delete(captor.getValue());
+    }
+
+    @Test
+    void proxyResponseKeepsIdentityAndRecordsAuthorAndPlaying() {
+        var team = appTeam(1L, 10L);
+        var actor = player(3L, team);
+        var target = player(4L, team);
+        target.setFan(true);
+        var role = role(team, actor);
+        when(footballMatchRepository.findById(20L)).thenReturn(Optional.of(footballMatch(20L, 10L, 11L)));
+        when(userTeamRoleRepository.findByUserIdAndAppTeamId(2L, 1L)).thenReturn(Optional.of(role));
+        when(playerRepository.findById(4L)).thenReturn(Optional.of(target));
+        when(playerMapper.toDTO(actor)).thenReturn(playerDto(3L));
+        var request = new MatchParticipationRequest(20L, 4L, MatchParticipationStatus.ATTENDING, "Přijde", true);
+        var result = service.respond(2L, team, request);
+        verify(participationRepository).save(argThat(p -> p.getPlayer() == target
+                && p.getRespondedBy() == actor && Boolean.TRUE.equals(p.getPlaying())));
+        verify(commentRepository).save(argThat(c -> c.getAuthor() == actor));
+        verify(appTeamService, never()).pairPlayerToRole(any(), any(), any(), any());
+        assertThat(result.getCurrentPlayer().getId()).isEqualTo(3L);
+    }
+
+    @Test
+    void proxyResponseRejectsOtherTeamPlayer() {
+        var team = appTeam(1L, 10L);
+        when(footballMatchRepository.findById(20L)).thenReturn(Optional.of(footballMatch(20L, 10L, 11L)));
+        when(userTeamRoleRepository.findByUserIdAndAppTeamId(2L, 1L))
+                .thenReturn(Optional.of(role(team, player(3L, team))));
+        when(playerRepository.findById(4L)).thenReturn(Optional.of(player(4L, appTeam(9L, 10L))));
+        assertThatThrownBy(() -> service.respond(2L, team,
+                new MatchParticipationRequest(20L, 4L, MatchParticipationStatus.ATTENDING, null)))
+                .isInstanceOf(FieldValidationException.class);
+        verify(participationRepository, never()).save(any());
+    }
+
+    @Test
+    void unrelatedParticipantCannotDeleteResponse() {
+        var team = appTeam(1L, 10L);
+        var target = player(4L, team);
+        var entry = participation(target, MatchParticipationStatus.ATTENDING, Instant.now());
+        entry.setRespondedBy(player(5L, team));
+        when(footballMatchRepository.findById(20L)).thenReturn(Optional.of(footballMatch(20L, 10L, 11L)));
+        when(userTeamRoleRepository.findByUserIdAndAppTeamId(2L, 1L))
+                .thenReturn(Optional.of(role(team, player(3L, team))));
+        when(participationRepository.findByFootballMatchIdAndAppTeamIdAndPlayerId(20L, 1L, 4L))
+                .thenReturn(Optional.of(entry));
+        assertThatThrownBy(() -> service.deleteResponse(2L, team, 20L, 4L))
+                .isInstanceOf(FieldValidationException.class);
+        verify(participationRepository, never()).delete(any());
+    }
+
     private final MatchParticipationRepository participationRepository = mock(MatchParticipationRepository.class);
     private final MatchParticipationCommentRepository commentRepository = mock(MatchParticipationCommentRepository.class);
     private final MatchParticipationCommentReactionRepository reactionRepository = mock(MatchParticipationCommentReactionRepository.class);
@@ -71,7 +139,8 @@ class MatchParticipationServiceTest {
             playerMapper,
             footballMatchService,
             playerService,
-            appTeamService
+            appTeamService,
+            mock(ParticipationNotificationService.class)
     );
 
     @Test

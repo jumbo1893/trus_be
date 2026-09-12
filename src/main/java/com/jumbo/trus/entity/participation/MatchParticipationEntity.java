@@ -60,4 +60,10 @@ public class MatchParticipationEntity {
 
     @Column(nullable = false)
     private Instant respondedAt;
+
+    // Nullable for existing records; their default follows the player's fan flag.
+    private Boolean playing;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private PlayerEntity respondedBy;
 }

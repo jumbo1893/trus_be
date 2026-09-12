@@ -65,6 +65,13 @@ public class MatchParticipationController {
     }
 
     @RoleRequired("READER")
+    @DeleteMapping("/{footballMatchId}/player/{playerId}")
+    public MatchParticipationDetail deleteResponse(@PathVariable Long footballMatchId, @PathVariable Long playerId) {
+        return participationService.deleteResponse(currentUser().getId(),
+                appTeamService.getCurrentAppTeamOrThrow(), footballMatchId, playerId);
+    }
+
+    @RoleRequired("READER")
     @PostMapping("/comment")
     public MatchParticipationDetail addComment(
             @RequestBody @Valid MatchParticipationCommentRequest request

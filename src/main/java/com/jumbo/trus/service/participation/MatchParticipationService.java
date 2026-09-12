@@ -66,6 +66,7 @@ public class MatchParticipationService {
     private final FootballMatchService footballMatchService;
     private final PlayerService playerService;
     private final AppTeamService appTeamService;
+    private final ParticipationNotificationService participationNotifications;
 
     @Transactional
     public MatchParticipationPrompt getPrompt(
@@ -143,11 +144,25 @@ public class MatchParticipationService {
         participation.setFootballMatch(footballMatch);
         participation.setPlayer(player);
         participation.setStatus(request.getStatus());
+        // Outside ATTENDING ignore the submitted playing flag, preserving the last attendance preference.
+        participation.setPlaying(request.getStatus() == MatchParticipationStatus.ATTENDING && request.getPlaying() != null ? request.getPlaying()
+                : participation.getPlaying() != null ? participation.getPlaying() : !player.isFan());
+        PlayerEntity author = isTeamParticipant(role.getPlayer(), appTeam) ? role.getPlayer() : player;
+        participation.setRespondedBy(author);
         participation.setRespondedAt(Instant.now());
         participationRepository.save(participation);
-        addCommentIfPresent(participation, player, request.getComment(), null);
+        addCommentIfPresent(participation, author, request.getComment(), null);
+        participationNotifications.notifyChange(userId, appTeam.getId(), footballMatch.getId(),
+                author.getName() + (Objects.equals(author.getId(), player.getId()) ? "" : " za " + player.getName())
+                        + ": " + switch (request.getStatus()) {
+                    case ATTENDING -> "zúčastní se";
+                    case MAYBE -> "možná se zúčastní";
+                    case NOT_ATTENDING -> "nezúčastní se";
+                } + (request.getStatus() != MatchParticipationStatus.ATTENDING ? ""
+                        : Boolean.TRUE.equals(participation.getPlaying()) ? " (hrající)" : " (nehrající)"),
+                request.getComment());
 
-        return buildDetail(footballMatch, appTeam, player);
+        return buildDetail(footballMatch, appTeam, author);
     }
 
     @Transactional
@@ -170,7 +185,8 @@ public class MatchParticipationService {
                         request.getFootballMatchId(),
                         createdPlayer.getId(),
                         request.getStatus(),
-                        request.getComment()
+                        request.getComment(),
+                        request.getPlaying()
                 )
         );
     }
@@ -208,6 +224,8 @@ public class MatchParticipationService {
         }
 
         addCommentIfPresent(participation, author, request.getText(), parent);
+        participationNotifications.notifyChange(userId, appTeam.getId(), footballMatch.getId(),
+                author.getName() + ": přidal komentář", request.getText());
         return buildDetail(footballMatch, appTeam, author);
     }
 
@@ -284,6 +302,34 @@ public class MatchParticipationService {
     }
 
     @Transactional
+    public MatchParticipationDetail deleteResponse(Long userId, AppTeamEntity appTeam,
+                                                   Long footballMatchId, Long playerId) {
+        FootballMatchEntity match = getFootballMatchForTeam(footballMatchId, appTeam);
+        PlayerEntity actor = requireCurrentParticipant(userId, appTeam);
+        MatchParticipationEntity participation = participationRepository
+                .findByFootballMatchIdAndAppTeamIdAndPlayerId(footballMatchId, appTeam.getId(), playerId)
+                .orElseThrow(() -> new NotFoundException("Účast nebyla nalezena."));
+        // Only the represented participant or the author may remove a proxy response.
+        if (!canDeleteResponse(participation, actor)) {
+            throw validationError("playerId", "Účast může smazat jen její autor nebo dotčený hráč.");
+        }
+        List<Long> ids = commentRepository.findAllByParticipationIdOrderByCreatedAtAsc(participation.getId())
+                .stream().map(MatchParticipationCommentEntity::getId).toList();
+        if (!ids.isEmpty()) {
+            reactionRepository.deleteAllByCommentIds(ids);
+            commentRepository.deleteAllByIds(ids);
+        }
+        participationRepository.delete(participation);
+        return buildDetail(match, appTeam, actor);
+    }
+
+    private boolean canDeleteResponse(MatchParticipationEntity participation, PlayerEntity actor) {
+        return actor != null && (Objects.equals(actor.getId(), participation.getPlayer().getId())
+                || participation.getRespondedBy() != null
+                && Objects.equals(actor.getId(), participation.getRespondedBy().getId()));
+    }
+
+    @Transactional
     public MatchParticipationPromptAudienceConfig updatePromptAudience(
             AppTeamEntity appTeam,
             MatchParticipationPromptAudienceConfig config
@@ -353,6 +399,10 @@ public class MatchParticipationService {
                     )
             );
             boolean fan = participation.getPlayer().isFan();
+            member.setPlaying(participation.getPlaying() == null ? !fan : participation.getPlaying());
+            member.setRespondedBy(participation.getRespondedBy() == null ? null
+                    : playerMapper.toDTO(participation.getRespondedBy()));
+            member.setCanDelete(canDeleteResponse(participation, currentPlayer));
             switch (participation.getStatus()) {
                 case ATTENDING -> (fan ? attendingFans : attendingPlayers).add(member);
                 case MAYBE -> (fan ? maybeFans : maybePlayers).add(member);
@@ -374,7 +424,7 @@ public class MatchParticipationService {
         detail.setMaybeFans(maybeFans);
         detail.setNotAttendingPlayers(notAttendingPlayers);
         detail.setNotAttendingFans(notAttendingFans);
-        detail.setEligiblePlayers(currentPlayer == null ? getEligibleParticipants(appTeam.getId()) : List.of());
+        detail.setEligiblePlayers(getEligibleParticipants(appTeam.getId()));
         return detail;
     }
 
@@ -465,10 +515,9 @@ public class MatchParticipationService {
     ) {
         if (isTeamParticipant(role.getPlayer(), appTeam)) {
             if (requestedPlayerId != null && !Objects.equals(requestedPlayerId, role.getPlayer().getId())) {
-                throw validationError(
-                        "playerId",
-                        "Odpověď lze uložit jen za hráče nebo fanouška spárovaného s účtem."
-                );
+                return playerRepository.findById(requestedPlayerId)
+                        .filter(player -> isTeamParticipant(player, appTeam))
+                        .orElseThrow(() -> validationError("playerId", "Hráč nepatří do aktuálního týmu."));
             }
             return role.getPlayer();
         }

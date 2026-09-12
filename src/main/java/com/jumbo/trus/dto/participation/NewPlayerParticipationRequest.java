@@ -26,4 +26,9 @@ public class NewPlayerParticipationRequest {
     @Valid
     @NotNull
     private PlayerDTO player;
+    private Boolean playing;
+
+    public NewPlayerParticipationRequest(Long footballMatchId, MatchParticipationStatus status, String comment, PlayerDTO player) {
+        this(footballMatchId, status, comment, player, null);
+    }
 }
