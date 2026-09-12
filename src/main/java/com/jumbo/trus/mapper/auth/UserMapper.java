@@ -11,6 +11,8 @@ public abstract class UserMapper {
 
     @Mapping(target = "appTeamsOwner", ignore = true)
     @Mapping(target = "firebaseUid", ignore = true)
+    @Mapping(target = "onboardingCompleted", ignore = true)
+    @Mapping(target = "onboardingStarted", ignore = true)
     @Mapping(target = "authorities", ignore = true)
     @Mapping(target = "athletes", ignore = true)
     @Mapping(target = "deviceTokens", ignore = true)

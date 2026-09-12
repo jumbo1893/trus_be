@@ -35,6 +35,11 @@ public class UserEntity implements UserDetails {
 
     private String name;
 
+    // Null identifies accounts predating onboarding: never auto-open on upgrade.
+    private Integer onboardingCompleted;
+
+    private Boolean onboardingStarted;
+
     @Column(nullable = false)
     private String password;
 

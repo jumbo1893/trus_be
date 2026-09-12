@@ -12,6 +12,10 @@ import java.util.Optional;
 
 public interface FootballPlayerRepository extends JpaRepository<FootballPlayerEntity, Long> {
 
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT p FROM football_player p WHERE p.id = :id")
+    Optional<FootballPlayerEntity> findByIdForUpdate(@Param("id") Long id);
+
     boolean existsByUri(String uri);
 
     FootballPlayerEntity findByUri(String uri);

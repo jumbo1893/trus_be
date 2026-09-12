@@ -73,6 +73,7 @@ class UserServiceTest {
         assertNotNull(savedUser.getValue().getDeviceTokens());
         assertNotNull(savedUser.getValue().getEnabledPushNotifications());
         assertNotNull(savedUser.getValue().getTeamRoles());
+        assertEquals(0, savedUser.getValue().getOnboardingCompleted());
     }
 
     @Test
@@ -114,6 +115,7 @@ class UserServiceTest {
         assertEquals("firebase-42", savedUser.getValue().getFirebaseUid());
         assertEquals("player@example.com", savedUser.getValue().getMail());
         assertEquals("Player", savedUser.getValue().getName());
+        assertEquals(0, savedUser.getValue().getOnboardingCompleted());
         verify(membershipService).initializeBaselineForNewUser(savedUser.getValue());
     }
 }

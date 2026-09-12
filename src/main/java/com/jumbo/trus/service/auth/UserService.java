@@ -82,6 +82,7 @@ public class UserService implements UserDetailsService {
     @Transactional
     public UserDTO create(UserDTO user) {
         UserEntity entity = new UserEntity();
+        entity.setOnboardingCompleted(0);
         entity.setMail(user.getMail().toLowerCase().trim());
         entity.setPassword(passwordEncoder.encode(user.getPassword()));
         entity.setName(user.getName().trim());
@@ -131,6 +132,7 @@ public class UserService implements UserDetailsService {
 
         UserEntity entity = new UserEntity();
         entity.setFirebaseUid(identity.uid());
+        entity.setOnboardingCompleted(0);
         entity.setMail(normalizedEmail);
         entity.setName(resolveRegistrationName(requestedName, identity));
         // Sloupec zůstává během kompatibilní migrace NOT NULL, ale nové přihlášení
