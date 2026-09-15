@@ -4,8 +4,13 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
-import java.time.*;
-import java.util.*;
+
+import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 class CzechCelebrationCalendarTest {
@@ -30,7 +35,7 @@ class CzechCelebrationCalendarTest {
         assertThat(calendar.reasons(LocalDate.of(2024, 2, 29), "Novák Horymír")).containsExactly("Jmeniny: Horymír");
         assertThat(calendar.reasons(LocalDate.of(2025, 2, 28), "Novák Horymír")).isEmpty();
         assertThat(calendar.reasons(LocalDate.of(2026, 9, 28), "Novák Václav"))
-                .containsExactly("Státní / ostatní svátek: Den české státnosti", "Jmeniny: Václav");
+                .containsExactly("Státní svátek: Den české státnosti", "Jmeniny: Václav");
         assertThat(calendar.reasons(LocalDate.of(2026, 2, 2), "Novák Hromnice")).isEmpty();
     }
 
@@ -38,7 +43,8 @@ class CzechCelebrationCalendarTest {
     void allYearsContainExactlyTheRequestedFixedAndMovableHolidays() throws Exception {
         Map<String, String> dates;
         try (var stream = new ClassPathResource("calendar/czech-public-holidays-2020-2040.json").getInputStream()) {
-            dates = mapper.readValue(stream, new TypeReference<Map<String, String>>() {});
+            dates = mapper.readValue(stream, new TypeReference<>() {
+            });
         }
         assertThat(dates).hasSize(273);
         for (int year = 2020; year <= 2040; year++) {

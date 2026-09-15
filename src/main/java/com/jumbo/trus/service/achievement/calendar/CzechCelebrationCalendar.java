@@ -4,11 +4,15 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
+
 import java.io.IOException;
 import java.text.Normalizer;
 import java.time.LocalDate;
 import java.time.MonthDay;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 /** Versioned offline dictionaries; no external API is called when awarding achievements. */
 @Component
@@ -19,8 +23,10 @@ public class CzechCelebrationCalendar {
     public CzechCelebrationCalendar(ObjectMapper mapper) throws IOException {
         try (var names = new ClassPathResource("calendar/czech-namedays.json").getInputStream();
              var dates = new ClassPathResource("calendar/czech-public-holidays-2020-2040.json").getInputStream()) {
-            namedays = mapper.readValue(names, new TypeReference<Map<String, List<String>>>() {});
-            holidays = mapper.readValue(dates, new TypeReference<Map<String, String>>() {});
+            namedays = mapper.readValue(names, new TypeReference<>() {
+            });
+            holidays = mapper.readValue(dates, new TypeReference<>() {
+            });
         }
         // Invalid bundled data must fail startup rather than silently miss awards.
         namedays.keySet().forEach(key -> MonthDay.parse("--" + key));
@@ -31,7 +37,7 @@ public class CzechCelebrationCalendar {
     public List<String> reasons(LocalDate date, String footballPlayerName) {
         List<String> result = new ArrayList<>();
         String holiday = holidays.get(date.toString());
-        if (holiday != null) result.add("Státní / ostatní svátek: " + holiday);
+        if (holiday != null) result.add("Státní svátek: " + holiday);
         String firstName = firstName(footballPlayerName);
         if (!firstName.isEmpty()) {
             namedays.getOrDefault(date.toString().substring(5), List.of()).stream()
