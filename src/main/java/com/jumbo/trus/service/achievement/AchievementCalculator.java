@@ -73,6 +73,7 @@ public class AchievementCalculator {
     private final StepAchievementCalculator stepAchievementCalculator;
     private final MembershipService membershipService;
     private final AchievementMatchReadiness matchReadiness;
+    private final com.jumbo.trus.service.achievement.calendar.CzechCelebrationCalendar celebrationCalendar;
     private final ThreadLocal<Long> eventSeasonId = new ThreadLocal<>();
     private final Map<String, AchievementFunction> achievementCalculators =
             Map.<String, AchievementFunction>ofEntries(
@@ -149,6 +150,7 @@ public class AchievementCalculator {
                     Map.entry("ULTRUS", (p, a, at, t) -> calculateFanAttendanceMilestoneAchievement(p, a, at, t, 30)),
                     Map.entry("PERMICE_NA_TRUS", (p, a, at, t) -> calculateFanAttendanceMilestoneAchievement(p, a, at, t, 10)),
                     Map.entry("DO_POCTU", this::calculateDO_POCTUAchievement),
+                    Map.entry(AchievementCodes.SVATECNI_STRELEC, (p, a, at, t) -> calculateSvatecniStrelec(p, a, at, t, null)),
                     Map.entry(AchievementCodes.STRELKY, (p, a, at, t) -> calculateStrelky(p, a, at, t, null)),
                     Map.entry("HATTRICK_GORDIEHO_HOWA", this::calculateHATTRICK_GORDIEHO_HOWAAchievement),
                     Map.entry("AMERICKY_FOTBALISTA", (p, a, at, t) -> calculateFineMilestoneAchievement(p, a, at, t, List.of(FineCodes.OVERKICK), 10)),
@@ -206,6 +208,7 @@ public class AchievementCalculator {
                     Map.entry("NESOBECKY_HRDINA", this::calculateNESOBECKY_HRDINAAchievementForMatch),
                     Map.entry("MODERNI_GOLMANSKA_SKOLA", this::calculateMODERNI_GOLMANSKA_SKOLAAchievementForMatch),
                     Map.entry("MORALNI_PODPORA", this::calculateMORALNI_PODPORAAchievementForMatch),
+                    Map.entry(AchievementCodes.SVATECNI_STRELEC, this::calculateSvatecniStrelec),
                     Map.entry(AchievementCodes.STRELKY, this::calculateStrelky),
                     Map.entry("HATTRICK_GORDIEHO_HOWA", this::calculateHATTRICK_GORDIEHO_HOWAAchievementForMatch),
                     Map.entry("PO_PORADNE_PRACI_PORADNA_OSLAVA", (p, a, at, t, m) -> returnFailedPlayerAchievement(a, p)),
@@ -1520,6 +1523,22 @@ public class AchievementCalculator {
                             result.getFirstNumber() + " pivy a " + result.getSecondNumber() + " panáky");
         }
         return returnFailedPlayerAchievement(achievement, playerDTO);
+    }
+
+    private PlayerAchievementDTO calculateSvatecniStrelec(PlayerDTO player, AchievementDTO achievement,
+            AppTeamEntity team, AchievementType type, Long matchId) {
+        if (player.isFan()) return returnFailedPlayerAchievement(achievement, player);
+        String name = player.getFootballPlayer() == null ? null : player.getFootballPlayer().getName();
+        for (IHolidayGoalMatch candidate : playerAchievementRepository.findHolidayGoalCandidates(player.getId(), team.getId(), matchId)) {
+            if (candidate.getMatchDate() == null || candidate.getGoals() == null || candidate.getGoals() <= 0) continue;
+            var date = candidate.getMatchDate().toInstant().atZone(java.time.ZoneId.of("Europe/Prague")).toLocalDate();
+            List<String> reasons = celebrationCalendar.reasons(date, name);
+            if (!reasons.isEmpty()) {
+                return returnPlayerAchievement(achievement, player, candidate.getMatchId(),
+                        String.join("; ", reasons) + ". Počet gólů: " + candidate.getGoals() + ".");
+            }
+        }
+        return returnFailedPlayerAchievement(achievement, player);
     }
 
     private PlayerAchievementDTO calculateStrelky(PlayerDTO player, AchievementDTO achievement,

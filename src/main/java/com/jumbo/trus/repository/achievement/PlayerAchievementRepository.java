@@ -1423,6 +1423,20 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
     IMatchIdNumberOneNumberTwo findStrelky(@Param("playerId") Long playerId,
             @Param("appTeamId") Long appTeamId, @Param("matchId") Long matchId);
 
+    @Query(value = """
+            SELECT m.id AS matchId, m.date AS matchDate, CAST(g.goal_number AS int) AS goals
+            FROM goal g
+            JOIN match m ON m.id = g.match_id
+            JOIN player p ON p.id = g.player_id
+            WHERE g.player_id = :playerId AND p.app_team_id = :appTeamId
+              AND m.app_team_id = :appTeamId AND p.fan = false
+              AND g.goal_number > 0 AND m.date <= CURRENT_TIMESTAMP
+              AND (CAST(:matchId AS bigint) IS NULL OR m.id = :matchId)
+            ORDER BY m.date ASC, m.id ASC
+            """, nativeQuery = true)
+    List<IHolidayGoalMatch> findHolidayGoalCandidates(@Param("playerId") Long playerId,
+            @Param("appTeamId") Long appTeamId, @Param("matchId") Long matchId);
+
     // Komplexní hráč
     @Query(value = """
             SELECT g.match_id AS matchId,

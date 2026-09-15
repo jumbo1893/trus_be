@@ -215,6 +215,8 @@ public class AchievementInitializer implements CommandLineRunner {
                         false, EnumSet.of(OutboxAggregateType.RECEIVED_FINE), AchievementCalculationScope.ALL),
                 new AchievementEntity("Alzheimer", ALZHEIMER, true, "Dostaň pokutu za zapomenutí věcí nebo nekompletní výbavu",
                         false, EnumSet.of(OutboxAggregateType.RECEIVED_FINE), AchievementCalculationScope.MATCH),
+                new AchievementEntity("Sváteční střelec", SVATECNI_STRELEC, true, "Vstřel gól buď na svůj nebo na státní svátek",
+                        false, EnumSet.of(OutboxAggregateType.GOAL, OutboxAggregateType.MATCH, OutboxAggregateType.PLAYER), AchievementCalculationScope.MATCH),
                 new AchievementEntity("Střelky", STRELKY, true, "Kup si nové kopačky a rovnou je pokřti vstřeleným gólem",
                         false, EnumSet.of(OutboxAggregateType.GOAL, OutboxAggregateType.RECEIVED_FINE), AchievementCalculationScope.MATCH),
                 new AchievementEntity("Leo Beránek", LEO_BERANEK, true, "Já mám nové boty, koupil jsem si nové boty. Konkrétně kopačky",
