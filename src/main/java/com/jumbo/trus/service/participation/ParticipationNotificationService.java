@@ -21,6 +21,8 @@ public class ParticipationNotificationService {
     private final DeviceTokenRepository tokens;
     private final MatchParticipationRepository participations;
     private final PushService push;
+    private final com.jumbo.trus.repository.football.FootballMatchRepository matches;
+    private final com.jumbo.trus.repository.auth.AppTeamRepository teams;
 
     public void notifyChange(Long actorUserId, Long teamId, Long matchId, String action, String comment) {
         // Never announce a rolled-back response. Read recipients and total after commit.
@@ -30,7 +32,7 @@ public class ParticipationNotificationService {
                             && !p.getPlayer().isDeleted()).toList();
             long playing = attending.stream().filter(p -> p.getPlaying() == null
                     ? !p.getPlayer().isFan() : p.getPlaying()).count();
-            String body = action + ". Hrajících účastníků: " + playing
+            String body = matchLabel(teamId, matchId) + "\n" + action + ". Hrajících účastníků: " + playing
                     + ". Celkem se účastní: " + attending.size() + ".";
             if (comment != null && !comment.isBlank()) {
                 String text = comment.trim();
@@ -50,5 +52,18 @@ public class ParticipationNotificationService {
                 }
             }
         });
+    }
+
+    private String matchLabel(Long teamId, Long matchId) {
+        var match = matches.findById(matchId).orElse(null);
+        var team = teams.findById(teamId).orElse(null);
+        if (match == null) return "Zápas";
+        var opponent = team != null && team.getTeam() != null && match.getHomeTeam() != null
+                && Objects.equals(team.getTeam().getId(), match.getHomeTeam().getId())
+                ? match.getAwayTeam() : match.getHomeTeam();
+        String date = match.getDate() == null ? "Termín neurčen" :
+                java.time.format.DateTimeFormatter.ofPattern("d. M. yyyy HH:mm")
+                        .withZone(java.time.ZoneId.of("Europe/Prague")).format(match.getDate().toInstant());
+        return date + " · Soupeř: " + (opponent == null ? "neurčen" : opponent.getName());
     }
 }

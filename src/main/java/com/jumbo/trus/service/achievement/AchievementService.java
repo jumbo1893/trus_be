@@ -74,6 +74,14 @@ public class AchievementService {
     }
 
     @Transactional
+    public List<PlayerAchievementDTO> backfillAwards(AppTeamEntity appTeam, Set<String> codes, boolean dryRun) {
+        List<PlayerAchievementDTO> result = new ArrayList<>();
+        executeWithAchievementLock(appTeam, () -> result.addAll(
+                achievementCalculator.backfillAwards(loadAllPlayers(appTeam), appTeam, codes, dryRun)));
+        return result;
+    }
+
+    @Transactional
     public void updateAllPlayerAchievements(AppTeamEntity appTeam, AchievementType achievementType) {
         updatePlayerAchievements(appTeam, achievementType, AchievementRecalculationContext.full(null));
     }

@@ -149,6 +149,7 @@ public class AchievementCalculator {
                     Map.entry("ULTRUS", (p, a, at, t) -> calculateFanAttendanceMilestoneAchievement(p, a, at, t, 30)),
                     Map.entry("PERMICE_NA_TRUS", (p, a, at, t) -> calculateFanAttendanceMilestoneAchievement(p, a, at, t, 10)),
                     Map.entry("DO_POCTU", this::calculateDO_POCTUAchievement),
+                    Map.entry(AchievementCodes.STRELKY, (p, a, at, t) -> calculateStrelky(p, a, at, t, null)),
                     Map.entry("HATTRICK_GORDIEHO_HOWA", this::calculateHATTRICK_GORDIEHO_HOWAAchievement),
                     Map.entry("AMERICKY_FOTBALISTA", (p, a, at, t) -> calculateFineMilestoneAchievement(p, a, at, t, List.of(FineCodes.OVERKICK), 10)),
                     Map.entry("ALZHEIMER", (p, a, at, t) -> calculateFineMilestoneAchievement(p, a, at, t, List.of(FineCodes.FORGOTTEN_THINGS, FineCodes.INCOMPLETE_EQUIPMENT), 1)),
@@ -205,6 +206,7 @@ public class AchievementCalculator {
                     Map.entry("NESOBECKY_HRDINA", this::calculateNESOBECKY_HRDINAAchievementForMatch),
                     Map.entry("MODERNI_GOLMANSKA_SKOLA", this::calculateMODERNI_GOLMANSKA_SKOLAAchievementForMatch),
                     Map.entry("MORALNI_PODPORA", this::calculateMORALNI_PODPORAAchievementForMatch),
+                    Map.entry(AchievementCodes.STRELKY, this::calculateStrelky),
                     Map.entry("HATTRICK_GORDIEHO_HOWA", this::calculateHATTRICK_GORDIEHO_HOWAAchievementForMatch),
                     Map.entry("PO_PORADNE_PRACI_PORADNA_OSLAVA", (p, a, at, t, m) -> returnFailedPlayerAchievement(a, p)),
                     Map.entry("TAHOUN", this::calculateTAHOUNAAchievementForMatch),
@@ -278,6 +280,38 @@ public class AchievementCalculator {
         }
         AchievementFunction calculator = achievementCalculators.get(achievement.getCode());
         return calculator == null ? null : calculator.apply(player, achievement, appTeam, AchievementType.ALL);
+    }
+
+    /** Add missing awards only. Existing awards are not reassigned or notified again. */
+    public List<PlayerAchievementDTO> backfillAwards(List<PlayerDTO> players, AppTeamEntity team,
+            Set<String> codes, boolean dryRun) {
+        List<AchievementDTO> definitions = achievementRepository.findAll().stream()
+                .filter(a -> codes.contains(a.getCode()))
+                .map(achievementMapper::toDTO).toList();
+        if (definitions.size() != codes.size() || definitions.stream().anyMatch(a -> a.isManually()
+                || a.getCalculationScope() != AchievementCalculationScope.MATCH
+                || !achievementCalculators.containsKey(a.getCode()))) {
+            throw new IllegalArgumentException("Zadej platný kód automatického zápasového achievementu");
+        }
+        Map<PlayerAchievementKey, PlayerAchievementDTO> existing = loadExistingAchievements(players);
+        List<PlayerAchievementDTO> awards = new ArrayList<>();
+        for (PlayerDTO player : players) {
+            for (AchievementDTO definition : definitions) {
+                PlayerAchievementDTO old = existing.get(new PlayerAchievementKey(player.getId(), definition.getId()));
+                if (old != null && Boolean.TRUE.equals(old.getAccomplished())) continue;
+                PlayerAchievementDTO calculated = calculateAchievementForPlayer(definition, player, team,
+                        AchievementType.ALL, null, existing);
+                if (calculated == null || !Boolean.TRUE.equals(calculated.getAccomplished())) continue;
+                if (dryRun) {
+                    awards.add(calculated);
+                } else if (!matchReadiness.deferIfPending(definition.getCode(), calculated, team.getId())) {
+                    if (old == null) saveNewAchievementToRepository(calculated, team, awards);
+                    else updateExistingAchievement(old, calculated, team, awards);
+                }
+            }
+        }
+        if (!dryRun && !awards.isEmpty()) achievementNotificationMaker.sendAchievementNotify(awards, team);
+        return awards;
     }
 
     public void calculateAllAchievements(List<PlayerDTO> playerList, AppTeamEntity appTeam, AchievementType achievementType) {
@@ -1486,6 +1520,15 @@ public class AchievementCalculator {
                             result.getFirstNumber() + " pivy a " + result.getSecondNumber() + " panáky");
         }
         return returnFailedPlayerAchievement(achievement, playerDTO);
+    }
+
+    private PlayerAchievementDTO calculateStrelky(PlayerDTO player, AchievementDTO achievement,
+            AppTeamEntity team, AchievementType type, Long matchId) {
+        if (player.isFan()) return returnFailedPlayerAchievement(achievement, player);
+        IMatchIdNumberOneNumberTwo result = playerAchievementRepository.findStrelky(player.getId(), team.getId(), matchId);
+        if (result == null) return returnFailedPlayerAchievement(achievement, player);
+        return returnPlayerAchievement(achievement, player, result.getMatchId(),
+                "Počet gólů: " + result.getFirstNumber() + ", počet asistencí: " + result.getSecondNumber() + ".");
     }
 
     private PlayerAchievementDTO calculateHATTRICK_GORDIEHO_HOWAAchievementForMatch(

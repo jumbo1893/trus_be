@@ -112,6 +112,9 @@ class AchievementMatchRuleTest {
     @TestFactory
     Stream<DynamicTest> repositoryBackedMatchRulesAwardTheAffectedMatch() {
         return Stream.of(
+                scenario(AchievementCodes.STRELKY, "calculateStrelky",
+                        () -> when(playerAchievementRepository.findStrelky(PLAYER_ID, TEAM_ID, MATCH_ID))
+                                .thenReturn(numbers(MATCH_ID, 2, 3))),
                 scenario(AchievementCodes.KAZDEMU_CO_MU_PATRI, "calculateKAZDEMU_CO_MU_PATRIAchievementForMatch",
                         () -> when(playerAchievementRepository.getMatchWithSameGoalsAndBeers(PLAYER_ID, MATCH_ID))
                                 .thenReturn(goalBeer(MATCH_ID, 2, 1, 3))),

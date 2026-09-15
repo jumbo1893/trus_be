@@ -21,7 +21,17 @@ class ParticipationNotificationServiceTest {
         var tokens = mock(DeviceTokenRepository.class);
         var entries = mock(MatchParticipationRepository.class);
         var push = mock(PushService.class);
-        var service = new ParticipationNotificationService(after, tokens, entries, push);
+        var matches = mock(com.jumbo.trus.repository.football.FootballMatchRepository.class);
+        var teams = mock(com.jumbo.trus.repository.auth.AppTeamRepository.class);
+        var service = new ParticipationNotificationService(after, tokens, entries, push, matches, teams);
+        var home = new com.jumbo.trus.entity.football.TeamEntity(); home.setId(10L); home.setName("Trus");
+        var away = new com.jumbo.trus.entity.football.TeamEntity(); away.setId(11L); away.setName("Soupeř ABC");
+        var match = new com.jumbo.trus.entity.football.FootballMatchEntity();
+        match.setHomeTeam(home); match.setAwayTeam(away);
+        match.setDate(java.util.Date.from(java.time.Instant.parse("2026-09-20T16:00:00Z")));
+        var team = new com.jumbo.trus.entity.auth.AppTeamEntity(); team.setTeam(home);
+        when(matches.findById(20L)).thenReturn(java.util.Optional.of(match));
+        when(teams.findById(1L)).thenReturn(java.util.Optional.of(team));
         doAnswer(invocation -> { ((Runnable) invocation.getArgument(1)).run(); return null; })
                 .when(after).execute(anyString(), any());
         var attending = new MatchParticipationEntity();
@@ -43,7 +53,8 @@ class ParticipationNotificationServiceTest {
         service.notifyChange(2L, 1L, 20L, "Petr: zúčastní se", "Přijdu pozdě");
         verify(push).sendPush(eq(other), anyString(),
                 argThat(body -> body.contains("Hrajících účastníků: 1") && body.contains("Celkem se účastní: 2") && body.contains("Přijdu pozdě")
-                        && body.contains("Petr: zúčastní se")), eq(NotificationType.MATCH_PARTICIPATION),
+                        && body.contains("Petr: zúčastní se") && body.contains("20. 9. 2026 18:00")
+                        && body.contains("Soupeř ABC")), eq(NotificationType.MATCH_PARTICIPATION),
                 argThat(data -> "20".equals(data.get("footballMatchId"))));
         verifyNoMoreInteractions(push);
     }

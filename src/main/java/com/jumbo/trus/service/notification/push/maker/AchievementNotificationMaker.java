@@ -74,7 +74,7 @@ public class AchievementNotificationMaker {
         );
 
         sendPersonalAchievementPushes(achievementsByPlayer, appTeam);
-        sendAppTeamAchievementSummaryPush(appTeamDeviceTokens, achievementsByPlayer);
+        sendAppTeamAchievementSummaryPush(appTeamDeviceTokens, achievementsByPlayer, appTeam.getId());
     }
 
     private void sendPersonalAchievementPushes(Map<Long, List<PlayerAchievementDTO>> achievementsByPlayer, AppTeamEntity appTeam) {
@@ -94,6 +94,8 @@ public class AchievementNotificationMaker {
                     : "Vysloužil sis " + playerAchievements.size() + " nové achievementy!";
             String body = buildPlayerAchievementBody(playerAchievements, appTeam);
             Map<String, String> data = getStringStringMap(playerId, NotificationType.PLAYER_ACHIEVEMENT);
+            addAchievementTarget(data, playerAchievements);
+            data.put("appTeamId", appTeam.getId().toString());
 
             for (DeviceToken deviceToken : playerDeviceTokens) {
                 sendPushSafe(deviceToken, title, body, NotificationType.PLAYER_ACHIEVEMENT, data);
@@ -103,7 +105,7 @@ public class AchievementNotificationMaker {
 
     private void sendAppTeamAchievementSummaryPush(
             List<DeviceToken> appTeamDeviceTokens,
-            Map<Long, List<PlayerAchievementDTO>> achievementsByPlayer
+            Map<Long, List<PlayerAchievementDTO>> achievementsByPlayer, Long appTeamId
     ) {
         if (appTeamDeviceTokens.isEmpty()) {
             return;
@@ -126,7 +128,11 @@ public class AchievementNotificationMaker {
         Long firstPlayerId = achievementsByPlayer.keySet().stream().findFirst().orElse(null);
         Map<String, String> data = getStringStringMap(firstPlayerId, NotificationType.APP_TEAM_ACHIEVEMENT);
         data.put("playersCount", String.valueOf(achievementsByPlayer.size()));
+        data.put("appTeamId", appTeamId.toString());
         data.put("achievementsCount", String.valueOf(achievementsCount));
+        if (achievementsCount == 1) {
+            addAchievementTarget(data, achievementsByPlayer.values().iterator().next());
+        }
 
         for (DeviceToken deviceToken : recipientTokens) {
             sendPushSafe(deviceToken, title, body, NotificationType.APP_TEAM_ACHIEVEMENT, data);
@@ -273,5 +279,12 @@ public class AchievementNotificationMaker {
         if (playerAchievement.getAchievement().isOnlyForPlayers()) {
             return "% hráčů";
         } else return "% hráčů a fanoušků";
+    }
+
+    static void addAchievementTarget(Map<String, String> data, List<PlayerAchievementDTO> achievements) {
+        if (achievements.size() == 1 && achievements.get(0).getId() > 0) {
+            data.put("screenId", "view-player-achievement-detail-screen");
+            data.put("playerAchievementId", Long.toString(achievements.get(0).getId()));
+        }
     }
 }

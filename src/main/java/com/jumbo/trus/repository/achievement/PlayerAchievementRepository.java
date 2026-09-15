@@ -1397,6 +1397,32 @@ public interface PlayerAchievementRepository extends JpaRepository<PlayerAchieve
         return findFirstThreeConsecutiveMatchesWithGoal(playerId, appTeamId, null);
     }
 
+    // EXISTS avoids multiplying goals/assists when several boot fines exist.
+    @Query(value = """
+            SELECT g.match_id AS matchId,
+                   CAST(g.goal_number AS int) AS firstNumber,
+                   CAST(COALESCE(g.assist_number, 0) AS int) AS secondNumber
+            FROM goal g
+            JOIN match m ON m.id = g.match_id
+            JOIN player p ON p.id = g.player_id
+            WHERE g.player_id = :playerId
+              AND m.app_team_id = :appTeamId
+              AND p.app_team_id = :appTeamId
+              AND p.fan = false
+              AND m.date <= CURRENT_TIMESTAMP
+              AND (CAST(:matchId AS bigint) IS NULL OR m.id = :matchId)
+              AND g.goal_number > 0
+              AND EXISTS (
+                  SELECT 1 FROM received_fine rf JOIN fine f ON f.id = rf.fine_id
+                  WHERE rf.player_id = g.player_id AND rf.match_id = g.match_id
+                    AND rf.fine_number > 0 AND f.code = 'NEW_BOOTS'
+              )
+            ORDER BY m.date ASC, m.id ASC
+            LIMIT 1
+            """, nativeQuery = true)
+    IMatchIdNumberOneNumberTwo findStrelky(@Param("playerId") Long playerId,
+            @Param("appTeamId") Long appTeamId, @Param("matchId") Long matchId);
+
     // Komplexní hráč
     @Query(value = """
             SELECT g.match_id AS matchId,

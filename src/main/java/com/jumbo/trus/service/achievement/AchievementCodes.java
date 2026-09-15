@@ -227,6 +227,8 @@ public final class AchievementCodes {
     public static final String ALZHEIMER =
             "ALZHEIMER";
 
+    public static final String STRELKY = "STRELKY";
+
     public static final String LEO_BERANEK =
             "LEO_BERANEK";
 

@@ -131,7 +131,7 @@ class AchievementCatalogContractTest {
                 .extracting(AchievementEntity::getCode)
                 .doesNotHaveDuplicates()
                 .containsExactlyInAnyOrderElementsOf(constants);
-        assertThat(definitions).hasSize(100);
+        assertThat(definitions).hasSize(101);
     }
 
     @Test

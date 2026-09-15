@@ -39,6 +39,18 @@ public class AchievementController {
                 afterId, limit, codes == null ? Set.of() : codes);
     }
 
+    @RoleRequired("ADMIN")
+    @PostMapping("/backfill-awards")
+    public List<PlayerAchievementDTO> backfillAwards(@RequestParam Set<String> codes,
+            @RequestParam(defaultValue = "true") boolean dryRun) {
+        if (codes.isEmpty()) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Zadej kód achievementu");
+        try {
+            return achievementService.backfillAwards(appTeamService.getCurrentAppTeamOrThrow(), codes, dryRun);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+    }
+
     @RoleRequired("EDITOR")
     @PostMapping("/{playerId}")
     public void updatePlayer(@PathVariable Long playerId) {
