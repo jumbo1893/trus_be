@@ -15,6 +15,10 @@ public interface DeviceTokenRepository extends PagingAndSortingRepository<Device
 
     Optional<DeviceToken> findByToken(String token);
 
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {
+            "user", "user.teamRoles", "user.teamRoles.player", "user.teamRoles.player.footballPlayer"})
+    List<DeviceToken> findDistinctByStatusOrderByModificationTimeDesc(String status);
+
     List<DeviceToken> findAllByToken(String token);
 
     List<DeviceToken> findByUser_IdIn(List<Long> userIds);
@@ -82,4 +86,3 @@ public interface DeviceTokenRepository extends PagingAndSortingRepository<Device
         """)
     List<UserEntity> findDistinctActiveTokenUsers();
 }
-

@@ -38,13 +38,16 @@ public class CzechCelebrationCalendar {
         List<String> result = new ArrayList<>();
         String holiday = holidays.get(date.toString());
         if (holiday != null) result.add("Státní svátek: " + holiday);
-        String firstName = firstName(footballPlayerName);
-        if (!firstName.isEmpty()) {
-            namedays.getOrDefault(date.toString().substring(5), List.of()).stream()
-                    .filter(name -> normalize(name).equals(normalize(firstName)))
-                    .findFirst().ifPresent(name -> result.add("Jmeniny: " + name));
-        }
+        nameDay(date, footballPlayerName).ifPresent(name -> result.add("Jmeniny: " + name));
         return List.copyOf(result);
+    }
+
+    /** Personal name day only: a public holiday is not a reason to congratulate everyone. */
+    public java.util.Optional<String> nameDay(LocalDate date, String footballPlayerName) {
+        String firstName = firstName(footballPlayerName);
+        if (firstName.isEmpty()) return java.util.Optional.empty();
+        return namedays.getOrDefault(date.toString().substring(5), List.of()).stream()
+                .filter(name -> normalize(name).equals(normalize(firstName))).findFirst();
     }
 
     /** Feed contract: surname first, given name is the second whitespace-separated word.
