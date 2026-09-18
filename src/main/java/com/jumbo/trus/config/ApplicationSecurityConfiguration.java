@@ -58,6 +58,15 @@ public class ApplicationSecurityConfiguration {
                 .sessionManagement(session -> session
                         .sessionFixation().newSession() // Zajištění nové session při přihlášení
                         .maximumSessions(1) // Omezení na jednu aktivní session
+                        .expiredSessionStrategy(event -> {
+                            // The default strategy returns plain text with HTTP 200.
+                            // API clients need an authentication error to renew safely.
+                            var response = event.getResponse();
+                            response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                            response.setContentType("application/json");
+                            response.setCharacterEncoding("UTF-8");
+                            response.getWriter().write("{\"message\":\"Session expired\",\"code\":\"" + AuthException.NOT_LOGGED_IN + "\"}");
+                        })
                 )
                 .addFilterBefore(firebaseAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
