@@ -18,6 +18,12 @@ import java.util.Optional;
 import java.util.Set;
 
 public interface ReceivedFineRepository extends PagingAndSortingRepository<ReceivedFineEntity, Long>, JpaRepository<ReceivedFineEntity, Long>, JpaSpecificationExecutor<ReceivedFineEntity> {
+    @Query("SELECT rf FROM received_fine rf WHERE rf.match.id = :matchId " +
+            "AND rf.player.id = :playerId AND rf.fine.code = :code " +
+            "AND rf.fineNumber > 0 AND rf.appTeam.id = :appTeamId")
+    List<ReceivedFineEntity> findForMatchPlayerCode(@Param("matchId") Long matchId,
+            @Param("playerId") Long playerId, @Param("code") String code,
+            @Param("appTeamId") Long appTeamId);
 
     @Query("""
         SELECT

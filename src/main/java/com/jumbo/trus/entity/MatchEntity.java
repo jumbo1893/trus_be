@@ -15,6 +15,8 @@ import org.hibernate.annotations.FetchMode;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
 
 @Entity(name = "match")
 @Data
@@ -34,6 +36,23 @@ public class MatchEntity {
             joinColumns = @JoinColumn(name = "matchId"),
             inverseJoinColumns = @JoinColumn(name = "playerId"))
     private List<PlayerEntity> playerList;
+
+    private Boolean pubConfigured = false;
+
+    @ElementCollection
+    @CollectionTable(name = "match_pub_guests", joinColumns = @JoinColumn(name = "match_id"))
+    @Column(name = "player_id")
+    private Set<Long> pubGuestIds = new HashSet<>();
+
+    @ElementCollection
+    @CollectionTable(name = "match_pub_left", joinColumns = @JoinColumn(name = "match_id"))
+    @Column(name = "player_id")
+    private Set<Long> pubLeftIds = new HashSet<>();
+
+    @ElementCollection
+    @CollectionTable(name = "match_pub_auto_fines", joinColumns = @JoinColumn(name = "match_id"))
+    @Column(name = "received_fine_id")
+    private Set<Long> pubAutoFineIds = new HashSet<>();
 
     @ManyToOne
     private SeasonEntity season;

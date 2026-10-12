@@ -10,6 +10,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
+import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.Lock;
 
 import java.util.Date;
 import java.util.List;
@@ -19,6 +21,10 @@ import java.util.Set;
 import static com.jumbo.trus.config.Config.OTHER_SEASON_ID;
 
 public interface MatchRepository extends PagingAndSortingRepository<MatchEntity, Long>, JpaRepository<MatchEntity, Long>, JpaSpecificationExecutor<MatchEntity> {
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT m FROM match m WHERE m.id = :matchId AND m.appTeam.id = :appTeamId")
+    Optional<MatchEntity> findForPubUpdate(@Param("matchId") Long matchId,
+                                           @Param("appTeamId") Long appTeamId);
     @Query("SELECT DISTINCT m FROM match m LEFT JOIN FETCH m.playerList JOIN FETCH m.appTeam "
             + "WHERE m.date >= :from AND m.date <= :to")
     List<MatchEntity> findFootbarSyncWindow(@Param("from") Date from, @Param("to") Date to);

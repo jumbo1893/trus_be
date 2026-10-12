@@ -36,7 +36,11 @@ public abstract class MatchMapper {
             @Mapping(target = "playerAchievements", ignore = true),
             @Mapping(target = "footbarSessions", ignore = true),
             @Mapping(target = "weather", ignore = true),
-            @Mapping(target = "weatherEntries", ignore = true)
+            @Mapping(target = "weatherEntries", ignore = true),
+            @Mapping(target = "pubConfigured", ignore = true),
+            @Mapping(target = "pubGuestIds", ignore = true),
+            @Mapping(target = "pubLeftIds", ignore = true),
+            @Mapping(target = "pubAutoFineIds", ignore = true)
     })
     public abstract MatchEntity toEntity(MatchDTO source);
 
@@ -53,7 +57,11 @@ public abstract class MatchMapper {
             @Mapping(target = "playerAchievements", ignore = true),
             @Mapping(target = "footbarSessions", ignore = true),
             @Mapping(target = "weather", ignore = true),
-            @Mapping(target = "weatherEntries", ignore = true)
+            @Mapping(target = "weatherEntries", ignore = true),
+            @Mapping(target = "pubConfigured", ignore = true),
+            @Mapping(target = "pubGuestIds", ignore = true),
+            @Mapping(target = "pubLeftIds", ignore = true),
+            @Mapping(target = "pubAutoFineIds", ignore = true)
     })
     public abstract void updateEntity(
             MatchDTO source,

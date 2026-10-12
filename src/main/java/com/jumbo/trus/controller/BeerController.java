@@ -4,6 +4,7 @@ import com.jumbo.trus.aspect.PostCommitTask;
 import com.jumbo.trus.aspect.appteam.StoreAppTeam;
 import com.jumbo.trus.config.security.RoleRequired;
 import com.jumbo.trus.dto.beer.BeerDTO;
+import com.jumbo.trus.dto.beer.PubAttendanceDTO;
 import com.jumbo.trus.dto.beer.multi.BeerListDTO;
 import com.jumbo.trus.dto.beer.response.get.BeerDetailedResponse;
 import com.jumbo.trus.dto.beer.response.get.BeerSetupResponse;
@@ -14,6 +15,8 @@ import com.jumbo.trus.entity.filter.StatisticsFilter;
 import com.jumbo.trus.service.auth.AppTeamService;
 import com.jumbo.trus.service.beer.BeerService;
 import com.jumbo.trus.service.beer.BeerStatsService;
+import com.jumbo.trus.service.beer.PubAttendanceService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.webjars.NotFoundException;
@@ -28,6 +31,15 @@ public class BeerController {
     private final BeerService beerService;
     private final BeerStatsService beerStatsService;
     private final AppTeamService appTeamService;
+    private final PubAttendanceService pubAttendanceService;
+
+    @RoleRequired("EDITOR")
+    @PutMapping("/pub-attendance")
+    @PostCommitTask
+    @StoreAppTeam
+    public PubAttendanceDTO savePubAttendance(@Valid @RequestBody PubAttendanceDTO request) {
+        return pubAttendanceService.save(request, appTeamService.getCurrentAppTeamOrThrow());
+    }
 
     @RoleRequired("EDITOR")
     @PostMapping("/add")
@@ -71,7 +83,12 @@ public class BeerController {
     @GetMapping("/setup")
     public BeerSetupResponse setupBeers(BeerFilter beerFilter) {
         beerFilter.setAppTeam(appTeamService.getCurrentAppTeamOrThrow());
-        return beerService.setupBeers(beerFilter);
+        BeerSetupResponse setup = beerService.setupBeers(beerFilter);
+        if (setup.getMatch() != null) {
+            setup.setPubAttendance(pubAttendanceService.get(
+                    setup.getMatch().getId(), appTeamService.getCurrentAppTeamOrThrow()));
+        }
+        return setup;
     }
 
     @RoleRequired("READER")

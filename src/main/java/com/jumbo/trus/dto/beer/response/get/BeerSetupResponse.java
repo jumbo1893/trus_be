@@ -2,6 +2,7 @@ package com.jumbo.trus.dto.beer.response.get;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.jumbo.trus.dto.SeasonDTO;
+import com.jumbo.trus.dto.beer.PubAttendanceDTO;
 import com.jumbo.trus.dto.beer.multi.BeerNoMatchWithPlayerDTO;
 import com.jumbo.trus.dto.match.MatchDTO;
 import jakarta.validation.constraints.NotNull;
@@ -27,5 +28,15 @@ public class BeerSetupResponse {
 
     @NotNull
     private List<MatchDTO> matchList;
+
+    private PubAttendanceDTO pubAttendance;
+
+    public BeerSetupResponse(MatchDTO match, SeasonDTO season,
+                             List<BeerNoMatchWithPlayerDTO> beerList, List<MatchDTO> matchList) {
+        this.match = match;
+        this.season = season;
+        this.beerList = beerList;
+        this.matchList = matchList;
+    }
 
 }
