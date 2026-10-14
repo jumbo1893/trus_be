@@ -35,6 +35,10 @@ public class FootballMatchDetail {
 
     private BestScorer awayTeamBestScorer;
 
+    private ForeignNameEstimate homeTeamForeignNameEstimate;
+
+    private ForeignNameEstimate awayTeamForeignNameEstimate;
+
     private MatchWeatherDTO weather;
 
 

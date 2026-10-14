@@ -13,12 +13,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /** Versioned offline dictionaries; no external API is called when awarding achievements. */
 @Component
 public class CzechCelebrationCalendar {
     private final Map<String, List<String>> namedays;
     private final Map<String, String> holidays;
+    private final Set<String> knownFirstNames;
 
     public CzechCelebrationCalendar(ObjectMapper mapper) throws IOException {
         try (var names = new ClassPathResource("calendar/czech-namedays.json").getInputStream();
@@ -28,6 +31,8 @@ public class CzechCelebrationCalendar {
             holidays = mapper.readValue(dates, new TypeReference<>() {
             });
         }
+        knownFirstNames = namedays.values().stream().flatMap(List::stream)
+                .map(CzechCelebrationCalendar::normalize).collect(Collectors.toUnmodifiableSet());
         // Invalid bundled data must fail startup rather than silently miss awards.
         namedays.keySet().forEach(key -> MonthDay.parse("--" + key));
         holidays.keySet().forEach(LocalDate::parse);
@@ -48,6 +53,11 @@ public class CzechCelebrationCalendar {
         if (firstName.isEmpty()) return java.util.Optional.empty();
         return namedays.getOrDefault(date.toString().substring(5), List.of()).stream()
                 .filter(name -> normalize(name).equals(normalize(firstName))).findFirst();
+    }
+
+    public boolean hasCzechFirstName(String footballPlayerName) {
+        String name = firstName(footballPlayerName);
+        return !name.isEmpty() && knownFirstNames.contains(normalize(name));
     }
 
     /** Feed contract: surname first, given name is the second whitespace-separated word.

@@ -9,6 +9,7 @@ import com.jumbo.trus.mapper.MatchWeatherMapper;
 import com.jumbo.trus.repository.MatchWeatherRepository;
 import com.jumbo.trus.service.football.helper.WinDrawLose;
 import com.jumbo.trus.service.football.player.FootballPlayerService;
+import com.jumbo.trus.service.football.team.ForeignNameEstimateService;
 import com.jumbo.trus.service.helper.Pair;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +25,7 @@ public class FootballMatchDetailProcessor {
 
     private final FootballMatchProcessor footballMatchProcessor;
     private final FootballPlayerService footballPlayerService;
+    private final ForeignNameEstimateService foreignNameEstimateService;
     private final PlayerProcessor playerProcessor;
     private final MatchWeatherRepository matchWeatherRepository;
     private final MatchWeatherMapper matchWeatherMapper;
@@ -38,6 +40,8 @@ public class FootballMatchDetailProcessor {
         footballMatchDetail.setAwayTeamAverageBirthYear(footballPlayerService.getAverageBirthYearOfTeam(awayTeamId));
         footballMatchDetail.setHomeTeamBestScorer(playerProcessor.findBestScorerByTeamIdAndLeagueId(homeTeamId, footballMatchDetail.getFootballMatch().getLeague().getId()));
         footballMatchDetail.setAwayTeamBestScorer(playerProcessor.findBestScorerByTeamIdAndLeagueId(awayTeamId, footballMatchDetail.getFootballMatch().getLeague().getId()));
+        footballMatchDetail.setHomeTeamForeignNameEstimate(foreignNameEstimateService.forTeam(homeTeamId));
+        footballMatchDetail.setAwayTeamForeignNameEstimate(foreignNameEstimateService.forTeam(awayTeamId));
         enhanceWithWeather(footballMatchDetail);
         return footballMatchDetail;
     }
@@ -58,6 +62,7 @@ public class FootballMatchDetailProcessor {
         }
         footballTableTeamDetail.setAverageBirthYear(footballPlayerService.getAverageBirthYearOfTeam(teamId));
         footballTableTeamDetail.setBestScorer(playerProcessor.findBestScorerByTeamIdAndLeagueId(teamId, footballTableTeamDetail.getTableTeam().getLeague().getId()));
+        footballTableTeamDetail.setForeignNameEstimate(foreignNameEstimateService.forTeam(teamId));
         footballTableTeamDetail.setNextMatches(footballMatchProcessor.getNextMatches(teamId));
         footballTableTeamDetail.setPastMatches(footballMatchProcessor.getPastMatchesInLeague(teamId, footballTableTeamDetail.getTableTeam().getLeague().getId()));
         return footballTableTeamDetail;

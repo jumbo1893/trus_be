@@ -19,6 +19,15 @@ class CzechCelebrationCalendarTest {
     CzechCelebrationCalendarTest() throws Exception {}
 
     @Test
+    void recognizesGivenNamesAcrossTheWholeCalendar() {
+        assertThat(calendar.hasCzechFirstName("Novák JAN")).isTrue();
+        assertThat(calendar.hasCzechFirstName("Novák jiri")).isTrue();
+        assertThat(calendar.hasCzechFirstName("Novák Hromnice")).isFalse();
+        assertThat(calendar.hasCzechFirstName("Novák John")).isFalse();
+        assertThat(calendar.hasCzechFirstName("Novák")).isFalse();
+    }
+
+    @Test
     void givenNameIsSecondWordAndMatchingIgnoresCaseAndAccents() {
         assertThat(calendar.reasons(LocalDate.of(2026, 6, 24), "  Novák   JAN ")).containsExactly("Jmeniny: Jan");
         assertThat(calendar.reasons(LocalDate.of(2026, 4, 24), "Novák jiri")).containsExactly("Jmeniny: Jiří");

@@ -30,6 +30,8 @@ public class FootballTableTeamDetail {
 
     private BestScorer bestScorer;
 
+    private ForeignNameEstimate foreignNameEstimate;
+
     @NotNull
     private List<FootballMatchDTO> nextMatches;
 

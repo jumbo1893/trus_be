@@ -34,17 +34,23 @@ public class AiQuestionService {
     private final TrusBotAchievementService trusBotAchievementService;
 
     public AiQuestionResponse ask(AiAskRequest request) {
+        return askInternal(authService.getCurrentUserEntity(), appTeamService.getCurrentAppTeamOrThrow(),
+                request.getQuestion(), null);
+    }
+
+    public AiQuestionResponse askForChat(UserEntity user, AppTeamEntity appTeam, String question, String chatContext) {
+        return askInternal(user, appTeam, question, chatContext);
+    }
+
+    private AiQuestionResponse askInternal(UserEntity user, AppTeamEntity appTeam, String question, String chatContext) {
         // Konfigurační chyba nesmí uživateli spotřebovat denní dotaz.
         openAiClient.requireConfigured();
-
-        UserEntity user = authService.getCurrentUserEntity();
-        AppTeamEntity appTeam = appTeamService.getCurrentAppTeamOrThrow();
-        AiQuotaDecision decision = quotaService.reserve(user.getId(), appTeam, request.getQuestion());
+        AiQuotaDecision decision = quotaService.reserve(user.getId(), appTeam, question);
 
         if (!decision.allowed()) {
             return new AiQuestionResponse(
                     null,
-                    request.getQuestion().trim(),
+                    question.trim(),
                     decision.deniedMessage(),
                     decision.deniedStatus(),
                     Instant.now(),
@@ -56,11 +62,9 @@ public class AiQuestionService {
         AiQuestionEntity reservedQuestion = decision.question();
         try {
             AiToolContext context = createToolContext(user, appTeam);
-            OpenAiAnswer answer = openAiClient.answer(
-                    reservedQuestion.getQuestion(),
-                    context,
-                    decision.usage().getTier()
-            );
+            OpenAiAnswer answer = chatContext == null
+                    ? openAiClient.answer(reservedQuestion.getQuestion(), context, decision.usage().getTier())
+                    : openAiClient.answer(reservedQuestion.getQuestion(), context, decision.usage().getTier(), chatContext);
             AiQuestionEntity completed = quotaService.complete(reservedQuestion.getId(), answer);
             awardTrusBotAchievement(context.currentPlayerId(), appTeam);
             return toResponse(completed, quotaService.getUsage(user.getId()));

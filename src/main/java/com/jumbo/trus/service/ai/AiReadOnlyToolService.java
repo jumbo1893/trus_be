@@ -29,6 +29,7 @@ import com.jumbo.trus.entity.filter.SeasonFilter;
 import com.jumbo.trus.entity.filter.StatisticsFilter;
 import com.jumbo.trus.entity.footbar.FootbarSessionEntity;
 import com.jumbo.trus.repository.DynamicTextRepository;
+import com.jumbo.trus.repository.BeerRepository;
 import com.jumbo.trus.repository.MatchRepository;
 import com.jumbo.trus.repository.ReceivedFineRepository;
 import com.jumbo.trus.repository.TeamVisitedCountryProjection;
@@ -82,6 +83,7 @@ public class AiReadOnlyToolService {
     private final SeasonService seasonService;
     private final GoalService goalService;
     private final BeerService beerService;
+    private final BeerRepository beerRepository;
     private final ReceivedFineService receivedFineService;
     private final AttendanceService attendanceService;
     private final FootballMatchService footballMatchService;
@@ -113,6 +115,7 @@ public class AiReadOnlyToolService {
                 case "find_matches" -> findMatches(arguments, context);
                 case "find_official_matches" -> findOfficialMatches(arguments, context);
                 case "read_team_statistics" -> readTeamStatistics(arguments, context);
+                case "read_calendar_year_drinks" -> readCalendarYearDrinks(arguments, context);
                 case "read_fine_summary" -> readFineSummary(arguments, context);
                 case "read_repeat_opponents" -> readRepeatOpponents(context);
                 case "read_team_directory" -> readTeamDirectory(arguments, context);
@@ -461,6 +464,17 @@ public class AiReadOnlyToolService {
             case "attendance" -> attendanceService.getAllDetailed(filter);
             default -> Map.of("error", "Neznámá kategorie statistik: " + category);
         };
+    }
+
+    private Object readCalendarYearDrinks(JsonNode arguments, AiToolContext context) {
+        int year = arguments.path("year").asInt();
+        int currentYear = LocalDate.now(APP_ZONE).getYear();
+        if (year < 2000 || year > currentYear + 1) return Map.of("error", "Neplatný kalendářní rok");
+        Date from = Date.from(LocalDate.of(year, 1, 1).atStartOfDay(APP_ZONE).toInstant());
+        Date to = Date.from(LocalDate.of(year + 1, 1, 1).atStartOfDay(APP_ZONE).toInstant());
+        Long beers = beerRepository.sumBeersInPeriod(context.appTeam().getId(), from, to);
+        return Map.of("year", year, "beer_count", beers == null ? 0L : beers,
+                "scope", "piva zapsaná u zápasů aktuálního týmu v kalendářním roce");
     }
 
     private Object readFineSummary(JsonNode arguments, AiToolContext context) {
@@ -1525,6 +1539,18 @@ public class AiReadOnlyToolService {
                     "split_fines_by_type": {"type": "boolean"}
                   },
                   "required": ["category", "aggregation", "season_id", "player_id", "match_id", "search", "split_fines_by_type"],
+                  "additionalProperties": false
+                }
+              },
+              {
+                "type": "function",
+                "name": "read_calendar_year_drinks",
+                "description": "Vrátí přesný počet piv zapsaných aktuálnímu týmu podle data zápasu v kalendářním roce. Použij pro dotazy jako kolik se letos vypilo piv.",
+                "strict": true,
+                "parameters": {
+                  "type": "object",
+                  "properties": {"year": {"type": "integer"}},
+                  "required": ["year"],
                   "additionalProperties": false
                 }
               },

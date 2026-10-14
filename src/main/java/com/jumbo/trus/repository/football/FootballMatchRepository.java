@@ -74,6 +74,9 @@ public interface FootballMatchRepository extends JpaRepository<FootballMatchEnti
     @Query(value = "SELECT * FROM football_match WHERE date < CURRENT_TIMESTAMP AND (home_team_id = :teamId OR away_team_id = :teamId) ORDER BY DATE DESC LIMIT 1", nativeQuery = true)
     FootballMatchEntity findLastMatch(@Param("teamId") Long teamId);
 
+    @Query(value = "SELECT * FROM football_match WHERE date < CURRENT_TIMESTAMP AND already_played = true AND (home_team_id = :teamId OR away_team_id = :teamId) ORDER BY date DESC, id DESC LIMIT 1", nativeQuery = true)
+    FootballMatchEntity findLastPlayedMatch(@Param("teamId") Long teamId);
+
     @Query(value = "SELECT * FROM football_match WHERE date > CURRENT_TIMESTAMP AND (home_team_id = :teamId OR away_team_id = :teamId) AND already_played = false ORDER BY DATE ASC", nativeQuery = true)
     List<FootballMatchEntity> findNonPlayedNextMatches(@Param("teamId") Long teamId);
 

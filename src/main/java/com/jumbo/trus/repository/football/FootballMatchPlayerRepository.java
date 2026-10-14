@@ -1,6 +1,7 @@
 package com.jumbo.trus.repository.football;
 
 import com.jumbo.trus.entity.football.FootballMatchPlayerEntity;
+import com.jumbo.trus.entity.football.FootballPlayerEntity;
 import com.jumbo.trus.entity.football.FootballMatchPlayerEntity_;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,6 +14,9 @@ import java.util.Optional;
 import java.util.Set;
 
 public interface FootballMatchPlayerRepository extends JpaRepository<FootballMatchPlayerEntity, Long> {
+
+    @Query("SELECT DISTINCT fmp.player FROM football_match_player fmp WHERE fmp.team.id = :teamId AND fmp.match.id = :matchId")
+    List<FootballPlayerEntity> findDistinctPlayersByTeamAndMatch(@Param("teamId") Long teamId, @Param("matchId") Long matchId);
 
     @Query("SELECT DISTINCT fmp.player.id FROM football_match_player fmp WHERE fmp.match.id = :matchId")
     Set<Long> findPlayerIdsByMatchId(@Param("matchId") Long matchId);

@@ -124,6 +124,7 @@ public class DeviceTokenCollector {
                 "ACTIVE",
                 clientDeviceId
         );
+        deviceToken.setAppVersion(headerManager.getAppVersionHeader());
 
         return deviceTokenRepository.save(deviceToken);
     }
@@ -153,6 +154,12 @@ public class DeviceTokenCollector {
         String currentDeviceType = headerManager.getDeviceHeader();
         if (currentDeviceType != null && !currentDeviceType.equals(existing.getDeviceType())) {
             existing.setDeviceType(currentDeviceType);
+            changed = true;
+        }
+
+        String appVersion = headerManager.getAppVersionHeader();
+        if (!Objects.equals(appVersion, existing.getAppVersion())) {
+            existing.setAppVersion(appVersion);
             changed = true;
         }
 

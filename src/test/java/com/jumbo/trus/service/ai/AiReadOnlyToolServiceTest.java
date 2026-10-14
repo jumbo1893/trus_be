@@ -21,6 +21,7 @@ import com.jumbo.trus.entity.auth.UserEntity;
 import com.jumbo.trus.entity.footbar.FootbarSessionEntity;
 import com.jumbo.trus.entity.DynamicTextEntity;
 import com.jumbo.trus.repository.DynamicTextRepository;
+import com.jumbo.trus.repository.BeerRepository;
 import com.jumbo.trus.entity.football.FootballMatchEntity;
 import com.jumbo.trus.entity.football.LeagueEntity;
 import com.jumbo.trus.entity.football.TeamEntity;
@@ -53,6 +54,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
@@ -87,6 +90,7 @@ class AiReadOnlyToolServiceTest {
     private final MatchParticipationService matchParticipationService = mock(MatchParticipationService.class);
     private final FootbarSessionRepository footbarSessionRepository = mock(FootbarSessionRepository.class);
     private final DynamicTextRepository dynamicTextRepository = mock(DynamicTextRepository.class);
+    private final BeerRepository beerRepository = mock(BeerRepository.class);
     private final AiQuestionRepository aiQuestionRepository = mock(AiQuestionRepository.class);
 
     private AiReadOnlyToolService service;
@@ -104,6 +108,7 @@ class AiReadOnlyToolServiceTest {
                 seasonService,
                 goalService,
                 beerService,
+                beerRepository,
                 receivedFineService,
                 attendanceService,
                 footballMatchService,
@@ -127,6 +132,19 @@ class AiReadOnlyToolServiceTest {
         UserEntity user = new UserEntity();
         user.setId(7L);
         context = new AiToolContext(user, appTeam, null, null);
+    }
+
+    @Test
+    void calendarYearDrinksUseMatchDatesWithinTheSelectedTeam() throws Exception {
+        when(beerRepository.sumBeersInPeriod(eq(11L), any(Date.class), any(Date.class))).thenReturn(42L);
+        JsonNode result = objectMapper.readTree(service.execute("read_calendar_year_drinks",
+                objectMapper.readTree("{\"year\":2025}"), context));
+        assertEquals(42L, result.path("beer_count").asLong());
+        assertEquals(2025, result.path("year").asInt());
+        verify(beerRepository).sumBeersInPeriod(eq(11L),
+                eq(Date.from(LocalDate.of(2025, 1, 1).atStartOfDay(ZoneId.of("Europe/Prague")).toInstant())),
+                eq(Date.from(LocalDate.of(2026, 1, 1).atStartOfDay(ZoneId.of("Europe/Prague")).toInstant())));
+        assertTrue(service.toolDefinitions().toString().contains("read_calendar_year_drinks"));
     }
 
     @Test

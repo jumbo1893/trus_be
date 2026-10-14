@@ -92,8 +92,8 @@
     "title": "Přidání gólů a asistencí",
     "aliases": ["přidat gól", "asistence", "střelec", "propsat do pokut"],
     "paths": ["Přehled → Přidat góly", "Přidat zápas → Uložit a přidat góly"],
-    "steps": ["Na první obrazovce nastavte góly hráčů tlačítky + a −.", "Volbou Propsat do pokut určete, zda se změna promítne i do pokut podle serverových pravidel.", "Stiskněte Pokračuj k asistencím.", "Nastavte asistence a stiskněte Potvrď změny."],
-    "conditions": ["Funkce vyžaduje interní zápas; z Přehledu také spárování s ligovým zápasem.", "Šipka zpět z asistencí vrací na góly."]
+    "steps": ["Na jedné obrazovce klepněte u hráče na ikonu gólu nebo asistence. Každá změna se automaticky uloží.", "Tlačítkem Opravit přepnete na odebírání omylem zadaných gólů a asistencí.", "Přepínačem Přepočítat pokuty za góly a hattricky určíte, zda se změny gólů promítnou i do pokut podle serverových pravidel."],
+    "conditions": ["Funkce vyžaduje interní zápas; z Přehledu také spárování s ligovým zápasem.", "Při chybě ukládání lze změny odeslat znovu."]
   },
   {
     "id": "statistics",

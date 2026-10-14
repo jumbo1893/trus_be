@@ -43,6 +43,9 @@ public class DeviceToken {
     @Column(name = "client_device_id")
     private String clientDeviceId;
 
+    @Column(name = "app_version", length = 64)
+    private String appVersion;
+
     public DeviceToken(String token, UserEntity user, Date registrationTime, String deviceType, String status, String clientDeviceId) {
         this.token = token;
         this.user = user;

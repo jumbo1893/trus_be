@@ -19,6 +19,9 @@ import java.util.Optional;
 
 public interface BeerRepository extends PagingAndSortingRepository<BeerEntity, Long>, JpaRepository<BeerEntity, Long>, JpaSpecificationExecutor<BeerEntity> {
 
+    @Query("select coalesce(sum(b.beerNumber), 0) from beer b where b.appTeam.id = :teamId and b.match.date >= :from and b.match.date < :to")
+    Long sumBeersInPeriod(Long teamId, java.util.Date from, java.util.Date to);
+
     @Query(value = "SELECT * from beer WHERE app_team_id=:#{#appTeamId} LIMIT :limit", nativeQuery = true)
     List<BeerEntity> getAll(@Param("limit") int limit, @Param("appTeamId") Long appTeamId);
 

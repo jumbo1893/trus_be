@@ -27,7 +27,7 @@ public class EnabledPushNotificationService {
 
     public boolean isNotificationEnabled(UserEntity user, NotificationType notificationType) {
         boolean typeEnabled = enRepo.findByUserAndType(user, notificationType)
-                .map(notification -> notification.getEnabled() == null || notification.getEnabled())
+                .map(notification -> notification.getEnabled() != null && notification.getEnabled())
                 .orElse(true);
 
         boolean globalEnabled = enRepo.findByUserAndType(user, NotificationType.GLOBAL)
@@ -35,6 +35,25 @@ public class EnabledPushNotificationService {
                 .orElse(true);
 
         return typeEnabled && globalEnabled;
+    }
+
+    public boolean isChatTypeEnabled(UserEntity user) {
+        return enRepo.findByUserAndType(user, NotificationType.CHAT)
+                .map(notification -> Boolean.TRUE.equals(notification.getEnabled()))
+                .orElse(true);
+    }
+
+    @Transactional
+    public void enableChatType(UserEntity user) {
+        EnabledPushNotification setting = enRepo.findByUserAndType(user, NotificationType.CHAT)
+                .orElseGet(() -> {
+                    EnabledPushNotification created = new EnabledPushNotification();
+                    created.setUser(user);
+                    created.setType(NotificationType.CHAT);
+                    return created;
+                });
+        setting.setEnabled(true);
+        enRepo.save(setting);
     }
 
 
@@ -88,6 +107,7 @@ public class EnabledPushNotificationService {
                 .distinct()
                 .toList();
 
+        UserEntity currentUser = userService.getCurrentUserEntity();
         List<EnabledPushNotification> existing = enRepo.findAllById(ids);
         Map<Long, EnabledPushNotification> byId = existing.stream()
                 .collect(Collectors.toMap(EnabledPushNotification::getId, Function.identity()));
@@ -95,6 +115,10 @@ public class EnabledPushNotificationService {
         List<Long> missing = ids.stream().filter(id -> !byId.containsKey(id)).toList();
         if (!missing.isEmpty()) {
             throw new NotFoundException("Notifikace s id " + missing + " nenalezena v db");
+        }
+        if (existing.stream().anyMatch(notification ->
+                !notification.getUser().getId().equals(currentUser.getId()))) {
+            throw new IllegalArgumentException("Nelze upravovat nastavení jiného uživatele");
         }
 
         Date now = new Date();

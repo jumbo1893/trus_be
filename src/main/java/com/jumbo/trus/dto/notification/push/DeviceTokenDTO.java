@@ -19,6 +19,7 @@ public class DeviceTokenDTO {
     private String deviceType;
     private String clientDeviceId;
     private String status;
+    private String appVersion;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "Europe/Prague")
     private Date registrationTime;
@@ -31,6 +32,7 @@ public class DeviceTokenDTO {
         this.userId = entity.getUser() != null ? entity.getUser().getId() : null;
         this.clientDeviceId = entity.getClientDeviceId();
         this.status = entity.getStatus();
+        this.appVersion = entity.getAppVersion();
     }
 
     public static DeviceTokenDTO fromEntity(DeviceToken entity) {

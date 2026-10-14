@@ -40,6 +40,11 @@ public class HeaderManager {
         return request.getHeader("device");
     }
 
+    public String getAppVersionHeader() {
+        HttpServletRequest request = currentRequest();
+        return request == null ? null : request.getHeader("x-app-version");
+    }
+
     public String getOperationId() {
         HttpServletRequest request = currentRequest();
         if (request == null) {
