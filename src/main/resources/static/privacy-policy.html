@@ -168,7 +168,7 @@
             use this permission to collect location, routes, or unrelated motion data.
         </p>
         <p>
-            <strong>StepsCadence/Steps (read access):</strong> The Application requires read
+            <strong>Steps (read access):</strong> The Application requires read
             access to Steps because Health Connect is the source of step-count data for the
             optional Team Step Challenge. The Application reads only aggregated step counts; it
             does not read step cadence, exercise routes, precise location, heart rate, or other
@@ -182,8 +182,10 @@
         </p>
         <p>
             <strong>HealthData-Background (background read access):</strong> Background access is
-            optional and is requested only after the user enables the Team Step Challenge. If the
-            user separately grants background access, Android WorkManager attempts a periodic
+            optional. After enabling step sharing, the user can separately choose automatic
+            background updates before the Application requests this permission. The user can
+            also turn these updates on or off from the Steps screen. If the user grants
+            background access and enables updates, Android WorkManager attempts a periodic
             synchronization approximately every six hours. A background synchronization reads
             only recent daily step totals, normally the current and previous day, to keep the
             user's personal history and team leaderboard current when the user has not recently
