@@ -234,6 +234,10 @@ public class ReceivedFineUpdater {
 
     private ReceivedFineDTO processAndSaveFine(ReceivedFineDTO receivedFineDTO, ReceivedFineResponse receivedFineResponse, boolean multi, AppTeamEntity appTeam) {
         ReceivedFineDTO oldFine = getReceivedFineDtoByPlayerAndMatchAndFine(receivedFineDTO);
+        if (multi && receivedFineDTO.getFineNumber() < 0) {
+            if (oldFine == null || oldFine.getFineNumber() <= 0) return null;
+            receivedFineDTO.setFineNumber(Math.max(receivedFineDTO.getFineNumber(), -oldFine.getFineNumber()));
+        }
         if (shouldProcessFine(multi, receivedFineDTO, oldFine)) {
             receivedFineResponse.addFine(receivedFineDTO.getFineNumber());
             if (multi && oldFine != null) {

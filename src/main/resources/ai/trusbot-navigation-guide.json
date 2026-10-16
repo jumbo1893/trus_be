@@ -68,15 +68,15 @@
     "title": "Přiřazení pokuty jednomu hráči a zápasu",
     "aliases": ["udělit pokutu", "přiřadit pokutu", "pokuta hráči", "pokuta v zápase", "jeden hráč"],
     "paths": ["Spodní Pokuty", "Menu → Přidat pokutu v zápase", "Přehled → Více → Přidat pokuty"],
-    "steps": ["Vyberte sezonu a zápas.", "Zvolte režim Jeden hráč.", "Klepněte na řádek hráče.", "Pomocí + nebo − nastavte počet u jednotlivých typů pokut.", "Stiskněte Uložit změny."],
-    "conditions": ["Čip V ZÁPASE nebo OSTATNÍ pouze informuje o účasti; pokutu lze přidat i neúčastníkovi.", "Uložit změny se aktivuje až po změně hodnoty."]
+    "steps": ["Vyberte sezonu a zápas.", "Zvolte režim Jeden hráč.", "Klepněte na řádek hráče.", "Klepnutím na typ pokuty ji přidáte; změna se automaticky uloží.", "Tlačítkem Opravit přepnete na odebírání pokut."],
+    "conditions": ["Čip V ZÁPASE nebo OSTATNÍ pouze informuje o účasti; pokutu lze přidat i neúčastníkovi."]
   },
   {
     "id": "fine_assign_many",
     "title": "Přiřazení stejné pokuty více hráčům",
     "aliases": ["hromadná pokuta", "více hráčů", "všichni hráči", "hrající", "nehrající"],
     "paths": ["Spodní Pokuty → Více hráčů", "Menu → Přidat pokutu v zápase → Více hráčů"],
-    "steps": ["Vyberte sezonu a zápas a přepněte na Více hráčů.", "Označte hráče ručně nebo použijte Všichni, Hrající či Nehrající.", "Stiskněte Potvrdit.", "Pomocí + nebo − nastavte společnou změnu u typu pokuty.", "Stiskněte Uložit změny."],
+    "steps": ["Vyberte sezonu a zápas a přepněte na Více hráčů.", "Označte hráče ručně nebo použijte Všichni, Hrající či Nehrající.", "Otevřete výběr pokut.", "Klepnutím na typ pokuty ji přidáte všem vybraným hráčům; změna se automaticky uloží.", "Tlačítkem Opravit přepnete na odebírání pokut."],
     "conditions": ["Zrušit výběr odznačí všechny hráče."]
   },
   {
