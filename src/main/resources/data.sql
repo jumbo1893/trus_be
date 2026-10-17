@@ -1,6 +1,7 @@
 -- data.sql
 
 ALTER TABLE fine ADD COLUMN IF NOT EXISTS code VARCHAR(100);
+ALTER TABLE fine ADD COLUMN IF NOT EXISTS category VARCHAR(20);
 
 -- Vložení hardcodované sezony Ostatní, pokud neexistuje
 INSERT INTO season (id, from_date, name, to_date, editable)
@@ -65,6 +66,13 @@ SET code = CASE
     ELSE 'CORE_' || UPPER(SUBSTRING(MD5(name) FROM 1 FOR 16))
 END
 WHERE code IS NULL;
+
+UPDATE fine SET category = CASE
+    WHEN code IN ('GOAL', 'HATTRICK', 'ZERO_IN_MATCH', 'THIRD_HALF') THEN 'AUTOMATIC'
+    WHEN code IN ('CHILD_BORN_GIRL', 'CHILD_BORN_BOY', 'ENGAGEMENT', 'WEDDING') THEN 'RARE'
+    WHEN code IN ('OVERKICK', 'LATE_BEFORE_START') THEN 'FREQUENT'
+    ELSE 'COMMON'
+END WHERE category IS NULL;
 
 CREATE INDEX IF NOT EXISTS idx_fine_code ON fine (code);
 

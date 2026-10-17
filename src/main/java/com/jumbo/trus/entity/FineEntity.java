@@ -26,6 +26,9 @@ public class FineEntity {
     @Column(length = 100, updatable = false)
     private String code;
 
+    @Column(length = 20)
+    private String category;
+
     @Column(nullable = false)
     private int amount;
 

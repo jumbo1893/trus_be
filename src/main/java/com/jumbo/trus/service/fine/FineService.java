@@ -45,6 +45,7 @@ public class FineService {
         entity.setCode(FineCodes.CUSTOM_PREFIX + UUID.randomUUID().toString().replace("-", "").toUpperCase());
         entity.setEditable(true);
         entity.setInactive(false);
+        entity.setCategory(editableCategory(fineDTO.getCategory()));
         FineEntity savedEntity = fineRepository.save(entity);
         fineNotificationService.notifyFineAdded(fineDTO.getName(), fineDTO.getAmount());
         outboxEventService.createEvent(OutboxEventType.FINE_CREATED, OutboxAggregateType.FINE, savedEntity.getId(), OutboxEventPayloadFactory.fineCreated(Set.of()));
@@ -107,12 +108,16 @@ public class FineService {
         Set<Long> affectedMatchIds = receivedFineRepository.findMatchIdsByFineId(fineId);
         Set<Long> affectedPlayerIds = receivedFineRepository.findPlayerIdsByFineId(fineId);
         String updatedName = existingFine.isEditable() ? fineDTO.getName() : existingFine.getName();
+        String updatedCategory = FineCategories.isAutomatic(existingFine.getCode())
+                ? FineCategories.AUTOMATIC
+                : fineDTO.getCategory() == null ? existingFine.getCategory() : editableCategory(fineDTO.getCategory());
         FineEntity savedFine;
 
         if (existingFine.getAmount() != fineDTO.getAmount()) {
-            savedFine = createNewAmountVersion(existingFine, updatedName, fineDTO.getAmount());
+            savedFine = createNewAmountVersion(existingFine, updatedName, fineDTO.getAmount(), updatedCategory);
         } else {
             existingFine.setName(updatedName);
+            existingFine.setCategory(updatedCategory);
             savedFine = fineRepository.save(existingFine);
         }
         fineNotificationService.notifyFineUpdated(savedFine.getName(), savedFine.getAmount());
@@ -148,7 +153,7 @@ public class FineService {
 
     }
 
-    private FineEntity createNewAmountVersion(FineEntity existingFine, String name, int amount) {
+    private FineEntity createNewAmountVersion(FineEntity existingFine, String name, int amount, String category) {
         existingFine.setInactive(true);
         fineRepository.saveAndFlush(existingFine);
 
@@ -157,6 +162,7 @@ public class FineService {
         newFine.setCode(existingFine.getCode());
         newFine.setAmount(amount);
         newFine.setEditable(existingFine.isEditable());
+        newFine.setCategory(category);
         newFine.setInactive(false);
         newFine.setAppTeam(existingFine.getAppTeam());
         return fineRepository.save(newFine);
@@ -167,6 +173,13 @@ public class FineService {
                 .orElseThrow(() -> new NotFoundException("Pokuta nenalezena v db"));
         validateBelongsToTeam(fine, appTeamId);
         return fine;
+    }
+
+    private String editableCategory(String category) {
+        if (category == null) return FineCategories.COMMON;
+        if (FineCategories.FREQUENT.equals(category) || FineCategories.COMMON.equals(category)
+                || FineCategories.RARE.equals(category)) return category;
+        throw new IllegalArgumentException("Neplatná kategorie pokuty");
     }
 
     private void validateBelongsToTeam(FineEntity fine, long appTeamId) {

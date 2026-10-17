@@ -21,6 +21,12 @@ public class FineDTO {
 
     private boolean editable;
 
+    private String category;
+
+    public FineDTO(long id, String name, int amount, boolean inactive, String code, boolean editable) {
+        this(id, name, amount, inactive, code, editable, null);
+    }
+
     /**
      * Kept for source and wire compatibility with the original four-field DTO.
      */

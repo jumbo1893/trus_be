@@ -37,7 +37,7 @@ public class AchievementDetailService {
         AchievementDetail achievementDetail = returnAchievementDetail(
                 playerAchievementDTO.getAchievement(),
                 getPlayerIdList(appTeam.getId()),
-                false
+                true
         );
 
         achievementDetail.setPlayerAchievement(playerAchievementDTO);
