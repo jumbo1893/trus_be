@@ -25,6 +25,7 @@ import com.jumbo.trus.repository.BeerRepository;
 import com.jumbo.trus.entity.football.FootballMatchEntity;
 import com.jumbo.trus.entity.football.LeagueEntity;
 import com.jumbo.trus.entity.football.TeamEntity;
+import com.jumbo.trus.dto.football.detail.ForeignNameEstimate;
 import com.jumbo.trus.repository.MatchRepository;
 import com.jumbo.trus.repository.ReceivedFineRepository;
 import com.jumbo.trus.repository.TeamVisitedCountryProjection;
@@ -40,6 +41,7 @@ import com.jumbo.trus.service.beer.BeerService;
 import com.jumbo.trus.service.football.match.FootballMatchService;
 import com.jumbo.trus.service.football.stats.FootballPlayerStatsService;
 import com.jumbo.trus.service.football.team.TeamService;
+import com.jumbo.trus.service.football.team.ForeignNameEstimateService;
 import com.jumbo.trus.service.goal.GoalService;
 import com.jumbo.trus.service.participation.MatchParticipationService;
 import com.jumbo.trus.service.player.PlayerService;
@@ -81,6 +83,7 @@ class AiReadOnlyToolServiceTest {
     private final FootballMatchService footballMatchService = mock(FootballMatchService.class);
     private final FootballPlayerStatsService footballPlayerStatsService = mock(FootballPlayerStatsService.class);
     private final TeamService teamService = mock(TeamService.class);
+    private final ForeignNameEstimateService foreignNameEstimateService = mock(ForeignNameEstimateService.class);
     private final PlayerStatsFacade playerStatsFacade = mock(PlayerStatsFacade.class);
     private final AchievementService achievementService = mock(AchievementService.class);
     private final PlayerAchievementService playerAchievementService = mock(PlayerAchievementService.class);
@@ -114,6 +117,7 @@ class AiReadOnlyToolServiceTest {
                 footballMatchService,
                 footballPlayerStatsService,
                 teamService,
+                foreignNameEstimateService,
                 playerStatsFacade,
                 achievementService,
                 playerAchievementService,
@@ -233,6 +237,73 @@ class AiReadOnlyToolServiceTest {
         assertEquals(1, result.size());
         assertEquals("official_import", result.get(0).path("data_source").asText());
         assertEquals(100L, result.get(0).path("id").asLong());
+    }
+
+    @Test
+    void combinedMatchUsesManualResultWhenOfficialImportIsStale() throws Exception {
+        TeamEntity trus = team(5L, "Trus");
+        TeamEntity opponent = team(6L, "Soupeř");
+        appTeam.setTeam(trus);
+        Instant date = Instant.now().minus(10, ChronoUnit.DAYS);
+        FootballMatchEntity official = footballMatch(100L, trus, opponent, null, date, false);
+        MatchEntity manual = new MatchEntity();
+        manual.setId(200L);
+        manual.setName("Soupeř");
+        manual.setDate(Date.from(date));
+        manual.setFootballMatch(official);
+        manual.setHomeGoalNumber(3);
+        manual.setAwayGoalNumber(1);
+        manual.setPlayerList(List.of());
+        when(matchRepository.findAll(org.mockito.ArgumentMatchers.<Specification<MatchEntity>>any(),
+                any(Pageable.class))).thenReturn(new PageImpl<>(List.of(manual)));
+        when(footballMatchRepository.findAll(org.mockito.ArgumentMatchers.<Specification<FootballMatchEntity>>any(),
+                any(Pageable.class))).thenReturn(new PageImpl<>(List.of(official)));
+
+        JsonNode row = objectMapper.readTree(service.execute("find_matches",
+                objectMapper.readTree("{}"), context)).get(0);
+        assertEquals(100L, row.path("id").asLong());
+        assertEquals(200L, row.path("manual_match_id").asLong());
+        assertEquals(3, row.path("home_goals").asInt());
+        assertTrue(row.path("already_played").asBoolean());
+        assertEquals("manual_app", row.path("result_source").asText());
+    }
+
+    @Test
+    void pubAttendanceReadsOnlyCurrentTeamMatch() throws Exception {
+        MatchEntity match = new MatchEntity();
+        match.setId(200L);
+        match.setPubConfigured(true);
+        PlayerEntity player = new PlayerEntity();
+        player.setId(7L);
+        player.setName("Pepa");
+        match.setPlayerList(List.of(player));
+        match.getPubGuestIds().add(7L);
+        when(matchRepository.findByIdAndAppTeamId(200L, 11L)).thenReturn(java.util.Optional.of(match));
+
+        JsonNode result = objectMapper.readTree(service.execute("read_pub_attendance",
+                objectMapper.readTree("{\"match_id\":200}"), context));
+        assertTrue(result.path("configured").asBoolean());
+        assertEquals("Pepa", result.path("guests").get(0).path("name").asText());
+        verify(matchRepository).findByIdAndAppTeamId(200L, 11L);
+    }
+
+    @Test
+    void foreignEstimateIsLimitedToCurrentTeam() throws Exception {
+        appTeam.setTeam(team(5L, "Trus"));
+        when(foreignNameEstimateService.forTeam(5L)).thenReturn(new ForeignNameEstimate(20, 25));
+
+        JsonNode result = objectMapper.readTree(service.execute("read_foreign_name_estimate",
+                objectMapper.readTree("{\"football_match_id\":null}"), context));
+        assertEquals(20, result.path("roster_percent").asInt());
+        assertEquals(25, result.path("last_match_percent").asInt());
+        FootballMatchEntity unrelated = footballMatch(90L, team(8L, "Cizí A"),
+                team(9L, "Cizí B"), null, Instant.now(), false);
+        when(footballMatchRepository.findById(90L)).thenReturn(java.util.Optional.of(unrelated));
+        JsonNode denied = objectMapper.readTree(service.execute("read_foreign_name_estimate",
+                objectMapper.readTree("{\"football_match_id\":90}"), context));
+        assertTrue(denied.has("error"));
+        verify(foreignNameEstimateService, never()).forTeam(8L);
+        verify(foreignNameEstimateService, never()).forTeam(9L);
     }
 
     @Test

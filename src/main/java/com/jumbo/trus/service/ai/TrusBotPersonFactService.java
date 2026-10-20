@@ -525,7 +525,34 @@ public class TrusBotPersonFactService {
         if (query.length() >= 3 && containsPhrase(candidate, query)) {
             return 60;
         }
+        // Accept a small typo or Czech inflection, but keep exact matches above fuzzy ones.
+        if (query.length() >= 4 && candidate.length() >= 4) {
+            int distance = editDistance(query, candidate);
+            if (distance <= (Math.max(query.length(), candidate.length()) >= 9 ? 2 : 1)) {
+                return 50 - distance;
+            }
+            for (String token : candidate.split(" ")) {
+                if (token.length() >= 4 && editDistance(query, token) <= 1) {
+                    return 45;
+                }
+            }
+        }
         return 0;
+    }
+
+    private int editDistance(String first, String second) {
+        int[] previous = new int[second.length() + 1];
+        for (int j = 0; j <= second.length(); j++) previous[j] = j;
+        for (int i = 1; i <= first.length(); i++) {
+            int[] current = new int[second.length() + 1];
+            current[0] = i;
+            for (int j = 1; j <= second.length(); j++) {
+                current[j] = Math.min(Math.min(current[j - 1] + 1, previous[j] + 1),
+                        previous[j - 1] + (first.charAt(i - 1) == second.charAt(j - 1) ? 0 : 1));
+            }
+            previous = current;
+        }
+        return previous[second.length()];
     }
 
     private boolean sameNameTokens(String first, String second) {

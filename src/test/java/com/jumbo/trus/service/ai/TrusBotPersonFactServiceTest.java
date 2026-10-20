@@ -108,6 +108,18 @@ class TrusBotPersonFactServiceTest {
     }
 
     @Test
+    void resolvesNicknameWithCaseDiacriticsAndSmallTypo() {
+        PlayerDTO player = player(50L, "Kotelník", true, null);
+        when(playerService.getAll(11L)).thenReturn(List.of(player));
+        when(playerStatsFacade.setupPlayerStats(50L, appTeam, false)).thenReturn(stats());
+
+        Map<String, Object> result = service.readRandomFacts("kotelnikk", context);
+
+        assertEquals("FOUND", result.get("status"));
+        assertEquals(50L, person(result).get("player_id"));
+    }
+
+    @Test
     void unlinkedInterviewReturnsFourAnswersForItsOwnTeam() {
         when(playerService.getAll(11L)).thenReturn(List.of());
 

@@ -45,6 +45,7 @@ import com.jumbo.trus.service.beer.BeerService;
 import com.jumbo.trus.service.football.match.FootballMatchService;
 import com.jumbo.trus.service.football.stats.FootballPlayerStatsService;
 import com.jumbo.trus.service.football.team.TeamService;
+import com.jumbo.trus.service.football.team.ForeignNameEstimateService;
 import com.jumbo.trus.service.goal.GoalService;
 import com.jumbo.trus.service.participation.MatchParticipationService;
 import com.jumbo.trus.service.player.PlayerService;
@@ -89,6 +90,7 @@ public class AiReadOnlyToolService {
     private final FootballMatchService footballMatchService;
     private final FootballPlayerStatsService footballPlayerStatsService;
     private final TeamService teamService;
+    private final ForeignNameEstimateService foreignNameEstimateService;
     private final PlayerStatsFacade playerStatsFacade;
     private final AchievementService achievementService;
     private final PlayerAchievementService playerAchievementService;
@@ -126,6 +128,8 @@ public class AiReadOnlyToolService {
                 case "read_player_profile" -> readPlayerProfile(arguments, context);
                 case "read_match_participation" -> readMatchParticipation(arguments, context);
                 case "read_footbar_statistics" -> readFootbarStatistics(arguments, context);
+                case "read_pub_attendance" -> readPubAttendance(arguments, context);
+                case "read_foreign_name_estimate" -> readForeignNameEstimate(arguments, context);
                 case "read_dynamic_texts" -> readDynamicTexts(arguments, context);
                 case "read_conversation_history" -> readConversationHistory(arguments, context);
                 case "read_person_facts" -> personFactService.readRandomFacts(
@@ -153,6 +157,56 @@ public class AiReadOnlyToolService {
                     "detail", safeMessage(exception)
             ));
         }
+    }
+
+    private Object readPubAttendance(JsonNode arguments, AiToolContext context) {
+        Long matchId = nullableLong(arguments, "match_id");
+        if (matchId == null) return Map.of("error", "Chybí ID interního zápasu z find_matches.");
+        MatchEntity match = matchRepository.findByIdAndAppTeamId(matchId, context.appTeam().getId())
+                .orElse(null);
+        if (match == null) return Map.of("error", "Zápas aktuálního týmu nebyl nalezen.");
+        Set<Long> guests = match.getPubGuestIds() == null ? Set.of() : match.getPubGuestIds();
+        Set<Long> left = match.getPubLeftIds() == null ? Set.of() : match.getPubLeftIds();
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("match_id", matchId);
+        result.put("configured", Boolean.TRUE.equals(match.getPubConfigured()));
+        result.put("guests", Optional.ofNullable(match.getPlayerList()).orElseGet(List::of).stream()
+                .filter(player -> guests.contains(player.getId()))
+                .map(player -> Map.of("id", player.getId(), "name", player.getName(),
+                        "left", left.contains(player.getId()))).toList());
+        result.put("guest_count", guests.size());
+        result.put("left_count", left.size());
+        return result;
+    }
+
+    private Object readForeignNameEstimate(JsonNode arguments, AiToolContext context) {
+        TeamEntity currentTeam = context.appTeam().getTeam();
+        if (currentTeam == null || currentTeam.getId() == null) {
+            return Map.of("error", "Aktuální tým není propojený s ligovým týmem.");
+        }
+        TeamEntity selected = currentTeam;
+        Long matchId = nullableLong(arguments, "football_match_id");
+        if (matchId != null) {
+            FootballMatchEntity match = footballMatchRepository.findById(matchId).orElse(null);
+            if (match == null) return Map.of("error", "Ligový zápas nebyl nalezen.");
+            boolean home = match.getHomeTeam() != null
+                    && Objects.equals(match.getHomeTeam().getId(), currentTeam.getId());
+            boolean away = match.getAwayTeam() != null
+                    && Objects.equals(match.getAwayTeam().getId(), currentTeam.getId());
+            if (!home && !away) return Map.of("error", "Zápas nepatří aktuálnímu týmu.");
+            selected = home ? match.getAwayTeam() : match.getHomeTeam();
+        }
+        if (selected == null || selected.getId() == null) {
+            return Map.of("error", "Ligový tým nemá dostupné údaje.");
+        }
+        var estimate = foreignNameEstimateService.forTeam(selected.getId());
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("team_id", selected.getId());
+        result.put("team", selected.getName());
+        result.put("roster_percent", estimate.rosterPercent());
+        result.put("last_match_percent", estimate.lastMatchPercent());
+        result.put("method", "Odhad podle výskytu křestního jména v českém kalendáři jmenin; nejde o skutečnou státní příslušnost.");
+        return result;
     }
 
     private Object findMatches(JsonNode arguments, AiToolContext context) {
@@ -230,29 +284,34 @@ public class AiReadOnlyToolService {
             int limit
     ) {
         List<CombinedMatchRow> combined = new ArrayList<>();
-        Set<Long> officialIds = new HashSet<>();
-        Set<String> naturalKeys = new HashSet<>();
+        Map<Long, Map<String, Object>> officialRows = new HashMap<>();
+        Map<String, Map<String, Object>> rowsByNaturalKey = new HashMap<>();
         Long officialTeamId = officialTeam == null ? null : officialTeam.getId();
 
         for (FootballMatchEntity match : officialMatches) {
             TeamEntity opponent = opponent(match, officialTeamId);
             String opponentName = opponent == null ? null : opponent.getName();
-            officialIds.add(match.getId());
-            naturalKeys.add(naturalMatchKey(opponentName, match.getDate()));
             Map<String, Object> row = officialMatchRow(match, officialTeamId, false);
             row.put("data_source", "official_import");
+            officialRows.put(match.getId(), row);
+            rowsByNaturalKey.put(naturalMatchKey(opponentName, match.getDate()), row);
             combined.add(new CombinedMatchRow(match.getDate(), row));
         }
 
         for (MatchEntity match : manualMatches) {
             Long linkedOfficialId = match.getFootballMatch() == null ? null : match.getFootballMatch().getId();
             String naturalKey = naturalMatchKey(match.getName(), match.getDate());
-            if ((linkedOfficialId != null && officialIds.contains(linkedOfficialId))
-                    || naturalKeys.contains(naturalKey)) {
+            Map<String, Object> officialRow = linkedOfficialId == null ? null : officialRows.get(linkedOfficialId);
+            if (officialRow == null) {
+                officialRow = rowsByNaturalKey.get(naturalKey);
+            }
+            if (officialRow != null) {
+                mergeManualMatch(officialRow, match);
                 continue;
             }
-            naturalKeys.add(naturalKey);
-            combined.add(new CombinedMatchRow(match.getDate(), manualMatchRow(match)));
+            Map<String, Object> row = manualMatchRow(match);
+            rowsByNaturalKey.put(naturalKey, row);
+            combined.add(new CombinedMatchRow(match.getDate(), row));
         }
 
         return combined.stream()
@@ -263,6 +322,22 @@ public class AiReadOnlyToolService {
                 .limit(limit)
                 .map(CombinedMatchRow::row)
                 .toList();
+    }
+
+    private void mergeManualMatch(Map<String, Object> row, MatchEntity match) {
+        row.put("manual_match_id", match.getId());
+        if (match.getHomeGoalNumber() != null && match.getAwayGoalNumber() != null
+                && (!Boolean.TRUE.equals(row.get("already_played"))
+                || row.get("home_goals") == null || row.get("away_goals") == null)) {
+            row.put("home_goals", match.getHomeGoalNumber());
+            row.put("away_goals", match.getAwayGoalNumber());
+            row.put("already_played", true);
+            row.put("result_source", "manual_app");
+        }
+        row.put("weather", matchWeatherRow(match.getWeather()));
+        row.put("participants", Optional.ofNullable(match.getPlayerList()).orElseGet(List::of)
+                .stream().map(player -> Map.of("id", player.getId(), "name", player.getName(),
+                        "fan", player.isFan())).toList());
     }
 
     private Map<String, Object> manualMatchRow(MatchEntity match) {
@@ -276,6 +351,7 @@ public class AiReadOnlyToolService {
         result.put("home", match.isHome());
         result.put("home_goals", match.getHomeGoalNumber());
         result.put("away_goals", match.getAwayGoalNumber());
+        result.put("already_played", match.getHomeGoalNumber() != null && match.getAwayGoalNumber() != null);
         result.put("weather", matchWeatherRow(match.getWeather()));
         result.put("participants", Optional.ofNullable(match.getPlayerList()).orElseGet(List::of)
                 .stream()
@@ -1484,6 +1560,30 @@ public class AiReadOnlyToolService {
 
     private static final String TOOL_DEFINITIONS = """
             [
+              {
+                "type": "function",
+                "name": "read_pub_attendance",
+                "description": "Čte uloženou účast v hospodě po interním zápase aktuálního týmu. ID match zjisti přes find_matches; u propojeného záznamu použij manual_match_id. Vrací hosty a kdo již odešel; configured=false znamená, že účast dosud nebyla potvrzena.",
+                "strict": true,
+                "parameters": {
+                  "type": "object",
+                  "properties": {"match_id": {"type": "integer"}},
+                  "required": ["match_id"],
+                  "additionalProperties": false
+                }
+              },
+              {
+                "type": "function",
+                "name": "read_foreign_name_estimate",
+                "description": "Vrací odhad podílu jmen bez českých jmenin v kádru ligového týmu a v jeho posledním odehraném zápase. Bez football_match_id jde o aktuální tým; s ID zápasu aktuálního týmu o soupeře. Nejde o ověřenou národnost hráčů.",
+                "strict": true,
+                "parameters": {
+                  "type": "object",
+                  "properties": {"football_match_id": {"type": ["integer", "null"]}},
+                  "required": ["football_match_id"],
+                  "additionalProperties": false
+                }
+              },
               {
                 "type": "function",
                 "name": "find_matches",

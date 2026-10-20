@@ -182,5 +182,61 @@
     "paths": ["Platí napříč aplikací"],
     "steps": ["+ obvykle vytvoří novou položku daného typu.", "Tužka otevře úpravu zobrazené položky.", "Řádek s šipkou nebo chevronem obvykle otevře detail.", "Kalendářové pole otevře výběr data.", "Rozbalovací pole otevře seznam nebo spodní panel.", "Uložit, Potvrď změny nebo Potvrdit změny odešle připravené změny.", "Tažení dolů obnoví data tam, kde je podporováno.", "Zkusit znovu opakuje poslední neúspěšné načtení."],
     "conditions": ["Tlačítko pro uložení bývá neaktivní, dokud se něco nezmění.", "Destruktivní akce se provedou až po potvrzení; Zrušit panel zavře."]
+  },
+  {
+    "id": "pub_attendance",
+    "title": "Hospoda po zápase",
+    "aliases": ["hospoda", "kdo jde do hospody", "účet v hospodě", "odešel z hospody", "třetí poločas"],
+    "paths": ["Prostřední tlačítko s pivem → vybrat zápas → Hospoda", "Detail ligového zápasu → DO HOSPODY"],
+    "steps": ["Vyber interní zápas; jeho účastníci jsou předvybraní.", "Odškrtni ty, kteří nejdou, a potvrď DO HOSPODY.", "Na obrazovce Účet v hospodě lze zapsat piva a panáky, upravit účastníky a označit, kdo odešel nebo se vrátil."],
+    "conditions": ["Hospoda je navázaná na interní zápas a jeho účastníky.", "Potvrzená neúčast hráče může automaticky přidat pokutu za třetí poločas; fanouškům se nepřidává."]
+  },
+  {
+    "id": "foreign_name_estimate",
+    "title": "Odhad podílu cizinců v ligovém týmu",
+    "aliases": ["podíl cizinců", "cizinci", "zahraniční hráči", "odhad národnosti"],
+    "paths": ["Ligová tabulka → klepnout na tým", "Program zápasů → detail zápasu → karta týmu"],
+    "steps": ["V detailu ligového týmu se zobrazuje odhad podílu cizinců v soupisce a v posledním odehraném zápase."],
+    "conditions": ["Odhad vychází pouze z výskytu křestního jména v českém kalendáři jmenin; nejde o skutečnou státní příslušnost.", "Při nedostatku dat se podíl nezobrazí."]
+  },
+  {
+    "id": "team_chat",
+    "title": "Týmový chat a TrusBot v chatu",
+    "aliases": ["chat", "zprávy", "reakce", "trusbot v chatu", "ztlumit chat"],
+    "paths": ["Menu → Chat"],
+    "steps": ["Vyber místnost a napiš zprávu.", "V chatu lze reagovat na zprávy a zobrazit přečtení.", "Oznámení místnosti přepneš ikonou zvonku.", "TrusBota lze oslovit v chatu; odpověď se objeví jako jeho zpráva."],
+    "conditions": ["Dostupnost místností závisí na roli v týmu.", "Oznámení chatu vyžadují zapnutá celková oznámení aplikace."]
+  },
+  {
+    "id": "match_participation",
+    "title": "Potvrzení účasti na příštím zápase",
+    "aliases": ["potvrdit účast", "půjdu na zápas", "možná půjdu", "komentáře k účasti"],
+    "paths": ["Přehled → karta příštího zápasu → Účast"],
+    "steps": ["Vyber ANO, MOŽNÁ nebo NE pro příští ligový zápas.", "U účasti lze číst a psát komentáře a reakce."],
+    "conditions": ["Účast se vztahuje k importovanému ligovému zápasu."]
+  },
+  {
+    "id": "season_recap",
+    "title": "Sezonní souhrny",
+    "aliases": ["souhrn sezony", "rekapitulace sezony", "moje sezona"],
+    "paths": ["Přehled → Zobrazit souhrn za sezonu", "Sezonní souhrny → vybrat sezonu"],
+    "steps": ["Po skončení sezony otevři připravený souhrn z Přehledu nebo ze seznamu sezonních souhrnů.", "Souhrn ukazuje osobní sezonu v číslech a zážitcích."],
+    "conditions": ["Souhrn se objeví až po skončení sezony a jeho dostupnost závisí na uživatelských datech."]
+  },
+  {
+    "id": "onboarding",
+    "title": "Průvodce nastavením aplikace",
+    "aliases": ["dokončit nastavení", "první spuštění", "průvodce", "párování profilu"],
+    "paths": ["Přehled → Dokončit nastavení"],
+    "steps": ["Průvodce pomůže se spárováním profilu, oznámeními, kroky a představením aplikace.", "Nastavení můžeš dokončit později."],
+    "conditions": ["Jednotlivé kroky závisí na stavu účtu a povoleních telefonu."]
+  },
+  {
+    "id": "team_administration",
+    "title": "Administrace týmu",
+    "aliases": ["správa týmu", "kód týmu", "práva člena", "administrátor týmu"],
+    "paths": ["Menu → Administrace týmu"],
+    "steps": ["Administrátor může zobrazit nebo změnit kód týmu a upravit práva členů.", "Role Pouze čtení umožňuje čtení; Čtení a editace dovoluje změny dat; Administrátor spravuje tým."],
+    "conditions": ["Změny práv a kódu jsou dostupné pouze administrátorovi týmu."]
   }
 ]

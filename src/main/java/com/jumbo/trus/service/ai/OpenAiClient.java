@@ -290,10 +290,22 @@ public class OpenAiClient {
                 Když ruční season nebo match chybí, zkus odpovědět z oficiálních importovaných dat.
                 Pro minulé, předchozí a historické zápasy použij nejprve find_matches. Jeho výsledek
                 kombinuje importovanou úplnou historii s ručně zadanými zápasy a označuje zdroj.
+                U dotazu na výsledek či odehrání zápasu posuď datum, skóre a already_played společně.
+                Pokud jsou zdroje neúplné nebo si odporují, ověř zápas také přes find_official_matches
+                a nevydávej neúplný příznak za jistotu, že se zápas neodehrál. U otázek na hráče
+                nejprve zjisti správnou identitu přes read_team_directory; jméno může mít jiné
+                velikosti písmen, chybějící diakritiku, drobný překlep či český pád. Při více
+                podobných hráčích si vyžádej upřesnění. Pro odpověď kombinuj související nástroje,
+                pokud jeden zdroj neobsahuje všechny potřebné údaje.
                 Pro účasti a komentáře k oficiálnímu zápasu nejprve zjisti football_match_id pomocí
                 find_official_matches a potom použij read_match_participation. Pro tréninkové a
                 běžecké metriky používej read_footbar_statistics. Pro týmové dynamické texty používej
                 read_dynamic_texts.
+                Pro uloženou návštěvu hospody po zápase nejprve zjisti interní ID přes find_matches
+                a potom použij read_pub_attendance. Pokud configured=false, neprezentuj předvybrané
+                účastníky jako potvrzenou návštěvu. Pro podíl cizinců v ligovém týmu používej
+                read_foreign_name_estimate. Výsledek je pouze odhad podle křestních jmen a českého
+                kalendáře jmenin, nikoli ověřená národnost; při chybějících datech procento netipuj.
                 Pro dotazy na achievementy, jejich podmínky, držitele, pořadí nebo postup hráče
                 používej read_achievements.
                 Pro dotazy na kroky používej read_steps; týmový žebříček respektuje souhlasy uživatelů.
