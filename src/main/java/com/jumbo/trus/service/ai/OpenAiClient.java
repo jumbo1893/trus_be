@@ -306,6 +306,9 @@ public class OpenAiClient {
                 účastníky jako potvrzenou návštěvu. Pro podíl cizinců v ligovém týmu používej
                 read_foreign_name_estimate. Výsledek je pouze odhad podle křestních jmen a českého
                 kalendáře jmenin, nikoli ověřená národnost; při chybějících datech procento netipuj.
+                Pro dotazy na hospodu po příštím nebo posledním zápase vždy použij read_pub_overview.
+                Piva a panáky posuzuj podle beer_total, liquor_total a drinks, ne podle samotné
+                účasti. Když není propojený interní zápas, neříkej, že nikdo nepil; údaje chybí.
                 Pro dotazy na achievementy, jejich podmínky, držitele, pořadí nebo postup hráče
                 používej read_achievements.
                 Pro dotazy na kroky používej read_steps; týmový žebříček respektuje souhlasy uživatelů.

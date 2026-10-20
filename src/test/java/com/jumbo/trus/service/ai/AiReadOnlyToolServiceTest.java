@@ -13,6 +13,7 @@ import com.jumbo.trus.dto.step.StepLeaderboardDTO;
 import com.jumbo.trus.dto.step.StepLeaderboardResponseDTO;
 import com.jumbo.trus.dto.step.StepPeriod;
 import com.jumbo.trus.entity.MatchEntity;
+import com.jumbo.trus.entity.BeerEntity;
 import com.jumbo.trus.entity.PlayerEntity;
 import com.jumbo.trus.entity.ai.AiQuestionEntity;
 import com.jumbo.trus.entity.ai.AiQuestionStatus;
@@ -285,6 +286,34 @@ class AiReadOnlyToolServiceTest {
         assertTrue(result.path("configured").asBoolean());
         assertEquals("Pepa", result.path("guests").get(0).path("name").asText());
         verify(matchRepository).findByIdAndAppTeamId(200L, 11L);
+    }
+
+    @Test
+    void pubOverviewReadsLinkedLastMatchAndActualDrinks() throws Exception {
+        TeamEntity trus = team(5L, "Trus");
+        appTeam.setTeam(trus);
+        FootballMatchEntity last = footballMatch(100L, team(6L, "Kampa FC"), trus,
+                null, Instant.now().minus(3, ChronoUnit.DAYS), true);
+        MatchEntity manual = new MatchEntity();
+        manual.setId(200L);
+        manual.setPlayerList(List.of());
+        manual.setPubConfigured(true);
+        BeerEntity anti = new BeerEntity();
+        anti.setBeerNumber(2);
+        BeerEntity benny = new BeerEntity();
+        benny.setBeerNumber(2);
+        when(footballMatchRepository.findLastMatch(5L)).thenReturn(last);
+        when(matchRepository.findAllByFootballMatchId(100L, 11L))
+                .thenReturn(java.util.Optional.of(manual));
+        when(beerRepository.findByMatchIdAndAppTeamId(200L, 11L))
+                .thenReturn(List.of(anti, benny));
+
+        JsonNode result = objectMapper.readTree(service.execute("read_pub_overview",
+                objectMapper.readTree("{}"), context));
+
+        assertEquals("Kampa FC", result.path("last").path("opponent").asText());
+        assertEquals(4, result.path("last").path("pub").path("beer_total").asInt());
+        assertEquals(0, result.path("last").path("pub").path("liquor_total").asInt());
     }
 
     @Test

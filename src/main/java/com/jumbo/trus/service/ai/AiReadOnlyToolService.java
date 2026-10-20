@@ -18,6 +18,7 @@ import com.jumbo.trus.dto.participation.MatchParticipationDetail;
 import com.jumbo.trus.dto.player.PlayerDTO;
 import com.jumbo.trus.dto.step.StepPeriod;
 import com.jumbo.trus.entity.DynamicTextEntity;
+import com.jumbo.trus.entity.BeerEntity;
 import com.jumbo.trus.entity.MatchEntity;
 import com.jumbo.trus.entity.ai.AiQuestionEntity;
 import com.jumbo.trus.entity.ai.AiQuestionStatus;
@@ -129,6 +130,7 @@ public class AiReadOnlyToolService {
                 case "read_match_participation" -> readMatchParticipation(arguments, context);
                 case "read_footbar_statistics" -> readFootbarStatistics(arguments, context);
                 case "read_pub_attendance" -> readPubAttendance(arguments, context);
+                case "read_pub_overview" -> readPubOverview(context);
                 case "read_foreign_name_estimate" -> readForeignNameEstimate(arguments, context);
                 case "read_dynamic_texts" -> readDynamicTexts(arguments, context);
                 case "read_conversation_history" -> readConversationHistory(arguments, context);
@@ -165,10 +167,41 @@ public class AiReadOnlyToolService {
         MatchEntity match = matchRepository.findByIdAndAppTeamId(matchId, context.appTeam().getId())
                 .orElse(null);
         if (match == null) return Map.of("error", "Zápas aktuálního týmu nebyl nalezen.");
+        return pubMatchRow(match, context.appTeam().getId());
+    }
+
+    private Object readPubOverview(AiToolContext context) {
+        TeamEntity team = context.appTeam().getTeam();
+        if (team == null || team.getId() == null) {
+            return Map.of("error", "Aktuální tým nemá propojený ligový tým.");
+        }
+        FootballMatchEntity next = footballMatchRepository.findNextMatch(team.getId());
+        FootballMatchEntity last = footballMatchRepository.findLastMatch(team.getId());
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("next", pubOfficialMatchRow(next, context));
+        result.put("last", pubOfficialMatchRow(last, context));
+        return result;
+    }
+
+    private Map<String, Object> pubOfficialMatchRow(FootballMatchEntity official, AiToolContext context) {
+        if (official == null) return null;
+        Map<String, Object> row = officialMatchRow(official, context.appTeam().getTeam().getId(), false);
+        MatchEntity manual = matchRepository.findAllByFootballMatchId(official.getId(), context.appTeam().getId())
+                .orElse(null);
+        if (manual == null) {
+            row.put("pub_status", "NO_INTERNAL_MATCH");
+            row.put("message", "K ligovému zápasu není přiřazen interní zápas; účast v hospodě ani nápoje nelze určit.");
+        } else {
+            row.put("pub", pubMatchRow(manual, context.appTeam().getId()));
+        }
+        return row;
+    }
+
+    private Map<String, Object> pubMatchRow(MatchEntity match, Long teamId) {
         Set<Long> guests = match.getPubGuestIds() == null ? Set.of() : match.getPubGuestIds();
         Set<Long> left = match.getPubLeftIds() == null ? Set.of() : match.getPubLeftIds();
         Map<String, Object> result = new LinkedHashMap<>();
-        result.put("match_id", matchId);
+        result.put("match_id", match.getId());
         result.put("configured", Boolean.TRUE.equals(match.getPubConfigured()));
         result.put("guests", Optional.ofNullable(match.getPlayerList()).orElseGet(List::of).stream()
                 .filter(player -> guests.contains(player.getId()))
@@ -176,6 +209,17 @@ public class AiReadOnlyToolService {
                         "left", left.contains(player.getId()))).toList());
         result.put("guest_count", guests.size());
         result.put("left_count", left.size());
+        List<BeerEntity> drinks = beerRepository.findByMatchIdAndAppTeamId(match.getId(), teamId);
+        result.put("beer_total", drinks.stream().mapToInt(BeerEntity::getBeerNumber).sum());
+        result.put("liquor_total", drinks.stream().mapToInt(BeerEntity::getLiquorNumber).sum());
+        result.put("drinks", drinks.stream().map(drink -> {
+            Map<String, Object> item = new LinkedHashMap<>();
+            item.put("player_id", drink.getPlayer() == null ? null : drink.getPlayer().getId());
+            item.put("player", drink.getPlayer() == null ? null : drink.getPlayer().getName());
+            item.put("beer", drink.getBeerNumber());
+            item.put("liquor", drink.getLiquorNumber());
+            return item;
+        }).toList());
         return result;
     }
 
@@ -1563,12 +1607,24 @@ public class AiReadOnlyToolService {
               {
                 "type": "function",
                 "name": "read_pub_attendance",
-                "description": "Čte uloženou účast v hospodě po interním zápase aktuálního týmu. ID match zjisti přes find_matches; u propojeného záznamu použij manual_match_id. Vrací hosty a kdo již odešel; configured=false znamená, že účast dosud nebyla potvrzena.",
+                "description": "Čte uloženou účast v hospodě i počty piv a panáků po hráčích u interního zápasu aktuálního týmu. ID match zjisti přes find_matches; u propojeného záznamu použij manual_match_id. configured=false znamená, že účast dosud nebyla potvrzena.",
                 "strict": true,
                 "parameters": {
                   "type": "object",
                   "properties": {"match_id": {"type": "integer"}},
                   "required": ["match_id"],
+                  "additionalProperties": false
+                }
+              },
+              {
+                "type": "function",
+                "name": "read_pub_overview",
+                "description": "Jedním krokem vrátí příští a poslední ligový zápas aktuálního týmu, propojenou potvrzenou účast v hospodě a skutečně zapsaná piva a panáky. Použij vždy pro otázky kdo jde po příštím zápase do hospody, kdo byl po posledním zápase a co vypil. Chybějící interní zápas neznamená nulovou účast ani nulové nápoje.",
+                "strict": true,
+                "parameters": {
+                  "type": "object",
+                  "properties": {},
+                  "required": [],
                   "additionalProperties": false
                 }
               },
