@@ -66,7 +66,7 @@ public class HeaderManager {
         String clientIp = xff != null && !xff.isBlank()
                 ? xff.split(",")[0].trim()
                 : remoteAddr;
-        log.info("Client IP diagnostic: xForwardedFor={}, remoteAddr={}, selectedIp={}",
+        log.info("+Client IP diagnostic: xForwardedFor={}, remoteAddr={}, selectedIp={}",
                 safeForLog(xff), safeForLog(remoteAddr), safeForLog(clientIp));
         return clientIp;
     }
