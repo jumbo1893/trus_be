@@ -88,7 +88,10 @@ public class HomeService {
         }
         homeSetup.setLastMatch(getLastMatch(appTeamEntity, player));
         homeSetup.setStatsBoards(statsBoardDataService.getStatsBoardDataList(appTeamEntity));
-        VisitedCountryResponse visitedCountryResponse = userVisitedCountryService.addVisitedCountry(userId, geoIpService.getCountryCode(headerManager.getClientIp()));
+        String countryCode = geoIpService.getCountryCode(headerManager.getClientIp());
+        VisitedCountryResponse visitedCountryResponse = userVisitedCountryService.addVisitedCountry(userId, countryCode);
+        log.info("Visited country diagnostic: userId={}, countryCode={}, newlySaved={}",
+                userId, countryCode, visitedCountryResponse != null);
         if (visitedCountryResponse != null) {
             countryAchievementCalculator.calculateCountryAchievementsByPlayer(player, visitedCountryResponse, appTeamEntity);
         }

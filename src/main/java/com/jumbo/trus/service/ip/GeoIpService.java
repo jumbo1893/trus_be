@@ -29,8 +29,14 @@ public class GeoIpService {
         try {
             InetAddress address = InetAddress.getByName(ip);
             CountryResponse response = databaseReader.country(address);
-            return response.getCountry().getIsoCode();
+            String countryCode = response.getCountry().getIsoCode();
+            if (countryCode == null) {
+                log.warn("GeoIP diagnostic: lookup returned no country code");
+            }
+            return countryCode;
         } catch (Exception e) {
+            log.warn("GeoIP diagnostic: lookup failed, reason={}",
+                    e.getClass().getSimpleName());
             return null;
         }
     }
