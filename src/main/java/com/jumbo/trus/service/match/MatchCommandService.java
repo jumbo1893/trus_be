@@ -28,6 +28,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import com.jumbo.trus.service.exceptions.DuplicateFootballMatchException;
 import org.webjars.NotFoundException;
 
 import java.util.*;
@@ -70,6 +71,11 @@ public class MatchCommandService {
                     match.getDate(),
                     appTeam
             );
+            if (footballMatch != null && footballMatch.getId() != null
+                    && matchRepository.existsByAppTeamIdAndFootballMatchIdAndIdNot(
+                    appTeam.getId(), footballMatch.getId(), match.getId())) {
+                continue;
+            }
             match.setFootballMatch(footballMatchMapper.toEntity(footballMatch));
         }
 
@@ -78,6 +84,7 @@ public class MatchCommandService {
 
     @Transactional
     public MatchDTO addMatch(MatchDTO matchDTO, AppTeamEntity appTeam) {
+        validateFootballMatchNotUsed(matchDTO, appTeam, -1L);
         MatchEntity match = matchMapper.toEntity(matchDTO);
         applyEditableFields(match, matchDTO, appTeam);
 
@@ -98,6 +105,7 @@ public class MatchCommandService {
             AppTeamEntity appTeam
     ) throws NotFoundException {
         MatchEntity match = findMatchForTeamOrThrow(matchId, appTeam.getId());
+        validateFootballMatchNotUsed(matchDTO, appTeam, matchId);
         Set<Long> originalPlayerIds = getPlayerIds(match);
 
         matchMapper.updateEntity(matchDTO, match);
@@ -202,6 +210,14 @@ public class MatchCommandService {
         Long footballMatchId = matchDTO.getFootballMatch().getId();
         FootballMatchDTO footballMatch = footballMatchService.getFootballMatchById(footballMatchId);
         return footballMatchMapper.toEntity(footballMatch);
+    }
+
+    private void validateFootballMatchNotUsed(MatchDTO matchDTO, AppTeamEntity appTeam, Long matchId) {
+        if (matchDTO.getFootballMatch() == null || matchDTO.getFootballMatch().getId() == null) return;
+        if (matchRepository.existsByAppTeamIdAndFootballMatchIdAndIdNot(
+                appTeam.getId(), matchDTO.getFootballMatch().getId(), matchId)) {
+            throw new DuplicateFootballMatchException();
+        }
     }
 
     private MatchEntity findMatchForTeamOrThrow(

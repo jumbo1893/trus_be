@@ -21,6 +21,8 @@ import java.util.Set;
 import static com.jumbo.trus.config.Config.OTHER_SEASON_ID;
 
 public interface MatchRepository extends PagingAndSortingRepository<MatchEntity, Long>, JpaRepository<MatchEntity, Long>, JpaSpecificationExecutor<MatchEntity> {
+    boolean existsByAppTeamIdAndFootballMatchIdAndIdNot(Long appTeamId, Long footballMatchId, Long id);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT m FROM match m WHERE m.id = :matchId AND m.appTeam.id = :appTeamId")
     Optional<MatchEntity> findForPubUpdate(@Param("matchId") Long matchId,

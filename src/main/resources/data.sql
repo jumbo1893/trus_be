@@ -180,5 +180,9 @@ CREATE INDEX IF NOT EXISTS idx_received_fine_app_team_player_match
 CREATE INDEX IF NOT EXISTS idx_match_app_team_date
     ON match (app_team_id, date);
 
+CREATE UNIQUE INDEX IF NOT EXISTS uq_match_app_team_football_match
+    ON match (app_team_id, football_match_id)
+    WHERE football_match_id IS NOT NULL;
+
 CREATE INDEX IF NOT EXISTS idx_player_app_team_deleted
     ON player (app_team_id, deleted);
