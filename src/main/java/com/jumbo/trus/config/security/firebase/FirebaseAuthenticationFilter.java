@@ -5,6 +5,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,6 +17,7 @@ import java.nio.charset.StandardCharsets;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class FirebaseAuthenticationFilter extends OncePerRequestFilter {
 
     private static final String BEARER_PREFIX = "Bearer ";
@@ -40,13 +42,24 @@ public class FirebaseAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
+        Authentication authentication;
         try {
-            Authentication authentication = authenticationService.authenticate(idToken);
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            filterChain.doFilter(request, response);
+            authentication = authenticationService.authenticate(idToken);
         } catch (Exception exception) {
             SecurityContextHolder.clearContext();
+            log.warn("Firebase authentication failed: method={}, path={}, cause={}",
+                    request.getMethod(), request.getRequestURI(), exception.getClass().getSimpleName());
             writeUnauthorized(response, "Firebase token is invalid or expired");
+            return;
+        }
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        try {
+            filterChain.doFilter(request, response);
+        } catch (ServletException | IOException | RuntimeException exception) {
+            log.error("Request failed after Firebase authentication: method={}, path={}",
+                    request.getMethod(), request.getRequestURI(), exception);
+            throw exception;
         }
     }
 
