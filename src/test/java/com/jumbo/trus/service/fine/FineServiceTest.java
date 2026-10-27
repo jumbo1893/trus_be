@@ -84,6 +84,54 @@ class FineServiceTest {
     }
 
     @Test
+    void builtInArrivalFineCanChangeCategory() {
+        FineEntity original = fine(11L, "Nepříchod", FineCodes.NO_SHOW, 100, false, false);
+        when(fineRepository.findByIdForUpdate(11L)).thenReturn(Optional.of(original));
+
+        FineDTO update = new FineDTO(11L, "Nepříchod", 100, false);
+        update.setCategory(FineCategories.MATCH);
+        service.editFine(11L, update, appTeam);
+
+        assertEquals(FineCategories.MATCH, original.getCategory());
+    }
+
+    @Test
+    void thirdHalfCanBeMovedToPostMatchCategory() {
+        FineEntity original = fine(13L, "Třetí poločas", FineCodes.THIRD_HALF, 100, false, false);
+        when(fineRepository.findByIdForUpdate(13L)).thenReturn(Optional.of(original));
+
+        FineDTO update = new FineDTO(13L, original.getName(), 100, false);
+        update.setCategory(FineCategories.POST_MATCH);
+        service.editFine(13L, update, appTeam);
+
+        assertEquals(FineCategories.POST_MATCH, original.getCategory());
+    }
+
+    @Test
+    void systemFineCanBeMovedBackToAutomaticCategory() {
+        FineEntity original = fine(14L, "Třetí poločas", FineCodes.THIRD_HALF, 100, false, false);
+        when(fineRepository.findByIdForUpdate(14L)).thenReturn(Optional.of(original));
+
+        FineDTO update = new FineDTO(14L, original.getName(), 100, false);
+        update.setCategory(FineCategories.AUTOMATIC);
+        service.editFine(14L, update, appTeam);
+
+        assertEquals(FineCategories.AUTOMATIC, original.getCategory());
+    }
+
+    @Test
+    void lateNoticeCanChangeCategory() {
+        FineEntity original = fine(12L, "Pozdní nahlášení pozdního příchodu", FineCodes.LATE_NOTICE, 100, false, false);
+        when(fineRepository.findByIdForUpdate(12L)).thenReturn(Optional.of(original));
+
+        FineDTO update = new FineDTO(12L, original.getName(), 100, false);
+        update.setCategory(FineCategories.PRE_MATCH);
+        service.editFine(12L, update, appTeam);
+
+        assertEquals(FineCategories.PRE_MATCH, original.getCategory());
+    }
+
+    @Test
     void customFineCanBeRenamedWithoutChangingHistoricalAmountVersion() {
         FineEntity original = fine(20L, "Původní", "CUSTOM_ABC", 50, true, false);
         when(fineRepository.findByIdForUpdate(20L)).thenReturn(Optional.of(original));

@@ -108,9 +108,8 @@ public class FineService {
         Set<Long> affectedMatchIds = receivedFineRepository.findMatchIdsByFineId(fineId);
         Set<Long> affectedPlayerIds = receivedFineRepository.findPlayerIdsByFineId(fineId);
         String updatedName = existingFine.isEditable() ? fineDTO.getName() : existingFine.getName();
-        String updatedCategory = FineCategories.isAutomatic(existingFine.getCode())
-                ? FineCategories.AUTOMATIC
-                : fineDTO.getCategory() == null ? existingFine.getCategory() : editableCategory(fineDTO.getCategory());
+        String updatedCategory = fineDTO.getCategory() == null
+                ? existingFine.getCategory() : editableCategory(fineDTO.getCategory());
         FineEntity savedFine;
 
         if (existingFine.getAmount() != fineDTO.getAmount()) {
@@ -176,9 +175,10 @@ public class FineService {
     }
 
     private String editableCategory(String category) {
-        if (category == null) return FineCategories.COMMON;
-        if (FineCategories.FREQUENT.equals(category) || FineCategories.COMMON.equals(category)
-                || FineCategories.RARE.equals(category)) return category;
+        if (category == null) return FineCategories.MATCH;
+        if (FineCategories.PRE_MATCH.equals(category) || FineCategories.MATCH.equals(category)
+                || FineCategories.POST_MATCH.equals(category) || FineCategories.SPECIAL.equals(category)
+                || FineCategories.AUTOMATIC.equals(category)) return category;
         throw new IllegalArgumentException("Neplatná kategorie pokuty");
     }
 

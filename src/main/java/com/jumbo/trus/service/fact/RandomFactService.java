@@ -8,10 +8,11 @@ import com.jumbo.trus.entity.filter.StatisticsFilter;
 import com.jumbo.trus.lock.LockManager;
 import com.jumbo.trus.repository.DynamicTextRepository;
 import com.jumbo.trus.service.SeasonService;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +29,7 @@ public class RandomFactService {
     private final FineFactService fineFactService;
     private final DynamicTextRepository dynamicTextRepository;
     private final LockManager lockManager;
+    private final PlatformTransactionManager transactionManager;
 
     private static final String randomFactName = "RANDOM_FACT";
 
@@ -46,23 +48,15 @@ public class RandomFactService {
         return returnList;
     }
 
-    @Transactional
     public void saveOrUpdateRandomFacts(AppTeamEntity appTeam) {
         ReentrantLock lock = lockManager.getLock(appTeam.getId());
-        if (lock.tryLock()) { // Non-blocking pokus – pokud zamčené, počkáme (fair lock)
-            try {
-                calculateRandomFacts(appTeam);
-            } finally {
-                lock.unlock();
-            }
-        } else {
-            // Pokud nelze získat lock ihned, zařaď do fronty nebo retry – ale pro jednoduchost: čekej blokujícím způsobem
-            lock.lock(); // Blokující čekání
-            try {
-                calculateRandomFacts(appTeam);
-            } finally {
-                lock.unlock();
-            }
+        // Na zámek čekáme bez transakce, aby čekající úlohy nedržely spojení z poolu.
+        lock.lock();
+        try {
+            new TransactionTemplate(transactionManager)
+                    .executeWithoutResult(status -> calculateRandomFacts(appTeam));
+        } finally {
+            lock.unlock();
         }
     }
 

@@ -131,7 +131,7 @@ public class ReceivedFineGetter {
 
         if (matchDTO != null) {
             playersInMatch = matchService.getPlayerListByFilteredByFansByMatchId(matchDTO.getId(), false);
-            otherPlayers = new ArrayList<>(playerService.getAllActive(true, receivedFineFilter.getAppTeam().getId()));
+            otherPlayers = new ArrayList<>(playerService.getAllByFan(false, receivedFineFilter.getAppTeam().getId()));
             otherPlayers.removeAll(playersInMatch);
         }
 
