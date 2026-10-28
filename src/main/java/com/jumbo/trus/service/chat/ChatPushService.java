@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -49,5 +50,30 @@ public class ChatPushService {
                 } catch (Exception e) { log.warn("Chat push failed for token {}", token.getId(), e); }
             }
         } catch (Exception e) { log.warn("Chat push dispatch failed for message {}", message.id(), e); }
+    }
+
+    @Async
+    public void notifyReaction(Long teamId, Long messageAuthorId, Long reactorId, String kind,
+                               Long messageId, String reactorName, String emoji, String messageText) {
+        if (messageAuthorId == null || messageAuthorId.equals(reactorId)) return;
+        try {
+            var role = roles.findByUserIdAndAppTeamId(messageAuthorId, teamId);
+            if (role.isEmpty() || "players".equals(kind) && (role.get().getPlayer() == null
+                    || role.get().getPlayer().isFan() || role.get().getPlayer().isDeleted())) return;
+            if (mutes.findByAppTeamIdAndUserIdAndRoom(teamId, messageAuthorId, kind)
+                    .map(mute -> mute.isMuted()).orElse(false)) return;
+            String preview = messageText == null || messageText.isBlank() ? "📷 Obrázek" : messageText;
+            if (preview.length() > 50) preview = preview.substring(0, 50) + "...";
+            for (var token : tokens.getTokensByUserList(List.of(messageAuthorId))) {
+                if (!"ACTIVE".equals(token.getStatus())) continue;
+                if (!AppVersionComparator.isWithinRange(token.getAppVersion(), "11.0.0", null)) continue;
+                try {
+                    push.sendPush(token, "Uživatel " + reactorName + " reagoval na zprávu", preview + " " + emoji,
+                            NotificationType.CHAT,
+                            Map.of("type", "chat", "notificationType", "CHAT", "screenId", "chat-screen",
+                                    "appTeamId", teamId.toString(), "room", kind, "messageId", messageId.toString()));
+                } catch (Exception e) { log.warn("Chat reaction push failed for token {}", token.getId(), e); }
+            }
+        } catch (Exception e) { log.warn("Chat reaction push dispatch failed for message {}", messageId, e); }
     }
 }

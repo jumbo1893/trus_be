@@ -19,6 +19,7 @@ import com.jumbo.trus.service.header.HeaderManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.transaction.support.TransactionSynchronization;
 
 import java.util.List;
 import java.util.Optional;
@@ -37,9 +38,59 @@ class ChatServiceTest {
     private final ChatMuteRepository mutes = mock(ChatMuteRepository.class);
     private final EnabledPushNotificationService pushSettings = mock(EnabledPushNotificationService.class);
     private final ChatAccessService access = new ChatAccessService(roles);
+    private final ChatPushService chatPush = mock(ChatPushService.class);
     private final ChatService chat = new ChatService(users, headers, roles, messages, reads, reactions,
             mutes, pushSettings,
-            mock(SimpMessagingTemplate.class), mock(ChatPushService.class), mock(ChatBotService.class));
+            mock(SimpMessagingTemplate.class), chatPush, mock(ChatBotService.class));
+
+    @Test void newReactionPushesOnlyForAnotherUsersMessage() {
+        UserEntity reactor = new UserEntity(); reactor.setId(8L); reactor.setName("Jan");
+        UserEntity author = new UserEntity(); author.setId(9L);
+        AppTeamEntity team = new AppTeamEntity(); team.setId(3L);
+        UserTeamRole role = new UserTeamRole(); role.setUser(reactor); role.setAppTeam(team);
+        ChatMessage message = new ChatMessage(); message.setId(12L); message.setAppTeam(team);
+        message.setRoom("all"); message.setAuthor(author); message.setText("Ahoj");
+        when(users.getCurrentUserEntity()).thenReturn(reactor);
+        when(headers.getAppTeamIdHeader()).thenReturn(3L);
+        when(roles.findByUserIdAndAppTeamId(8L, 3L)).thenReturn(Optional.of(role));
+        when(messages.findById(12L)).thenReturn(Optional.of(message));
+        when(reactions.findByMessageIdAndUserId(12L, 8L)).thenReturn(Optional.empty());
+        ChatReaction saved = new ChatReaction(); saved.setUser(reactor); saved.setEmoji("❤️");
+        when(reactions.findByMessageId(12L)).thenReturn(List.of(saved));
+        TransactionSynchronizationManager.initSynchronization();
+        try {
+            chat.setReaction("all", 12L, "❤️");
+            TransactionSynchronizationManager.getSynchronizations()
+                    .forEach(TransactionSynchronization::afterCommit);
+            verify(chatPush).notifyReaction(3L, 9L, 8L, "all", 12L, "Jan", "❤️", "Ahoj");
+        } finally {
+            TransactionSynchronizationManager.clearSynchronization();
+        }
+
+        clearInvocations(chatPush);
+        message.setAuthor(reactor);
+        TransactionSynchronizationManager.initSynchronization();
+        try {
+            chat.setReaction("all", 12L, "❤️");
+            TransactionSynchronizationManager.getSynchronizations()
+                    .forEach(TransactionSynchronization::afterCommit);
+            verifyNoInteractions(chatPush);
+        } finally {
+            TransactionSynchronizationManager.clearSynchronization();
+        }
+
+        message.setAuthor(author);
+        when(reactions.findByMessageIdAndUserId(12L, 8L)).thenReturn(Optional.of(saved));
+        TransactionSynchronizationManager.initSynchronization();
+        try {
+            chat.setReaction("all", 12L, "👍");
+            TransactionSynchronizationManager.getSynchronizations()
+                    .forEach(TransactionSynchronization::afterCommit);
+            verifyNoInteractions(chatPush);
+        } finally {
+            TransactionSynchronizationManager.clearSynchronization();
+        }
+    }
 
     @Test void replyKeepsItsParentAndRejectsAnotherRoom() throws Exception {
         UserEntity user = new UserEntity(); user.setId(8L);

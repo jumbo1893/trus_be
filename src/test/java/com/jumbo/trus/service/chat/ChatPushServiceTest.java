@@ -20,6 +20,40 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 class ChatPushServiceTest {
+    @Test void reactionPushGoesOnlyToAuthorWhenRoomIsEnabled() throws Exception {
+        UserTeamRoleRepository roles = mock(UserTeamRoleRepository.class);
+        ChatMuteRepository mutes = mock(ChatMuteRepository.class);
+        DeviceTokenCollector tokens = mock(DeviceTokenCollector.class);
+        PushService push = mock(PushService.class);
+        ChatPushService service = new ChatPushService(roles, mutes, tokens, push);
+        AppTeamEntity team = new AppTeamEntity(); team.setId(3L);
+        UserEntity author = new UserEntity(); author.setId(2L);
+        UserTeamRole role = new UserTeamRole(); role.setAppTeam(team); role.setUser(author);
+        when(roles.findByUserIdAndAppTeamId(2L, 3L)).thenReturn(Optional.of(role));
+        DeviceToken authorToken = token(author, "11.0.0");
+        when(tokens.getTokensByUserList(List.of(2L))).thenReturn(List.of(authorToken));
+
+        service.notifyReaction(3L, 2L, 1L, "all", 12L, "Jan", "❤️", "Ahoj");
+        verify(push).sendPush(eq(authorToken), eq("Uživatel Jan reagoval na zprávu"), eq("Ahoj ❤️"), eq(NotificationType.CHAT),
+                argThat(data -> "all".equals(data.get("room")) && "12".equals(data.get("messageId"))));
+        verify(tokens).getTokensByUserList(List.of(2L));
+
+        clearInvocations(push);
+        String longText = "x".repeat(55);
+        service.notifyReaction(3L, 2L, 1L, "all", 12L, "Jan", "👍", longText);
+        verify(push).sendPush(eq(authorToken), anyString(), eq("x".repeat(50) + "... 👍"),
+                eq(NotificationType.CHAT), anyMap());
+
+        clearInvocations(push);
+        service.notifyReaction(3L, 2L, 2L, "all", 12L, "Jan", "❤️", "Ahoj");
+        verifyNoInteractions(push);
+
+        ChatMute mute = new ChatMute(); mute.setMuted(true);
+        when(mutes.findByAppTeamIdAndUserIdAndRoom(3L, 2L, "all")).thenReturn(Optional.of(mute));
+        service.notifyReaction(3L, 2L, 1L, "all", 12L, "Jan", "❤️", "Ahoj");
+        verifyNoInteractions(push);
+    }
+
     @Test void sendsOnlyToUnmutedOtherMembersOnVersionElevenOrNewer() throws Exception {
         UserTeamRoleRepository roles = mock(UserTeamRoleRepository.class);
         ChatMuteRepository mutes = mock(ChatMuteRepository.class);

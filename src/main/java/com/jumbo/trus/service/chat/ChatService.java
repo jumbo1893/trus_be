@@ -281,6 +281,7 @@ public class ChatService {
             throw new IllegalArgumentException("Nepodporovaná reakce");
 
         var existing = reactions.findByMessageIdAndUserId(messageId, userId);
+        boolean newlyAdded = emoji != null && existing.isEmpty();
         if (emoji == null) {
             existing.ifPresent(reactions::delete);
             reactions.flush();
@@ -293,10 +294,18 @@ public class ChatService {
         }
         ReactionUpdate update = new ReactionUpdate(messageId, reactions.findByMessageId(messageId).stream()
                 .map(reaction -> toReaction(reaction, teamId, kind)).toList());
+        Long messageAuthorId = message.getAuthor() == null ? null : message.getAuthor().getId();
+        String reactorName = newlyAdded && !message.isBot() && messageAuthorId != null
+                && !messageAuthorId.equals(userId) ? name(userId, teamId, kind) : null;
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override public void afterCommit() {
                 try { websocket.convertAndSend("/topic/chat/" + teamId + "/" + kind + "/reactions", update); }
                 catch (Exception e) { log.warn("Chat reaction websocket delivery failed for message {}", messageId, e); }
+                if (reactorName != null) {
+                    try { push.notifyReaction(teamId, messageAuthorId, userId, kind, messageId,
+                            reactorName, emoji, message.getText()); }
+                    catch (Exception e) { log.warn("Chat reaction push delivery failed for message {}", messageId, e); }
+                }
             }
         });
         return update;
