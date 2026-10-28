@@ -100,6 +100,14 @@ public class ReceivedFineService {
         receivedFineUpdater.rewriteFinesInDB(matchId, goalList, appTeam);
     }
 
+    public void syncCardFines(Long matchId, GoalDTO current, GoalDTO previous, AppTeamEntity appTeam) {
+        receivedFineUpdater.syncCardFines(matchId, current, previous, appTeam);
+    }
+
+    public void syncCleanSheetFines(Long matchId, AppTeamEntity appTeam) {
+        receivedFineUpdater.syncCleanSheetFines(matchId, appTeam);
+    }
+
     public ReceivedFineMatchDetailResponse getMatchStatsDetail(
             Long matchId,
             AppTeamEntity appTeam,

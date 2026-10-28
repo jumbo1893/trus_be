@@ -13,6 +13,7 @@ import com.jumbo.trus.entity.outbox.OutboxAggregateType;
 import com.jumbo.trus.entity.outbox.OutboxEventType;
 import com.jumbo.trus.mapper.ReceivedFineMapper;
 import com.jumbo.trus.repository.MatchRepository;
+import com.jumbo.trus.repository.GoalRepository;
 import com.jumbo.trus.repository.ReceivedFineRepository;
 import com.jumbo.trus.repository.specification.ReceivedFineSpecification;
 import com.jumbo.trus.service.fine.FineService;
@@ -40,6 +41,7 @@ import java.util.stream.Collectors;
 public class ReceivedFineUpdater {
 
     private final ReceivedFineRepository receivedFineRepository;
+    private final GoalRepository goalRepository;
     private final ReceivedFineMapper receivedFineMapper;
     private final PlayerService playerService;
     private final FineService fineService;
@@ -47,6 +49,64 @@ public class ReceivedFineUpdater {
     private final FineNotificationMaker fineNotificationMaker;
     private final MatchRepository matchRepository;
     private final OutboxEventService outboxEventService;
+
+    private static final String CLEAN_SHEET_SOURCE = "CLEAN_SHEET";
+
+    @Transactional
+    public void syncCleanSheetFines(Long matchId, AppTeamEntity appTeam) {
+        MatchEntity match = getMatchEntity(matchId);
+        List<ReceivedFineEntity> existing = receivedFineRepository
+                .findByMatchIdAndAppTeamIdAndAutomaticSource(matchId, appTeam.getId(), CLEAN_SHEET_SOURCE);
+        Set<Long> goalkeeperIds = goalRepository.findByMatchIdAndGoalkeepingMinutesGreaterThan(matchId, 0)
+                .stream().map(goal -> goal.getPlayer().getId()).collect(Collectors.toSet());
+        Set<Long> recipients = new HashSet<>();
+        if (!goalkeeperIds.isEmpty() && match.getHomeGoalNumber() != null && match.getAwayGoalNumber() != null) {
+            int conceded = match.isHome() ? match.getAwayGoalNumber() : match.getHomeGoalNumber();
+            if (conceded == 0) {
+                playerService.getAllActive(true, appTeam.getId()).stream()
+                        .filter(player -> !player.isFan())
+                        .forEach(player -> recipients.add(player.getId()));
+                if (match.getPlayerList() != null) {
+                    match.getPlayerList().stream()
+                            .filter(player -> !player.isFan() && !player.isDeleted())
+                            .forEach(player -> recipients.add(player.getId()));
+                }
+                recipients.removeAll(goalkeeperIds);
+            }
+        }
+
+        Set<Long> affectedPlayers = new HashSet<>();
+        Set<Long> fineIds = new HashSet<>();
+        Set<Long> receivedFineIds = new HashSet<>();
+        Set<Long> alreadyAwarded = new HashSet<>();
+        for (ReceivedFineEntity fine : existing) {
+            Long playerId = fine.getPlayer().getId();
+            if (!recipients.contains(playerId) || !alreadyAwarded.add(playerId)) {
+                receivedFineRepository.delete(fine);
+                affectedPlayers.add(playerId);
+                fineIds.add(fine.getFine().getId());
+            }
+        }
+        recipients.removeAll(alreadyAwarded);
+        if (!recipients.isEmpty()) {
+            FineDTO fine = fineService.getFineByCode(FineCodes.ZERO_IN_MATCH, appTeam.getId());
+            fineIds.add(fine.getId());
+            for (Long playerId : recipients) {
+                ReceivedFineEntity saved = saveFineToRepository(
+                        new ReceivedFineDTO(1, fine, playerId, matchId), null, appTeam);
+                saved.setAutomaticSource(CLEAN_SHEET_SOURCE);
+                receivedFineIds.add(saved.getId());
+                affectedPlayers.add(playerId);
+            }
+        }
+        if (!affectedPlayers.isEmpty()) {
+            outboxEventService.createEvent(OutboxEventType.RECEIVED_FINE_CHANGED,
+                    OutboxAggregateType.RECEIVED_FINE, null,
+                    OutboxEventPayloadFactory.receivedFinesChanged(matchId,
+                            matchRepository.findSeasonIdByMatchId(matchId), affectedPlayers,
+                            receivedFineIds, fineIds));
+        }
+    }
 
     @Transactional
     public ReceivedFineDTO addFine(ReceivedFineDTO receivedFineDTO, AppTeamEntity appTeam) {
@@ -127,6 +187,38 @@ public class ReceivedFineUpdater {
                         playersWithFines,
                         receivedFineIds,
                        fineIds));
+    }
+
+    public void syncCardFines(Long matchId, GoalDTO current, GoalDTO previous, AppTeamEntity appTeam) {
+        syncCardFine(matchId, current.getPlayerId(), FineCodes.YELLOW_CARD,
+                current.getYellowCards(), previous == null ? 0 : previous.getYellowCards(), appTeam);
+        syncCardFine(matchId, current.getPlayerId(), FineCodes.RED_CARD,
+                current.getRedCards(), previous == null ? 0 : previous.getRedCards(), appTeam);
+    }
+
+    private void syncCardFine(Long matchId, Long playerId, String code, int count, int oldCount, AppTeamEntity appTeam) {
+        if (count == oldCount) return;
+        if (count < 0) throw new IllegalArgumentException("Počet karet nesmí být záporný");
+        List<ReceivedFineEntity> existing = receivedFineRepository.findForMatchPlayerCode(
+                matchId, playerId, code, appTeam.getId());
+        int manualCount = existing.stream().mapToInt(ReceivedFineEntity::getFineNumber).sum() - oldCount;
+        int desired = Math.max(0, manualCount + count);
+        if (existing.isEmpty()) {
+            if (desired > 0) addFine(new ReceivedFineDTO(desired,
+                    fineService.getFineByCode(code, appTeam.getId()), playerId, matchId), appTeam);
+        } else {
+            ReceivedFineEntity first = existing.get(0);
+            if (desired == 0) receivedFineRepository.delete(first);
+            else {
+                first.setFineNumber(desired);
+                receivedFineRepository.save(first);
+            }
+        }
+        outboxEventService.createEvent(OutboxEventType.RECEIVED_FINE_CHANGED,
+                OutboxAggregateType.RECEIVED_FINE, null,
+                OutboxEventPayloadFactory.receivedFinesChanged(matchId,
+                        matchRepository.findSeasonIdByMatchId(matchId), Set.of(playerId),
+                        Set.of(), Set.of(fineService.getFineByCode(code, appTeam.getId()).getId())));
     }
 
     /**

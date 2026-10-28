@@ -17,6 +17,9 @@ public class GoalSetupResponse {
 
     private int goalNumber;
     private int assistNumber;
+    private int yellowCards;
+    private int redCards;
+    private int goalkeepingMinutes;
 
     @NotNull
     private PlayerDTO player;

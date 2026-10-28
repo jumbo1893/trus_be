@@ -18,6 +18,15 @@ public class GoalEntity {
 
     private int assistNumber;
 
+    @Column(nullable = false, columnDefinition = "integer default 0")
+    private int yellowCards;
+
+    @Column(nullable = false, columnDefinition = "integer default 0")
+    private int redCards;
+
+    @Column(nullable = false, columnDefinition = "integer default 0")
+    private int goalkeepingMinutes;
+
     @ManyToOne
     private MatchEntity match;
 

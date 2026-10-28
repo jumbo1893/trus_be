@@ -60,6 +60,7 @@ public class GoalService {
     @Transactional
     public GoalDTO addGoal(GoalDTO goalDTO, AppTeamEntity appTeam) {
         GoalEntity goal = saveGoalToRepository(goalDTO, appTeam);
+        receivedFineService.syncCleanSheetFines(goal.getMatch().getId(), appTeam);
         outboxEventService.createEvent(OutboxEventType.GOAL_CHANGED, OutboxAggregateType.GOAL, goal.getId(),
                 OutboxEventPayloadFactory.goalChanged(goal.getMatch().getId(), goal.getMatch().getSeason().getId(), Set.of(goal.getPlayer().getId()), Set.of(goal.getId())));
         return goalMapper.toDTO(goal);
@@ -86,9 +87,8 @@ public class GoalService {
                 playerIds.add(goalDTO.getPlayerId());
             }
         }
-        if (goalListDTO.isRewriteToFines()) {
-            receivedFineService.rewriteFinesInDB(goalListDTO.getMatchId(), goalListDTO.getGoalList(), appTeam);
-        }
+        receivedFineService.rewriteFinesInDB(goalListDTO.getMatchId(), goalListDTO.getGoalList(), appTeam);
+        receivedFineService.syncCleanSheetFines(goalListDTO.getMatchId(), appTeam);
         if (!goalIds.isEmpty()) {
             outboxEventService.createEvent(OutboxEventType.GOAL_CHANGED, OutboxAggregateType.GOAL, null,
                     OutboxEventPayloadFactory.goalChanged(goalListDTO.getMatchId(), matchDTO.getSeasonId(), playerIds, goalIds));
@@ -98,17 +98,27 @@ public class GoalService {
     }
 
     private Long processGoal(GoalDTO goalDTO, Long matchId, StringBuilder newGoalNotification, StringBuilder newAssistNotification, GoalMultiAddResponse goalMultiAddResponse, AppTeamEntity appTeam) {
+        if (goalDTO.getGoalNumber() < 0 || goalDTO.getAssistNumber() < 0 ||
+                goalDTO.getYellowCards() < 0 || goalDTO.getRedCards() < 0 ||
+                goalDTO.getGoalkeepingMinutes() < 0) {
+            throw new IllegalArgumentException("Statistiky hráče nesmí být záporné");
+        }
         goalDTO.setMatchId(matchId);
         GoalDTO oldGoal = getGoalDtoByPlayerAndMatch(matchId, goalDTO.getPlayerId());
         int goalDiff = checkGoalDiff(oldGoal, goalDTO);
         int assistDiff = checkAssistDiff(oldGoal, goalDTO);
-        if (isNeededToRewriteGoal(oldGoal, goalDiff, assistDiff)) {
+        if (oldGoal != null && (goalDiff != 0 || assistDiff != 0 ||
+                oldGoal.getYellowCards() != goalDTO.getYellowCards() ||
+                oldGoal.getRedCards() != goalDTO.getRedCards() ||
+                oldGoal.getGoalkeepingMinutes() != goalDTO.getGoalkeepingMinutes())) {
+            receivedFineService.syncCardFines(matchId, goalDTO, oldGoal, appTeam);
             goalDTO.setId(oldGoal.getId());
             GoalEntity goalEntity = saveGoalToRepository(goalDTO, appTeam);
             setMultiAddResponse(goalMultiAddResponse, goalDiff, assistDiff);
             setMultiGoalNotification(newGoalNotification, newAssistNotification, goalDiff, assistDiff, goalDTO);
             return goalEntity.getId();
         } else if (isNeededToAddGoalFirstGoal(oldGoal, goalDTO)) {
+            receivedFineService.syncCardFines(matchId, goalDTO, null, appTeam);
             GoalEntity goalEntity = saveGoalToRepository(goalDTO, appTeam);
             setMultiAddResponse(goalMultiAddResponse, goalDTO.getGoalNumber(), goalDTO.getAssistNumber());
             setMultiGoalNotification(newGoalNotification, newAssistNotification, goalDTO.getGoalNumber(), goalDTO.getAssistNumber(), goalDTO);
@@ -143,7 +153,8 @@ public class GoalService {
      * @return Vrátí zda je nutné přidat gól do db (je nesmysl tam dávat že někdo dal 0 gólů to je automatika)
      */
     private boolean isNeededToAddGoalFirstGoal(GoalDTO oldGoal, GoalDTO goalDTO) {
-        return oldGoal == null && (goalDTO.getGoalNumber() != 0 || goalDTO.getAssistNumber() != 0);
+        return oldGoal == null && (goalDTO.getGoalNumber() != 0 || goalDTO.getAssistNumber() != 0 ||
+                goalDTO.getYellowCards() != 0 || goalDTO.getRedCards() != 0 || goalDTO.getGoalkeepingMinutes() != 0);
     }
     /**
      *
@@ -202,7 +213,11 @@ public class GoalService {
     }
 
     public void deleteGoal(Long goalId) {
-        goalRepository.deleteById(goalId);
+        GoalEntity goal = goalRepository.findById(goalId)
+                .orElseThrow(() -> new NotFoundException("Statistika hráče s id " + goalId + " nenalezena"));
+        goalRepository.delete(goal);
+        goalRepository.flush();
+        receivedFineService.syncCleanSheetFines(goal.getMatch().getId(), goal.getAppTeam());
     }
 
     public GoalDTO getGoalkeeperWithMostPointsInMatch(Long playerId, Long appTeamId) {

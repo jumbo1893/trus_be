@@ -17,6 +17,8 @@ import java.util.Optional;
 
 public interface GoalRepository extends PagingAndSortingRepository<GoalEntity, Long>, JpaRepository<GoalEntity, Long>, JpaSpecificationExecutor<GoalEntity> {
 
+    List<GoalEntity> findByMatchIdAndGoalkeepingMinutesGreaterThan(Long matchId, int minutes);
+
     @Query(value = "SELECT * from goal LIMIT :limit", nativeQuery = true)
     List<GoalEntity> getAll(@Param("limit") int limit);
 

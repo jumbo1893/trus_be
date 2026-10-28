@@ -17,6 +17,7 @@ import java.util.List;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class GoalServiceTest {
@@ -50,8 +51,11 @@ class GoalServiceTest {
         match.setSeasonId(5L);
         when(matchService.getMatch(10L)).thenReturn(match);
 
-        goalService.addMultipleGoal(new GoalListDTO(10L, false, List.of()), mock(AppTeamEntity.class));
+        AppTeamEntity team = mock(AppTeamEntity.class);
+        goalService.addMultipleGoal(new GoalListDTO(10L, false, List.of()), team);
 
         verifyNoInteractions(outboxEventService);
+        verify(receivedFineService).rewriteFinesInDB(10L, List.of(), team);
+        verify(receivedFineService).syncCleanSheetFines(10L, team);
     }
 }

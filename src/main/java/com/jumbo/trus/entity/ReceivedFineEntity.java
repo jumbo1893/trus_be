@@ -15,6 +15,9 @@ public class ReceivedFineEntity {
 
     private int fineNumber;
 
+    // Identifies fines managed by a specific automatic rule without touching manual fines.
+    private String automaticSource;
+
     @ManyToOne
     private FineEntity fine;
 

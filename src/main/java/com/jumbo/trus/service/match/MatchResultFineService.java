@@ -47,6 +47,7 @@ public class MatchResultFineService {
     @Transactional
     public void rewriteAutomaticFines(MatchEntity match, AppTeamEntity appTeam) {
         deleteExistingAutomaticResultFines(match.getId(), appTeam.getId());
+        receivedFineService.syncCleanSheetFines(match.getId(), appTeam);
 
         if (match.getHomeGoalNumber() == null || match.getAwayGoalNumber() == null) {
             return;

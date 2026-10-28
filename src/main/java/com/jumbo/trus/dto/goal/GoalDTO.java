@@ -16,6 +16,10 @@ public class GoalDTO {
 
     private int assistNumber;
 
+    private int yellowCards;
+    private int redCards;
+    private int goalkeepingMinutes;
+
     @NotNull
     private Long playerId;
 

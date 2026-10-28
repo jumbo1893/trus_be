@@ -19,11 +19,25 @@ public class GoalDetailedDTO {
 
     private int assistNumber;
 
+    private int yellowCards;
+
+    private int redCards;
+
+    private int goalkeepingMinutes;
+
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private PlayerDTO player;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private MatchDTO match;
+
+    public GoalDetailedDTO(long id, int goalNumber, int assistNumber, PlayerDTO player, MatchDTO match) {
+        this.id = id;
+        this.goalNumber = goalNumber;
+        this.assistNumber = assistNumber;
+        this.player = player;
+        this.match = match;
+    }
 
     public void addGoals(int goals) {
         goalNumber+=goals;

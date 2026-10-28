@@ -25,6 +25,7 @@ public abstract class ReceivedFineDetailedMapper {
             @Mapping(target = "match.id", source = "match"),
             @Mapping(target = "fine.id", source = "fine"),
             @Mapping(target = "appTeam", ignore = true),
+            @Mapping(target = "automaticSource", ignore = true),
     })
     public abstract ReceivedFineEntity toEntity(ReceivedFineDetailedDTO source);
 
