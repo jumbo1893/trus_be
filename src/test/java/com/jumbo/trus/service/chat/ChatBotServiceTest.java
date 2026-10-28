@@ -5,6 +5,7 @@ import com.jumbo.trus.entity.ai.AiQuestionStatus;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.auth.UserEntity;
 import com.jumbo.trus.entity.auth.UserTeamRole;
+import com.jumbo.trus.entity.chat.ChatMessage;
 import com.jumbo.trus.repository.auth.AppTeamRepository;
 import com.jumbo.trus.repository.auth.UserRepository;
 import com.jumbo.trus.repository.auth.UserTeamRoleRepository;
@@ -55,5 +56,39 @@ class ChatBotServiceTest {
 
         verify(messages).findRecentText(eq(7L), eq("all"), eq(12L), any(Pageable.class));
         verify(replies).save(7L, 4L, "all", "Ano.");
+    }
+
+    @Test void questionIncludesFullRepliedMessageAndSelectedMatch() {
+        UserRepository users = mock(UserRepository.class);
+        AppTeamRepository teams = mock(AppTeamRepository.class);
+        UserTeamRoleRepository roles = mock(UserTeamRoleRepository.class);
+        ChatMessageRepository messages = mock(ChatMessageRepository.class);
+        AiQuestionService ai = mock(AiQuestionService.class);
+        ChatBotReplyService replies = mock(ChatBotReplyService.class);
+        ChatBotService service = new ChatBotService(users, teams, roles, messages, ai, replies);
+        UserEntity user = new UserEntity(); user.setId(4L);
+        AppTeamEntity team = new AppTeamEntity(); team.setId(7L);
+        UserTeamRole role = new UserTeamRole(); role.setUser(user); role.setAppTeam(team);
+        when(roles.findByUserIdAndAppTeamId(4L, 7L)).thenReturn(Optional.of(role));
+        when(users.findById(4L)).thenReturn(Optional.of(user));
+        when(teams.findById(7L)).thenReturn(Optional.of(team));
+        when(messages.findRecentText(eq(7L), eq("all"), eq(12L), any(Pageable.class)))
+                .thenReturn(List.of());
+        ChatMessage original = new ChatMessage(); original.setId(11L);
+        original.setAuthorName("Dolly"); original.setText("Plné znění zprávy o pivech");
+        ChatMessage asked = new ChatMessage(); asked.setReplyTo(original);
+        when(messages.findWithReplyToById(12L)).thenReturn(Optional.of(asked));
+        when(ai.askForChat(eq(user), eq(team), contains("id 42"), anyString()))
+                .thenReturn(new AiQuestionResponse(1L, "dotaz", "Odpověď", AiQuestionStatus.COMPLETED,
+                        Instant.now(), Instant.now(), null));
+
+        service.answer(7L, 4L, "all", 12L,
+                "TrusBote, uživatel Dolly napsal zprávu. Týká se zápasu Test, id 42. Dotaz: Kolik piv?");
+
+        verify(ai).askForChat(eq(user), eq(team), contains("id 42"),
+                argThat(context -> context.contains("Plné znění zprávy o pivech")
+                        && context.contains("Aktuální dotaz včetně všech vybraných zápasů a sezon")
+                        && context.contains("id 42")));
+        verify(replies).save(7L, 4L, "all", "Odpověď");
     }
 }

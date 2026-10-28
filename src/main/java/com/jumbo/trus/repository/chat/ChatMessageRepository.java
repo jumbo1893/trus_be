@@ -7,10 +7,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> {
+    @Query("select m from ChatMessage m left join fetch m.replyTo where m.id = :id")
+    Optional<ChatMessage> findWithReplyToById(Long id);
     List<ChatMessage> findByAppTeamIdAndRoomOrderByIdDesc(Long teamId, String room, Pageable pageable);
     List<ChatMessage> findByAppTeamIdAndRoomAndIdLessThanOrderByIdDesc(Long teamId, String room, Long before, Pageable pageable);
+    List<ChatMessage> findByAppTeamIdAndRoomAndIdGreaterThanOrderByIdAsc(Long teamId, String room, Long after, Pageable pageable);
     @Query("select new com.jumbo.trus.service.chat.ChatContextLine(m.authorName, m.text, m.createdAt) from ChatMessage m where m.appTeam.id = :teamId and m.room = :room and m.id <= :messageId and m.text is not null order by m.id desc")
     List<ChatContextLine> findRecentText(Long teamId, String room, Long messageId, Pageable pageable);
     @Query("select count(m) from ChatMessage m where m.appTeam.id = :teamId and m.room = :room and m.id > :id and (m.bot = true or m.author.id <> :authorId)")

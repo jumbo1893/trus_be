@@ -32,4 +32,7 @@ public class ChatMessage {
     @Lob
     private byte[] image;
     private String imageContentType;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reply_to_id")
+    private ChatMessage replyTo;
 }

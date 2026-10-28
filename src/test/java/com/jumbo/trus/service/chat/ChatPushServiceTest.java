@@ -40,7 +40,7 @@ class ChatPushServiceTest {
         when(tokens.getTokensByUserList(anyList())).thenReturn(List.of(old, unknown, current, newer));
         when(mutes.findByAppTeamIdAndUserIdAndRoom(3L, 2L, "all")).thenReturn(Optional.empty());
 
-        var message = new ChatService.Message(12L, 1L, "Autor", "Ahoj", Instant.now(), false, List.of(), false);
+        var message = new ChatService.Message(12L, 1L, "Autor", "Ahoj", Instant.now(), false, List.of(), false, null);
         service.notifyMembers(3L, 1L, "all", message);
         verify(push, times(1)).sendPush(eq(current), eq("Autor:"), eq("Ahoj"), eq(NotificationType.CHAT), anyMap());
         verify(push, times(1)).sendPush(eq(newer), eq("Autor:"), eq("Ahoj"), eq(NotificationType.CHAT), anyMap());

@@ -54,8 +54,9 @@ public class ChatService {
     public record Receipt(Long userId, String name, Long lastMessageId) {}
     public record Reaction(Long userId, String name, String emoji) {}
     public record ReactionUpdate(Long messageId, List<Reaction> reactions) {}
+    public record Reply(Long id, String author, String text, boolean image) {}
     public record Message(Long id, Long authorId, String author, String text, Instant createdAt, boolean image,
-                          List<Reaction> reactions, boolean bot) {}
+                          List<Reaction> reactions, boolean bot, Reply replyTo) {}
     public record Detail(List<Message> messages, List<Receipt> receipts) {}
     private static final Set<String> REACTION_EMOJIS = Set.of(
             "❤️", "😂", "😮", "😢", "😡", "👍", "😆", "🥳", "😍", "🔥", "👏", "🙏");
@@ -153,8 +154,41 @@ public class ChatService {
         return new Detail(result, receipts);
     }
 
+    @Transactional(readOnly = true)
+    public Detail around(String kind, Long messageId) {
+        UserTeamRole role = currentRole(kind);
+        Long teamId = role.getAppTeam().getId();
+        ChatMessage target = messages.findById(messageId)
+                .orElseThrow(() -> new IllegalArgumentException("Zpráva neexistuje"));
+        if (!target.getAppTeam().getId().equals(teamId) || !target.getRoom().equals(kind))
+            throw new SecurityException("Zpráva není v tomto chatu");
+        List<ChatMessage> page = new ArrayList<>(messages.findByAppTeamIdAndRoomAndIdGreaterThanOrderByIdAsc(
+                teamId, kind, messageId, PageRequest.of(0, 25)));
+        java.util.Collections.reverse(page);
+        page.add(target);
+        page.addAll(messages.findByAppTeamIdAndRoomAndIdLessThanOrderByIdDesc(
+                teamId, kind, messageId, PageRequest.of(0, 24)));
+        Map<Long, List<Reaction>> byMessage = reactions.findByMessageIdIn(
+                page.stream().map(ChatMessage::getId).toList()).stream().collect(Collectors.groupingBy(
+                reaction -> reaction.getMessage().getId(),
+                Collectors.mapping(reaction -> toReaction(reaction, teamId, kind), Collectors.toList())));
+        List<Message> result = page.stream()
+                .map(message -> toMessage(message, byMessage.getOrDefault(message.getId(), List.of()))).toList();
+        List<Receipt> receipts = reads.findByAppTeamIdAndRoom(teamId, kind).stream()
+                .filter(read -> roles.findByUserIdAndAppTeamId(read.getUser().getId(), teamId)
+                        .filter(r -> !"players".equals(kind) || playerRole(r)).isPresent())
+                .map(read -> new Receipt(read.getUser().getId(), name(read.getUser().getId(), teamId, kind), read.getLastMessageId()))
+                .toList();
+        return new Detail(result, receipts);
+    }
+
     @Transactional
     public Message send(String kind, String text, MultipartFile image) throws IOException {
+        return send(kind, text, image, null);
+    }
+
+    @Transactional
+    public Message send(String kind, String text, MultipartFile image, Long replyToId) throws IOException {
         UserTeamRole role = currentRole(kind);
         String body = text == null ? "" : text.trim();
         if (body.length() > 4000 || (body.isEmpty() && image == null)) throw new IllegalArgumentException("Zpráva je prázdná nebo příliš dlouhá");
@@ -164,6 +198,13 @@ public class ChatService {
         entity.setRoom(kind);
         entity.setText(body.isEmpty() ? null : body);
         entity.setAuthorName(name(role.getUser().getId(), role.getAppTeam().getId(), kind));
+        if (replyToId != null) {
+            ChatMessage parent = messages.findById(replyToId)
+                    .orElseThrow(() -> new IllegalArgumentException("Původní zpráva neexistuje"));
+            if (!parent.getAppTeam().getId().equals(role.getAppTeam().getId()) || !parent.getRoom().equals(kind))
+                throw new IllegalArgumentException("Původní zpráva není v tomto chatu");
+            entity.setReplyTo(parent);
+        }
         if (image != null) {
             if (image.isEmpty() || image.getSize() > 5 * 1024 * 1024) throw new IllegalArgumentException("Obrázek musí mít nejvýše 5 MB");
             byte[] bytes = image.getBytes();
@@ -275,8 +316,11 @@ public class ChatService {
     }
 
     private Message toMessage(ChatMessage message, List<Reaction> reactions) {
+        ChatMessage parent = message.getReplyTo();
+        Reply reply = parent == null ? null : new Reply(parent.getId(), parent.getAuthorName(), parent.getText(),
+                parent.getImageContentType() != null);
         return new Message(message.getId(), message.isBot() ? 0L : message.getAuthor().getId(), message.getAuthorName(),
-                message.getText(), message.getCreatedAt(), message.getImageContentType() != null, reactions, message.isBot());
+                message.getText(), message.getCreatedAt(), message.getImageContentType() != null, reactions, message.isBot(), reply);
     }
 
 

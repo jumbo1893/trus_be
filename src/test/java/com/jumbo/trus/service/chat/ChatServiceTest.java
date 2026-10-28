@@ -41,6 +41,34 @@ class ChatServiceTest {
             mutes, pushSettings,
             mock(SimpMessagingTemplate.class), mock(ChatPushService.class), mock(ChatBotService.class));
 
+    @Test void replyKeepsItsParentAndRejectsAnotherRoom() throws Exception {
+        UserEntity user = new UserEntity(); user.setId(8L);
+        AppTeamEntity team = new AppTeamEntity(); team.setId(3L);
+        UserTeamRole role = new UserTeamRole(); role.setUser(user); role.setAppTeam(team);
+        ChatMessage parent = new ChatMessage(); parent.setId(12L); parent.setAppTeam(team);
+        parent.setRoom("all"); parent.setAuthorName("Jan"); parent.setText("Původní zpráva");
+        when(users.getCurrentUserEntity()).thenReturn(user);
+        when(headers.getAppTeamIdHeader()).thenReturn(3L);
+        when(roles.findByUserIdAndAppTeamId(8L, 3L)).thenReturn(Optional.of(role));
+        when(messages.findById(12L)).thenReturn(Optional.of(parent));
+        when(messages.saveAndFlush(any())).thenAnswer(invocation -> {
+            ChatMessage saved = invocation.getArgument(0);
+            saved.setId(13L);
+            return saved;
+        });
+        TransactionSynchronizationManager.initSynchronization();
+        try {
+            var reply = chat.send("all", "Odpověď", null, 12L);
+            assertEquals(12L, reply.replyTo().id());
+            assertEquals("Jan", reply.replyTo().author());
+            assertEquals("Původní zpráva", reply.replyTo().text());
+            parent.setRoom("players");
+            assertThrows(IllegalArgumentException.class, () -> chat.send("all", "Odpověď", null, 12L));
+        } finally {
+            TransactionSynchronizationManager.clearSynchronization();
+        }
+    }
+
     @Test void onlyPairedNonFanMembersSeePlayersRoom() {
         UserEntity user = new UserEntity(); user.setId(8L);
         AppTeamEntity team = new AppTeamEntity(); team.setId(3L);

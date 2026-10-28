@@ -50,6 +50,14 @@ public class ChatBotService {
                     .replaceFirst("^[,;:!?\\s]+", "").trim();
             if (question.isEmpty()) question = "Pozdrav účastníky chatu a zeptej se, s čím můžeš pomoci.";
             if (question.length() > 1000) question = question.substring(0, 1000);
+            context += "\nAktuální dotaz včetně všech vybraných zápasů a sezon, plné znění: \"" + text + "\".\n";
+            var askedMessage = messages.findWithReplyToById(messageId).orElse(null);
+            var original = askedMessage == null ? null : askedMessage.getReplyTo();
+            if (original != null) {
+                String originalText = original.getText() == null ? "[Obrázek bez textu]" : original.getText();
+                context += "\nPůvodní citovaná zpráva uživatele " + original.getAuthorName()
+                        + " (id zprávy " + original.getId() + "), plné znění: \"" + originalText + "\".\n";
+            }
             AiQuestionResponse response = ai.askForChat(user, team, question, context);
             replies.save(teamId, userId, kind, response.getAnswer());
         } catch (Exception e) {

@@ -39,7 +39,7 @@ public class ChatBotReplyService {
         entity.setText(text.length() > 4000 ? text.substring(0, 3999) + "…" : text);
         ChatMessage saved = messages.saveAndFlush(entity);
         ChatService.Message dto = new ChatService.Message(saved.getId(), 0L, "TrusBot", saved.getText(),
-                saved.getCreatedAt(), false, List.of(), true);
+                saved.getCreatedAt(), false, List.of(), true, null);
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override public void afterCommit() {
                 try { websocket.convertAndSend("/topic/chat/" + teamId + "/" + kind, dto); }

@@ -26,15 +26,21 @@ public class ChatController {
         return chat.detail(ChatService.room(kind), before);
     }
 
+    @GetMapping("/{kind}/around/{id}")
+    public ChatService.Detail around(@PathVariable String kind, @PathVariable Long id) {
+        return chat.around(ChatService.room(kind), id);
+    }
+
     @PostMapping("/{kind}")
     public ChatService.Message send(@PathVariable String kind, @RequestBody TextRequest request) throws IOException {
-        return chat.send(ChatService.room(kind), request.text(), null);
+        return chat.send(ChatService.room(kind), request.text(), null, request.replyToId());
     }
 
     @PostMapping(value = "/{kind}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ChatService.Message image(@PathVariable String kind, @RequestPart("image") MultipartFile image,
-                                     @RequestParam(required = false) String text) throws IOException {
-        return chat.send(ChatService.room(kind), text, image);
+                                     @RequestParam(required = false) String text,
+                                     @RequestParam(required = false) Long replyToId) throws IOException {
+        return chat.send(ChatService.room(kind), text, image, replyToId);
     }
 
     @GetMapping("/{kind}/image/{id}")
@@ -55,7 +61,7 @@ public class ChatController {
         return chat.setReaction(ChatService.room(kind), id, request.emoji());
     }
 
-    public record TextRequest(String text) {}
+    public record TextRequest(String text, Long replyToId) {}
     public record PushRequest(boolean enabled) {}
     public record ReactionRequest(String emoji) {}
 
