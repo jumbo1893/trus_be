@@ -74,6 +74,24 @@ class AiQuestionServiceTest {
     }
 
     @Test
+    void chatQuestionsUseUltraWithoutConsumingMembershipQuota() {
+        when(userTeamRoleRepository.findByUserIdAndAppTeamId(5L, 6L)).thenReturn(Optional.empty());
+        when(openAiClient.answer(eq("Kolik piv?"), any(AiToolContext.class), eq(AiAccessTier.ULTRA),
+                eq("Kontext chatu")))
+                .thenReturn(new OpenAiAnswer("Sedm piv.", "gpt-test", 10, 5));
+
+        AiQuestionResponse response = service.askForChat(user, appTeam, "Kolik piv?", "Kontext chatu");
+
+        assertEquals("Sedm piv.", response.getAnswer());
+        assertEquals(AiQuestionStatus.COMPLETED, response.getStatus());
+        var contextCaptor = org.mockito.ArgumentCaptor.forClass(AiToolContext.class);
+        verify(openAiClient).answer(eq("Kolik piv?"), contextCaptor.capture(),
+                eq(AiAccessTier.ULTRA), eq("Kontext chatu"));
+        assertEquals(null, contextCaptor.getValue().currentPlayerId());
+        verifyNoInteractions(quotaService);
+    }
+
+    @Test
     void awardsTrusBotAchievementAfterSuccessfulAnswer() {
         AiQuestionEntity reserved = question(21L, "Kolik jsem vypil piv?");
         AiQuestionEntity completed = question(21L, "Kolik jsem vypil piv?");

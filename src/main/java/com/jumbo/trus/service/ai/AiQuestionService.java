@@ -6,6 +6,7 @@ import com.jumbo.trus.dto.membership.MembershipGrantRequest;
 import com.jumbo.trus.entity.PlayerEntity;
 import com.jumbo.trus.entity.ai.AiQuestionEntity;
 import com.jumbo.trus.entity.ai.AiQuestionStatus;
+import com.jumbo.trus.entity.ai.AiAccessTier;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.auth.UserEntity;
 import com.jumbo.trus.entity.auth.UserTeamRole;
@@ -39,7 +40,13 @@ public class AiQuestionService {
     }
 
     public AiQuestionResponse askForChat(UserEntity user, AppTeamEntity appTeam, String question, String chatContext) {
-        return askInternal(user, appTeam, question, chatContext);
+        openAiClient.requireConfigured();
+        AiToolContext context = createToolContext(user, appTeam);
+        OpenAiAnswer answer = openAiClient.answer(question, context, AiAccessTier.ULTRA, chatContext);
+        awardTrusBotAchievement(context.currentPlayerId(), appTeam);
+        Instant now = Instant.now();
+        return new AiQuestionResponse(null, question, answer.text(), AiQuestionStatus.COMPLETED,
+                now, now, null);
     }
 
     private AiQuestionResponse askInternal(UserEntity user, AppTeamEntity appTeam, String question, String chatContext) {
