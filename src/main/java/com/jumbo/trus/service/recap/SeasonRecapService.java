@@ -9,6 +9,8 @@ import com.jumbo.trus.repository.auth.UserTeamRoleRepository;
 import com.jumbo.trus.repository.notification.push.DeviceTokenRepository;
 import com.jumbo.trus.service.notification.push.PushService;
 import com.jumbo.trus.service.transaction.AfterCommitExecutor;
+import com.jumbo.trus.service.outbox.OutboxEventService;
+import com.jumbo.trus.entity.outbox.OutboxEventType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -32,6 +34,7 @@ public class SeasonRecapService {
     private final AfterCommitExecutor afterCommit;
     private final DeviceTokenRepository tokens;
     private final PushService push;
+    private final OutboxEventService outboxEventService;
     private Clock clock = Clock.system(ZoneId.of("Europe/Prague"));
     public record Summary(long id, String seasonName, String from, String to, boolean opened) {}
     public record TestPublication(long recapId, String seasonName, boolean opened, boolean pushScheduled) {}
@@ -46,6 +49,8 @@ public class SeasonRecapService {
         var recap=read(entity);
         entity.setOpenedAt(null);
         repository.saveAndFlush(entity);
+        outboxEventService.createAuditEvent(OutboxEventType.SEASON_RECAP_TEST_PUBLISHED,
+                entity.getId(), team, user);
         long recapId=entity.getId();
         afterCommit.execute("season-recap-test-push "+recapId,
                 ()->notifyUser(user,team,recapId,recap.seasonName()));
@@ -80,6 +85,8 @@ public class SeasonRecapService {
                 var entity=new SeasonRecapEntity(); entity.setSeason(seasons.getReferenceById(seasonId));entity.setUser(users.getReferenceById(user));
                 try {entity.setSnapshot(mapper.writeValueAsString(recap));}catch(Exception e){throw new IllegalStateException("Cannot serialize season recap",e);}
                 entity.setPublishedAt(clock.instant()); repository.saveAndFlush(entity);
+                outboxEventService.createAuditEvent(OutboxEventType.SEASON_RECAP_PUBLISHED,
+                        entity.getId(), team, user);
                 LocalDate publicationDay=(end.isAfter(seasonBoundary)?end:seasonBoundary).plusDays(1);
                 if(publicationDay.equals(today)) {
                     long recapId=entity.getId();String name=recap.seasonName();
@@ -116,7 +123,9 @@ public class SeasonRecapService {
         return new SeasonRecap(recap.seasonName(),recap.from(),recap.to(),pages);
     }
     @Transactional
-    public void opened(long id,long user) {var entity=owned(id,user);if(entity.getOpenedAt()==null)entity.setOpenedAt(clock.instant());}
+    public void opened(long id,long user) {var entity=owned(id,user);if(entity.getOpenedAt()==null){entity.setOpenedAt(clock.instant());
+        outboxEventService.createAuditEvent(OutboxEventType.SEASON_RECAP_OPENED,
+                id, entity.getSeason().getAppTeam().getId(), user);}}
     /** Explicit owner-only refresh: preserve the archived period, never notify other members. */
     @Transactional
     public Summary regenerate(long id,long user,boolean resetOpened) {
@@ -132,6 +141,7 @@ public class SeasonRecapService {
         catch(Exception e){throw new IllegalStateException("Cannot serialize season recap",e);}
         if(resetOpened)entity.setOpenedAt(null);
         repository.saveAndFlush(entity);
+        outboxEventService.createAuditEvent(OutboxEventType.SEASON_RECAP_REGENERATED, id, team, user);
         return new Summary(id,recap.seasonName(),recap.from(),recap.to(),entity.getOpenedAt()!=null);
     }
     // Push links can open another team without silently switching the user's selected team.

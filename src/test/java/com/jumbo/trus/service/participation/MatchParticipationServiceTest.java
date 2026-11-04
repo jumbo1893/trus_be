@@ -49,6 +49,9 @@ import static org.mockito.Mockito.when;
 
 class MatchParticipationServiceTest {
 
+    private final com.jumbo.trus.service.outbox.OutboxEventService outboxEventService =
+            mock(com.jumbo.trus.service.outbox.OutboxEventService.class);
+
     @Test
     void fanDefaultsToNonPlayingAndAuthorCanDeleteProxyResponse() {
         var team = appTeam(1L, 10L);
@@ -66,6 +69,9 @@ class MatchParticipationServiceTest {
                 .thenReturn(Optional.of(captor.getValue()));
         service.deleteResponse(2L, team, 20L, 4L);
         verify(participationRepository).delete(captor.getValue());
+        verify(outboxEventService).createAuditEvent(
+                org.mockito.ArgumentMatchers.eq(com.jumbo.trus.entity.outbox.OutboxEventType.PARTICIPATION_DELETED),
+                any(), org.mockito.ArgumentMatchers.eq(1L), org.mockito.ArgumentMatchers.eq(2L), any());
     }
 
     @Test
@@ -140,7 +146,8 @@ class MatchParticipationServiceTest {
             footballMatchService,
             playerService,
             appTeamService,
-            mock(ParticipationNotificationService.class)
+            mock(ParticipationNotificationService.class),
+            outboxEventService
     );
 
     @Test

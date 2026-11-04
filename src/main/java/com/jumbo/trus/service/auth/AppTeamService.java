@@ -22,6 +22,8 @@ import com.jumbo.trus.service.exceptions.FieldValidationException;
 import com.jumbo.trus.service.header.HeaderManager;
 import com.jumbo.trus.service.helper.ValidationField;
 import com.jumbo.trus.service.player.PlayerService;
+import com.jumbo.trus.service.outbox.OutboxEventService;
+import com.jumbo.trus.entity.outbox.OutboxEventType;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -49,6 +51,7 @@ public class AppTeamService implements AppTeamProvider {
     private final HeaderManager headerManager;
     private final PlayerRepository playerRepository;
     private final TeamAccessService teamAccessService;
+    private final OutboxEventService outboxEventService;
 
 
     public AppTeamEntity getCurrentAppTeamOrThrow() {
@@ -93,6 +96,8 @@ public class AppTeamService implements AppTeamProvider {
             return userService.getCurrentUser();
         }
         createNewUserTeamRole(user, appTeam, "READER");
+        outboxEventService.createAuditEvent(OutboxEventType.TEAM_JOINED,
+                appTeam.getId(), appTeam.getId(), user.getId());
         userService.refreshUserInSecurityContext();
         return userService.getCurrentUser();
     }
@@ -140,6 +145,8 @@ public class AppTeamService implements AppTeamProvider {
         if (playerDTO.equals(PlayerService.noPlayer())) {
             userTeamRole.setPlayer(null);
             userTeamRoleRepository.save(userTeamRole);
+            outboxEventService.createAuditEvent(OutboxEventType.TEAM_PLAYER_PAIRING_CHANGED,
+                    userTeamRole.getId(), appTeam.getId(), userEntity.getId());
             return;
         }
 
@@ -193,6 +200,8 @@ public class AppTeamService implements AppTeamProvider {
 
         userTeamRole.setPlayer(playerEntity);
         userTeamRoleRepository.save(userTeamRole);
+        outboxEventService.createAuditEvent(OutboxEventType.TEAM_PLAYER_PAIRING_CHANGED,
+                userTeamRole.getId(), appTeam.getId(), userId);
         return playerEntity;
     }
 
@@ -239,6 +248,10 @@ public class AppTeamService implements AppTeamProvider {
         }
         userTeamRole.setRole(newRole.name());
         userTeamRoleRepository.save(userTeamRole);
+        outboxEventService.createAuditEvent(OutboxEventType.TEAM_MEMBER_ROLE_CHANGED,
+                userTeamRole.getId(), currentAppTeam.getId(), null,
+                java.util.Map.of("role", newRole.name(),
+                        "userId", userTeamRole.getUser().getId().toString()));
     }
 
     private UserTeamRole findCurrentTeamRole(List<UserTeamRole> userTeamRoles) {
@@ -270,6 +283,8 @@ public class AppTeamService implements AppTeamProvider {
         AppTeamEntity newAppTeam = createNewAppTeam(appTeamRegistration, user, team);
         teamAccessService.createJoinCodes(newAppTeam);
         createNewUserTeamRole(user, newAppTeam, TeamRole.ADMIN.name());
+        outboxEventService.createAuditEvent(OutboxEventType.TEAM_CREATED,
+                newAppTeam.getId(), newAppTeam.getId(), user.getId());
     }
 
     private TeamEntity createStandaloneTeam(String name) {

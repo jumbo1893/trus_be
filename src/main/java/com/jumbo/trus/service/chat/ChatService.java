@@ -15,6 +15,8 @@ import com.jumbo.trus.repository.chat.ChatMuteRepository;
 import com.jumbo.trus.service.notification.settings.EnabledPushNotificationService;
 import com.jumbo.trus.service.auth.UserService;
 import com.jumbo.trus.service.header.HeaderManager;
+import com.jumbo.trus.service.outbox.OutboxEventService;
+import com.jumbo.trus.entity.outbox.OutboxEventType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -48,6 +50,7 @@ public class ChatService {
     private final SimpMessagingTemplate websocket;
     private final ChatPushService push;
     private final ChatBotService bot;
+    private final OutboxEventService outboxEventService;
 
     public record Room(String kind, String title, long unread, boolean pushEnabled) {}
     public record PushPreference(String kind, boolean pushEnabled) {}
@@ -124,6 +127,9 @@ public class ChatService {
                 });
         mute.setMuted(!enabled);
         mutes.save(mute);
+        outboxEventService.createAuditEvent(OutboxEventType.CHAT_PUSH_CHANGED,
+                user.getId(), role.getAppTeam().getId(), user.getId(),
+                Map.of("room", kind, "enabled", Boolean.toString(enabled)));
         return new PushPreference(kind, pushEnabled(teamId, user, kind));
     }
 

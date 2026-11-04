@@ -212,12 +212,16 @@ public class GoalService {
         return setPlayersForGoalList(playersFromMatch, goalList);
     }
 
+    @Transactional
     public void deleteGoal(Long goalId) {
         GoalEntity goal = goalRepository.findById(goalId)
                 .orElseThrow(() -> new NotFoundException("Statistika hráče s id " + goalId + " nenalezena"));
         goalRepository.delete(goal);
         goalRepository.flush();
         receivedFineService.syncCleanSheetFines(goal.getMatch().getId(), goal.getAppTeam());
+        outboxEventService.createEvent(OutboxEventType.GOAL_DELETED, OutboxAggregateType.GOAL, goalId,
+                OutboxEventPayloadFactory.goalChanged(goal.getMatch().getId(), goal.getMatch().getSeason().getId(),
+                        Set.of(goal.getPlayer().getId()), Set.of(goalId)));
     }
 
     public GoalDTO getGoalkeeperWithMostPointsInMatch(Long playerId, Long appTeamId) {

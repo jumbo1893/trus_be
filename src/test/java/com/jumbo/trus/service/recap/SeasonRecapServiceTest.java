@@ -26,7 +26,7 @@ class SeasonRecapServiceTest {
     SeasonRecapBuilder builder=mock(SeasonRecapBuilder.class);
     ObjectMapper mapper=new ObjectMapper();
     AfterCommitExecutor after=mock(AfterCommitExecutor.class);
-    SeasonRecapService service=new SeasonRecapService(repo,seasons,users,roles,data,builder,mapper,after,mock(DeviceTokenRepository.class),mock(PushService.class));
+    SeasonRecapService service=new SeasonRecapService(repo,seasons,users,roles,data,builder,mapper,after,mock(DeviceTokenRepository.class),mock(PushService.class),mock(com.jumbo.trus.service.outbox.OutboxEventService.class));
     SeasonRecap snapshot=new SeasonRecap("Podzim 2026","2026-06-02","2026-12-01",List.of());
     @BeforeEach void setup() {
         ReflectionTestUtils.setField(service,"clock",Clock.fixed(Instant.parse("2026-12-02T08:00:00Z"),ZoneId.of("Europe/Prague")));

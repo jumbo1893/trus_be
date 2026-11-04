@@ -29,7 +29,7 @@ class AppNoticeServiceTest {
 
     private final AppNoticeRepository noticeRepository = mock(AppNoticeRepository.class);
     private final AppNoticeReceiptRepository receiptRepository = mock(AppNoticeReceiptRepository.class);
-    private final AppNoticeService service = new AppNoticeService(noticeRepository, receiptRepository);
+    private final AppNoticeService service = new AppNoticeService(noticeRepository, receiptRepository, mock(com.jumbo.trus.service.outbox.OutboxEventService.class));
     private final UserEntity user = user(7L);
 
     @Test

@@ -2,6 +2,7 @@ package com.jumbo.trus.service.outbox;
 
 import com.jumbo.trus.entity.outbox.OutboxEventEntity;
 import com.jumbo.trus.entity.outbox.OutboxEventStatus;
+import com.jumbo.trus.entity.outbox.OutboxAggregateType;
 import com.jumbo.trus.repository.OutboxEventRepository;
 import com.jumbo.trus.service.achievement.AchievementProgressService;
 import com.jumbo.trus.service.achievement.AchievementService;
@@ -20,6 +21,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 class OutboxEventProcessorTest {
@@ -41,6 +43,18 @@ class OutboxEventProcessorTest {
 
     OutboxEventProcessorTest() {
         when(repository.saveAllAndFlush(any())).thenAnswer(invocation -> invocation.getArgument(0));
+    }
+
+    @Test
+    void auditOnlyEventsCompleteWithoutAchievementRecalculation() {
+        OutboxEventEntity audit = new OutboxEventEntity();
+        audit.setAggregateType(OutboxAggregateType.OTHER);
+        whenReadyEvents(List.of(audit));
+
+        processor.processEvents();
+
+        assertThat(audit.getStatus()).isEqualTo(OutboxEventStatus.DONE);
+        verifyNoInteractions(eventProcessor, achievementService, achievementProgressService, webSocketSender);
     }
 
     @Test

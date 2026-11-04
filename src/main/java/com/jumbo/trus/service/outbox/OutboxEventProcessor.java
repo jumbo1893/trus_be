@@ -1,6 +1,7 @@
 package com.jumbo.trus.service.outbox;
 
 import com.jumbo.trus.entity.outbox.OutboxEventEntity;
+import com.jumbo.trus.entity.outbox.OutboxAggregateType;
 import com.jumbo.trus.entity.outbox.OutboxEventStatus;
 import com.jumbo.trus.repository.OutboxEventRepository;
 import com.jumbo.trus.service.achievement.AchievementService;
@@ -48,7 +49,14 @@ public class OutboxEventProcessor {
 
     private void processEventsForAchievements(List<OutboxEventEntity> events) {
         try {
-            AchievementEventBatch calculationBatch = achievementEventProcessor.createCalculationBatch(events);
+            List<OutboxEventEntity> achievementEvents = events.stream()
+                    .filter(event -> event.getAggregateType() != OutboxAggregateType.OTHER)
+                    .toList();
+            if (achievementEvents.isEmpty()) {
+                events.forEach(OutboxEventEntity::markAsDone);
+                return;
+            }
+            AchievementEventBatch calculationBatch = achievementEventProcessor.createCalculationBatch(achievementEvents);
             achievementService.calculateEventBatch(calculationBatch);
             try {
                 achievementProgressService.evaluateAndNotify(calculationBatch);

@@ -45,7 +45,8 @@ class UserServiceTest {
             deviceTokenCollector,
             playerRepository,
             playerMapper,
-            membershipService
+            membershipService,
+            mock(com.jumbo.trus.service.outbox.OutboxEventService.class)
     );
 
     @Test

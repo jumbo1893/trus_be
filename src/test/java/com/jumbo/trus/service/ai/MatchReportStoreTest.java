@@ -19,7 +19,7 @@ class MatchReportStoreTest {
     private final AiQuotaService quota = mock(AiQuotaService.class);
     private final MatchReportGenerationRepository generations = mock(MatchReportGenerationRepository.class);
     private final AppTeamRepository teams = mock(AppTeamRepository.class);
-    private final MatchReportStore store = new MatchReportStore(reports, quota, generations, teams, new AiOpenAiProperties());
+    private final MatchReportStore store = new MatchReportStore(reports, quota, generations, teams, new AiOpenAiProperties(), mock(com.jumbo.trus.service.outbox.OutboxEventService.class));
     @BeforeEach void setup() {
         when(teams.findForReportUpdate(1L)).thenReturn(Optional.of(new AppTeamEntity()));
         when(generations.save(any())).thenAnswer(inv -> inv.getArgument(0));
@@ -68,6 +68,7 @@ class MatchReportStoreTest {
         when(generations.findById("1:3")).thenReturn(Optional.of(pending));
         var report = new MatchReportEntity(); report.setAppTeamId(1L); report.setFootballMatchId(3L);
         var answer = new OpenAiAnswer("text", "test", 1, 1);
+        when(reports.save(report)).thenReturn(report);
         store.save(report, 5L, answer, "token");
         verify(reports).save(report); verify(quota).complete(5L, answer); verify(generations).delete(pending);
     }

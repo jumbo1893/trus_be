@@ -11,6 +11,8 @@ import com.jumbo.trus.repository.auth.AppTeamRepository;
 import com.jumbo.trus.config.AiOpenAiProperties;
 import com.jumbo.trus.service.exceptions.AiUnavailableException;
 import com.jumbo.trus.service.exceptions.AuthException;
+import com.jumbo.trus.service.outbox.OutboxEventService;
+import com.jumbo.trus.entity.outbox.OutboxEventType;
 import java.time.Instant;
 import java.util.UUID;
 import com.jumbo.trus.repository.ai.MatchReportRepository;
@@ -26,6 +28,7 @@ public class MatchReportStore {
     private final MatchReportGenerationRepository generations;
     private final AppTeamRepository teams;
     private final AiOpenAiProperties properties;
+    private final OutboxEventService outboxEventService;
 
     public MatchReportStateDTO state(Long teamId, Long matchId, Long userId) {
         var report = repository.findFirstByAppTeamIdAndFootballMatchIdAndStyleOrderByIdDesc(
@@ -64,6 +67,8 @@ public class MatchReportStore {
         }
         quota.complete(questionId, answer);
         MatchReportEntity saved = repository.save(report);
+        outboxEventService.createAuditEvent(OutboxEventType.MATCH_REPORT_GENERATED,
+                saved.getId(), report.getAppTeamId(), report.getGeneratedByUserId());
         generations.delete(generation);
         return saved;
     }

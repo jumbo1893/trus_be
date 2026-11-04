@@ -36,7 +36,8 @@ class MembershipServiceTest {
             accountRepository,
             creditRepository,
             userRepository,
-            roleRepository
+            roleRepository,
+            mock(com.jumbo.trus.service.outbox.OutboxEventService.class)
     );
 
     private UserEntity user;

@@ -17,6 +17,8 @@ import com.jumbo.trus.service.football.team.TeamProcessor;
 import com.jumbo.trus.service.notification.push.DeviceTokenCollector;
 import com.jumbo.trus.service.player.PlayerService;
 import com.jumbo.trus.service.membership.MembershipService;
+import com.jumbo.trus.service.outbox.OutboxEventService;
+import com.jumbo.trus.entity.outbox.OutboxEventType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -47,6 +49,7 @@ public class UserService implements UserDetailsService {
     private final PlayerRepository playerRepository;
     private final PlayerMapper playerMapper;
     private final MembershipService membershipService;
+    private final OutboxEventService outboxEventService;
 
     public UserSetup returnPlayerSetup(AppTeamEntity appTeamEntity) {
         UserSetup userSetup = new UserSetup();
@@ -92,6 +95,7 @@ public class UserService implements UserDetailsService {
             throw new DuplicateEmailException();
         }
         membershipService.initializeBaselineForNewUser(entity);
+        outboxEventService.createAuditEvent(OutboxEventType.USER_CREATED, entity.getId(), null, entity.getId());
 
         UserDTO dto = new UserDTO();
         dto.setId(entity.getId());
@@ -127,7 +131,9 @@ public class UserService implements UserDetailsService {
                     && requestedName != null && !requestedName.isBlank()) {
                 existingByEmail.setName(requestedName.trim());
             }
-            return returnUserWithoutSensitiveData(userRepository.saveAndFlush(existingByEmail));
+            UserEntity linked = userRepository.saveAndFlush(existingByEmail);
+            outboxEventService.createAuditEvent(OutboxEventType.USER_UPDATED, linked.getId(), null, linked.getId());
+            return returnUserWithoutSensitiveData(linked);
         }
 
         UserEntity entity = new UserEntity();
@@ -144,6 +150,7 @@ public class UserService implements UserDetailsService {
             throw new DuplicateEmailException();
         }
         membershipService.initializeBaselineForNewUser(entity);
+        outboxEventService.createAuditEvent(OutboxEventType.USER_CREATED, entity.getId(), null, entity.getId());
         return returnUserWithoutSensitiveData(entity);
     }
 
@@ -164,8 +171,10 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("Uživatel " + username + " nenalezen"));
     }
 
+    @Transactional
     public void deleteUser(Long userId) {
         userRepository.deleteById(userId);
+        outboxEventService.createAuditEvent(OutboxEventType.USER_DELETED, userId, null, userId);
     }
 
     public List<UserDTO> getAll(Long appTeamId, Boolean appTeamTeamRolesOnly) {
@@ -195,6 +204,7 @@ public class UserService implements UserDetailsService {
         return userRepository.findById(id).orElseThrow(() -> new UsernameNotFoundException("Uživatel id " + id + " nenalezen"));
     }
 
+    @Transactional
     public UserDTO editUser(Long userId, UserDTO user) throws NotFoundException {
         UserEntity userEntity = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Uživatel s id " + userId + " nenalezen v db"));
         if (user.getAdmin() != null) {
@@ -203,14 +213,19 @@ public class UserService implements UserDetailsService {
         if (user.getName() != null) {
             userEntity.setName(user.getName());
         }
-        return returnUserWithoutSensitiveData(userRepository.save(userEntity));
+        UserDTO saved = returnUserWithoutSensitiveData(userRepository.save(userEntity));
+        outboxEventService.createAuditEvent(OutboxEventType.USER_UPDATED, userId, null, null);
+        return saved;
     }
 
+    @Transactional
     public UserDTO editUserById(Long userId, UserDTO user) throws NotFoundException {
         UserEntity userEntity = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Uživatel s id " + userId + " nenalezen v db"));
         userEntity.setAdmin(user.getAdmin());
         userEntity.setName(user.getName());
-        return returnUserWithoutSensitiveData(userRepository.save(userEntity));
+        UserDTO saved = returnUserWithoutSensitiveData(userRepository.save(userEntity));
+        outboxEventService.createAuditEvent(OutboxEventType.USER_UPDATED, userId, null, null);
+        return saved;
     }
 
     public UserDTO getCurrentUser() {

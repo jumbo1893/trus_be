@@ -39,9 +39,11 @@ class ChatServiceTest {
     private final EnabledPushNotificationService pushSettings = mock(EnabledPushNotificationService.class);
     private final ChatAccessService access = new ChatAccessService(roles);
     private final ChatPushService chatPush = mock(ChatPushService.class);
+    private final com.jumbo.trus.service.outbox.OutboxEventService outboxEventService =
+            mock(com.jumbo.trus.service.outbox.OutboxEventService.class);
     private final ChatService chat = new ChatService(users, headers, roles, messages, reads, reactions,
             mutes, pushSettings,
-            mock(SimpMessagingTemplate.class), chatPush, mock(ChatBotService.class));
+            mock(SimpMessagingTemplate.class), chatPush, mock(ChatBotService.class), outboxEventService);
 
     @Test void newReactionPushesOnlyForAnotherUsersMessage() {
         UserEntity reactor = new UserEntity(); reactor.setId(8L); reactor.setName("Jan");
@@ -200,5 +202,8 @@ class ChatServiceTest {
         assertTrue(chat.setPushEnabled("all", true).pushEnabled());
         assertFalse(stored.get().isMuted());
         verify(mutes, never()).save(argThat(mute -> "players".equals(mute.getRoom())));
+        verify(outboxEventService, times(2)).createAuditEvent(
+                eq(com.jumbo.trus.entity.outbox.OutboxEventType.CHAT_PUSH_CHANGED),
+                eq(8L), eq(3L), eq(8L), any());
     }
 }

@@ -11,7 +11,8 @@ public record OutboxEventPayload(
         Set<Long> addedPlayerIds,
         Set<Long> removedPlayerIds,
 
-        Map<OutboxRelatedEntityType, Set<Long>> relatedEntityIds
+        Map<OutboxRelatedEntityType, Set<Long>> relatedEntityIds,
+        Map<String, String> details
 
 
 ) {
@@ -21,6 +22,14 @@ public record OutboxEventPayload(
         addedPlayerIds = emptyIfNull(addedPlayerIds);
         removedPlayerIds = emptyIfNull(removedPlayerIds);
         relatedEntityIds = emptyMapIfNull(relatedEntityIds);
+        details = emptyMapIfNull(details);
+    }
+
+    public OutboxEventPayload(Long matchId, Long seasonId, Set<Long> affectedPlayerIds,
+                              Set<Long> addedPlayerIds, Set<Long> removedPlayerIds,
+                              Map<OutboxRelatedEntityType, Set<Long>> relatedEntityIds) {
+        this(matchId, seasonId, affectedPlayerIds, addedPlayerIds, removedPlayerIds,
+                relatedEntityIds, Map.of());
     }
 
     private static <T> Set<T> emptyIfNull(Set<T> values) {

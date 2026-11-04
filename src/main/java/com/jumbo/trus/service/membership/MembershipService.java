@@ -11,6 +11,8 @@ import com.jumbo.trus.repository.auth.UserRepository;
 import com.jumbo.trus.repository.auth.UserTeamRoleRepository;
 import jakarta.persistence.EntityNotFoundException;
 import com.jumbo.trus.service.exceptions.MembershipGrantException;
+import com.jumbo.trus.service.outbox.OutboxEventService;
+import com.jumbo.trus.entity.outbox.OutboxEventType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +36,7 @@ public class MembershipService {
     private final AchievementMembershipCreditRepository achievementCreditRepository;
     private final UserRepository userRepository;
     private final UserTeamRoleRepository userTeamRoleRepository;
+    private final OutboxEventService outboxEventService;
 
     /**
      * Vytvoří výchozí účet bez zpětného přidělení týdnů. Piva a panáky se
@@ -131,11 +134,13 @@ public class MembershipService {
 
         if (tier == null || tier == MembershipTier.STANDARD) {
             accountRepository.save(account);
+            outboxEventService.createAuditEvent(OutboxEventType.MEMBERSHIP_GRANT_CHANGED, userId, null, null);
             return;
         }
         if (unlimited) {
             account.setUnlimitedTier(tier);
             accountRepository.save(account);
+            outboxEventService.createAuditEvent(OutboxEventType.MEMBERSHIP_GRANT_CHANGED, userId, null, null);
             return;
         }
         if (duration == null || duration.isZero() || duration.isNegative()) {
@@ -153,6 +158,7 @@ public class MembershipService {
             account.setGrantedPremiumMillisRemaining(durationMillis);
         }
         accountRepository.save(account);
+        outboxEventService.createAuditEvent(OutboxEventType.MEMBERSHIP_GRANT_CHANGED, userId, null, null);
     }
 
     @Transactional

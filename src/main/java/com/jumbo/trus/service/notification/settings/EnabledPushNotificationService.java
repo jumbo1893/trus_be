@@ -7,6 +7,8 @@ import com.jumbo.trus.entity.notification.push.settings.EnabledPushNotification;
 import com.jumbo.trus.entity.notification.push.settings.NotificationType;
 import com.jumbo.trus.repository.notification.push.EnabledPushNotificationRepository;
 import com.jumbo.trus.service.auth.UserService;
+import com.jumbo.trus.service.outbox.OutboxEventService;
+import com.jumbo.trus.entity.outbox.OutboxEventType;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,6 +25,7 @@ public class EnabledPushNotificationService {
     private final EnabledPushNotificationRepository enRepo;
     private final UserService userService;
     private final EnabledPushNotificationInitializer enabledPushNotificationInitializer;
+    private final OutboxEventService outboxEventService;
 
 
     public boolean isNotificationEnabled(UserEntity user, NotificationType notificationType) {
@@ -54,6 +57,9 @@ public class EnabledPushNotificationService {
                 });
         setting.setEnabled(true);
         enRepo.save(setting);
+        outboxEventService.createAuditEvent(OutboxEventType.PUSH_SETTINGS_CHANGED,
+                setting.getId(), null, user.getId(),
+                Map.of("type", NotificationType.CHAT.name(), "enabled", "true"));
     }
 
 
@@ -90,7 +96,11 @@ public class EnabledPushNotificationService {
             entity.setEnabled(dto.getEnabled());
         }
 
-        return toDto(enRepo.save(entity));
+        EnabledPushNotificationDTO saved = toDto(enRepo.save(entity));
+        outboxEventService.createAuditEvent(OutboxEventType.PUSH_SETTINGS_CHANGED,
+                notificationId, null, currentUser.getId(),
+                Map.of("type", entity.getType().name(), "enabled", String.valueOf(entity.getEnabled())));
+        return saved;
     }
 
     @Transactional
@@ -130,6 +140,12 @@ public class EnabledPushNotificationService {
             entity.setModificationTime(now); // pojistka k @PreUpdate
         }
         enRepo.saveAll(existing);
+        for (EnabledPushNotification entity : existing) {
+            outboxEventService.createAuditEvent(OutboxEventType.PUSH_SETTINGS_CHANGED,
+                    entity.getId(), null, currentUser.getId(),
+                    Map.of("type", entity.getType().name(),
+                            "enabled", String.valueOf(entity.getEnabled())));
+        }
 
         return new StringAndString(title, "Úspěšně změněno");
     }

@@ -33,6 +33,7 @@ public class AchievementEventProcessor {
         }
 
         List<EventWork> eventWork = events.stream()
+                .filter(event -> event.getAggregateType() != OutboxAggregateType.OTHER)
                 .map(this::toEventWork)
                 .toList();
 

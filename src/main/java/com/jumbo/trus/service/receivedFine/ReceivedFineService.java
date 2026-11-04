@@ -9,6 +9,12 @@ import com.jumbo.trus.dto.receivedfine.response.get.setup.ReceivedFineSetupRespo
 import com.jumbo.trus.dto.receivedfine.response.stats.match.ReceivedFinePlayerDetailResponse;
 import com.jumbo.trus.dto.receivedfine.response.stats.player.ReceivedFineMatchDetailResponse;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
+import com.jumbo.trus.entity.ReceivedFineEntity;
+import com.jumbo.trus.entity.outbox.OutboxAggregateType;
+import com.jumbo.trus.entity.outbox.OutboxEventType;
+import com.jumbo.trus.service.outbox.OutboxEventPayloadFactory;
+import com.jumbo.trus.service.outbox.OutboxEventService;
+import java.util.Set;
 import com.jumbo.trus.entity.filter.ReceivedFineFilter;
 import com.jumbo.trus.entity.filter.StatisticsFilter;
 import com.jumbo.trus.repository.ReceivedFineRepository;
@@ -26,6 +32,7 @@ public class ReceivedFineService {
     private final ReceivedFineGetter receivedFineGetter;
     private final ReceivedFineUpdater receivedFineUpdater;
     private final ReceivedFineStatsDetailGetter receivedFineStatsDetailGetter;
+    private final OutboxEventService outboxEventService;
 
     public ReceivedFineDTO addFine(ReceivedFineDTO receivedFineDTO, AppTeamEntity appTeam) {
         return receivedFineUpdater.addFine(receivedFineDTO, appTeam);
@@ -76,8 +83,15 @@ public class ReceivedFineService {
         return fines.size();
     }
 
+    @Transactional
     public void deleteFine(Long fineId) {
+        ReceivedFineEntity fine = receivedFineRepository.findById(fineId).orElseThrow();
         receivedFineRepository.deleteById(fineId);
+        outboxEventService.createEvent(OutboxEventType.RECEIVED_FINE_DELETED,
+                OutboxAggregateType.RECEIVED_FINE, fineId,
+                OutboxEventPayloadFactory.receivedFinesChanged(fine.getMatch().getId(),
+                        fine.getMatch().getSeason().getId(), Set.of(fine.getPlayer().getId()),
+                        Set.of(fineId), Set.of(fine.getFine().getId())));
     }
 
     public Integer getAtLeastNumberOfFineInHistory(Long playerId, String fineCode, int fineNumber) {

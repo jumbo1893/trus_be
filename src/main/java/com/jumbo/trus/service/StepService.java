@@ -223,6 +223,9 @@ public class StepService {
         consent.setEnabled(request.enabled());
         consent.setUpdatedAt(Instant.now());
         stepConsentRepository.save(consent);
+        outboxEventService.createAuditEvent(OutboxEventType.STEP_CONSENT_CHANGED,
+                user.getId(), appTeam.getId(), user.getId(),
+                java.util.Map.of("enabled", Boolean.toString(request.enabled())));
         return new StepConsentDTO(consent.isEnabled());
     }
 

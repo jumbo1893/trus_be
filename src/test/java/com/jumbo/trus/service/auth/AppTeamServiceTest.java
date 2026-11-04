@@ -55,7 +55,8 @@ class AppTeamServiceTest {
             userTeamRoleMapper,
             headerManager,
             playerRepository,
-            teamAccessService
+            teamAccessService,
+            mock(com.jumbo.trus.service.outbox.OutboxEventService.class)
     );
 
     @Test

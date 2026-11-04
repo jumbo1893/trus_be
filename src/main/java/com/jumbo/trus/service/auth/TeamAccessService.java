@@ -18,6 +18,8 @@ import com.jumbo.trus.service.exceptions.AuthException;
 import com.jumbo.trus.service.exceptions.FieldValidationException;
 import com.jumbo.trus.service.header.HeaderManager;
 import com.jumbo.trus.service.helper.ValidationField;
+import com.jumbo.trus.service.outbox.OutboxEventService;
+import com.jumbo.trus.entity.outbox.OutboxEventType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,6 +46,7 @@ public class TeamAccessService {
     private final AppTeamRepository appTeamRepository;
     private final UserService userService;
     private final HeaderManager headerManager;
+    private final OutboxEventService outboxEventService;
 
     @Transactional
     public void createJoinCodes(AppTeamEntity appTeam) {
@@ -68,6 +71,9 @@ public class TeamAccessService {
                 && joinCode.getGrantedRole() != existingRole) {
             userTeamRole.setRole(joinCode.getGrantedRole().name());
             userTeamRoleRepository.save(userTeamRole);
+            outboxEventService.createAuditEvent(OutboxEventType.TEAM_MEMBER_ROLE_CHANGED,
+                    userTeamRole.getId(), appTeam.getId(), user.getId(),
+                    java.util.Map.of("role", userTeamRole.getRole()));
         }
 
         userService.refreshUserInSecurityContext();
@@ -102,6 +108,8 @@ public class TeamAccessService {
 
         currentCode.setCode(normalizedCode);
         joinCodeRepository.save(currentCode);
+        outboxEventService.createAuditEvent(OutboxEventType.TEAM_JOIN_CODE_CHANGED,
+                currentCode.getId(), appTeam.getId(), userService.getCurrentUserEntity().getId());
         createJoinCodes(appTeam);
         return toAdministrationDTO(appTeam);
     }
@@ -130,6 +138,10 @@ public class TeamAccessService {
         if (!newRole.name().equalsIgnoreCase(targetRole.getRole())) {
             targetRole.setRole(newRole.name());
             userTeamRoleRepository.save(targetRole);
+            outboxEventService.createAuditEvent(OutboxEventType.TEAM_MEMBER_ROLE_CHANGED,
+                    targetRole.getId(), appTeam.getId(), currentUser.getId(),
+                    java.util.Map.of("role", targetRole.getRole(),
+                            "userId", targetRole.getUser().getId().toString()));
         }
         return toAdministrationDTO(appTeam);
     }
@@ -199,6 +211,8 @@ public class TeamAccessService {
         userTeamRole.setAppTeam(appTeam);
         userTeamRole.setRole(role.name());
         UserTeamRole savedRole = userTeamRoleRepository.save(userTeamRole);
+        outboxEventService.createAuditEvent(OutboxEventType.TEAM_JOINED,
+                appTeam.getId(), appTeam.getId(), user.getId());
         user.getTeamRoles().add(savedRole);
         appTeam.getTeamRoles().add(savedRole);
         return savedRole;

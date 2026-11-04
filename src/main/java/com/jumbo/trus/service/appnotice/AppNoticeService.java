@@ -8,6 +8,8 @@ import com.jumbo.trus.entity.appnotice.AppNoticeReceiptEntity;
 import com.jumbo.trus.entity.auth.UserEntity;
 import com.jumbo.trus.repository.appnotice.AppNoticeReceiptRepository;
 import com.jumbo.trus.repository.appnotice.AppNoticeRepository;
+import com.jumbo.trus.service.outbox.OutboxEventService;
+import com.jumbo.trus.entity.outbox.OutboxEventType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +23,7 @@ public class AppNoticeService {
 
     private final AppNoticeRepository noticeRepository;
     private final AppNoticeReceiptRepository receiptRepository;
+    private final OutboxEventService outboxEventService;
 
     @Transactional(readOnly = true)
     public CurrentAppNoticeDTO getCurrent(UserEntity user, String appVersion) {
@@ -55,6 +58,8 @@ public class AppNoticeService {
         receipt.setDisplayCount(receipt.getDisplayCount() + 1);
         receipt.setLastDisplayedAt(Instant.now());
         receiptRepository.save(receipt);
+        outboxEventService.createAuditEvent(OutboxEventType.APP_NOTICE_SHOWN,
+                noticeId, null, user.getId());
     }
 
     private boolean isCurrentlyValid(AppNoticeEntity notice, Instant now) {

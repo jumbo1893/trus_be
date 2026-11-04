@@ -34,6 +34,8 @@ import com.jumbo.trus.service.exceptions.FieldValidationException;
 import com.jumbo.trus.service.football.match.FootballMatchService;
 import com.jumbo.trus.service.helper.ValidationField;
 import com.jumbo.trus.service.player.PlayerService;
+import com.jumbo.trus.service.outbox.OutboxEventService;
+import com.jumbo.trus.entity.outbox.OutboxEventType;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -67,6 +69,7 @@ public class MatchParticipationService {
     private final PlayerService playerService;
     private final AppTeamService appTeamService;
     private final ParticipationNotificationService participationNotifications;
+    private final OutboxEventService outboxEventService;
 
     @Transactional
     public MatchParticipationPrompt getPrompt(
@@ -152,6 +155,11 @@ public class MatchParticipationService {
         participation.setRespondedAt(Instant.now());
         participationRepository.save(participation);
         addCommentIfPresent(participation, author, request.getComment(), null);
+        outboxEventService.createAuditEvent(OutboxEventType.PARTICIPATION_RESPONDED,
+                participation.getId(), appTeam.getId(), userId,
+                Map.of("footballMatchId", footballMatch.getId().toString(),
+                        "playerId", String.valueOf(player.getId()),
+                        "status", request.getStatus().name()));
         participationNotifications.notifyChange(userId, appTeam.getId(), footballMatch.getId(),
                 author.getName() + (Objects.equals(author.getId(), player.getId()) ? "" : " za " + player.getName())
                         + ": " + switch (request.getStatus()) {
@@ -224,6 +232,9 @@ public class MatchParticipationService {
         }
 
         addCommentIfPresent(participation, author, request.getText(), parent);
+        outboxEventService.createAuditEvent(OutboxEventType.PARTICIPATION_COMMENT_ADDED,
+                participation.getId(), appTeam.getId(), userId,
+                Map.of("footballMatchId", footballMatch.getId().toString()));
         participationNotifications.notifyChange(userId, appTeam.getId(), footballMatch.getId(),
                 author.getName() + ": přidal komentář", request.getText());
         return buildDetail(footballMatch, appTeam, author);
@@ -260,6 +271,11 @@ public class MatchParticipationService {
                     reactionRepository.save(reaction);
                 });
 
+        outboxEventService.createAuditEvent(OutboxEventType.PARTICIPATION_REACTION_CHANGED,
+                commentId, appTeam.getId(), userId,
+                Map.of("footballMatchId", comment.getParticipation().getFootballMatch().getId().toString(),
+                        "reaction", request.getReaction().name()));
+
         return buildDetail(comment.getParticipation().getFootballMatch(), appTeam, player);
     }
 
@@ -294,6 +310,9 @@ public class MatchParticipationService {
 
         reactionRepository.deleteAllByCommentIds(commentIds);
         commentRepository.deleteAllByIds(commentIds);
+        outboxEventService.createAuditEvent(OutboxEventType.PARTICIPATION_COMMENT_DELETED,
+                commentId, appTeam.getId(), userId,
+                Map.of("footballMatchId", comment.getParticipation().getFootballMatch().getId().toString()));
         return buildDetail(comment.getParticipation().getFootballMatch(), appTeam, player);
     }
 
@@ -320,6 +339,9 @@ public class MatchParticipationService {
             commentRepository.deleteAllByIds(ids);
         }
         participationRepository.delete(participation);
+        outboxEventService.createAuditEvent(OutboxEventType.PARTICIPATION_DELETED,
+                participation.getId(), appTeam.getId(), userId,
+                Map.of("footballMatchId", footballMatchId.toString(), "playerId", playerId.toString()));
         return buildDetail(match, appTeam, actor);
     }
 
@@ -336,6 +358,9 @@ public class MatchParticipationService {
     ) {
         appTeam.setMatchParticipationPromptAudience(config.getAudience());
         appTeamRepository.save(appTeam);
+        outboxEventService.createAuditEvent(OutboxEventType.PARTICIPATION_AUDIENCE_CHANGED,
+                appTeam.getId(), appTeam.getId(), null,
+                Map.of("audience", String.valueOf(config.getAudience())));
         return config;
     }
 

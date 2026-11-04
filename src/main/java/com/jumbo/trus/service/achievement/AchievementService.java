@@ -17,6 +17,8 @@ import com.jumbo.trus.service.achievement.helper.AchievementType;
 import com.jumbo.trus.service.order.OrderAchievementBySuccessRate;
 import com.jumbo.trus.service.player.PlayerService;
 import com.jumbo.trus.service.auth.AppTeamService;
+import com.jumbo.trus.service.outbox.OutboxEventService;
+import com.jumbo.trus.entity.outbox.OutboxEventType;
 import com.jumbo.trus.service.outbox.AchievementEventBatch;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -45,6 +47,7 @@ public class AchievementService {
     private final AchievementRarityService achievementRarityService;
     private final MatchRepository matchRepository;
     private final AppTeamService appTeamService;
+    private final OutboxEventService outboxEventService;
 
     @Transactional
     public void calculateEventBatch(AchievementEventBatch batch) {
@@ -210,9 +213,12 @@ public class AchievementService {
         return achievementDetailService.getAchievementDetail(playerAchievementId, appTeam);
     }
 
+    @org.springframework.transaction.annotation.Transactional
     public PlayerAchievementDTO editPlayerAchievement(Long oldAchievementId, PlayerAchievementDTO playerAchievementDTO, AppTeamEntity appTeam) throws NotFoundException {
         PlayerAchievementDTO oldAchievement = playerAchievementRepository.findById(oldAchievementId).map(playerAchievementMapper::toDTO).orElseThrow(() -> new EntityNotFoundException(String.valueOf(oldAchievementId)));
         achievementCalculator.updateExistingAchievement(oldAchievement, playerAchievementDTO, appTeam);
+        outboxEventService.createAuditEvent(OutboxEventType.PLAYER_ACHIEVEMENT_EDITED,
+                oldAchievementId, appTeam.getId(), null);
         return playerAchievementDTO;
     }
 
