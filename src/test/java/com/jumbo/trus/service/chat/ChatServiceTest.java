@@ -45,6 +45,29 @@ class ChatServiceTest {
             mutes, pushSettings,
             mock(SimpMessagingTemplate.class), chatPush, mock(ChatBotService.class), outboxEventService);
 
+    @Test void typingUsesAuthenticatedAuthorAndRoom() {
+        UserEntity user = new UserEntity(); user.setId(8L); user.setName("Pavel");
+        AppTeamEntity team = new AppTeamEntity(); team.setId(3L);
+        UserTeamRole role = new UserTeamRole(); role.setUser(user); role.setAppTeam(team);
+        SimpMessagingTemplate websocket = mock(SimpMessagingTemplate.class);
+        ChatService service = new ChatService(users, headers, roles, messages, reads, reactions,
+                mutes, pushSettings, websocket, chatPush, mock(ChatBotService.class), outboxEventService);
+        when(users.getCurrentUserEntity()).thenReturn(user);
+        when(headers.getAppTeamIdHeader()).thenReturn(3L);
+        when(roles.findByUserIdAndAppTeamId(8L, 3L)).thenReturn(Optional.of(role));
+
+        service.typing("all", "session-1", true);
+        service.typing("all", "session-1", false);
+
+        verify(websocket).convertAndSend(eq("/topic/chat/3/all/typing"),
+                argThat((ChatTypingEvent event) -> event.typing() && event.authorId() == 8L
+                        && event.author().equals("Pavel") && event.activityId().equals("user-8-session-1")));
+        verify(websocket).convertAndSend(eq("/topic/chat/3/all/typing"),
+                argThat((ChatTypingEvent event) -> !event.typing() && event.activityId().equals("user-8-session-1")));
+        assertThrows(SecurityException.class, () -> service.typing("players", "session-1", true));
+        assertThrows(IllegalArgumentException.class, () -> service.typing("all", "invalid/id", true));
+    }
+
     @Test void newReactionPushesOnlyForAnotherUsersMessage() {
         UserEntity reactor = new UserEntity(); reactor.setId(8L); reactor.setName("Jan");
         UserEntity author = new UserEntity(); author.setId(9L);

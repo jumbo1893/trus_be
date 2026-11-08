@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.ZoneId;
@@ -30,6 +31,16 @@ public class ChatBotService {
     private final ChatMessageRepository messages;
     private final AiQuestionService ai;
     private final ChatBotReplyService replies;
+    private final SimpMessagingTemplate websocket;
+
+    private void publishTyping(Long teamId, String kind, Long messageId, boolean typing) {
+        try {
+            websocket.convertAndSend("/topic/chat/" + teamId + "/" + kind + "/typing",
+                    new ChatTypingEvent("bot-" + messageId, 0L, "TrusBot", typing));
+        } catch (Exception e) {
+            log.warn("Chat typing delivery failed for message {}", messageId, e);
+        }
+    }
 
     public static boolean isInvocation(String text) {
         return text != null && INVOCATION.matcher(text.stripLeading()).find();
@@ -38,10 +49,13 @@ public class ChatBotService {
     @Async
     public void answer(Long teamId, Long userId, String kind, Long messageId, String text) {
         if (!isInvocation(text)) return;
+        boolean started = false;
         try {
             var role = roles.findByUserIdAndAppTeamId(userId, teamId).orElse(null);
             if (role == null || "players".equals(kind) &&
                     (role.getPlayer() == null || role.getPlayer().isFan() || role.getPlayer().isDeleted())) return;
+            publishTyping(teamId, kind, messageId, true);
+            started = true;
             var user = users.findById(userId).orElseThrow();
             var team = teams.findById(teamId).orElseThrow();
             List<ChatContextLine> recent = messages.findRecentText(teamId, kind, messageId, PageRequest.of(0, 80));
@@ -64,6 +78,8 @@ public class ChatBotService {
             log.warn("TrusBot could not answer chat message {}", messageId, e);
             try { replies.save(teamId, userId, kind, "Odpověď se teď nepodařilo vytvořit. Zkus to prosím později."); }
             catch (Exception replyError) { log.warn("TrusBot error reply failed for message {}", messageId, replyError); }
+        } finally {
+            if (started) publishTyping(teamId, kind, messageId, false);
         }
     }
 

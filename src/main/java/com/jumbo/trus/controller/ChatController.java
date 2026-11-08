@@ -2,6 +2,7 @@ package com.jumbo.trus.controller;
 
 import com.jumbo.trus.entity.chat.ChatMessage;
 import com.jumbo.trus.service.chat.ChatService;
+import com.jumbo.trus.service.chat.ChatPresenceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +13,23 @@ import java.util.List;
 @RestController @RequestMapping("/chat") @RequiredArgsConstructor
 public class ChatController {
     private final ChatService chat;
+    private final ChatPresenceService presence;
+
+    @PostMapping("/presence")
+    public boolean presence(@RequestBody PresenceRequest request) {
+        presence.heartbeat(request.sessionId(), request.online());
+        return request.online();
+    }
+
+    @GetMapping("/{kind}/online")
+    public List<ChatPresenceService.OnlineUser> online(@PathVariable String kind) {
+        return presence.online(ChatService.room(kind));
+    }
+
+    @GetMapping("/{kind}/members")
+    public List<ChatPresenceService.Member> members(@PathVariable String kind) {
+        return presence.members(ChatService.room(kind));
+    }
 
     @GetMapping("/rooms")
     public List<ChatService.Room> rooms() { return chat.rooms(); }
@@ -34,6 +52,12 @@ public class ChatController {
     @PostMapping("/{kind}")
     public ChatService.Message send(@PathVariable String kind, @RequestBody TextRequest request) throws IOException {
         return chat.send(ChatService.room(kind), request.text(), null, request.replyToId());
+    }
+
+    @PostMapping("/{kind}/typing")
+    public boolean typing(@PathVariable String kind, @RequestBody TypingRequest request) {
+        chat.typing(ChatService.room(kind), request.activityId(), request.typing());
+        return request.typing();
     }
 
     @PostMapping(value = "/{kind}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -62,6 +86,8 @@ public class ChatController {
     }
 
     public record TextRequest(String text, Long replyToId) {}
+    public record TypingRequest(String activityId, boolean typing) {}
+    public record PresenceRequest(String sessionId, boolean online) {}
     public record PushRequest(boolean enabled) {}
     public record ReactionRequest(String emoji) {}
 

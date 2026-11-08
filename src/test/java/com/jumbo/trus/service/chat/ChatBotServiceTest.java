@@ -13,6 +13,7 @@ import com.jumbo.trus.repository.chat.ChatMessageRepository;
 import com.jumbo.trus.service.ai.AiQuestionService;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Pageable;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.time.Instant;
 import java.util.List;
@@ -37,7 +38,8 @@ class ChatBotServiceTest {
         ChatMessageRepository messages = mock(ChatMessageRepository.class);
         AiQuestionService ai = mock(AiQuestionService.class);
         ChatBotReplyService replies = mock(ChatBotReplyService.class);
-        ChatBotService service = new ChatBotService(users, teams, roles, messages, ai, replies);
+        SimpMessagingTemplate websocket = mock(SimpMessagingTemplate.class);
+        ChatBotService service = new ChatBotService(users, teams, roles, messages, ai, replies, websocket);
         UserEntity user = new UserEntity(); user.setId(4L);
         AppTeamEntity team = new AppTeamEntity(); team.setId(7L);
         UserTeamRole role = new UserTeamRole(); role.setUser(user); role.setAppTeam(team);
@@ -56,6 +58,10 @@ class ChatBotServiceTest {
 
         verify(messages).findRecentText(eq(7L), eq("all"), eq(12L), any(Pageable.class));
         verify(replies).save(7L, 4L, "all", "Ano.");
+        verify(websocket).convertAndSend(eq("/topic/chat/7/all/typing"),
+                argThat((ChatTypingEvent event) -> event.typing() && event.activityId().equals("bot-12")));
+        verify(websocket).convertAndSend(eq("/topic/chat/7/all/typing"),
+                argThat((ChatTypingEvent event) -> !event.typing() && event.activityId().equals("bot-12")));
     }
 
     @Test void questionIncludesFullRepliedMessageAndSelectedMatch() {
@@ -65,7 +71,8 @@ class ChatBotServiceTest {
         ChatMessageRepository messages = mock(ChatMessageRepository.class);
         AiQuestionService ai = mock(AiQuestionService.class);
         ChatBotReplyService replies = mock(ChatBotReplyService.class);
-        ChatBotService service = new ChatBotService(users, teams, roles, messages, ai, replies);
+        ChatBotService service = new ChatBotService(users, teams, roles, messages, ai, replies,
+                mock(SimpMessagingTemplate.class));
         UserEntity user = new UserEntity(); user.setId(4L);
         AppTeamEntity team = new AppTeamEntity(); team.setId(7L);
         UserTeamRole role = new UserTeamRole(); role.setUser(user); role.setAppTeam(team);

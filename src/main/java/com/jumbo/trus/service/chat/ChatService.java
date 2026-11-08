@@ -83,6 +83,17 @@ public class ChatService {
         return role;
     }
 
+    public void typing(String kind, String activityId, boolean typing) {
+        UserTeamRole role = currentRole(kind);
+        if (activityId == null || !activityId.matches("[A-Za-z0-9-]{1,64}"))
+            throw new IllegalArgumentException("Neplatné ID psaní");
+        Long teamId = role.getAppTeam().getId();
+        Long userId = role.getUser().getId();
+        websocket.convertAndSend("/topic/chat/" + teamId + "/" + kind + "/typing",
+                new ChatTypingEvent("user-" + userId + "-" + activityId,
+                        userId, name(userId, teamId, kind), typing));
+    }
+
     @Transactional(readOnly = true)
     public List<Room> rooms() {
         UserEntity user = users.getCurrentUserEntity();
