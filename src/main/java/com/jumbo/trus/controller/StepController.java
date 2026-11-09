@@ -30,6 +30,7 @@ public class StepController {
     }
 
     @PostMapping("/background-sync")
+    @RoleRequired("READER")
     public List<StepDailyDTO> backgroundSync(
             @RequestBody @Valid StepBackgroundSyncRequestDTO request) {
         return stepService.backgroundSync(request);

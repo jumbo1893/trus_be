@@ -13,12 +13,15 @@ import com.jumbo.trus.entity.auth.UserTeamRole;
 import com.jumbo.trus.repository.auth.AppTeamRepository;
 import com.jumbo.trus.repository.auth.TeamJoinCodeRepository;
 import com.jumbo.trus.repository.auth.UserTeamRoleRepository;
+import com.jumbo.trus.repository.auth.UserRepository;
+import com.jumbo.trus.repository.AppOpenRepository;
 import com.jumbo.trus.service.exceptions.FieldValidationException;
 import com.jumbo.trus.service.header.HeaderManager;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import java.util.List;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -38,14 +41,114 @@ class TeamAccessServiceTest {
     private final AppTeamRepository appTeamRepository = mock(AppTeamRepository.class);
     private final UserService userService = mock(UserService.class);
     private final HeaderManager headerManager = mock(HeaderManager.class);
+    private final AppOpenRepository appOpenRepository = mock(AppOpenRepository.class);
+    private final UserRepository userRepository = mock(UserRepository.class);
+    private final org.springframework.context.ApplicationEventPublisher events =
+            mock(org.springframework.context.ApplicationEventPublisher.class);
     private final TeamAccessService service = new TeamAccessService(
             joinCodeRepository,
             userTeamRoleRepository,
             appTeamRepository,
             userService,
             headerManager,
-            mock(com.jumbo.trus.service.outbox.OutboxEventService.class)
+            mock(com.jumbo.trus.service.outbox.OutboxEventService.class),
+            appOpenRepository,
+            userRepository,
+            events
     );
+
+    @Test
+    void administrationShowsLatestLoginForMember() {
+        AppTeamEntity team = appTeam(10L, "Tým");
+        UserEntity admin = user(1L, "Admin");
+        UserEntity member = user(2L, "Člen");
+        Instant lastLogin = Instant.parse("2026-11-07T17:30:00Z");
+        AppOpenRepository.LastOpen latest = mock(AppOpenRepository.LastOpen.class);
+        when(latest.getUserId()).thenReturn(2L);
+        when(latest.getLastOpenedAt()).thenReturn(lastLogin);
+        when(headerManager.getAppTeamIdHeader()).thenReturn(team.getId());
+        when(appTeamRepository.findById(team.getId())).thenReturn(Optional.of(team));
+        when(joinCodeRepository.findByAppTeamIdAndGrantedRole(team.getId(), TeamRole.READER))
+                .thenReturn(Optional.of(joinCode(5L, "READ-CODE", TeamRole.READER, team)));
+        when(joinCodeRepository.findByAppTeamIdAndGrantedRole(team.getId(), TeamRole.EDITOR))
+                .thenReturn(Optional.of(joinCode(6L, "EDIT-CODE", TeamRole.EDITOR, team)));
+        when(userTeamRoleRepository.findAllByAppTeamId(team.getId()))
+                .thenReturn(List.of(role(3L, admin, team, TeamRole.ADMIN),
+                        role(4L, member, team, TeamRole.READER)));
+        when(appOpenRepository.findLastOpenByUserIds(List.of(1L, 2L)))
+                .thenReturn(List.of(latest));
+        when(userService.getCurrentUserEntity()).thenReturn(admin);
+
+        var result = service.getAdministration();
+
+        assertEquals(lastLogin, result.getMembers().stream()
+                .filter(value -> value.getUserId() == 2L).findFirst().orElseThrow().getLastLoginAt());
+        assertEquals(null, result.getMembers().stream()
+                .filter(value -> value.getUserId() == 1L).findFirst().orElseThrow().getLastLoginAt());
+    }
+
+    @Test
+    void administrationOmitsHiddenMemberRegardlessOfRole() {
+        AppTeamEntity team = appTeam(10L, "Tým");
+        UserEntity admin = user(1L, "Admin");
+        UserEntity hiddenAdmin = user(2L, "Skrytý admin");
+        hiddenAdmin.setHidden(true);
+        when(headerManager.getAppTeamIdHeader()).thenReturn(team.getId());
+        when(appTeamRepository.findById(team.getId())).thenReturn(Optional.of(team));
+        when(joinCodeRepository.findByAppTeamIdAndGrantedRole(team.getId(), TeamRole.READER))
+                .thenReturn(Optional.of(joinCode(5L, "READ-CODE", TeamRole.READER, team)));
+        when(joinCodeRepository.findByAppTeamIdAndGrantedRole(team.getId(), TeamRole.EDITOR))
+                .thenReturn(Optional.of(joinCode(6L, "EDIT-CODE", TeamRole.EDITOR, team)));
+        when(userTeamRoleRepository.findAllByAppTeamId(team.getId()))
+                .thenReturn(List.of(role(3L, admin, team, TeamRole.ADMIN),
+                        role(4L, hiddenAdmin, team, TeamRole.ADMIN)));
+        when(userService.getCurrentUserEntity()).thenReturn(admin);
+
+        var result = service.getAdministration();
+
+        assertEquals(List.of(1L), result.getMembers().stream()
+                .map(value -> value.getUserId()).toList());
+        verify(appOpenRepository).findLastOpenByUserIds(List.of(1L));
+    }
+
+    @Test
+    void founderCanSeeAndUnhideHiddenMember() {
+        AppTeamEntity team = appTeam(10L, "Tým");
+        UserEntity founder = user(1L, "Zakladatel");
+        UserEntity hidden = user(2L, "Skrytý");
+        team.setOwner(founder);
+        hidden.setHidden(true);
+        UserTeamRole hiddenRole = role(4L, hidden, team, TeamRole.READER);
+        when(headerManager.getAppTeamIdHeader()).thenReturn(team.getId());
+        when(appTeamRepository.findById(team.getId())).thenReturn(Optional.of(team));
+        when(userTeamRoleRepository.findById(4L)).thenReturn(Optional.of(hiddenRole));
+        when(userTeamRoleRepository.findAllByAppTeamId(team.getId()))
+                .thenReturn(List.of(hiddenRole));
+        when(joinCodeRepository.findByAppTeamIdAndGrantedRole(team.getId(), TeamRole.READER))
+                .thenReturn(Optional.of(joinCode(5L, "READ-CODE", TeamRole.READER, team)));
+        when(joinCodeRepository.findByAppTeamIdAndGrantedRole(team.getId(), TeamRole.EDITOR))
+                .thenReturn(Optional.of(joinCode(6L, "EDIT-CODE", TeamRole.EDITOR, team)));
+        when(userService.getCurrentUserEntity()).thenReturn(founder);
+
+        assertTrue(service.getAdministration().getMembers().get(0).isHidden());
+        var result = service.updateMemberVisibility(4L, false);
+
+        assertEquals(false, hidden.isHidden());
+        assertEquals(false, result.getMembers().get(0).isHidden());
+        verify(userRepository).save(hidden);
+    }
+
+    @Test
+    void administratorWhoIsNotFounderCannotChangeVisibility() {
+        AppTeamEntity team = appTeam(10L, "Tým");
+        team.setOwner(user(1L, "Zakladatel"));
+        when(headerManager.getAppTeamIdHeader()).thenReturn(team.getId());
+        when(appTeamRepository.findById(team.getId())).thenReturn(Optional.of(team));
+        when(userService.getCurrentUserEntity()).thenReturn(user(2L, "Administrátor"));
+
+        assertThrows(com.jumbo.trus.service.exceptions.AuthException.class,
+                () -> service.updateMemberVisibility(4L, true));
+    }
 
     @Test
     void createsTwoDifferentTenCharacterCodesForNewTeam() {
@@ -93,6 +196,58 @@ class TeamAccessServiceTest {
         assertEquals(responseUser, result.getUser());
         verify(userTeamRoleRepository).save(currentRole);
         verify(userService).refreshUserInSecurityContext();
+    }
+
+    @Test
+    void newMemberStartsAsUnapprovedViewerEvenWithEditorCode() {
+        AppTeamEntity team = appTeam(10L, "Tým");
+        UserEntity member = user(30L, "Nový hráč");
+        when(joinCodeRepository.findByCode("EDIT-CODE"))
+                .thenReturn(Optional.of(joinCode(20L, "EDIT-CODE", TeamRole.EDITOR, team)));
+        when(userService.getCurrentUserEntity()).thenReturn(member);
+        when(userTeamRoleRepository.findByUserIdAndAppTeamId(member.getId(), team.getId()))
+                .thenReturn(Optional.empty());
+        when(userTeamRoleRepository.save(any(UserTeamRole.class)))
+                .thenAnswer(invocation -> {
+                    UserTeamRole saved = invocation.getArgument(0);
+                    saved.setId(40L);
+                    return saved;
+                });
+        when(userService.getCurrentUser()).thenReturn(new UserDTO());
+
+        service.joinCurrentUser(new AppTeamJoinRequest("EDIT-CODE"));
+
+        ArgumentCaptor<UserTeamRole> saved = ArgumentCaptor.forClass(UserTeamRole.class);
+        verify(userTeamRoleRepository).save(saved.capture());
+        assertEquals(TeamRole.VIEWER.name(), saved.getValue().getRole());
+        assertTrue(!saved.getValue().isRoleApproved());
+        ArgumentCaptor<TeamMemberPendingEvent> event = ArgumentCaptor.forClass(TeamMemberPendingEvent.class);
+        verify(events).publishEvent(event.capture());
+        assertEquals(40L, event.getValue().userTeamRoleId());
+    }
+
+    @Test
+    void administratorCanConfirmViewerWithoutChangingRole() {
+        AppTeamEntity team = appTeam(10L, "Tým");
+        UserEntity admin = user(1L, "Admin");
+        UserEntity member = user(2L, "Nový hráč");
+        UserTeamRole role = role(40L, member, team, TeamRole.VIEWER);
+        role.setRoleApproved(false);
+        when(headerManager.getAppTeamIdHeader()).thenReturn(team.getId());
+        when(appTeamRepository.findById(team.getId())).thenReturn(Optional.of(team));
+        when(userTeamRoleRepository.findById(40L)).thenReturn(Optional.of(role));
+        when(userTeamRoleRepository.findAllByAppTeamId(team.getId()))
+                .thenReturn(List.of(role));
+        when(joinCodeRepository.findByAppTeamIdAndGrantedRole(team.getId(), TeamRole.READER))
+                .thenReturn(Optional.of(joinCode(5L, "READ-CODE", TeamRole.READER, team)));
+        when(joinCodeRepository.findByAppTeamIdAndGrantedRole(team.getId(), TeamRole.EDITOR))
+                .thenReturn(Optional.of(joinCode(6L, "EDIT-CODE", TeamRole.EDITOR, team)));
+        when(userService.getCurrentUserEntity()).thenReturn(admin);
+
+        service.updateMemberRole(40L, new UpdateTeamMemberRoleRequest("VIEWER"));
+
+        assertTrue(role.isRoleApproved());
+        verify(userTeamRoleRepository).save(role);
     }
 
     @Test

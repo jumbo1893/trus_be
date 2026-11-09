@@ -39,6 +39,9 @@ public class MatchParticipationCommentEntity {
     @JoinColumn(name = "author_player_id", nullable = false)
     private PlayerEntity author;
 
+    @Column(name = "author_user_id")
+    private Long authorUserId;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_comment_id")
     private MatchParticipationCommentEntity parentComment;

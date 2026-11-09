@@ -26,6 +26,9 @@ public class UserTeamRole {
     @Column(nullable = false)
     private String role;
 
+    @Column(name = "role_approved", nullable = false, columnDefinition = "boolean default true")
+    private boolean roleApproved = true;
+
     @ManyToOne
     @JoinColumn(name = "player_id")
     private PlayerEntity player;

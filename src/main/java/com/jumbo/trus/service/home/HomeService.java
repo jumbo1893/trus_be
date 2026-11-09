@@ -10,12 +10,14 @@ import com.jumbo.trus.dto.helper.TextWithRedirect;
 import com.jumbo.trus.dto.helper.WarningType;
 import com.jumbo.trus.dto.home.DashboardMatch;
 import com.jumbo.trus.dto.home.HomeSetup;
+import com.jumbo.trus.dto.home.PendingTeamMemberDTO;
 import com.jumbo.trus.dto.match.MatchDTO;
 import com.jumbo.trus.dto.participation.MatchParticipationDetail;
 import com.jumbo.trus.dto.player.PlayerDTO;
 import com.jumbo.trus.dto.receivedfine.response.get.detailed.ReceivedFineDetailedResponse;
 import com.jumbo.trus.dto.weather.MatchWeatherDTO;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
+import com.jumbo.trus.repository.auth.UserTeamRoleRepository;
 import com.jumbo.trus.entity.filter.StatisticsFilter;
 import com.jumbo.trus.service.UserVisitedCountryService;
 import com.jumbo.trus.service.achievement.country.CountryAchievementCalculator;
@@ -58,9 +60,26 @@ public class HomeService {
     private final MatchParticipationService matchParticipationService;
     private final com.jumbo.trus.repository.footbar.FootbarAccountRepository footbarAccounts;
     private final com.jumbo.trus.repository.footbar.FootbarSyncStateRepository footbarSyncStates;
+    private final UserTeamRoleRepository teamRoles;
 
     public HomeSetup setup(Long userId, AppTeamEntity appTeamEntity) {
         HomeSetup homeSetup = new HomeSetup();
+        var currentRole = teamRoles.findByUserIdAndAppTeamId(userId, appTeamEntity.getId());
+        boolean admin = currentRole.map(role -> "ADMIN".equalsIgnoreCase(role.getRole()))
+                .orElse(false);
+        boolean viewer = currentRole.map(role -> "VIEWER".equalsIgnoreCase(role.getRole()))
+                .orElse(false);
+        if (admin) {
+            homeSetup.setPendingTeamMembers(teamRoles.findAllByAppTeamId(appTeamEntity.getId())
+                    .stream()
+                    .filter(role -> !role.isRoleApproved() && (!role.getUser().isHidden()
+                            || appTeamEntity.getOwner() != null
+                            && appTeamEntity.getOwner().getId().equals(userId)))
+                    .map(role -> new PendingTeamMemberDTO(role.getId(),
+                            role.getUser().getName() == null || role.getUser().getName().isBlank()
+                                    ? role.getUser().getMail() : role.getUser().getName()))
+                    .toList());
+        }
         footbarAccounts.findByUserId(userId).ifPresent(account -> {
             if (account.getRefreshToken() == null || account.getRefreshToken().isBlank()) {
                 homeSetup.setFootbarWarning(com.jumbo.trus.service.activity.footbar.FootbarAutoSyncJob.RECONNECT);
@@ -89,7 +108,8 @@ public class HomeService {
         homeSetup.setLastMatch(getLastMatch(appTeamEntity, player));
         homeSetup.setStatsBoards(statsBoardDataService.getStatsBoardDataList(appTeamEntity));
         String countryCode = geoIpService.getCountryCode(headerManager.getClientIp());
-        VisitedCountryResponse visitedCountryResponse = userVisitedCountryService.addVisitedCountry(userId, countryCode);
+        VisitedCountryResponse visitedCountryResponse = viewer ? null
+                : userVisitedCountryService.addVisitedCountry(userId, countryCode);
         log.info("Visited country diagnostic: userId={}, countryCode={}, newlySaved={}",
                 userId, countryCode, visitedCountryResponse != null);
         if (visitedCountryResponse != null) {

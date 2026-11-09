@@ -56,7 +56,8 @@ class AppTeamServiceTest {
             headerManager,
             playerRepository,
             teamAccessService,
-            mock(com.jumbo.trus.service.outbox.OutboxEventService.class)
+            mock(com.jumbo.trus.service.outbox.OutboxEventService.class),
+            mock(org.springframework.context.ApplicationEventPublisher.class)
     );
 
     @Test
@@ -136,7 +137,8 @@ class AppTeamServiceTest {
 
         ArgumentCaptor<UserTeamRole> roleCaptor = ArgumentCaptor.forClass(UserTeamRole.class);
         verify(userTeamRoleRepository).save(roleCaptor.capture());
-        assertEquals("READER", roleCaptor.getValue().getRole());
+        assertEquals("VIEWER", roleCaptor.getValue().getRole());
+        assertTrue(!roleCaptor.getValue().isRoleApproved());
         assertSame(publicTeam, roleCaptor.getValue().getAppTeam());
     }
 

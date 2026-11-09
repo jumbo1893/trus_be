@@ -45,6 +45,29 @@ class ChatServiceTest {
             mutes, pushSettings,
             mock(SimpMessagingTemplate.class), chatPush, mock(ChatBotService.class), outboxEventService);
 
+    @Test void oldMessagesAndRepliesUseCurrentAccountName() {
+        UserEntity viewer = new UserEntity(); viewer.setId(8L);
+        UserEntity author = new UserEntity(); author.setId(9L); author.setName("Nové jméno");
+        AppTeamEntity team = new AppTeamEntity(); team.setId(3L);
+        UserTeamRole role = new UserTeamRole(); role.setUser(viewer); role.setAppTeam(team);
+        ChatMessage old = new ChatMessage(); old.setId(12L); old.setAppTeam(team);
+        old.setRoom("all"); old.setAuthor(author); old.setAuthorName("Staré jméno");
+        ChatMessage reply = new ChatMessage(); reply.setId(13L); reply.setAppTeam(team);
+        reply.setRoom("all"); reply.setAuthor(viewer); reply.setAuthorName("Čtenář");
+        reply.setReplyTo(old);
+        when(users.getCurrentUserEntity()).thenReturn(viewer);
+        when(headers.getAppTeamIdHeader()).thenReturn(3L);
+        when(roles.findByUserIdAndAppTeamId(8L, 3L)).thenReturn(Optional.of(role));
+        when(messages.findByAppTeamIdAndRoomOrderByIdDesc(eq(3L), eq("all"), any()))
+                .thenReturn(List.of(reply, old));
+        when(reactions.findByMessageIdIn(any())).thenReturn(List.of());
+        when(reads.findByAppTeamIdAndRoom(3L, "all")).thenReturn(List.of());
+
+        var detail = chat.detail("all", null);
+        assertEquals("Nové jméno", detail.messages().get(1).author());
+        assertEquals("Nové jméno", detail.messages().get(0).replyTo().author());
+    }
+
     @Test void typingUsesAuthenticatedAuthorAndRoom() {
         UserEntity user = new UserEntity(); user.setId(8L); user.setName("Pavel");
         AppTeamEntity team = new AppTeamEntity(); team.setId(3L);

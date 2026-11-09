@@ -43,4 +43,6 @@ public class HomeSetup {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String footbarWarning;
 
+    private List<PendingTeamMemberDTO> pendingTeamMembers;
+
 }

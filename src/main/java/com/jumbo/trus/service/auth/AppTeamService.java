@@ -28,6 +28,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.annotation.Transactional;
 import org.webjars.NotFoundException;
 
@@ -52,6 +53,7 @@ public class AppTeamService implements AppTeamProvider {
     private final PlayerRepository playerRepository;
     private final TeamAccessService teamAccessService;
     private final OutboxEventService outboxEventService;
+    private final ApplicationEventPublisher events;
 
 
     public AppTeamEntity getCurrentAppTeamOrThrow() {
@@ -95,7 +97,7 @@ public class AppTeamService implements AppTeamProvider {
         if (userTeamRoleRepository.findByUserIdAndAppTeamId(user.getId(), appTeam.getId()).isPresent()) {
             return userService.getCurrentUser();
         }
-        createNewUserTeamRole(user, appTeam, "READER");
+        createNewUserTeamRole(user, appTeam, TeamRole.VIEWER.name());
         outboxEventService.createAuditEvent(OutboxEventType.TEAM_JOINED,
                 appTeam.getId(), appTeam.getId(), user.getId());
         userService.refreshUserInSecurityContext();
@@ -130,9 +132,15 @@ public class AppTeamService implements AppTeamProvider {
         userTeamRole.setUser(user);
         userTeamRole.setAppTeam(appTeam);
         userTeamRole.setRole(role);
+        userTeamRole.setRoleApproved(TeamRole.ADMIN.name().equals(role));
         UserTeamRole savedRole = userTeamRoleRepository.save(userTeamRole);
         user.getTeamRoles().add(savedRole);
         appTeam.getTeamRoles().add(savedRole);
+        if (!savedRole.isRoleApproved()) {
+            events.publishEvent(new TeamMemberPendingEvent(appTeam.getId(), savedRole.getId(),
+                    user.getId(), user.getName() == null || user.getName().isBlank()
+                            ? user.getMail() : user.getName()));
+        }
     }
 
     @Transactional
@@ -247,6 +255,7 @@ public class AppTeamService implements AppTeamProvider {
             );
         }
         userTeamRole.setRole(newRole.name());
+        userTeamRole.setRoleApproved(true);
         userTeamRoleRepository.save(userTeamRole);
         outboxEventService.createAuditEvent(OutboxEventType.TEAM_MEMBER_ROLE_CHANGED,
                 userTeamRole.getId(), currentAppTeam.getId(), null,

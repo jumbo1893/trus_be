@@ -11,6 +11,7 @@ import org.mapstruct.Mapping;
 public abstract class UserTeamRoleMapper {
 
     @Mapping(target = "user", ignore = true)
+    @Mapping(target = "roleApproved", ignore = true)
     public abstract UserTeamRole toEntity(UserTeamRoleDTO source);
 
     @Mapping(target = "userId", source = "user.id")

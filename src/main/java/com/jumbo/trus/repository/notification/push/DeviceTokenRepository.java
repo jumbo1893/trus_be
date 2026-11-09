@@ -66,6 +66,14 @@ public interface DeviceTokenRepository extends PagingAndSortingRepository<Device
             @Param("status") String status
     );
 
+    @Query("""
+            SELECT DISTINCT dt FROM DeviceToken dt
+            JOIN dt.user u JOIN u.teamRoles role
+            WHERE role.appTeam.id = :appTeamId AND role.role = 'ADMIN'
+              AND dt.status = 'ACTIVE'
+            """)
+    List<DeviceToken> findActiveAdminTokensByAppTeamId(@Param("appTeamId") Long appTeamId);
+
     List<DeviceToken> findByUser_IdAndClientDeviceIdAndStatus(
             Long userId,
             String clientDeviceId,

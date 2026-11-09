@@ -343,10 +343,18 @@ public class ChatService {
 
     private Message toMessage(ChatMessage message, List<Reaction> reactions) {
         ChatMessage parent = message.getReplyTo();
-        Reply reply = parent == null ? null : new Reply(parent.getId(), parent.getAuthorName(), parent.getText(),
+        Reply reply = parent == null ? null : new Reply(parent.getId(), displayAuthor(parent), parent.getText(),
                 parent.getImageContentType() != null);
-        return new Message(message.getId(), message.isBot() ? 0L : message.getAuthor().getId(), message.getAuthorName(),
+        return new Message(message.getId(), message.isBot() ? 0L : message.getAuthor().getId(), displayAuthor(message),
                 message.getText(), message.getCreatedAt(), message.getImageContentType() != null, reactions, message.isBot(), reply);
+    }
+
+    private String displayAuthor(ChatMessage message) {
+        if (message.isBot() || message.getAuthor() == null) return message.getAuthorName();
+        String currentName = message.getAuthor().getName();
+        if (currentName != null && !currentName.isBlank()) return currentName;
+        String mail = message.getAuthor().getMail();
+        return mail == null || mail.isBlank() ? message.getAuthorName() : mail;
     }
 
 
@@ -357,7 +365,6 @@ public class ChatService {
 
     private String name(Long userId, Long teamId, String kind) {
         return roles.findByUserIdAndAppTeamId(userId, teamId).map(role -> {
-            if ("players".equals(kind) && role.getPlayer() != null) return role.getPlayer().getName();
             String name = role.getUser().getName();
             return name == null || name.isBlank() ? role.getUser().getMail() : name;
         }).orElse("Uživatel");

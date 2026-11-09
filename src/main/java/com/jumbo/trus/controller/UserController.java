@@ -19,6 +19,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.MediaType;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -109,6 +112,19 @@ public class UserController {
         return userService.getCurrentUser();
     }
 
+    @PostMapping(value = "/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @RoleRequired("NONE")
+    public void uploadAvatar(@RequestPart("image") MultipartFile image) throws IOException {
+        userService.saveAvatar(image);
+    }
+
+    @GetMapping(value = "/{userId}/avatar", produces = MediaType.IMAGE_JPEG_VALUE)
+    @RoleRequired("NONE")
+    public ResponseEntity<byte[]> avatar(@PathVariable Long userId) {
+        return ResponseEntity.ok().header("Cache-Control", "no-store")
+                .body(userService.avatar(userId));
+    }
+
     @GetMapping("/setup")
     @RoleRequired("READER")
     public UserSetup getUserSetup() {
@@ -116,7 +132,7 @@ public class UserController {
     }
 
     @PostMapping("/player-add")
-    @RoleRequired("READER")
+    @RoleRequired("VIEWER")
     public void addPlayerToUserRole(@RequestBody PlayerDTO playerDTO) {
         UserEntity user = (UserEntity) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         appTeamService.addPlayerToCurrentUser(user, playerDTO);

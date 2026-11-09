@@ -7,6 +7,7 @@ import com.jumbo.trus.mapper.PlayerMapper;
 import com.jumbo.trus.mapper.auth.UserTeamRoleMapper;
 import com.jumbo.trus.repository.PlayerRepository;
 import com.jumbo.trus.repository.auth.UserRepository;
+import com.jumbo.trus.repository.auth.UserAvatarRepository;
 import com.jumbo.trus.service.exceptions.DuplicateEmailException;
 import com.jumbo.trus.service.football.team.TeamProcessor;
 import com.jumbo.trus.service.membership.MembershipService;
@@ -39,6 +40,7 @@ class UserServiceTest {
     private final MembershipService membershipService = mock(MembershipService.class);
     private final UserService service = new UserService(
             userRepository,
+            mock(UserAvatarRepository.class),
             passwordEncoder,
             userTeamRoleMapper,
             teamProcessor,

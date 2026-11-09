@@ -7,10 +7,16 @@ import com.jumbo.trus.dto.player.PlayerDTO;
 import com.jumbo.trus.config.security.firebase.FirebaseIdentity;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.auth.UserEntity;
+import com.jumbo.trus.entity.auth.UserAvatar;
 import com.jumbo.trus.mapper.PlayerMapper;
 import com.jumbo.trus.mapper.auth.UserTeamRoleMapper;
 import com.jumbo.trus.repository.PlayerRepository;
 import com.jumbo.trus.repository.auth.UserRepository;
+import com.jumbo.trus.repository.auth.UserAvatarRepository;
+import org.springframework.web.multipart.MultipartFile;
+import javax.imageio.ImageIO;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import com.jumbo.trus.service.exceptions.AuthException;
 import com.jumbo.trus.service.exceptions.DuplicateEmailException;
 import com.jumbo.trus.service.football.team.TeamProcessor;
@@ -42,6 +48,7 @@ import java.util.UUID;
 public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
+    private final UserAvatarRepository avatarRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserTeamRoleMapper userTeamRoleMapper;
     private final TeamProcessor teamProcessor;
@@ -173,13 +180,38 @@ public class UserService implements UserDetailsService {
 
     @Transactional
     public void deleteUser(Long userId) {
+        avatarRepository.deleteById(userId);
         userRepository.deleteById(userId);
         outboxEventService.createAuditEvent(OutboxEventType.USER_DELETED, userId, null, userId);
     }
 
+    @Transactional
+    public void saveAvatar(MultipartFile file) throws IOException {
+        if (file.isEmpty() || file.getSize() > 2_000_000) {
+            throw new IllegalArgumentException("Fotka musí mít nejvýše 2 MB");
+        }
+        byte[] bytes = file.getBytes();
+        var reader = ImageIO.getImageReaders(ImageIO.createImageInputStream(new ByteArrayInputStream(bytes)));
+        if (!reader.hasNext() || !"JPEG".equalsIgnoreCase(reader.next().getFormatName())) {
+            throw new IllegalArgumentException("Soubor není platný obrázek");
+        }
+        Long userId = getCurrentUserEntity().getId();
+        UserAvatar avatar = avatarRepository.findById(userId).orElseGet(UserAvatar::new);
+        avatar.setUserId(userId);
+        avatar.setImage(bytes);
+        avatarRepository.save(avatar);
+    }
+
+    @Transactional(readOnly = true)
+    public byte[] avatar(Long userId) {
+        return avatarRepository.findById(userId).map(UserAvatar::getImage)
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.NOT_FOUND));
+    }
+
     public List<UserDTO> getAll(Long appTeamId, Boolean appTeamTeamRolesOnly) {
         List<UserDTO> userList = new ArrayList<>();
-        List<UserEntity> entities = userRepository.findDistinctByTeamRoles_AppTeam_Id(appTeamId);
+        List<UserEntity> entities = userRepository.findVisibleTeamUsers(
+                appTeamId, getCurrentUserEntity().getId());
         for (UserEntity entity : entities) {
             UserDTO userDTO = returnUserWithoutSensitiveData(entity);
             if (appTeamTeamRolesOnly) {

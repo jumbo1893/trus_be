@@ -154,7 +154,7 @@ public class MatchParticipationService {
         participation.setRespondedBy(author);
         participation.setRespondedAt(Instant.now());
         participationRepository.save(participation);
-        addCommentIfPresent(participation, author, request.getComment(), null);
+        addCommentIfPresent(participation, author, userId, request.getComment(), null);
         outboxEventService.createAuditEvent(OutboxEventType.PARTICIPATION_RESPONDED,
                 participation.getId(), appTeam.getId(), userId,
                 Map.of("footballMatchId", footballMatch.getId().toString(),
@@ -231,7 +231,7 @@ public class MatchParticipationService {
                     ));
         }
 
-        addCommentIfPresent(participation, author, request.getText(), parent);
+        addCommentIfPresent(participation, author, userId, request.getText(), parent);
         outboxEventService.createAuditEvent(OutboxEventType.PARTICIPATION_COMMENT_ADDED,
                 participation.getId(), appTeam.getId(), userId,
                 Map.of("footballMatchId", footballMatch.getId().toString()));
@@ -478,6 +478,7 @@ public class MatchParticipationService {
             mapped.put(comment.getId(), new MatchParticipationCommentDTO(
                     comment.getId(),
                     playerMapper.toDTO(comment.getAuthor()),
+                    comment.getAuthorUserId(),
                     comment.getText(),
                     comment.getCreatedAt(),
                     upVotes,
@@ -507,6 +508,7 @@ public class MatchParticipationService {
     private void addCommentIfPresent(
             MatchParticipationEntity participation,
             PlayerEntity author,
+            Long authorUserId,
             String text,
             MatchParticipationCommentEntity parent
     ) {
@@ -520,6 +522,7 @@ public class MatchParticipationService {
         MatchParticipationCommentEntity comment = new MatchParticipationCommentEntity();
         comment.setParticipation(participation);
         comment.setAuthor(author);
+        comment.setAuthorUserId(authorUserId);
         comment.setParentComment(parent);
         comment.setText(normalized);
         comment.setCreatedAt(Instant.now());

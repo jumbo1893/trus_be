@@ -28,7 +28,11 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     @Query("SELECT user FROM UserEntity user WHERE user.id = :userId")
     Optional<UserEntity> findByIdForUpdate(@Param("userId") Long userId);
 
-    List<UserEntity> findDistinctByTeamRoles_AppTeam_Id(Long appTeamId);
+    @Query("select distinct user from UserEntity user join user.teamRoles role " +
+            "where role.appTeam.id = :appTeamId and " +
+            "(user.hidden = false or role.appTeam.owner.id = :viewerId)")
+    List<UserEntity> findVisibleTeamUsers(@Param("appTeamId") Long appTeamId,
+                                          @Param("viewerId") Long viewerId);
 
     @Query(value = "SELECT player_id from auth WHERE id=:#{#id}", nativeQuery = true)
     Long findPlayerId(@Param("id") Long id);

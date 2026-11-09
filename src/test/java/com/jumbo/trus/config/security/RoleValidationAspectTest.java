@@ -13,6 +13,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.List;
 
@@ -39,6 +42,7 @@ class RoleValidationAspectTest {
     @AfterEach
     void tearDown() {
         SecurityContextHolder.clearContext();
+        RequestContextHolder.resetRequestAttributes();
     }
 
     @Test
@@ -74,6 +78,22 @@ class RoleValidationAspectTest {
             when(roleRequired.value()).thenReturn(required.name());
             assertDoesNotThrow(() -> aspect.validateRole(roleRequired));
         }
+    }
+
+    @Test
+    void viewerCanReadButCannotWriteReaderEndpoints() {
+        authenticateAs(TeamRole.VIEWER);
+        when(roleRequired.value()).thenReturn("READER");
+        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(
+                new MockHttpServletRequest("GET", "/home/setup")));
+        assertDoesNotThrow(() -> aspect.validateRole(roleRequired));
+
+        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(
+                new MockHttpServletRequest("POST", "/match-participation/respond")));
+        assertThrows(AuthException.class, () -> aspect.validateRole(roleRequired));
+
+        when(roleRequired.value()).thenReturn("VIEWER");
+        assertDoesNotThrow(() -> aspect.validateRole(roleRequired));
     }
 
     private void authenticateAs(TeamRole teamRole) {

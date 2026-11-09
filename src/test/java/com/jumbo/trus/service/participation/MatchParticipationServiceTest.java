@@ -89,7 +89,8 @@ class MatchParticipationServiceTest {
         var result = service.respond(2L, team, request);
         verify(participationRepository).save(argThat(p -> p.getPlayer() == target
                 && p.getRespondedBy() == actor && Boolean.TRUE.equals(p.getPlaying())));
-        verify(commentRepository).save(argThat(c -> c.getAuthor() == actor));
+        verify(commentRepository).save(argThat(c -> c.getAuthor() == actor
+                && Long.valueOf(2L).equals(c.getAuthorUserId())));
         verify(appTeamService, never()).pairPlayerToRole(any(), any(), any(), any());
         assertThat(result.getCurrentPlayer().getId()).isEqualTo(3L);
     }
@@ -358,6 +359,7 @@ class MatchParticipationServiceTest {
         ArgumentCaptor<MatchParticipationCommentEntity> captor =
                 ArgumentCaptor.forClass(MatchParticipationCommentEntity.class);
         verify(commentRepository).save(captor.capture());
+        assertThat(captor.getValue().getAuthorUserId()).isEqualTo(2L);
         assertThat(captor.getValue().getParticipation()).isSameAs(targetParticipation);
         assertThat(captor.getValue().getAuthor()).isSameAs(author);
         assertThat(captor.getValue().getParentComment()).isSameAs(parent);

@@ -20,7 +20,7 @@ public class PushController {
     private final PushService pushService;
     private final EnabledPushNotificationService enabledPushService;
 
-    @RoleRequired("READER")
+    @RoleRequired("VIEWER")
     @PostMapping("/token/add")
     public DeviceTokenDTO addToken(@RequestBody DeviceTokenDTO deviceTokenDTO) {
         return pushService.addNewToken(deviceTokenDTO);
@@ -32,19 +32,19 @@ public class PushController {
         return enabledPushService.getAllByUser();
     }
 
-    @RoleRequired("READER")
+    @RoleRequired("VIEWER")
     @PutMapping("enabled/{notificationId}")
     public EnabledPushNotificationDTO editNotificationPermit(@PathVariable Long notificationId, @RequestBody EnabledPushNotificationDTO enabledPushNotificationDTO) throws NotFoundException {
         return enabledPushService.editNotificationPermit(notificationId, enabledPushNotificationDTO);
     }
 
-    @RoleRequired("READER")
+    @RoleRequired("VIEWER")
     @PutMapping("enabled/set")
     public StringAndString editNotificationsPermit(@RequestBody List<EnabledPushNotificationDTO> enabledPushNotificationList) throws NotFoundException {
         return enabledPushService.editNotificationsPermit(enabledPushNotificationList);
     }
 
-    @RoleRequired("READER")
+    @RoleRequired("VIEWER")
     @PostMapping("/token/test")
     public void sendTestPush(@RequestBody DeviceTokenDTO deviceTokenDTO) throws Exception {
         pushService.sendTestPushToCurrentDevice(deviceTokenDTO);

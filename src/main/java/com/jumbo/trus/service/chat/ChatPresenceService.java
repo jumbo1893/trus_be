@@ -58,7 +58,7 @@ public class ChatPresenceService {
                 .filter(role -> active.keySet().stream().anyMatch(session ->
                         session.teamId().equals(teamId) && session.userId().equals(role.getUser().getId())))
                 .map(role -> {
-                    String name = "players".equals(kind) ? role.getPlayer().getName() : role.getUser().getName();
+                    String name = role.getUser().getName();
                     if (name == null || name.isBlank()) name = role.getUser().getMail();
                     if (name == null || name.isBlank()) name = "Uživatel";
                     return new OnlineUser(role.getUser().getId(), name);
@@ -85,7 +85,7 @@ public class ChatPresenceService {
                 .filter(role -> "all".equals(kind) || player(role))
                 .map(role -> {
                     Long id = role.getUser().getId();
-                    String name = "players".equals(kind) ? role.getPlayer().getName() : role.getUser().getName();
+                    String name = role.getUser().getName();
                     if (name == null || name.isBlank()) name = role.getUser().getMail();
                     if (name == null || name.isBlank()) name = "Uživatel";
                     boolean isOnline = active.keySet().stream().anyMatch(session ->

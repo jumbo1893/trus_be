@@ -14,6 +14,8 @@ import com.jumbo.trus.entity.auth.UserTeamRole;
 import com.jumbo.trus.repository.auth.AppTeamRepository;
 import com.jumbo.trus.repository.auth.TeamJoinCodeRepository;
 import com.jumbo.trus.repository.auth.UserTeamRoleRepository;
+import com.jumbo.trus.repository.auth.UserRepository;
+import com.jumbo.trus.repository.AppOpenRepository;
 import com.jumbo.trus.service.exceptions.AuthException;
 import com.jumbo.trus.service.exceptions.FieldValidationException;
 import com.jumbo.trus.service.header.HeaderManager;
@@ -22,6 +24,7 @@ import com.jumbo.trus.service.outbox.OutboxEventService;
 import com.jumbo.trus.entity.outbox.OutboxEventType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.annotation.Transactional;
 import org.webjars.NotFoundException;
 
@@ -29,6 +32,8 @@ import java.security.SecureRandom;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
@@ -47,6 +52,9 @@ public class TeamAccessService {
     private final UserService userService;
     private final HeaderManager headerManager;
     private final OutboxEventService outboxEventService;
+    private final AppOpenRepository appOpenRepository;
+    private final UserRepository userRepository;
+    private final ApplicationEventPublisher events;
 
     @Transactional
     public void createJoinCodes(AppTeamEntity appTeam) {
@@ -64,10 +72,10 @@ public class TeamAccessService {
         AppTeamEntity appTeam = joinCode.getAppTeam();
         UserTeamRole userTeamRole = userTeamRoleRepository
                 .findByUserIdAndAppTeamId(user.getId(), appTeam.getId())
-                .orElseGet(() -> createUserTeamRole(user, appTeam, joinCode.getGrantedRole()));
+                .orElseGet(() -> createUserTeamRole(user, appTeam));
 
         TeamRole existingRole = TeamRole.from(userTeamRole.getRole());
-        if (joinCode.getGrantedRole().hasAtLeast(existingRole)
+        if (userTeamRole.isRoleApproved() && joinCode.getGrantedRole().hasAtLeast(existingRole)
                 && joinCode.getGrantedRole() != existingRole) {
             userTeamRole.setRole(joinCode.getGrantedRole().name());
             userTeamRoleRepository.save(userTeamRole);
@@ -135,13 +143,36 @@ public class TeamAccessService {
             throw validationError("administrator", "Svá vlastní administrátorská práva nemůžeš odebrat.");
         }
 
-        if (!newRole.name().equalsIgnoreCase(targetRole.getRole())) {
+        if (!newRole.name().equalsIgnoreCase(targetRole.getRole()) || !targetRole.isRoleApproved()) {
             targetRole.setRole(newRole.name());
+            targetRole.setRoleApproved(true);
             userTeamRoleRepository.save(targetRole);
             outboxEventService.createAuditEvent(OutboxEventType.TEAM_MEMBER_ROLE_CHANGED,
                     targetRole.getId(), appTeam.getId(), currentUser.getId(),
                     java.util.Map.of("role", targetRole.getRole(),
                             "userId", targetRole.getUser().getId().toString()));
+        }
+        return toAdministrationDTO(appTeam);
+    }
+
+    @Transactional
+    public TeamAdministrationDTO updateMemberVisibility(Long userTeamRoleId, boolean hidden) {
+        AppTeamEntity appTeam = getCurrentAppTeam();
+        UserEntity actor = userService.getCurrentUserEntity();
+        if (appTeam.getOwner() == null || !appTeam.getOwner().getId().equals(actor.getId())) {
+            throw new AuthException("Uživatele může skrývat jen zakladatel týmu.",
+                    AuthException.INSUFFICIENT_RIGHTS);
+        }
+        UserTeamRole targetRole = getRoleFromCurrentTeam(userTeamRoleId, appTeam);
+        UserEntity target = targetRole.getUser();
+        if (target.getId().equals(actor.getId())) {
+            throw validationError("hidden", "Zakladatel nemůže skrýt sám sebe.");
+        }
+        if (target.isHidden() != hidden) {
+            target.setHidden(hidden);
+            userRepository.save(target);
+            outboxEventService.createAuditEvent(OutboxEventType.USER_UPDATED,
+                    target.getId(), appTeam.getId(), actor.getId());
         }
         return toAdministrationDTO(appTeam);
     }
@@ -166,15 +197,27 @@ public class TeamAccessService {
                 ? null
                 : displayName(appTeam.getOwner());
 
-        List<TeamMemberDTO> members = userTeamRoleRepository.findAllByAppTeamId(appTeam.getId())
-                .stream()
+        boolean viewerIsOwner = ownerId != null && ownerId.equals(userService.getCurrentUserEntity().getId());
+        List<UserTeamRole> roles = userTeamRoleRepository.findAllByAppTeamId(appTeam.getId())
+                .stream().filter(role -> viewerIsOwner || !role.getUser().isHidden()).toList();
+        Map<Long, java.time.Instant> lastLogins = roles.isEmpty()
+                ? Map.of()
+                : appOpenRepository.findLastOpenByUserIds(
+                        roles.stream().map(role -> role.getUser().getId()).distinct().toList())
+                        .stream().collect(Collectors.toMap(
+                                AppOpenRepository.LastOpen::getUserId,
+                                AppOpenRepository.LastOpen::getLastOpenedAt));
+        List<TeamMemberDTO> members = roles.stream()
                 .map(role -> new TeamMemberDTO(
                         role.getId(),
                         role.getUser().getId(),
                         displayName(role.getUser()),
                         role.getUser().getMail(),
                         role.getRole(),
-                        ownerId != null && ownerId.equals(role.getUser().getId())
+                        ownerId != null && ownerId.equals(role.getUser().getId()),
+                        lastLogins.get(role.getUser().getId()),
+                        role.getUser().isHidden(),
+                        role.isRoleApproved()
                 ))
                 .sorted(Comparator
                         .comparing(TeamMemberDTO::isOwner).reversed()
@@ -205,16 +248,19 @@ public class TeamAccessService {
         return role;
     }
 
-    private UserTeamRole createUserTeamRole(UserEntity user, AppTeamEntity appTeam, TeamRole role) {
+    private UserTeamRole createUserTeamRole(UserEntity user, AppTeamEntity appTeam) {
         UserTeamRole userTeamRole = new UserTeamRole();
         userTeamRole.setUser(user);
         userTeamRole.setAppTeam(appTeam);
-        userTeamRole.setRole(role.name());
+        userTeamRole.setRole(TeamRole.VIEWER.name());
+        userTeamRole.setRoleApproved(false);
         UserTeamRole savedRole = userTeamRoleRepository.save(userTeamRole);
         outboxEventService.createAuditEvent(OutboxEventType.TEAM_JOINED,
                 appTeam.getId(), appTeam.getId(), user.getId());
         user.getTeamRoles().add(savedRole);
         appTeam.getTeamRoles().add(savedRole);
+        events.publishEvent(new TeamMemberPendingEvent(appTeam.getId(), savedRole.getId(),
+                user.getId(), displayName(user)));
         return savedRole;
     }
 
@@ -266,7 +312,7 @@ public class TeamAccessService {
         try {
             return TeamRole.from(roleValue);
         } catch (RuntimeException exception) {
-            throw validationError("role", "Vyber platná práva: čtení, editace nebo administrátor.");
+            throw validationError("role", "Vyber platná práva: žádná práva, čtení, editace nebo administrátor.");
         }
     }
 

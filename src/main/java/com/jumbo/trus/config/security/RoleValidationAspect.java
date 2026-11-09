@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 @Slf4j
 @Component
@@ -46,9 +48,14 @@ public class RoleValidationAspect {
             );
         }
 
+        boolean readRequest = RequestContextHolder.getRequestAttributes() instanceof ServletRequestAttributes attributes
+                && ("GET".equals(attributes.getRequest().getMethod())
+                || "HEAD".equals(attributes.getRequest().getMethod()));
         boolean hasAccess = user.getTeamRoles().stream()
                 .anyMatch(role -> role.getAppTeam().getId().equals(appTeamId) &&
-                        hasRequiredOrHigherRole(role.getRole().toUpperCase(), requiredRole));
+                        (hasRequiredOrHigherRole(role.getRole().toUpperCase(), requiredRole)
+                        || (readRequest && "READER".equals(requiredRole)
+                        && "VIEWER".equalsIgnoreCase(role.getRole()))));
 
         if (!hasAccess) {
             throw insufficientRights(user, appTeamId, requiredRole);
@@ -95,6 +102,7 @@ public class RoleValidationAspect {
                 case ADMIN -> "administrátor";
                 case EDITOR -> "čtení a editace";
                 case READER -> "pouze čtení";
+                case VIEWER -> "bez práv";
             };
         } catch (RuntimeException exception) {
             return "bez oprávnění";

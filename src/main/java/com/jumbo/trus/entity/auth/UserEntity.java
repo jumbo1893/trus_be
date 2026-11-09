@@ -47,6 +47,9 @@ public class UserEntity implements UserDetails {
     @Column(nullable = false)
     private boolean admin = false;
 
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean hidden = false;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserTeamRole> teamRoles = new ArrayList<>();
 

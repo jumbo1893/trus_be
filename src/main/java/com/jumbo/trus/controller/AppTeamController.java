@@ -6,6 +6,7 @@ import com.jumbo.trus.dto.auth.AppTeamRegistration;
 import com.jumbo.trus.dto.auth.TeamAdministrationDTO;
 import com.jumbo.trus.dto.auth.UpdateJoinCodeRequest;
 import com.jumbo.trus.dto.auth.UpdateTeamMemberRoleRequest;
+import com.jumbo.trus.dto.auth.UpdateTeamMemberVisibilityRequest;
 import com.jumbo.trus.dto.auth.UserDTO;
 import com.jumbo.trus.config.security.RoleRequired;
 import com.jumbo.trus.service.auth.AppTeamService;
@@ -68,5 +69,14 @@ public class AppTeamController {
             @RequestBody UpdateTeamMemberRoleRequest request
     ) {
         return teamAccessService.updateMemberRole(userTeamRoleId, request);
+    }
+
+    @PutMapping("/administration/members/{userTeamRoleId}/visibility")
+    @RoleRequired("ADMIN")
+    public TeamAdministrationDTO updateMemberVisibility(
+            @PathVariable Long userTeamRoleId,
+            @RequestBody UpdateTeamMemberVisibilityRequest request
+    ) {
+        return teamAccessService.updateMemberVisibility(userTeamRoleId, request.hidden());
     }
 }

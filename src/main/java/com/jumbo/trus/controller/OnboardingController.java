@@ -15,7 +15,7 @@ public class OnboardingController {
 
     // Explicit multi-segment route cannot collide with legacy PUT /user/{userId}.
     @PostMapping("/start")
-    @RoleRequired("READER")
+    @RoleRequired("VIEWER")
     public OnboardingService.State start() { return service.advance(null); }
 
     @GetMapping
@@ -23,7 +23,7 @@ public class OnboardingController {
     public OnboardingService.State state() { return service.state(); }
 
     @PutMapping
-    @RoleRequired("READER")
+    @RoleRequired("VIEWER")
     public OnboardingService.State progress(@RequestBody ProgressRequest request) {
         return service.advance(request.completedStep());
     }
@@ -33,6 +33,6 @@ public class OnboardingController {
     public OnboardingService.Profiles profiles() { return service.profiles(); }
 
     @PostMapping("/profile")
-    @RoleRequired("READER")
+    @RoleRequired("VIEWER")
     public PlayerDTO pair(@RequestBody OnboardingService.PairRequest request) { return service.pair(request); }
 }

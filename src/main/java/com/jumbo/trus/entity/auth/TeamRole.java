@@ -5,7 +5,8 @@ import java.util.Locale;
 public enum TeamRole {
     ADMIN,
     EDITOR,
-    READER;
+    READER,
+    VIEWER;
 
     public static TeamRole from(String value) {
         return TeamRole.valueOf(value.trim().toUpperCase(Locale.ROOT));

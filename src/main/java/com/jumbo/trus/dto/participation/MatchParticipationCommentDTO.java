@@ -17,6 +17,7 @@ public class MatchParticipationCommentDTO {
 
     private Long id;
     private PlayerDTO author;
+    private Long authorUserId;
     private String text;
     private Instant createdAt;
     private int upVotes;
