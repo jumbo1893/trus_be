@@ -72,6 +72,17 @@ public class MatchParticipationService {
     private final OutboxEventService outboxEventService;
 
     @Transactional
+    public MatchParticipationStatus getCurrentStatus(Long userId, AppTeamEntity appTeam, FootballMatchDTO footballMatch) {
+        if (footballMatch == null) return null;
+        UserTeamRole role = getCurrentRole(userId, appTeam.getId());
+        PlayerEntity player = isTeamParticipant(role.getPlayer(), appTeam) ? role.getPlayer() : null;
+        if (player == null) return null;
+        return participationRepository.findByFootballMatchIdAndAppTeamIdAndPlayerId(
+                footballMatch.getId(), appTeam.getId(), player.getId())
+                .map(MatchParticipationEntity::getStatus).orElse(null);
+    }
+
+    @Transactional
     public MatchParticipationPrompt getPrompt(
             Long userId,
             AppTeamEntity appTeam,

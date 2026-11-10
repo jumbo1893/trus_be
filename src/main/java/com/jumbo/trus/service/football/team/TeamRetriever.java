@@ -19,6 +19,7 @@ public class TeamRetriever {
     private final LeagueService leagueService;
 
     private static final String TEAM_UPDATE = "team_update";
+    private static final String TEAM_LOGO_UPDATE = "team_logo_update";
 
     public List<TeamTableTeam> retrieveTeams(boolean loadAllTeams) {
         if (loadAllTeams) {
@@ -40,6 +41,11 @@ public class TeamRetriever {
     }
 
     public boolean isUpdateNeeded() {
-        return updateService.getUpdateByName(TEAM_UPDATE) == null;
+        return updateService.getUpdateByName(TEAM_UPDATE) == null
+                || updateService.getUpdateByName(TEAM_LOGO_UPDATE) == null;
+    }
+
+    public void markLogoBackfillCompleted() {
+        updateService.saveNewUniqueUpdate(TEAM_LOGO_UPDATE);
     }
 }

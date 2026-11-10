@@ -12,7 +12,6 @@ import com.jumbo.trus.dto.home.DashboardMatch;
 import com.jumbo.trus.dto.home.HomeSetup;
 import com.jumbo.trus.dto.home.PendingTeamMemberDTO;
 import com.jumbo.trus.dto.match.MatchDTO;
-import com.jumbo.trus.dto.participation.MatchParticipationDetail;
 import com.jumbo.trus.dto.player.PlayerDTO;
 import com.jumbo.trus.dto.receivedfine.response.get.detailed.ReceivedFineDetailedResponse;
 import com.jumbo.trus.dto.weather.MatchWeatherDTO;
@@ -99,6 +98,11 @@ public class HomeService {
         DashboardMatch nextMatch = getNextMatch(appTeamEntity, userId);
         homeSetup.setNextMatch(nextMatch);
         if (nextMatch != null && nextMatch.getMatch() != null) {
+            homeSetup.setCurrentParticipationStatus(matchParticipationService.getCurrentStatus(
+                    userId, appTeamEntity, nextMatch.getMatch().getFootballMatch()));
+            homeSetup.setAttendingPlayerCount(matchParticipationService.getDetail(
+                    nextMatch.getMatch().getFootballMatch().getId(), userId, appTeamEntity)
+                    .getAttendingPlayers().size());
             homeSetup.setParticipationPrompt(matchParticipationService.getPrompt(
                     userId,
                     appTeamEntity,
@@ -148,10 +152,6 @@ public class HomeService {
         dashboardMatch.setMatch(footballMatchDetail);
         List<TextWithRedirect> matchInfoList = new ArrayList<>();
         addTextRedirectToList(matchInfoList, getWeatherText(footballMatchDetail.getFootballMatch()));
-        addTextRedirectToList(
-                matchInfoList,
-                getParticipationText(footballMatchDetail, userId, appTeamEntity)
-        );
         dashboardMatch.setMatchInfoList(matchInfoList);
 
         return dashboardMatch;
@@ -208,34 +208,6 @@ public class HomeService {
             }
         }
 
-        return text;
-    }
-
-    private TextWithRedirect getParticipationText(
-            FootballMatchDetail footballMatchDetail,
-            Long userId,
-            AppTeamEntity appTeam
-    ) {
-        MatchParticipationDetail participation = matchParticipationService.getDetail(
-                footballMatchDetail.getFootballMatch().getId(),
-                userId,
-                appTeam
-        );
-
-        int attending = participation.getAttendingPlayers().size()
-                + participation.getAttendingFans().size();
-        int maybe = participation.getMaybePlayers().size()
-                + participation.getMaybeFans().size();
-        int notAttending = participation.getNotAttendingPlayers().size()
-                + participation.getNotAttendingFans().size();
-
-        TextWithRedirect text = new TextWithRedirect();
-        RedirectDTO redirectDTO = new RedirectDTO();
-        redirectDTO.setRedirect(Redirect.MATCH_PARTICIPATION);
-        redirectDTO.setFootballMatch(footballMatchDetail.getFootballMatch());
-        text.setRedirect(redirectDTO);
-        text.setText("Účast: " + attending + " ano, " + maybe + " možná, " + notAttending + " ne.");
-        text.setWarningType(attending == 0 ? WarningType.WARNING : WarningType.INFO);
         return text;
     }
 

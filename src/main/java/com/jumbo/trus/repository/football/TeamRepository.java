@@ -17,10 +17,11 @@ public interface TeamRepository extends JpaRepository<TeamEntity, Long> {
 
     @Modifying
     @Transactional
-    @Query(value = "UPDATE team SET name = :name, current_league_id = :currentLeagueId WHERE id = :id", nativeQuery = true)
+    @Query(value = "UPDATE team SET name = :name, current_league_id = :currentLeagueId, logo_url = COALESCE(:logoUrl, logo_url) WHERE id = :id", nativeQuery = true)
     int updateTeamFields(@Param("id") Long id,
                            @Param("name") String name,
-                           @Param("currentLeagueId") Long currentLeagueId);
+                           @Param("currentLeagueId") Long currentLeagueId,
+                           @Param("logoUrl") String logoUrl);
 
     @Query(value = "SELECT * FROM team WHERE current_league_id in (SELECT id FROM league WHERE current_league = true)", nativeQuery = true)
     List<TeamEntity> findTeamsFromCurrentSeason();

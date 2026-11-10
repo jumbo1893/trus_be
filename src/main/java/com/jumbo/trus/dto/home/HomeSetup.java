@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.jumbo.trus.dto.football.detail.FootballMatchDetail;
 import com.jumbo.trus.dto.home.stats.StatsBoardData;
 import com.jumbo.trus.dto.participation.MatchParticipationPrompt;
+import com.jumbo.trus.entity.participation.MatchParticipationStatus;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -38,6 +39,11 @@ public class HomeSetup {
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private MatchParticipationPrompt participationPrompt;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private MatchParticipationStatus currentParticipationStatus;
+
+    private Integer attendingPlayerCount;
 
     private List<StatsBoardData> statsBoards;
     @JsonInclude(JsonInclude.Include.NON_NULL)

@@ -37,6 +37,8 @@ public class TableTeamDTO {
 
     private String teamName;
 
+    private String teamLogoUrl;
+
     private LeagueDTO league;
 
     private FootballTableZone tableZone;

@@ -50,6 +50,18 @@ public class RetrievePkflTeams {
             String longName = nameElement.getElementsByClass("d-inline d-md-none").text().trim();
             String uri = BASE_URL + nameElement.select("a[href]").attr("href");
             pkflTeam = new TeamDTO(longName, leagueDTO.getId(), uri);
+            Element logo = nameElement.selectFirst("img[src*=/data/team/]");
+            if (logo == null) {
+                // The table does not always include crests; the team page does.
+                logo = SSLHelper.getConnection(uri).get()
+                        .selectFirst("img[alt^=Logo týmu], img[src*=/data/team/]");
+            }
+            if (logo != null) {
+                String logoUrl = logo.absUrl("src");
+                if (logoUrl.startsWith(BASE_URL + "/data/team/")) {
+                    pkflTeam.setLogoUrl(logoUrl);
+                }
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }

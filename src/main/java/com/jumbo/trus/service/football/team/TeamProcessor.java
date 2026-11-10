@@ -44,8 +44,13 @@ public class TeamProcessor {
         int updatedTeams = 0;
         TeamDTO currentTeam = teamMapper.toDTO(teamRepository.findByUri(newTeam.getUri()));
 
-        if (!currentTeam.equals(newTeam)) {
-            updatedTeams += teamRepository.updateTeamFields(currentTeam.getId(), newTeam.getName(), newTeam.getCurrentLeagueId());
+        if (!currentTeam.equals(newTeam) ||
+                (newTeam.getLogoUrl() != null && !newTeam.getLogoUrl().equals(currentTeam.getLogoUrl()))) {
+            updatedTeams += teamRepository.updateTeamFields(currentTeam.getId(), newTeam.getName(),
+                    newTeam.getCurrentLeagueId(), newTeam.getLogoUrl());
+            if (newTeam.getLogoUrl() != null) {
+                currentTeam.setLogoUrl(newTeam.getLogoUrl());
+            }
         }
 
         return new Pair<>(currentTeam, updatedTeams);

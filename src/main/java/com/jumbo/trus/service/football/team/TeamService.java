@@ -120,8 +120,12 @@ public class TeamService {
 
     public void updateTeams() {
         log.debug("updatuji týmy z PKFL");
-        List<TeamTableTeam> teamTableTeams = teamRetriever.retrieveTeams(teamRetriever.isUpdateNeeded());
+        boolean backfillLogos = teamRetriever.isUpdateNeeded();
+        List<TeamTableTeam> teamTableTeams = teamRetriever.retrieveTeams(backfillLogos);
         TeamUpdateResult teamUpdateResult = processTeams(teamTableTeams);
+        if (backfillLogos && !teamTableTeams.isEmpty()) {
+            teamRetriever.markLogoBackfillCompleted();
+        }
         log.debug("update týmů dokončen, celkem se prolezlo týmů: {}", teamTableTeams.size());
         log.debug("počet aktualizovaných týmů: {}", teamUpdateResult.getUpdatedTeams());
         log.debug("počet aktualizovaných tabulkovaných týmů: {}", teamUpdateResult.getUpdatedTableTeams());

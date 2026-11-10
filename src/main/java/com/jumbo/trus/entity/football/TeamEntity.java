@@ -23,6 +23,8 @@ public class TeamEntity {
 
     private String uri;
 
+    private String logoUrl;
+
     @ManyToMany
     @JoinTable(name = "leagueTeam",
             joinColumns = @JoinColumn(name = "teamId"),

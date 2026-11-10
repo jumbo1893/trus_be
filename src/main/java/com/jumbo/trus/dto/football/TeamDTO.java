@@ -31,6 +31,8 @@ public class TeamDTO {
 
     private String uri;
 
+    private String logoUrl;
+
     public TeamDTO(String name, Long currentLeagueId, String uri) {
         this.name = name;
         this.currentLeagueId = currentLeagueId;
