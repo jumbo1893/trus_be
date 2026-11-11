@@ -158,14 +158,13 @@ public class MatchParticipationService {
         participation.setFootballMatch(footballMatch);
         participation.setPlayer(player);
         participation.setStatus(request.getStatus());
-        // Outside ATTENDING ignore the submitted playing flag, preserving the last attendance preference.
-        participation.setPlaying(request.getStatus() == MatchParticipationStatus.ATTENDING && request.getPlaying() != null ? request.getPlaying()
+        participation.setPlaying(request.getStatus() != MatchParticipationStatus.NOT_ATTENDING && request.getPlaying() != null ? request.getPlaying()
                 : participation.getPlaying() != null ? participation.getPlaying() : !player.isFan());
         PlayerEntity author = isTeamParticipant(role.getPlayer(), appTeam) ? role.getPlayer() : player;
         participation.setRespondedBy(author);
         participation.setRespondedAt(Instant.now());
+        participation.setNote(request.getComment() == null ? "" : request.getComment().trim());
         participationRepository.save(participation);
-        addCommentIfPresent(participation, author, userId, request.getComment(), null);
         outboxEventService.createAuditEvent(OutboxEventType.PARTICIPATION_RESPONDED,
                 participation.getId(), appTeam.getId(), userId,
                 Map.of("footballMatchId", footballMatch.getId().toString(),
@@ -216,6 +215,9 @@ public class MatchParticipationService {
             AppTeamEntity appTeam,
             MatchParticipationCommentRequest request
     ) {
+        if (request.getParentCommentId() != null) {
+            throw validationError("parentCommentId", "Na poznámku k účasti nelze odpovídat.");
+        }
         FootballMatchEntity footballMatch = getFootballMatchForTeam(request.getFootballMatchId(), appTeam);
         PlayerEntity author = requireCurrentParticipant(userId, appTeam);
         MatchParticipationCommentEntity parent = null;
@@ -258,36 +260,8 @@ public class MatchParticipationService {
             Long commentId,
             MatchParticipationReactionRequest request
     ) {
-        PlayerEntity player = requireCurrentParticipant(userId, appTeam);
-        MatchParticipationCommentEntity comment = commentRepository
-                .findByIdAndParticipationAppTeamId(commentId, appTeam.getId())
-                .orElseThrow(() -> new NotFoundException("Komentář nebyl nalezen."));
+        throw validationError("commentId", "Na poznámku k účasti nelze reagovat.");
 
-        reactionRepository.findByCommentIdAndPlayerId(commentId, player.getId())
-                .ifPresentOrElse(existing -> {
-                    if (existing.getReaction() == request.getReaction()) {
-                        reactionRepository.delete(existing);
-                    } else {
-                        existing.setReaction(request.getReaction());
-                        existing.setReactedAt(Instant.now());
-                        reactionRepository.save(existing);
-                    }
-                }, () -> {
-                    MatchParticipationCommentReactionEntity reaction =
-                            new MatchParticipationCommentReactionEntity();
-                    reaction.setComment(comment);
-                    reaction.setPlayer(player);
-                    reaction.setReaction(request.getReaction());
-                    reaction.setReactedAt(Instant.now());
-                    reactionRepository.save(reaction);
-                });
-
-        outboxEventService.createAuditEvent(OutboxEventType.PARTICIPATION_REACTION_CHANGED,
-                commentId, appTeam.getId(), userId,
-                Map.of("footballMatchId", comment.getParticipation().getFootballMatch().getId().toString(),
-                        "reaction", request.getReaction().name()));
-
-        return buildDetail(comment.getParticipation().getFootballMatch(), appTeam, player);
     }
 
     @Transactional
@@ -417,6 +391,13 @@ public class MatchParticipationService {
                     .add(reaction);
         }
 
+        Map<Long, Long> avatarUserIds = new LinkedHashMap<>();
+        for (UserTeamRole role : userTeamRoleRepository.findAllByAppTeamId(appTeam.getId())) {
+            if (role.getPlayer() != null && role.isRoleApproved()) {
+                avatarUserIds.putIfAbsent(role.getPlayer().getId(), role.getUser().getId());
+            }
+        }
+
         for (MatchParticipationEntity participation : participationRepository
                 .findAllByFootballMatchIdAndAppTeamIdOrderByPlayerNameAsc(
                         footballMatch.getId(),
@@ -438,6 +419,8 @@ public class MatchParticipationService {
             member.setPlaying(participation.getPlaying() == null ? !fan : participation.getPlaying());
             member.setRespondedBy(participation.getRespondedBy() == null ? null
                     : playerMapper.toDTO(participation.getRespondedBy()));
+            member.setNote(participation.getNote());
+            member.setAvatarUserId(avatarUserIds.get(participation.getPlayer().getId()));
             member.setCanDelete(canDeleteResponse(participation, currentPlayer));
             switch (participation.getStatus()) {
                 case ATTENDING -> (fan ? attendingFans : attendingPlayers).add(member);

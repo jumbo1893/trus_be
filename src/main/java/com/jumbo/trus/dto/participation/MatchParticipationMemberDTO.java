@@ -17,6 +17,8 @@ public class MatchParticipationMemberDTO {
     private List<MatchParticipationCommentDTO> comments = new ArrayList<>();
     private boolean playing;
     private PlayerDTO respondedBy;
+    private String note;
+    private Long avatarUserId;
     private boolean canDelete;
 
     public MatchParticipationMemberDTO(PlayerDTO player, List<MatchParticipationCommentDTO> comments) {

@@ -43,6 +43,9 @@ public class HomeSetup {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private MatchParticipationStatus currentParticipationStatus;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Boolean currentParticipationPlaying;
+
     private Integer attendingPlayerCount;
 
     private List<StatsBoardData> statsBoards;

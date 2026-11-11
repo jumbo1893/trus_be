@@ -53,6 +53,19 @@ class MatchParticipationServiceTest {
             mock(com.jumbo.trus.service.outbox.OutboxEventService.class);
 
     @Test
+    void maybeResponseSavesSelectedFanRole() {
+        var team = appTeam(1L, 10L);
+        var target = player(4L, team);
+        when(footballMatchRepository.findById(20L)).thenReturn(Optional.of(footballMatch(20L, 10L, 11L)));
+        when(userTeamRoleRepository.findByUserIdAndAppTeamId(2L, 1L))
+                .thenReturn(Optional.of(role(team, target)));
+        service.respond(2L, team,
+                new MatchParticipationRequest(20L, 4L, MatchParticipationStatus.MAYBE, null, false));
+        verify(participationRepository).save(argThat(p -> p.getStatus() == MatchParticipationStatus.MAYBE
+                && Boolean.FALSE.equals(p.getPlaying())));
+    }
+
+    @Test
     void fanDefaultsToNonPlayingAndAuthorCanDeleteProxyResponse() {
         var team = appTeam(1L, 10L);
         var actor = player(3L, team);
@@ -88,9 +101,9 @@ class MatchParticipationServiceTest {
         var request = new MatchParticipationRequest(20L, 4L, MatchParticipationStatus.ATTENDING, "Přijde", true);
         var result = service.respond(2L, team, request);
         verify(participationRepository).save(argThat(p -> p.getPlayer() == target
-                && p.getRespondedBy() == actor && Boolean.TRUE.equals(p.getPlaying())));
-        verify(commentRepository).save(argThat(c -> c.getAuthor() == actor
-                && Long.valueOf(2L).equals(c.getAuthorUserId())));
+                && p.getRespondedBy() == actor && Boolean.TRUE.equals(p.getPlaying())
+                && "Přijde".equals(p.getNote())));
+        verify(commentRepository, never()).save(any());
         verify(appTeamService, never()).pairPlayerToRole(any(), any(), any(), any());
         assertThat(result.getCurrentPlayer().getId()).isEqualTo(3L);
     }
@@ -298,7 +311,7 @@ class MatchParticipationServiceTest {
         assertThat(detail.getCurrentPlayer()).isSameAs(playerDto);
         verify(appTeamService).pairPlayerToRole(role, 2L, 3L, appTeam);
         verify(participationRepository).save(any(MatchParticipationEntity.class));
-        verify(commentRepository).save(any(MatchParticipationCommentEntity.class));
+        verify(commentRepository, never()).save(any(MatchParticipationCommentEntity.class));
     }
 
     @Test
@@ -326,7 +339,7 @@ class MatchParticipationServiceTest {
     }
 
     @Test
-    void replyIsStoredUnderTheCommentedParticipantsAnswer() {
+    void replyToParticipationNoteIsRejected() {
         AppTeamEntity appTeam = appTeam(1L, 10L);
         PlayerEntity author = player(3L, appTeam);
         PlayerEntity target = player(4L, appTeam);
@@ -350,23 +363,16 @@ class MatchParticipationServiceTest {
                 .thenReturn(Optional.of(parent));
         when(footballMatchService.getFootballMatchById(20L)).thenReturn(footballMatchDto(20L));
 
-        service.addComment(
+        assertThatThrownBy(() -> service.addComment(
                 2L,
                 appTeam,
                 new MatchParticipationCommentRequest(20L, "Držím palce.", 40L)
-        );
-
-        ArgumentCaptor<MatchParticipationCommentEntity> captor =
-                ArgumentCaptor.forClass(MatchParticipationCommentEntity.class);
-        verify(commentRepository).save(captor.capture());
-        assertThat(captor.getValue().getAuthorUserId()).isEqualTo(2L);
-        assertThat(captor.getValue().getParticipation()).isSameAs(targetParticipation);
-        assertThat(captor.getValue().getAuthor()).isSameAs(author);
-        assertThat(captor.getValue().getParentComment()).isSameAs(parent);
+        )).isInstanceOf(FieldValidationException.class);
+        verify(commentRepository, never()).save(any());
     }
 
     @Test
-    void clickingTheSameReactionAgainRemovesIt() {
+    void reactingToParticipationNoteIsRejected() {
         AppTeamEntity appTeam = appTeam(1L, 10L);
         PlayerEntity player = player(3L, appTeam);
         FootballMatchEntity footballMatch = footballMatch(20L, 10L, 11L);
@@ -395,14 +401,13 @@ class MatchParticipationServiceTest {
                 .thenReturn(Optional.of(existing));
         when(footballMatchService.getFootballMatchById(20L)).thenReturn(footballMatchDto(20L));
 
-        service.reactToComment(
+        assertThatThrownBy(() -> service.reactToComment(
                 2L,
                 appTeam,
                 40L,
                 new MatchParticipationReactionRequest(MatchParticipationCommentReactionType.UP)
-        );
-
-        verify(reactionRepository).delete(existing);
+        )).isInstanceOf(FieldValidationException.class);
+        verify(reactionRepository, never()).delete(existing);
         verify(reactionRepository, never()).save(existing);
     }
 

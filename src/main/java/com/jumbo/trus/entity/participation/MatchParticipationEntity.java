@@ -64,6 +64,9 @@ public class MatchParticipationEntity {
     // Nullable for existing records; their default follows the player's fan flag.
     private Boolean playing;
 
+    @Column(length = 1000)
+    private String note;
+
     @ManyToOne(fetch = FetchType.LAZY)
     private PlayerEntity respondedBy;
 }

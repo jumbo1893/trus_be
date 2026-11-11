@@ -100,9 +100,20 @@ public class HomeService {
         if (nextMatch != null && nextMatch.getMatch() != null) {
             homeSetup.setCurrentParticipationStatus(matchParticipationService.getCurrentStatus(
                     userId, appTeamEntity, nextMatch.getMatch().getFootballMatch()));
-            homeSetup.setAttendingPlayerCount(matchParticipationService.getDetail(
-                    nextMatch.getMatch().getFootballMatch().getId(), userId, appTeamEntity)
-                    .getAttendingPlayers().size());
+            var participationDetail = matchParticipationService.getDetail(
+                    nextMatch.getMatch().getFootballMatch().getId(), userId, appTeamEntity);
+            homeSetup.setAttendingPlayerCount((int) participationDetail.getAttendingPlayers()
+                    .stream().filter(member -> member.isPlaying()).count());
+            if (participationDetail.getCurrentPlayer() != null) {
+                var currentPlayerId = participationDetail.getCurrentPlayer().getId();
+                var currentAttendance = java.util.stream.Stream.concat(
+                        participationDetail.getAttendingPlayers().stream(),
+                        participationDetail.getAttendingFans().stream())
+                        .filter(member -> member.getPlayer().getId() == currentPlayerId)
+                        .findFirst();
+                currentAttendance.ifPresent(member ->
+                        homeSetup.setCurrentParticipationPlaying(member.isPlaying()));
+            }
             homeSetup.setParticipationPrompt(matchParticipationService.getPrompt(
                     userId,
                     appTeamEntity,
