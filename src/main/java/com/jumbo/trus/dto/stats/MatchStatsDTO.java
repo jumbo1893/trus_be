@@ -6,6 +6,9 @@ import com.jumbo.trus.dto.receivedfine.response.get.detailed.ReceivedFineDetaile
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Data
 @AllArgsConstructor
@@ -17,4 +20,10 @@ public class MatchStatsDTO {
     private BeerDetailedResponse beers;
 
     private ReceivedFineDetailedResponse fines;
+
+    private Map<Long, Double> playerRatings = new HashMap<>();
+
+    private Map<Long, List<String>> playerAchievements = new HashMap<>();
+
+    private RefereeStatsDTO refereeStats;
 }

@@ -26,6 +26,8 @@ public class PlayerDTO {
 
     private FootballPlayerDTO footballPlayer;
 
+    private Long avatarUserId;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

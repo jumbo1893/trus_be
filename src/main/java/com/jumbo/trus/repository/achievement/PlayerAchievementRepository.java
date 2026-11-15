@@ -19,6 +19,15 @@ import java.util.Optional;
 
 public interface PlayerAchievementRepository extends JpaRepository<PlayerAchievementEntity, Long> {
 
+    @Query("SELECT pa.player.id, COUNT(pa) FROM PlayerAchievementEntity pa "
+            + "WHERE (pa.match.id = :matchId OR "
+            + "(:footballMatchId IS NOT NULL AND pa.footballMatch.id = :footballMatchId)) "
+            + "AND pa.accomplished = true "
+            + "GROUP BY pa.player.id")
+    List<Object[]> countAccomplishedByMatch(
+            @Param("matchId") Long matchId,
+            @Param("footballMatchId") Long footballMatchId);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT pa FROM PlayerAchievementEntity pa WHERE pa.player.appTeam.id = :teamId "
             + "AND pa.accomplished = true AND pa.id > :afterId ORDER BY pa.id")

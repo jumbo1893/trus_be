@@ -9,9 +9,11 @@ import com.jumbo.trus.entity.filter.BaseSeasonFilter;
 import com.jumbo.trus.entity.filter.SeasonFilter;
 import com.jumbo.trus.entity.participation.MatchParticipationEntity;
 import com.jumbo.trus.entity.participation.MatchParticipationStatus;
+import com.jumbo.trus.entity.auth.UserTeamRole;
 import com.jumbo.trus.mapper.MatchMapper;
 import com.jumbo.trus.mapper.football.FootballMatchMapper;
 import com.jumbo.trus.repository.participation.MatchParticipationRepository;
+import com.jumbo.trus.repository.auth.UserTeamRoleRepository;
 import com.jumbo.trus.service.SeasonService;
 import com.jumbo.trus.service.football.match.FootballMatchService;
 import com.jumbo.trus.service.helper.PairSeasonMatch;
@@ -20,6 +22,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
+import java.util.Map;
+import java.util.LinkedHashMap;
 import java.util.stream.Collectors;
 
 import static com.jumbo.trus.config.Config.ALL_SEASON_ID;
@@ -35,6 +39,7 @@ public class MatchSetupService {
     private final PlayerService playerService;
     private final FootballMatchService footballMatchService;
     private final MatchParticipationRepository matchParticipationRepository;
+    private final UserTeamRoleRepository userTeamRoleRepository;
 
     public SetupMatchResponse setupMatch(
             Long matchId,
@@ -50,10 +55,22 @@ public class MatchSetupService {
         }
 
         fillSelectableValues(response, appTeam);
+        fillAvatarUserIds(response, appTeam);
         if (matchId == null && footballMatchId != null) {
             fillAttendingParticipants(response, footballMatchId, appTeam);
         }
         return response;
+    }
+
+    private void fillAvatarUserIds(SetupMatchResponse response, AppTeamEntity appTeam) {
+        Map<Long, Long> avatarUserIds = new LinkedHashMap<>();
+        for (UserTeamRole role : userTeamRoleRepository.findAllByAppTeamId(appTeam.getId())) {
+            if (role.getPlayer() != null && role.isRoleApproved()) {
+                avatarUserIds.putIfAbsent(role.getPlayer().getId(), role.getUser().getId());
+            }
+        }
+        response.getPlayerList().forEach(player -> player.setAvatarUserId(avatarUserIds.get(player.getId())));
+        response.getFanList().forEach(fan -> fan.setAvatarUserId(avatarUserIds.get(fan.getId())));
     }
 
     public PairSeasonMatch returnSeasonAndMatchByFilter(BaseSeasonFilter filter) {

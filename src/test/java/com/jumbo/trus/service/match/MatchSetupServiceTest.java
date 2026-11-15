@@ -10,6 +10,7 @@ import com.jumbo.trus.entity.participation.MatchParticipationStatus;
 import com.jumbo.trus.mapper.MatchMapper;
 import com.jumbo.trus.mapper.football.FootballMatchMapper;
 import com.jumbo.trus.repository.participation.MatchParticipationRepository;
+import com.jumbo.trus.repository.auth.UserTeamRoleRepository;
 import com.jumbo.trus.service.SeasonService;
 import com.jumbo.trus.service.football.match.FootballMatchService;
 import com.jumbo.trus.service.player.PlayerService;
@@ -31,6 +32,7 @@ class MatchSetupServiceTest {
     private final PlayerService playerService = mock(PlayerService.class);
     private final FootballMatchService footballMatchService = mock(FootballMatchService.class);
     private final MatchParticipationRepository participationRepository = mock(MatchParticipationRepository.class);
+    private final UserTeamRoleRepository userTeamRoleRepository = mock(UserTeamRoleRepository.class);
     private final MatchSetupService service = new MatchSetupService(
             matchQueryService,
             matchMapper,
@@ -38,7 +40,8 @@ class MatchSetupServiceTest {
             seasonService,
             playerService,
             footballMatchService,
-            participationRepository
+            participationRepository,
+            userTeamRoleRepository
     );
 
     @Test

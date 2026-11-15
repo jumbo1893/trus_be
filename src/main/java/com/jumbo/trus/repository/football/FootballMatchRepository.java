@@ -13,6 +13,39 @@ import java.util.List;
 import java.util.Optional;
 
 public interface FootballMatchRepository extends JpaRepository<FootballMatchEntity, Long>, JpaSpecificationExecutor<FootballMatchEntity> {
+    @Query(value = """
+            SELECT COUNT(*),
+                   COALESCE(SUM(CASE WHEN (fm.home_team_id = :teamId AND fm.home_goal_number > fm.away_goal_number)
+                                     OR (fm.away_team_id = :teamId AND fm.away_goal_number > fm.home_goal_number)
+                                THEN 1 ELSE 0 END), 0),
+                   COALESCE(SUM((SELECT COALESCE(SUM(p.yellow_cards), 0)
+                                 FROM football_match_player p WHERE p.match_id = fm.id)), 0),
+                   COALESCE(SUM((SELECT COALESCE(SUM(p.red_cards), 0)
+                                 FROM football_match_player p WHERE p.match_id = fm.id)), 0)
+            FROM football_match fm
+            WHERE fm.already_played = true
+              AND (fm.home_team_id = :teamId OR fm.away_team_id = :teamId)
+              AND LOWER(TRIM(fm.referee)) = LOWER(TRIM(:referee))
+            """, nativeQuery = true)
+    List<Object[]> refereeTeamTotals(@Param("teamId") Long teamId, @Param("referee") String referee);
+
+    @Query(value = """
+            SELECT fp.name, COUNT(*)
+            FROM football_match_player p
+            JOIN football_match fm ON fm.id = p.match_id
+            JOIN football_player fp ON fp.id = p.player_id
+            WHERE fm.already_played = true
+              AND (fm.home_team_id = :teamId OR fm.away_team_id = :teamId)
+              AND LOWER(TRIM(fm.referee)) = LOWER(TRIM(:referee))
+              AND p.team_id = :teamId
+              AND p.best_player = true
+            GROUP BY fp.id, fp.name
+            ORDER BY COUNT(*) DESC, fp.name ASC
+            LIMIT 1
+            """, nativeQuery = true)
+    List<Object[]> refereeMostStarredPlayer(@Param("teamId") Long teamId,
+                                            @Param("referee") String referee);
+
     @Query("SELECT m FROM FootballMatchEntity m WHERE m.date >= :from AND m.date <= :to")
     List<FootballMatchEntity> findFootbarSyncWindow(@Param("from") Date from, @Param("to") Date to);
 
