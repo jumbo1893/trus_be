@@ -10,7 +10,17 @@ jar {
 
 group = 'com.jumbo'
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '19'
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+tasks.withType(JavaExec).configureEach {
+	javaLauncher = javaToolchains.launcherFor {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
 
 // Firebase Admin 9.10 používá Apache HttpClient 5.3.x. Spring Boot 3.0.4
 // jinak jeho transitivní závislosti přepíše na nekompatibilní 5.1.x.
@@ -58,10 +68,10 @@ dependencies {
 	implementation 'com.maxmind.geoip2:geoip2:4.2.1'
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
-	compileOnly 'org.projectlombok:lombok:1.18.26'
+	compileOnly 'org.projectlombok:lombok:1.18.30'
 	compileOnly 'org.mapstruct:mapstruct-processor:1.5.3.Final'
 	annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.3.Final'
-	annotationProcessor 'org.projectlombok:lombok:1.18.26'
+	annotationProcessor 'org.projectlombok:lombok:1.18.30'
 	annotationProcessor 'org.hibernate:hibernate-jpamodelgen:6.1.7.Final'
 	annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test:3.0.4'
