@@ -11,11 +11,13 @@ import com.jumbo.trus.entity.filter.MatchFilter;
 import com.jumbo.trus.service.auth.AppTeamService;
 import com.jumbo.trus.service.match.MatchService;
 import com.jumbo.trus.service.match.MatchStatsService;
+import com.jumbo.trus.service.match.MatchAttendancePercentageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.webjars.NotFoundException;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/match")
@@ -24,7 +26,15 @@ public class MatchController {
 
     private final MatchService matchService;
     private final MatchStatsService matchStatsService;
+    private final MatchAttendancePercentageService matchAttendancePercentageService;
     private final AppTeamService appTeamService;
+
+    @RoleRequired("READER")
+    @GetMapping("/attendance-percentages")
+    public Map<Long, Integer> getAttendancePercentages() {
+        return matchAttendancePercentageService.getPercentages(
+                appTeamService.getCurrentAppTeamOrThrow().getId());
+    }
 
     @RoleRequired("READER")
     @GetMapping("/statistics/opponents")

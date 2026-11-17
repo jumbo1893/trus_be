@@ -21,6 +21,41 @@ import java.util.Set;
 import static com.jumbo.trus.config.Config.OTHER_SEASON_ID;
 
 public interface MatchRepository extends PagingAndSortingRepository<MatchEntity, Long>, JpaRepository<MatchEntity, Long>, JpaSpecificationExecutor<MatchEntity> {
+    @Query(value = """
+            WITH played AS (
+                SELECT id, date FROM match
+                WHERE app_team_id = :appTeamId AND date <= :now
+            ), first_visit AS (
+                SELECT DISTINCT ON (mp.player_id)
+                       mp.player_id, m.date AS first_date, m.id AS first_id
+                FROM match_players mp
+                JOIN played m ON m.id = mp.match_id
+                ORDER BY mp.player_id, m.date, m.id
+            )
+            SELECT first_visit.player_id AS playerId,
+                   COUNT(DISTINCT eligible.id) AS eligibleMatches,
+                   COUNT(DISTINCT CASE WHEN attendance.player_id IS NOT NULL
+                         THEN eligible.id END) AS attendedMatches
+            FROM first_visit
+            JOIN played eligible
+              ON eligible.date > first_visit.first_date
+              OR (eligible.date = first_visit.first_date
+                  AND eligible.id >= first_visit.first_id)
+            LEFT JOIN match_players attendance
+              ON attendance.match_id = eligible.id
+             AND attendance.player_id = first_visit.player_id
+            GROUP BY first_visit.player_id
+            """, nativeQuery = true)
+    List<AttendancePercentageRow> findAttendancePercentages(
+            @Param("appTeamId") Long appTeamId,
+            @Param("now") Date now);
+
+    interface AttendancePercentageRow {
+        Long getPlayerId();
+        Long getEligibleMatches();
+        Long getAttendedMatches();
+    }
+
     boolean existsByAppTeamIdAndFootballMatchIdAndIdNot(Long appTeamId, Long footballMatchId, Long id);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
