@@ -17,7 +17,7 @@ public class ChatController {
     private final ChatPresenceService presence;
 
     @PostMapping("/presence")
-    @RoleRequired("READER")
+    @RoleRequired("VIEWER")
     public boolean presence(@RequestBody PresenceRequest request) {
         presence.heartbeat(request.sessionId(), request.online());
         return request.online();
@@ -81,7 +81,7 @@ public class ChatController {
     }
 
     @PostMapping("/{kind}/read/{id}")
-    @RoleRequired("READER")
+    @RoleRequired("VIEWER")
     public ChatService.Receipt read(@PathVariable String kind, @PathVariable Long id) {
         return chat.markRead(ChatService.room(kind), id);
     }
