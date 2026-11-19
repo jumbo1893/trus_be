@@ -207,3 +207,42 @@ CREATE UNIQUE INDEX IF NOT EXISTS uq_match_app_team_football_match
 
 CREATE INDEX IF NOT EXISTS idx_player_app_team_deleted
     ON player (app_team_id, deleted);
+
+CREATE INDEX IF NOT EXISTS idx_planned_match_team_status_date
+    ON planned_match (app_team_id, status, date);
+
+ALTER TABLE planned_match ADD COLUMN IF NOT EXISTS has_photo boolean NOT NULL DEFAULT false;
+CREATE TABLE IF NOT EXISTS planned_match_photo (
+    planned_match_id bigint PRIMARY KEY REFERENCES planned_match(id) ON DELETE CASCADE,
+    image bytea NOT NULL
+);
+
+-- Existing imported fixtures and participation records gain a planned event.
+ALTER TABLE match_participation ALTER COLUMN football_match_id DROP NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS uq_match_participation_planned_player
+    ON match_participation (planned_match_id, player_id)
+    WHERE planned_match_id IS NOT NULL;
+
+INSERT INTO planned_match (id, app_team_id, date, opponent, type, home, football_match_id, status)
+SELECT nextval('planned_match_seq'), a.id, f.date,
+       CASE WHEN a.team_id = f.home_team_id THEN away.name ELSE home.name END,
+       'LEAGUE', a.team_id = f.home_team_id, f.id,
+       CASE WHEN m.id IS NOT NULL THEN 'COMPLETED' ELSE 'SCHEDULED' END
+FROM app_team a
+JOIN football_match f ON a.team_id IN (f.home_team_id, f.away_team_id)
+JOIN team home ON home.id = f.home_team_id
+JOIN team away ON away.id = f.away_team_id
+LEFT JOIN match m ON m.app_team_id = a.id AND m.football_match_id = f.id
+WHERE f.date IS NOT NULL
+  AND (f.date > now() OR m.id IS NOT NULL)
+  AND NOT EXISTS (SELECT 1 FROM planned_match p
+                  WHERE p.app_team_id = a.id AND p.football_match_id = f.id);
+
+UPDATE planned_match p SET match_id = m.id, status = 'COMPLETED'
+FROM match m WHERE p.app_team_id = m.app_team_id
+  AND p.football_match_id = m.football_match_id AND p.match_id IS NULL;
+
+UPDATE match_participation mp SET planned_match_id = p.id
+FROM planned_match p WHERE mp.app_team_id = p.app_team_id
+  AND mp.football_match_id = p.football_match_id
+  AND mp.planned_match_id IS NULL;

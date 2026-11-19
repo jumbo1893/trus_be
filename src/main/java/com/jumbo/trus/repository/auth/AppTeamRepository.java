@@ -4,8 +4,11 @@ import com.jumbo.trus.entity.auth.AppTeamEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
+import java.util.List;
 
 public interface AppTeamRepository extends JpaRepository<AppTeamEntity, Long> {
+
+    List<AppTeamEntity> findAllByTeamId(Long teamId);
 
     @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
     @org.springframework.data.jpa.repository.Query("select t from AppTeamEntity t where t.id = :id")

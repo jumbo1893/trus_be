@@ -150,6 +150,7 @@ class MatchParticipationServiceTest {
     private final AppTeamService appTeamService = mock(AppTeamService.class);
     private final MatchParticipationService service = new MatchParticipationService(
             participationRepository,
+            mock(com.jumbo.trus.repository.PlannedMatchRepository.class),
             commentRepository,
             reactionRepository,
             footballMatchRepository,

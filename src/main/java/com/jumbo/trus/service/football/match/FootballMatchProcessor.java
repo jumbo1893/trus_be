@@ -6,6 +6,11 @@ import com.jumbo.trus.entity.football.FootballMatchEntity;
 import com.jumbo.trus.mapper.football.FootballMatchMapper;
 import com.jumbo.trus.repository.football.FootballMatchRepository;
 import com.jumbo.trus.repository.MatchRepository;
+import com.jumbo.trus.repository.PlannedMatchRepository;
+import com.jumbo.trus.repository.auth.AppTeamRepository;
+import com.jumbo.trus.entity.PlannedMatchEntity;
+import com.jumbo.trus.entity.PlannedMatchType;
+import com.jumbo.trus.entity.PlannedMatchStatus;
 import com.jumbo.trus.repository.football.FootballMatchPlayerRepository;
 import com.jumbo.trus.repository.participation.MatchParticipationRepository;
 import com.jumbo.trus.repository.participation.MatchParticipationCommentRepository;
@@ -47,6 +52,8 @@ public class FootballMatchProcessor {
     private final MatchParticipationCommentRepository matchParticipationCommentRepository;
     private final MatchParticipationCommentReactionRepository matchParticipationCommentReactionRepository;
     private final PkflMatchRefreshPolicy pkflMatchRefreshPolicy;
+    private final PlannedMatchRepository plannedMatchRepository;
+    private final AppTeamRepository appTeamRepository;
 
     public List<FootballMatchDTO> getAllMatches() {
         return footballMatchRepository.findAll().stream()
@@ -149,6 +156,7 @@ public class FootballMatchProcessor {
         matchParticipationCommentReactionRepository.deleteObsoleteByLeague(leagueId, matchesId);
         matchParticipationCommentRepository.deleteObsoleteByLeague(leagueId, matchesId);
         matchParticipationRepository.deleteObsoleteByLeague(leagueId, matchesId);
+        plannedMatchRepository.deleteObsoleteByLeague(leagueId, matchesId);
         logger.debug("smazáno přebytečných zápasů: {} ", footballMatchRepository.deleteByLeagueIdAndMatchIdNotIn(leagueId, matchesId));
     }
 
@@ -195,11 +203,40 @@ public class FootballMatchProcessor {
     }
 
     private FootballMatchDTO saveMatchToRepository(FootballMatchDTO footballMatchDTO) {
-        return footballMatchMapper.toDTO(footballMatchRepository.save(footballMatchMapper.toEntity(footballMatchDTO)));
+        FootballMatchEntity saved = footballMatchRepository.save(footballMatchMapper.toEntity(footballMatchDTO));
+        synchronizePlannedMatches(saved);
+        return footballMatchMapper.toDTO(saved);
     }
 
     private FootballMatchDTO saveMatchToRepository(FootballMatchEntity footballMatchEntity) {
-        return footballMatchMapper.toDTO(footballMatchRepository.save(footballMatchEntity));
+        FootballMatchEntity saved = footballMatchRepository.save(footballMatchEntity);
+        synchronizePlannedMatches(saved);
+        return footballMatchMapper.toDTO(saved);
+    }
+
+    private void synchronizePlannedMatches(FootballMatchEntity football) {
+        if (football.getDate() == null || football.getHomeTeam() == null || football.getAwayTeam() == null) return;
+        if (football.getDate().before(new Date())) return;
+        Set<com.jumbo.trus.entity.auth.AppTeamEntity> teams = new LinkedHashSet<>();
+        teams.addAll(appTeamRepository.findAllByTeamId(football.getHomeTeam().getId()));
+        teams.addAll(appTeamRepository.findAllByTeamId(football.getAwayTeam().getId()));
+        for (var team : teams) {
+            PlannedMatchEntity planned = plannedMatchRepository
+                    .findByAppTeamIdAndFootballMatchId(team.getId(), football.getId())
+                    .orElseGet(() -> {
+                        PlannedMatchEntity created = new PlannedMatchEntity();
+                        created.setAppTeam(team);
+                        created.setFootballMatch(football);
+                        created.setType(PlannedMatchType.LEAGUE);
+                        return created;
+                    });
+            if (planned.getStatus() != PlannedMatchStatus.SCHEDULED) continue;
+            boolean home = team.getTeam().getId().equals(football.getHomeTeam().getId());
+            planned.setDate(football.getDate());
+            planned.setHome(home);
+            planned.setOpponent(home ? football.getAwayTeam().getName() : football.getHomeTeam().getName());
+            plannedMatchRepository.save(planned);
+        }
     }
 
     public FootballMatchDTO findFootballMatchByDate(long teamId, Date startDate, Date endDate) {

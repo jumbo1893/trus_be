@@ -2,6 +2,8 @@ package com.jumbo.trus.dto.home;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.jumbo.trus.dto.football.detail.FootballMatchDetail;
+import com.jumbo.trus.dto.match.PlannedMatchDTO;
+import com.jumbo.trus.dto.match.MatchDTO;
 import com.jumbo.trus.dto.helper.TextWithRedirect;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,6 +18,10 @@ public class DashboardMatch {
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private FootballMatchDetail match;
+
+    private PlannedMatchDTO plannedMatch;
+
+    private MatchDTO recordedMatch;
 
     private List<TextWithRedirect> matchInfoList;
 

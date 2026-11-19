@@ -24,6 +24,7 @@ public abstract class PlayerMapper {
 
     })
     public abstract PlayerEntity toEntity(PlayerDTO source);
+    @Mapping(target = "avatarUserId", ignore = true)
     public abstract PlayerDTO toDTO(PlayerEntity source);
 
 }

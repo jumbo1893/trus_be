@@ -16,6 +16,7 @@ import com.jumbo.trus.dto.player.PlayerDTO;
 import com.jumbo.trus.dto.receivedfine.response.get.detailed.ReceivedFineDetailedResponse;
 import com.jumbo.trus.dto.weather.MatchWeatherDTO;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
+import com.jumbo.trus.entity.PlannedMatchEntity;
 import com.jumbo.trus.repository.auth.UserTeamRoleRepository;
 import com.jumbo.trus.entity.filter.StatisticsFilter;
 import com.jumbo.trus.service.UserVisitedCountryService;
@@ -25,6 +26,12 @@ import com.jumbo.trus.service.football.match.FootballMatchService;
 import com.jumbo.trus.service.header.HeaderManager;
 import com.jumbo.trus.service.ip.GeoIpService;
 import com.jumbo.trus.service.match.MatchService;
+import com.jumbo.trus.service.match.PlannedMatchService;
+import com.jumbo.trus.service.match.PlannedMatchParticipationService;
+import com.jumbo.trus.repository.PlannedMatchRepository;
+import com.jumbo.trus.entity.PlannedMatchStatus;
+import com.jumbo.trus.repository.MatchRepository;
+import com.jumbo.trus.mapper.MatchMapper;
 import com.jumbo.trus.service.participation.MatchParticipationService;
 import com.jumbo.trus.service.player.PlayerAchievementService;
 import com.jumbo.trus.service.player.PlayerService;
@@ -48,6 +55,11 @@ public class HomeService {
     private final FootballMatchService footballMatchService;
     private final AppTeamService appTeamService;
     private final MatchService matchService;
+    private final PlannedMatchService plannedMatchService;
+    private final PlannedMatchParticipationService plannedParticipation;
+    private final PlannedMatchRepository plannedMatchRepository;
+    private final MatchRepository matchRepository;
+    private final MatchMapper matchMapper;
     private final ReceivedFineService receivedFineService;
     private final StatsBoardDataService statsBoardDataService;
     private final PlayerAchievementService playerAchievementService;
@@ -95,8 +107,12 @@ public class HomeService {
 
         homeSetup.setNextBirthday(getUpcomingBirthday(appTeamEntity.getId()));
         homeSetup.setNextAndLastFootballMatch(getNextAndLastMatch(appTeamEntity));
-        DashboardMatch nextMatch = getNextMatch(appTeamEntity, userId);
+        var upcoming = plannedMatchRepository.findTop2ByAppTeamIdAndStatusAndDateAfterOrderByDateAsc(
+                appTeamEntity.getId(), PlannedMatchStatus.SCHEDULED, new java.util.Date());
+        DashboardMatch nextMatch = upcoming.isEmpty() ? null : getNextMatch(appTeamEntity, upcoming.get(0));
         homeSetup.setNextMatch(nextMatch);
+        DashboardMatch secondNextMatch = upcoming.size() < 2 ? null : getNextMatch(appTeamEntity, upcoming.get(1));
+        homeSetup.setSecondNextMatch(secondNextMatch);
         if (nextMatch != null && nextMatch.getMatch() != null) {
             homeSetup.setCurrentParticipationStatus(matchParticipationService.getCurrentStatus(
                     userId, appTeamEntity, nextMatch.getMatch().getFootballMatch()));
@@ -104,6 +120,8 @@ public class HomeService {
                     nextMatch.getMatch().getFootballMatch().getId(), userId, appTeamEntity);
             homeSetup.setAttendingPlayerCount((int) participationDetail.getAttendingPlayers()
                     .stream().filter(member -> member.isPlaying()).count());
+            homeSetup.setMaybePlayerCount(participationDetail.getMaybePlayers().size());
+            homeSetup.setNotAttendingPlayerCount(participationDetail.getNotAttendingPlayers().size());
             if (participationDetail.getCurrentPlayer() != null) {
                 var currentPlayerId = participationDetail.getCurrentPlayer().getId();
                 var currentAttendance = java.util.stream.Stream.concat(
@@ -119,6 +137,36 @@ public class HomeService {
                     appTeamEntity,
                     nextMatch.getMatch().getFootballMatch()
             ));
+        } else if (nextMatch != null && nextMatch.getPlannedMatch() != null) {
+            var detail = plannedParticipation.get(nextMatch.getPlannedMatch().getId(), userId, appTeamEntity);
+            homeSetup.setCurrentParticipationStatus(detail.getCurrentStatus());
+            homeSetup.setCurrentParticipationPlaying(detail.getCurrentPlaying());
+            homeSetup.setAttendingPlayerCount(detail.getAttendingPlayerCount());
+            homeSetup.setMaybePlayerCount(detail.getMaybePlayerCount());
+            homeSetup.setNotAttendingPlayerCount(detail.getNotAttendingPlayerCount());
+        }
+        if (secondNextMatch != null && secondNextMatch.getMatch() != null) {
+            var football = secondNextMatch.getMatch().getFootballMatch();
+            var detail = matchParticipationService.getDetail(football.getId(), userId, appTeamEntity);
+            homeSetup.setSecondParticipationStatus(matchParticipationService.getCurrentStatus(
+                    userId, appTeamEntity, football));
+            homeSetup.setSecondAttendingPlayerCount((int) detail.getAttendingPlayers().stream()
+                    .filter(member -> member.isPlaying()).count());
+            homeSetup.setSecondMaybePlayerCount(detail.getMaybePlayers().size());
+            homeSetup.setSecondNotAttendingPlayerCount(detail.getNotAttendingPlayers().size());
+            if (detail.getCurrentPlayer() != null) {
+                var currentPlayerId = detail.getCurrentPlayer().getId();
+                java.util.stream.Stream.concat(detail.getAttendingPlayers().stream(), detail.getAttendingFans().stream())
+                        .filter(member -> member.getPlayer().getId() == currentPlayerId).findFirst()
+                        .ifPresent(member -> homeSetup.setSecondParticipationPlaying(member.isPlaying()));
+            }
+        } else if (secondNextMatch != null && secondNextMatch.getPlannedMatch() != null) {
+            var detail = plannedParticipation.get(secondNextMatch.getPlannedMatch().getId(), userId, appTeamEntity);
+            homeSetup.setSecondParticipationStatus(detail.getCurrentStatus());
+            homeSetup.setSecondParticipationPlaying(detail.getCurrentPlaying());
+            homeSetup.setSecondAttendingPlayerCount(detail.getAttendingPlayerCount());
+            homeSetup.setSecondMaybePlayerCount(detail.getMaybePlayerCount());
+            homeSetup.setSecondNotAttendingPlayerCount(detail.getNotAttendingPlayerCount());
         }
         homeSetup.setLastMatch(getLastMatch(appTeamEntity, player));
         homeSetup.setStatsBoards(statsBoardDataService.getStatsBoardDataList(appTeamEntity));
@@ -147,10 +195,15 @@ public class HomeService {
         }
     }
 
-    private DashboardMatch getNextMatch(AppTeamEntity appTeamEntity, Long userId) {
-        FootballMatchDetail footballMatchDetail = footballMatchService.getNextAndLastFootballMatchDetail(appTeamEntity, true);
+    private DashboardMatch getNextMatch(AppTeamEntity appTeamEntity, PlannedMatchEntity planned) {
+        var plannedDto = plannedMatchService.get(planned.getId(), appTeamEntity);
+        FootballMatchDetail footballMatchDetail = plannedDto.getFootballMatchId() == null ? null
+                : footballMatchService.getFootballMatchDetail(plannedDto.getFootballMatchId(), appTeamEntity, false);
+        DashboardMatch dashboardMatch = new DashboardMatch();
+        dashboardMatch.setPlannedMatch(plannedDto);
         if (footballMatchDetail == null) {
-            return null;
+            dashboardMatch.setMatchInfoList(List.of());
+            return dashboardMatch;
         }
         MatchDTO match = matchService.findMatchByFootballMatchIdOrNull(footballMatchDetail.getFootballMatch().getId(), appTeamEntity.getId());
 
@@ -159,7 +212,6 @@ public class HomeService {
             footballMatchDetail.getFootballMatch().setAwayGoalNumber(match.getAwayGoalNumber());
         }
 
-        DashboardMatch dashboardMatch = new DashboardMatch();
         dashboardMatch.setMatch(footballMatchDetail);
         List<TextWithRedirect> matchInfoList = new ArrayList<>();
         addTextRedirectToList(matchInfoList, getWeatherText(footballMatchDetail.getFootballMatch()));
@@ -169,18 +221,26 @@ public class HomeService {
     }
 
     private DashboardMatch getLastMatch(AppTeamEntity appTeamEntity, PlayerDTO player) {
-        FootballMatchDetail footballMatchDetail = footballMatchService.getNextAndLastFootballMatchDetail(appTeamEntity, false);
-        if (footballMatchDetail == null) {
+        var recorded = matchRepository.findFirstByAppTeamIdAndDateLessThanOrderByDateDesc(
+                appTeamEntity.getId(), new java.util.Date());
+        if (recorded.isEmpty()) {
             return null;
         }
-        MatchDTO match = matchService.findMatchByFootballMatchIdOrNull(footballMatchDetail.getFootballMatch().getId(), appTeamEntity.getId());
+        MatchDTO match = matchMapper.toDTO(recorded.get());
+        FootballMatchDetail footballMatchDetail = match.getFootballMatch() == null ? null
+                : footballMatchService.getFootballMatchDetail(match.getFootballMatch().getId(), appTeamEntity, false);
+        DashboardMatch dashboardMatch = new DashboardMatch();
+        dashboardMatch.setRecordedMatch(match);
+        if (footballMatchDetail == null) {
+            dashboardMatch.setMatchInfoList(List.of());
+            return dashboardMatch;
+        }
 
         if (match != null && match.getHomeGoalNumber() != null && match.getAwayGoalNumber() != null) {
             footballMatchDetail.getFootballMatch().setHomeGoalNumber(match.getHomeGoalNumber());
             footballMatchDetail.getFootballMatch().setAwayGoalNumber(match.getAwayGoalNumber());
         }
 
-        DashboardMatch dashboardMatch = new DashboardMatch();
         dashboardMatch.setMatch(footballMatchDetail);
 
         List<TextWithRedirect> matchInfoList = new ArrayList<>();

@@ -1,6 +1,7 @@
 package com.jumbo.trus.entity.participation;
 
 import com.jumbo.trus.entity.PlayerEntity;
+import com.jumbo.trus.entity.PlannedMatchEntity;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.football.FootballMatchEntity;
 import jakarta.persistence.Column;
@@ -46,9 +47,13 @@ public class MatchParticipationEntity {
     @JoinColumn(name = "app_team_id", nullable = false)
     private AppTeamEntity appTeam;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "football_match_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "football_match_id")
     private FootballMatchEntity footballMatch;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "planned_match_id")
+    private PlannedMatchEntity plannedMatch;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "player_id", nullable = false)

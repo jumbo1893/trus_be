@@ -29,6 +29,13 @@ public class MatchEntity {
 
     private String name;
 
+    @Enumerated(EnumType.STRING)
+    @Column(length = 32)
+    private PlannedMatchType type;
+
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
     private Date date;
 
     @ManyToMany

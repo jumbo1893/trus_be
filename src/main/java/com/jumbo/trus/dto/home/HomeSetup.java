@@ -35,6 +35,9 @@ public class HomeSetup {
     private DashboardMatch nextMatch;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
+    private DashboardMatch secondNextMatch;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private DashboardMatch lastMatch;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -47,6 +50,20 @@ public class HomeSetup {
     private Boolean currentParticipationPlaying;
 
     private Integer attendingPlayerCount;
+
+    private Integer maybePlayerCount;
+
+    private Integer notAttendingPlayerCount;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private MatchParticipationStatus secondParticipationStatus;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Boolean secondParticipationPlaying;
+
+    private Integer secondAttendingPlayerCount;
+    private Integer secondMaybePlayerCount;
+    private Integer secondNotAttendingPlayerCount;
 
     private List<StatsBoardData> statsBoards;
     @JsonInclude(JsonInclude.Include.NON_NULL)

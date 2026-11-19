@@ -18,6 +18,12 @@ public interface MatchParticipationRepository extends JpaRepository<MatchPartici
             Long playerId
     );
 
+    Optional<MatchParticipationEntity> findByPlannedMatchIdAndAppTeamIdAndPlayerId(
+            Long plannedMatchId, Long appTeamId, Long playerId);
+
+    List<MatchParticipationEntity> findAllByPlannedMatchIdAndAppTeamIdOrderByPlayerNameAsc(
+            Long plannedMatchId, Long appTeamId);
+
     List<MatchParticipationEntity> findAllByFootballMatchIdAndAppTeamIdOrderByPlayerNameAsc(
             Long footballMatchId,
             Long appTeamId

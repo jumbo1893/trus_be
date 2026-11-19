@@ -23,6 +23,7 @@ import com.jumbo.trus.entity.participation.MatchParticipationPromptAudience;
 import com.jumbo.trus.entity.participation.MatchParticipationStatus;
 import com.jumbo.trus.mapper.PlayerMapper;
 import com.jumbo.trus.repository.PlayerRepository;
+import com.jumbo.trus.repository.PlannedMatchRepository;
 import com.jumbo.trus.repository.auth.AppTeamRepository;
 import com.jumbo.trus.repository.auth.UserTeamRoleRepository;
 import com.jumbo.trus.repository.football.FootballMatchRepository;
@@ -58,6 +59,7 @@ public class MatchParticipationService {
     static final Duration MAYBE_REMINDER_DELAY = Duration.ofHours(24);
 
     private final MatchParticipationRepository participationRepository;
+    private final PlannedMatchRepository plannedMatchRepository;
     private final MatchParticipationCommentRepository commentRepository;
     private final MatchParticipationCommentReactionRepository reactionRepository;
     private final FootballMatchRepository footballMatchRepository;
@@ -156,6 +158,9 @@ public class MatchParticipationService {
 
         participation.setAppTeam(appTeam);
         participation.setFootballMatch(footballMatch);
+        participation.setPlannedMatch(plannedMatchRepository
+                .findByAppTeamIdAndFootballMatchId(appTeam.getId(), footballMatch.getId())
+                .orElse(null));
         participation.setPlayer(player);
         participation.setStatus(request.getStatus());
         participation.setPlaying(request.getStatus() != MatchParticipationStatus.NOT_ATTENDING && request.getPlaying() != null ? request.getPlaying()
