@@ -21,6 +21,7 @@ import java.util.Set;
 import static com.jumbo.trus.config.Config.OTHER_SEASON_ID;
 
 public interface MatchRepository extends PagingAndSortingRepository<MatchEntity, Long>, JpaRepository<MatchEntity, Long>, JpaSpecificationExecutor<MatchEntity> {
+    List<MatchEntity> findAllByAppTeamIdOrderByDateDesc(Long appTeamId);
     @Query(value = """
             WITH played AS (
                 SELECT id, date FROM match

@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
 
 @Component @RequiredArgsConstructor
 public class ChatWebSocketSecurity implements WebSocketMessageBrokerConfigurer {
-    private static final Pattern CHAT_DESTINATION = Pattern.compile("^/topic/chat/(\\d+)/(all|players)(?:/(?:read|reactions|typing))?$");
+    private static final Pattern CHAT_DESTINATION = Pattern.compile("^/topic/chat/(\\d+)/(all|players|match-\\d+|planned-\\d+)(?:/(?:read|reactions|typing))?$");
     private final FirebaseAuthenticationService authentication;
     private final ChatAccessService chatAccess;
 

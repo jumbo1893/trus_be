@@ -162,7 +162,8 @@ class MatchParticipationServiceTest {
             playerService,
             appTeamService,
             mock(ParticipationNotificationService.class),
-            outboxEventService
+            outboxEventService,
+            mock(com.jumbo.trus.service.chat.ChatSystemEventService.class)
     );
 
     @Test

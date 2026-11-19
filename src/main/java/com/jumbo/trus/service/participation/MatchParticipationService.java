@@ -36,6 +36,7 @@ import com.jumbo.trus.service.football.match.FootballMatchService;
 import com.jumbo.trus.service.helper.ValidationField;
 import com.jumbo.trus.service.player.PlayerService;
 import com.jumbo.trus.service.outbox.OutboxEventService;
+import com.jumbo.trus.service.chat.ChatSystemEventService;
 import com.jumbo.trus.entity.outbox.OutboxEventType;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -72,6 +73,7 @@ public class MatchParticipationService {
     private final AppTeamService appTeamService;
     private final ParticipationNotificationService participationNotifications;
     private final OutboxEventService outboxEventService;
+    private final ChatSystemEventService chatService;
 
     @Transactional
     public MatchParticipationStatus getCurrentStatus(Long userId, AppTeamEntity appTeam, FootballMatchDTO footballMatch) {
@@ -156,6 +158,7 @@ public class MatchParticipationService {
                 )
                 .orElseGet(MatchParticipationEntity::new);
 
+        MatchParticipationStatus previousStatus = participation.getStatus();
         participation.setAppTeam(appTeam);
         participation.setFootballMatch(footballMatch);
         participation.setPlannedMatch(plannedMatchRepository
@@ -170,6 +173,15 @@ public class MatchParticipationService {
         participation.setRespondedAt(Instant.now());
         participation.setNote(request.getComment() == null ? "" : request.getComment().trim());
         participationRepository.save(participation);
+        if (participation.getPlannedMatch() != null) chatService.postParticipationEvent(
+                appTeam.getId(), userId, participation.getPlannedMatch().getId(),
+                player.getName() + (previousStatus == null ? " potvrdil účast: " : " změnil účast: ")
+                        + switch (request.getStatus()) {
+                            case ATTENDING -> "přijde";
+                            case MAYBE -> "možná přijde";
+                            case NOT_ATTENDING -> "nepřijde";
+                        }
+                        + (participation.getNote().isBlank() ? "" : " — " + participation.getNote()));
         outboxEventService.createAuditEvent(OutboxEventType.PARTICIPATION_RESPONDED,
                 participation.getId(), appTeam.getId(), userId,
                 Map.of("footballMatchId", footballMatch.getId().toString(),
@@ -250,6 +262,9 @@ public class MatchParticipationService {
         }
 
         addCommentIfPresent(participation, author, userId, request.getText(), parent);
+        if (participation.getPlannedMatch() != null) chatService.postParticipationEvent(
+                appTeam.getId(), userId, participation.getPlannedMatch().getId(),
+                author.getName() + " přidal komentář: " + request.getText());
         outboxEventService.createAuditEvent(OutboxEventType.PARTICIPATION_COMMENT_ADDED,
                 participation.getId(), appTeam.getId(), userId,
                 Map.of("footballMatchId", footballMatch.getId().toString()));
@@ -300,6 +315,9 @@ public class MatchParticipationService {
 
         reactionRepository.deleteAllByCommentIds(commentIds);
         commentRepository.deleteAllByIds(commentIds);
+        if (comment.getParticipation().getPlannedMatch() != null) chatService.postParticipationEvent(
+                appTeam.getId(), userId, comment.getParticipation().getPlannedMatch().getId(),
+                player.getName() + " smazal komentář k účasti");
         outboxEventService.createAuditEvent(OutboxEventType.PARTICIPATION_COMMENT_DELETED,
                 commentId, appTeam.getId(), userId,
                 Map.of("footballMatchId", comment.getParticipation().getFootballMatch().getId().toString()));
@@ -329,6 +347,9 @@ public class MatchParticipationService {
             commentRepository.deleteAllByIds(ids);
         }
         participationRepository.delete(participation);
+        if (participation.getPlannedMatch() != null) chatService.postParticipationEvent(
+                appTeam.getId(), userId, participation.getPlannedMatch().getId(),
+                participation.getPlayer().getName() + " zrušil odpověď o účasti");
         outboxEventService.createAuditEvent(OutboxEventType.PARTICIPATION_DELETED,
                 participation.getId(), appTeam.getId(), userId,
                 Map.of("footballMatchId", footballMatchId.toString(), "playerId", playerId.toString()));

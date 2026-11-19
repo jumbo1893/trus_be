@@ -1,6 +1,8 @@
 package com.jumbo.trus.service.chat;
 
 import com.jumbo.trus.entity.PlayerEntity;
+import com.jumbo.trus.entity.MatchEntity;
+import com.jumbo.trus.entity.PlannedMatchEntity;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
 import com.jumbo.trus.entity.auth.UserEntity;
 import com.jumbo.trus.entity.auth.UserTeamRole;
@@ -9,6 +11,8 @@ import com.jumbo.trus.entity.chat.ChatReaction;
 import com.jumbo.trus.entity.chat.ChatMute;
 import com.jumbo.trus.entity.notification.push.settings.NotificationType;
 import com.jumbo.trus.repository.auth.UserTeamRoleRepository;
+import com.jumbo.trus.repository.MatchRepository;
+import com.jumbo.trus.repository.PlannedMatchRepository;
 import com.jumbo.trus.repository.chat.ChatMessageRepository;
 import com.jumbo.trus.repository.chat.ChatReadRepository;
 import com.jumbo.trus.repository.chat.ChatReactionRepository;
@@ -32,16 +36,18 @@ class ChatServiceTest {
     private final UserService users = mock(UserService.class);
     private final HeaderManager headers = mock(HeaderManager.class);
     private final UserTeamRoleRepository roles = mock(UserTeamRoleRepository.class);
+    private final MatchRepository matches = mock(MatchRepository.class);
+    private final PlannedMatchRepository plannedMatches = mock(PlannedMatchRepository.class);
     private final ChatMessageRepository messages = mock(ChatMessageRepository.class);
     private final ChatReadRepository reads = mock(ChatReadRepository.class);
     private final ChatReactionRepository reactions = mock(ChatReactionRepository.class);
     private final ChatMuteRepository mutes = mock(ChatMuteRepository.class);
     private final EnabledPushNotificationService pushSettings = mock(EnabledPushNotificationService.class);
-    private final ChatAccessService access = new ChatAccessService(roles);
+    private final ChatAccessService access = new ChatAccessService(roles, matches, plannedMatches);
     private final ChatPushService chatPush = mock(ChatPushService.class);
     private final com.jumbo.trus.service.outbox.OutboxEventService outboxEventService =
             mock(com.jumbo.trus.service.outbox.OutboxEventService.class);
-    private final ChatService chat = new ChatService(users, headers, roles, messages, reads, reactions,
+    private final ChatService chat = new ChatService(users, headers, roles, matches, plannedMatches, messages, reads, reactions,
             mutes, pushSettings,
             mock(SimpMessagingTemplate.class), chatPush, mock(ChatBotService.class), outboxEventService);
 
@@ -73,7 +79,7 @@ class ChatServiceTest {
         AppTeamEntity team = new AppTeamEntity(); team.setId(3L);
         UserTeamRole role = new UserTeamRole(); role.setUser(user); role.setAppTeam(team);
         SimpMessagingTemplate websocket = mock(SimpMessagingTemplate.class);
-        ChatService service = new ChatService(users, headers, roles, messages, reads, reactions,
+        ChatService service = new ChatService(users, headers, roles, matches, plannedMatches, messages, reads, reactions,
                 mutes, pushSettings, websocket, chatPush, mock(ChatBotService.class), outboxEventService);
         when(users.getCurrentUserEntity()).thenReturn(user);
         when(headers.getAppTeamIdHeader()).thenReturn(3L);
@@ -189,9 +195,48 @@ class ChatServiceTest {
         assertTrue(access.allowed(3L, 8L, "players"));
     }
 
+    @Test void roomsFeatureOnlyNextAndLastMatch() {
+        UserEntity user = new UserEntity(); user.setId(8L);
+        AppTeamEntity team = new AppTeamEntity(); team.setId(3L);
+        UserTeamRole role = new UserTeamRole(); role.setUser(user); role.setAppTeam(team);
+        when(users.getCurrentUserEntity()).thenReturn(user);
+        when(headers.getAppTeamIdHeader()).thenReturn(3L);
+        when(roles.findByUserIdAndAppTeamId(8L, 3L)).thenReturn(Optional.of(role));
+        var old = new MatchEntity(); old.setId(1L); old.setName("Starý");
+        old.setDate(java.util.Date.from(java.time.Instant.now().minusSeconds(86400 * 10)));
+        var last = new MatchEntity(); last.setId(2L); last.setName("Poslední");
+        last.setDate(java.util.Date.from(java.time.Instant.now().minusSeconds(86400)));
+        var next = new PlannedMatchEntity(); next.setId(3L); next.setOpponent("Příští");
+        next.setStatus(com.jumbo.trus.entity.PlannedMatchStatus.SCHEDULED);
+        next.setDate(java.util.Date.from(java.time.Instant.now().plusSeconds(86400)));
+        when(matches.findAllByAppTeamIdOrderByDateDesc(3L)).thenReturn(List.of(last, old));
+        when(plannedMatches.findAllByAppTeamIdOrderByDateDesc(3L)).thenReturn(List.of(next));
+
+        var rooms = chat.rooms();
+        assertTrue(rooms.stream().filter(ChatService.Room::featured).map(ChatService.Room::kind).toList()
+                .containsAll(List.of("planned-3", "match-2")));
+        assertFalse(rooms.stream().filter(r -> r.kind().equals("match-1")).findFirst().orElseThrow().featured());
+        assertTrue(rooms.stream().filter(r -> r.kind().equals("planned-3")).findFirst().orElseThrow()
+                .title().matches("Příští · \\d{1,2}\\. \\d{1,2}\\. \\d{4}"));
+    }
+
     @Test void membershipIsScopedToSelectedTeam() {
         when(roles.findByUserIdAndAppTeamId(8L, 3L)).thenReturn(Optional.empty());
         assertFalse(access.allowed(3L, 8L, "all"));
+    }
+
+    @Test void matchRoomsRequireMatchingTeamAndExistingMatch() {
+        UserEntity user = new UserEntity(); user.setId(8L);
+        AppTeamEntity team = new AppTeamEntity(); team.setId(3L);
+        UserTeamRole role = new UserTeamRole(); role.setUser(user); role.setAppTeam(team);
+        when(roles.findByUserIdAndAppTeamId(8L, 3L)).thenReturn(Optional.of(role));
+        when(matches.findByIdAndAppTeamId(12L, 3L)).thenReturn(Optional.of(new MatchEntity()));
+        when(plannedMatches.findByIdAndAppTeamId(7L, 3L)).thenReturn(Optional.of(new PlannedMatchEntity()));
+        assertTrue(access.allowed(3L, 8L, "match-12"));
+        assertTrue(access.allowed(3L, 8L, "planned-7"));
+        assertFalse(access.allowed(3L, 8L, "match-13"));
+        assertFalse(access.allowed(4L, 8L, "planned-7"));
+        assertFalse(access.allowed(3L, 8L, "planned-bad"));
     }
 
     @Test void reactionIsStoredForTheCurrentMemberAndReturnedWithTheirName() {

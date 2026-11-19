@@ -9,6 +9,7 @@ import com.jumbo.trus.entity.participation.MatchParticipationStatus;
 import com.jumbo.trus.repository.PlannedMatchRepository;
 import com.jumbo.trus.repository.auth.UserTeamRoleRepository;
 import com.jumbo.trus.repository.participation.MatchParticipationRepository;
+import com.jumbo.trus.service.chat.ChatSystemEventService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,7 @@ public class PlannedMatchParticipationService {
     private final PlannedMatchRepository plannedMatches;
     private final MatchParticipationRepository participations;
     private final UserTeamRoleRepository roles;
+    private final ChatSystemEventService chatService;
 
     @Transactional
     public PlannedMatchParticipationDTO get(Long id, Long userId, AppTeamEntity team) {
@@ -64,6 +66,7 @@ public class PlannedMatchParticipationService {
         var player = role.getPlayer();
         var participation = participations.findByPlannedMatchIdAndAppTeamIdAndPlayerId(id, team.getId(), player.getId())
                 .orElseGet(MatchParticipationEntity::new);
+        MatchParticipationStatus previousStatus = participation.getStatus();
         participation.setAppTeam(team);
         participation.setPlannedMatch(planned);
         participation.setPlayer(player);
@@ -73,6 +76,13 @@ public class PlannedMatchParticipationService {
         participation.setRespondedAt(Instant.now());
         participation.setRespondedBy(player);
         participations.save(participation);
+        chatService.postParticipationEvent(team.getId(), userId, id,
+                player.getName() + (previousStatus == null ? " potvrdil účast: " : " změnil účast: ")
+                        + switch (status) {
+                            case ATTENDING -> "přijde";
+                            case MAYBE -> "možná přijde";
+                            case NOT_ATTENDING -> "nepřijde";
+                        });
         return get(id, userId, team);
     }
 

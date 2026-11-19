@@ -15,12 +15,14 @@ import java.util.Optional;
 
 public interface PlannedMatchRepository extends JpaRepository<PlannedMatchEntity, Long> {
     Optional<PlannedMatchEntity> findByIdAndAppTeamId(Long id, Long appTeamId);
+    boolean existsByAppTeamIdAndMatchId(Long appTeamId, Long matchId);
     Optional<PlannedMatchEntity> findByAppTeamIdAndFootballMatchId(Long appTeamId, Long footballMatchId);
     Optional<PlannedMatchEntity> findFirstByAppTeamIdAndStatusAndDateAfterOrderByDateAsc(
             Long appTeamId, PlannedMatchStatus status, Date date);
     List<PlannedMatchEntity> findTop2ByAppTeamIdAndStatusAndDateAfterOrderByDateAsc(
             Long appTeamId, PlannedMatchStatus status, Date date);
     List<PlannedMatchEntity> findAllByAppTeamIdOrderByDateAsc(Long appTeamId);
+    List<PlannedMatchEntity> findAllByAppTeamIdOrderByDateDesc(Long appTeamId);
 
     @Query("""
             select p from PlannedMatchEntity p

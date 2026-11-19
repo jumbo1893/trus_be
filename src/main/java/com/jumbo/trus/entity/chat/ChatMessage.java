@@ -19,7 +19,7 @@ public class ChatMessage {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity author;
-    @Column(nullable = false, length = 16)
+    @Column(nullable = false, length = 32)
     private String room;
     @Column(length = 4000)
     private String text;

@@ -8,6 +8,10 @@ import com.jumbo.trus.entity.chat.ChatReaction;
 import com.jumbo.trus.entity.chat.ChatMute;
 import com.jumbo.trus.entity.notification.push.settings.NotificationType;
 import com.jumbo.trus.repository.auth.UserTeamRoleRepository;
+import com.jumbo.trus.repository.MatchRepository;
+import com.jumbo.trus.repository.PlannedMatchRepository;
+import com.jumbo.trus.entity.PlannedMatchEntity;
+import com.jumbo.trus.entity.PlannedMatchStatus;
 import com.jumbo.trus.repository.chat.ChatMessageRepository;
 import com.jumbo.trus.repository.chat.ChatReadRepository;
 import com.jumbo.trus.repository.chat.ChatReactionRepository;
@@ -31,6 +35,9 @@ import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
 import java.io.IOException;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +49,8 @@ public class ChatService {
     private final UserService users;
     private final HeaderManager headers;
     private final UserTeamRoleRepository roles;
+    private final MatchRepository matches;
+    private final PlannedMatchRepository plannedMatches;
     private final ChatMessageRepository messages;
     private final ChatReadRepository reads;
     private final ChatReactionRepository reactions;
@@ -52,20 +61,29 @@ public class ChatService {
     private final ChatBotService bot;
     private final OutboxEventService outboxEventService;
 
-    public record Room(String kind, String title, long unread, boolean pushEnabled) {}
+    public record Room(String kind, String title, long unread, boolean pushEnabled, boolean featured) {}
     public record PushPreference(String kind, boolean pushEnabled) {}
     public record Receipt(Long userId, String name, Long lastMessageId) {}
     public record Reaction(Long userId, String name, String emoji) {}
     public record ReactionUpdate(Long messageId, List<Reaction> reactions) {}
     public record Reply(Long id, String author, String text, boolean image) {}
     public record Message(Long id, Long authorId, String author, String text, Instant createdAt, boolean image,
-                          List<Reaction> reactions, boolean bot, Reply replyTo) {}
+                          List<Reaction> reactions, boolean bot, boolean system, Reply replyTo) {}
     public record Detail(List<Message> messages, List<Receipt> receipts) {}
     private static final Set<String> REACTION_EMOJIS = Set.of(
             "❤️", "😂", "😮", "😢", "😡", "👍", "😆", "🥳", "😍", "🔥", "👏", "🙏");
+    private static final DateTimeFormatter ROOM_DATE = DateTimeFormatter.ofPattern("d. M. yyyy")
+            .withZone(ZoneId.of("Europe/Prague"));
+
+    private String matchRoomTitle(String name, Date date) {
+        return (name == null || name.isBlank() ? "Zápas" : name)
+                + (date == null ? "" : " · " + ROOM_DATE.format(date.toInstant()));
+    }
 
     public static String room(String value) {
-        if (!"all".equals(value) && !"players".equals(value)) throw new IllegalArgumentException("Neplatný chat");
+        if (!"all".equals(value) && !"players".equals(value)
+                && !value.matches("match-[1-9][0-9]*") && !value.matches("planned-[1-9][0-9]*"))
+            throw new IllegalArgumentException("Neplatný chat");
         return value;
     }
 
@@ -80,6 +98,10 @@ public class ChatService {
         UserTeamRole role = roles.findByUserIdAndAppTeamId(user.getId(), teamId)
                 .orElseThrow(() -> new SecurityException("Nejste členem týmu"));
         if ("players".equals(room(kind)) && !playerRole(role)) throw new SecurityException("Nejste hráčem týmu");
+        if (kind.startsWith("match-") && matches.findByIdAndAppTeamId(Long.parseLong(kind.substring(6)), teamId).isEmpty())
+            throw new SecurityException("Zápas nepatří týmu");
+        if (kind.startsWith("planned-") && plannedMatches.findByIdAndAppTeamId(Long.parseLong(kind.substring(8)), teamId).isEmpty())
+            throw new SecurityException("Plánovaný zápas nepatří týmu");
         return role;
     }
 
@@ -100,9 +122,39 @@ public class ChatService {
         Long teamId = headers.getAppTeamIdHeader();
         UserTeamRole role = currentRole("all");
         List<Room> result = new ArrayList<>();
-        result.add(new Room("all", "Hromadný chat", unread(teamId, user.getId(), "all"), pushEnabled(teamId, user, "all")));
-        if (playerRole(role)) result.add(new Room("players", "Hráčský chat", unread(teamId, user.getId(), "players"), pushEnabled(teamId, user, "players")));
-        return result;
+        result.add(new Room("all", "Hromadný chat", unread(teamId, user.getId(), "all"), pushEnabled(teamId, user, "all"), false));
+        if (playerRole(role)) result.add(new Room("players", "Hráčský chat", unread(teamId, user.getId(), "players"), pushEnabled(teamId, user, "players"), false));
+        Date now = new Date();
+        Date nextDate = null, lastDate = null;
+        String nextKind = null, lastKind = null;
+        for (PlannedMatchEntity planned : plannedMatches.findAllByAppTeamIdOrderByDateDesc(teamId)) {
+            String kind = "planned-" + planned.getId();
+            String title = matchRoomTitle(planned.getOpponent() == null || planned.getOpponent().isBlank()
+                    ? planned.getType().name() : planned.getOpponent(), planned.getDate());
+            result.add(new Room(kind, title, unread(teamId, user.getId(), kind), pushEnabled(teamId, user, kind), false));
+            if (planned.getStatus() == PlannedMatchStatus.SCHEDULED && planned.getDate() != null && planned.getDate().after(now)
+                    && (nextDate == null || planned.getDate().before(nextDate))) {
+                nextDate = planned.getDate(); nextKind = kind;
+            } else if (planned.getStatus() != PlannedMatchStatus.CANCELLED && planned.getDate() != null && !planned.getDate().after(now)
+                    && (lastDate == null || planned.getDate().after(lastDate))) {
+                lastDate = planned.getDate(); lastKind = kind;
+            }
+        }
+        for (var match : matches.findAllByAppTeamIdOrderByDateDesc(teamId)) {
+            String kind = "match-" + match.getId();
+            result.add(new Room(kind, matchRoomTitle(match.getName() == null || match.getName().isBlank() ? "Zápas " + match.getId() : match.getName(), match.getDate()),
+                    unread(teamId, user.getId(), kind), pushEnabled(teamId, user, kind), false));
+            if (match.getDate() != null && match.getDate().after(now)
+                    && (nextDate == null || match.getDate().before(nextDate))) {
+                nextDate = match.getDate(); nextKind = kind;
+            } else if (match.getDate() != null && !match.getDate().after(now)
+                    && (lastDate == null || match.getDate().after(lastDate))) {
+                lastDate = match.getDate(); lastKind = kind;
+            }
+        }
+        String featuredNext = nextKind, featuredLast = lastKind;
+        return result.stream().map(room -> new Room(room.kind(), room.title(), room.unread(),
+                room.pushEnabled(), room.kind().equals(featuredNext) || room.kind().equals(featuredLast))).toList();
     }
 
     private boolean pushEnabled(Long teamId, UserEntity user, String kind) {
@@ -346,7 +398,8 @@ public class ChatService {
         Reply reply = parent == null ? null : new Reply(parent.getId(), displayAuthor(parent), parent.getText(),
                 parent.getImageContentType() != null);
         return new Message(message.getId(), message.isBot() ? 0L : message.getAuthor().getId(), displayAuthor(message),
-                message.getText(), message.getCreatedAt(), message.getImageContentType() != null, reactions, message.isBot(), reply);
+                message.getText(), message.getCreatedAt(), message.getImageContentType() != null, reactions,
+                message.isBot(), message.isBot() && "Kurvíza".equals(message.getAuthorName()), reply);
     }
 
     private String displayAuthor(ChatMessage message) {

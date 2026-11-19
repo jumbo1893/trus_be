@@ -18,7 +18,7 @@ public class ChatRead {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
-    @Column(nullable = false, length = 16)
+    @Column(nullable = false, length = 32)
     private String room;
     private Long lastMessageId;
 }
