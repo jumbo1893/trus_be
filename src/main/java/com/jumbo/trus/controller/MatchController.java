@@ -88,6 +88,14 @@ public class MatchController {
     }
 
     @RoleRequired("EDITOR")
+    @DeleteMapping("/{matchId}/score")
+    @PostCommitTask
+    @StoreAppTeam
+    public MatchDTO clearMatchScore(@PathVariable Long matchId) throws NotFoundException {
+        return matchService.clearMatchScore(matchId, appTeamService.getCurrentAppTeamOrThrow());
+    }
+
+    @RoleRequired("EDITOR")
     @PostMapping("/update")
     public void pairFootballMatches() throws NotFoundException {
         matchService.pairAllFootballMatches(appTeamService.getCurrentAppTeamOrThrow());

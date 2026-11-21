@@ -16,6 +16,7 @@ import java.util.Optional;
 public interface PlannedMatchRepository extends JpaRepository<PlannedMatchEntity, Long> {
     Optional<PlannedMatchEntity> findByIdAndAppTeamId(Long id, Long appTeamId);
     boolean existsByAppTeamIdAndMatchId(Long appTeamId, Long matchId);
+    List<PlannedMatchEntity> findAllByAppTeamIdAndMatchId(Long appTeamId, Long matchId);
     Optional<PlannedMatchEntity> findByAppTeamIdAndFootballMatchId(Long appTeamId, Long footballMatchId);
     Optional<PlannedMatchEntity> findFirstByAppTeamIdAndStatusAndDateAfterOrderByDateAsc(
             Long appTeamId, PlannedMatchStatus status, Date date);

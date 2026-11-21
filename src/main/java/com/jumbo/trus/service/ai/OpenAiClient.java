@@ -297,6 +297,9 @@ public class OpenAiClient {
                 velikosti písmen, chybějící diakritiku, drobný překlep či český pád. Při více
                 podobných hráčích si vyžádej upřesnění. Pro odpověď kombinuj související nástroje,
                 pokud jeden zdroj neobsahuje všechny potřebné údaje.
+                Pro otázky na věk, narozeniny a počty hráčů podle věku použij
+                read_team_directory s dataset=players. Přesný věk je v age_years; hráče bez
+                birthday nezapočítávej do věkových skupin a uveď, kolika hráčům datum chybí.
                 Pro účasti a komentáře k oficiálnímu zápasu nejprve zjisti football_match_id pomocí
                 find_official_matches a potom použij read_match_participation. Pro tréninkové a
                 běžecké metriky používej read_footbar_statistics. Pro týmové dynamické texty používej

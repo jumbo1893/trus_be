@@ -1437,8 +1437,19 @@ public class AiReadOnlyToolService {
         row.put("name", player.getName());
         row.put("active", player.isActive());
         row.put("fan", player.isFan());
+        if (player.getBirthday() != null) {
+            var today = java.time.LocalDate.now(java.time.ZoneId.of("Europe/Prague"));
+            var birthday = player.getBirthday().toInstant()
+                    .atZone(java.time.ZoneId.of("Europe/Prague")).toLocalDate();
+            row.put("birthday", birthday.toString());
+            row.put("age_years", java.time.Period.between(birthday, today).getYears());
+        } else {
+            row.put("birthday", null);
+            row.put("age_years", null);
+        }
         if (player.getFootballPlayer() != null) {
             row.put("official_player_name", player.getFootballPlayer().getName());
+            row.put("official_birth_year", player.getFootballPlayer().getBirthYear());
         }
         return row;
     }
@@ -1739,7 +1750,7 @@ public class AiReadOnlyToolService {
               {
                 "type": "function",
                 "name": "read_team_directory",
-                "description": "Vrátí ID a názvy hráčů nebo sezon aktuálního týmu.",
+                "description": "Vrátí všechny hráče nebo sezony aktuálního týmu. U hráčů obsahuje přezdívku, aktivitu, fanouškovství, datum narození, přesný věk v letech a dostupné oficiální jméno a rok narození. Pro dotazy typu kolik hráčů je pod 30 použij dataset players, počítej pouze hráče s vyplněným age_years a uveď počet bez data narození.",
                 "strict": true,
                 "parameters": {
                   "type": "object",

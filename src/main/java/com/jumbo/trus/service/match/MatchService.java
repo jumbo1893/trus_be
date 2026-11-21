@@ -44,6 +44,10 @@ public class MatchService {
         matchCommandService.deleteMatch(matchId, appTeam);
     }
 
+    public MatchDTO clearMatchScore(Long matchId, AppTeamEntity appTeam) throws NotFoundException {
+        return matchCommandService.clearMatchScore(matchId, appTeam);
+    }
+
     public List<MatchDTO> getAll(MatchFilter matchFilter) {
         return matchQueryService.getAll(matchFilter);
     }

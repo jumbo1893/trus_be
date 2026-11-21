@@ -14,6 +14,7 @@ import com.jumbo.trus.entity.outbox.OutboxEventType;
 import com.jumbo.trus.mapper.MatchMapper;
 import com.jumbo.trus.mapper.football.FootballMatchMapper;
 import com.jumbo.trus.repository.MatchRepository;
+import com.jumbo.trus.repository.PlannedMatchRepository;
 import com.jumbo.trus.repository.PlayerRepository;
 import com.jumbo.trus.repository.SeasonRepository;
 import com.jumbo.trus.repository.specification.MatchSpecification;
@@ -41,6 +42,7 @@ import static com.jumbo.trus.config.Config.AUTOMATIC_SEASON_ID;
 public class MatchCommandService {
 
     private final MatchRepository matchRepository;
+    private final PlannedMatchRepository plannedMatchRepository;
     private final PlayerRepository playerRepository;
     private final SeasonRepository seasonRepository;
     private final MatchMapper matchMapper;
@@ -130,6 +132,10 @@ public class MatchCommandService {
         Long seasonId = match.getSeason() == null ? null : match.getSeason().getId();
         Set<Long> removedPlayerIds = getPlayerIds(match);
 
+        for (var planned : plannedMatchRepository.findAllByAppTeamIdAndMatchId(appTeam.getId(), matchId)) {
+            planned.setMatch(null);
+        }
+        plannedMatchRepository.flush();
         matchRepository.delete(match);
 
         notificationService.addNotification("Smazán zápas", description);
@@ -143,6 +149,17 @@ public class MatchCommandService {
                         removedPlayerIds
                 )
         );
+    }
+
+    @Transactional
+    public MatchDTO clearMatchScore(Long matchId, AppTeamEntity appTeam) throws NotFoundException {
+        MatchEntity match = findMatchForTeamOrThrow(matchId, appTeam.getId());
+        match.setHomeGoalNumber(null);
+        match.setAwayGoalNumber(null);
+        matchResultFineService.rewriteAutomaticFines(match, appTeam);
+        MatchDTO result = matchMapper.toDTO(match);
+        publishMatchUpdated(match, result, new PlayerChanges(Set.of(), Set.of()));
+        return result;
     }
 
     private void applyEditableFields(

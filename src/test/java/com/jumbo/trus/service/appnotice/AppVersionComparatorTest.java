@@ -27,4 +27,11 @@ class AppVersionComparatorTest {
         assertTrue(AppVersionComparator.isWithinRange("9.0.1-beta.2", "9.0.1-beta.1", "9.0.1"));
         assertFalse(AppVersionComparator.isWithinRange("9.0.1-beta.1", "9.0.1", null));
     }
+
+    @Test
+    void recognizesBothReleasedLegacyHomeClients() {
+        assertTrue(AppVersionComparator.isWithinRange("11.0.0", "0", "11.999.999"));
+        assertTrue(AppVersionComparator.isWithinRange("11.1.0", "0", "11.999.999"));
+        assertFalse(AppVersionComparator.isWithinRange("12.0.0", "0", "11.999.999"));
+    }
 }

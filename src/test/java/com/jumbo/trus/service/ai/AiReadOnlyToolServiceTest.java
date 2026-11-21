@@ -140,6 +140,27 @@ class AiReadOnlyToolServiceTest {
     }
 
     @Test
+    void teamDirectoryExposesExactPlayerAgeAndUnknownBirthdays() throws Exception {
+        PlayerDTO young = new PlayerDTO();
+        young.setId(1L);
+        young.setName("Mladý");
+        young.setBirthday(Date.from(LocalDate.of(2005, 6, 15)
+                .atStartOfDay(ZoneId.of("Europe/Prague")).toInstant()));
+        PlayerDTO unknown = new PlayerDTO();
+        unknown.setId(2L);
+        unknown.setName("Neznámý");
+        when(playerService.getAll(11L)).thenReturn(List.of(young, unknown));
+
+        JsonNode result = objectMapper.readTree(service.execute("read_team_directory",
+                objectMapper.readTree("{\"dataset\":\"players\"}"), context));
+
+        assertEquals("2005-06-15", result.get(0).path("birthday").asText());
+        assertTrue(result.get(0).path("age_years").asInt() < 30);
+        assertTrue(result.get(1).path("age_years").isNull());
+        verify(playerService).getAll(11L);
+    }
+
+    @Test
     void calendarYearDrinksUseMatchDatesWithinTheSelectedTeam() throws Exception {
         when(beerRepository.sumBeersInPeriod(eq(11L), any(Date.class), any(Date.class))).thenReturn(42L);
         JsonNode result = objectMapper.readTree(service.execute("read_calendar_year_drinks",

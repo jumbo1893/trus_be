@@ -20,6 +20,7 @@ import com.jumbo.trus.entity.PlannedMatchEntity;
 import com.jumbo.trus.repository.auth.UserTeamRoleRepository;
 import com.jumbo.trus.entity.filter.StatisticsFilter;
 import com.jumbo.trus.service.UserVisitedCountryService;
+import com.jumbo.trus.service.appnotice.AppVersionComparator;
 import com.jumbo.trus.service.achievement.country.CountryAchievementCalculator;
 import com.jumbo.trus.service.auth.AppTeamService;
 import com.jumbo.trus.service.football.match.FootballMatchService;
@@ -107,11 +108,18 @@ public class HomeService {
 
         homeSetup.setNextBirthday(getUpcomingBirthday(appTeamEntity.getId()));
         homeSetup.setNextAndLastFootballMatch(getNextAndLastMatch(appTeamEntity));
+        // Before 12.0 the home screen only understands league fixtures. A
+        // training/teambuilding planned match has no FootballMatchDetail.
+        boolean legacyClient = AppVersionComparator.isWithinRange(
+                headerManager.getAppVersionHeader(), "0", "11.999.999");
         var upcoming = plannedMatchRepository.findTop2ByAppTeamIdAndStatusAndDateAfterOrderByDateAsc(
                 appTeamEntity.getId(), PlannedMatchStatus.SCHEDULED, new java.util.Date());
-        DashboardMatch nextMatch = upcoming.isEmpty() ? null : getNextMatch(appTeamEntity, upcoming.get(0));
+        DashboardMatch nextMatch = legacyClient
+                ? getLegacyNextMatch(homeSetup.getNextAndLastFootballMatch())
+                : upcoming.isEmpty() ? null : getNextMatch(appTeamEntity, upcoming.get(0));
         homeSetup.setNextMatch(nextMatch);
-        DashboardMatch secondNextMatch = upcoming.size() < 2 ? null : getNextMatch(appTeamEntity, upcoming.get(1));
+        DashboardMatch secondNextMatch = legacyClient ? null
+                : upcoming.size() < 2 ? null : getNextMatch(appTeamEntity, upcoming.get(1));
         homeSetup.setSecondNextMatch(secondNextMatch);
         if (nextMatch != null && nextMatch.getMatch() != null) {
             homeSetup.setCurrentParticipationStatus(matchParticipationService.getCurrentStatus(
@@ -195,6 +203,18 @@ public class HomeService {
         }
     }
 
+    private DashboardMatch getLegacyNextMatch(List<FootballMatchDetail> fixtures) {
+        if (fixtures == null || fixtures.isEmpty() || fixtures.get(0) == null) {
+            return null;
+        }
+        DashboardMatch result = new DashboardMatch();
+        result.setMatch(fixtures.get(0));
+        List<TextWithRedirect> info = new ArrayList<>();
+        addTextRedirectToList(info, getWeatherText(fixtures.get(0).getFootballMatch()));
+        result.setMatchInfoList(info);
+        return result;
+    }
+
     private DashboardMatch getNextMatch(AppTeamEntity appTeamEntity, PlannedMatchEntity planned) {
         var plannedDto = plannedMatchService.get(planned.getId(), appTeamEntity);
         FootballMatchDetail footballMatchDetail = plannedDto.getFootballMatchId() == null ? null
@@ -236,10 +256,10 @@ public class HomeService {
             return dashboardMatch;
         }
 
-        if (match != null && match.getHomeGoalNumber() != null && match.getAwayGoalNumber() != null) {
-            footballMatchDetail.getFootballMatch().setHomeGoalNumber(match.getHomeGoalNumber());
-            footballMatchDetail.getFootballMatch().setAwayGoalNumber(match.getAwayGoalNumber());
-        }
+        // The dashboard score represents the team's recorded result, even when
+        // the imported league result is available independently.
+        footballMatchDetail.getFootballMatch().setHomeGoalNumber(match.getHomeGoalNumber());
+        footballMatchDetail.getFootballMatch().setAwayGoalNumber(match.getAwayGoalNumber());
 
         dashboardMatch.setMatch(footballMatchDetail);
 
