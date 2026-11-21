@@ -7,8 +7,8 @@ import com.jumbo.trus.entity.MatchEntity;
 import com.jumbo.trus.entity.MatchWeatherEntity;
 import com.jumbo.trus.entity.weather.WeatherSourceType;
 import com.jumbo.trus.mapper.MatchWeatherMapper;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -23,7 +23,6 @@ import java.util.stream.IntStream;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class WeatherService {
 
     private static final String FORECAST_URL = "https://api.open-meteo.com/v1/forecast";
@@ -50,6 +49,12 @@ public class WeatherService {
 
     private final RestTemplate restTemplate;
     private final MatchWeatherMapper matchWeatherMapper;
+
+    public WeatherService(@Qualifier("weatherRestTemplate") RestTemplate restTemplate,
+                          MatchWeatherMapper matchWeatherMapper) {
+        this.restTemplate = restTemplate;
+        this.matchWeatherMapper = matchWeatherMapper;
+    }
 
     public Optional<MatchWeatherEntity> createWeatherForMatch(MatchEntity match) {
         return getWeather(resolveWeatherDate(match)).map(snapshot -> toEntity(match, snapshot));
@@ -88,7 +93,8 @@ public class WeatherService {
 
             return getHourlyWeather(FORECAST_URL, requestedDateTime, WeatherSourceType.FORECAST, true);
         } catch (Exception exception) {
-            log.warn("Počasí se nepodařilo načíst pro datum {}", requestedDate, exception);
+            log.warn("Počasí se nepodařilo načíst pro datum {}: {}", requestedDate,
+                    exception.getMessage());
             return Optional.empty();
         }
     }

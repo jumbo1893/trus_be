@@ -4,6 +4,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.catalina.connector.ClientAbortException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -57,8 +58,13 @@ public class FirebaseAuthenticationFilter extends OncePerRequestFilter {
         try {
             filterChain.doFilter(request, response);
         } catch (ServletException | IOException | RuntimeException exception) {
-            log.error("Request failed after Firebase authentication: method={}, path={}",
-                    request.getMethod(), request.getRequestURI(), exception);
+            if (exception instanceof ClientAbortException) {
+                log.debug("Client disconnected: method={}, path={}",
+                        request.getMethod(), request.getRequestURI());
+            } else {
+                log.error("Request failed after Firebase authentication: method={}, path={}",
+                        request.getMethod(), request.getRequestURI(), exception);
+            }
             throw exception;
         }
     }

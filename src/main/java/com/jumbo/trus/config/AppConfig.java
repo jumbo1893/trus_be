@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -29,5 +30,13 @@ public class AppConfig {
     @org.springframework.context.annotation.Primary
     public RestTemplate restTemplate() {
         return new RestTemplate();
+    }
+
+    @Bean("weatherRestTemplate")
+    public RestTemplate weatherRestTemplate() {
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(2000);
+        factory.setReadTimeout(3000);
+        return new RestTemplate(factory);
     }
 }
