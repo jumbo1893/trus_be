@@ -96,6 +96,17 @@ public class MatchController {
     }
 
     @RoleRequired("EDITOR")
+    @PutMapping("/{matchId}/score")
+    @PostCommitTask
+    @StoreAppTeam
+    public MatchDTO updateMatchScore(@PathVariable Long matchId, @RequestBody ScoreRequest request) throws NotFoundException {
+        return matchService.updateMatchScore(matchId, request.homeGoalNumber(), request.awayGoalNumber(),
+                appTeamService.getCurrentAppTeamOrThrow());
+    }
+
+    public record ScoreRequest(Integer homeGoalNumber, Integer awayGoalNumber) {}
+
+    @RoleRequired("EDITOR")
     @PostMapping("/update")
     public void pairFootballMatches() throws NotFoundException {
         matchService.pairAllFootballMatches(appTeamService.getCurrentAppTeamOrThrow());

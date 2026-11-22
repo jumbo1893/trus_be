@@ -3,6 +3,7 @@ package com.jumbo.trus.controller;
 import com.jumbo.trus.config.security.RoleRequired;
 import com.jumbo.trus.dto.match.PlannedMatchDTO;
 import com.jumbo.trus.dto.match.PlannedMatchParticipationDTO;
+import com.jumbo.trus.entity.PlannedMatchStatus;
 import com.jumbo.trus.entity.participation.MatchParticipationStatus;
 import com.jumbo.trus.entity.auth.UserEntity;
 import com.jumbo.trus.service.auth.AppTeamService;
@@ -81,6 +82,26 @@ public class PlannedMatchController {
     public PlannedMatchDTO complete(@PathVariable Long id) {
         return service.complete(id, appTeams.getCurrentAppTeamOrThrow());
     }
+
+    @RoleRequired("ADMIN")
+    @GetMapping("/resettable")
+    public List<PlannedMatchDTO> resettable() {
+        return service.resettable(appTeams.getCurrentAppTeamOrThrow());
+    }
+
+    @RoleRequired("ADMIN")
+    @PostMapping("/{id}/reset")
+    public PlannedMatchDTO reset(@PathVariable Long id) {
+        return service.reset(id, appTeams.getCurrentAppTeamOrThrow());
+    }
+
+    @RoleRequired("EDITOR")
+    @PostMapping("/{id}/status")
+    public PlannedMatchDTO changeStatus(@PathVariable Long id, @RequestBody @Valid StatusRequest request) {
+        return service.changeStatus(id, request.status(), appTeams.getCurrentAppTeamOrThrow());
+    }
+
+    public record StatusRequest(@jakarta.validation.constraints.NotNull PlannedMatchStatus status) {}
 
     @RoleRequired("EDITOR")
     @PostMapping(value = "/{id}/photo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

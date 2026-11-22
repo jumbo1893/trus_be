@@ -29,8 +29,6 @@ import com.jumbo.trus.service.ip.GeoIpService;
 import com.jumbo.trus.service.match.MatchService;
 import com.jumbo.trus.service.match.PlannedMatchService;
 import com.jumbo.trus.service.match.PlannedMatchParticipationService;
-import com.jumbo.trus.repository.PlannedMatchRepository;
-import com.jumbo.trus.entity.PlannedMatchStatus;
 import com.jumbo.trus.repository.MatchRepository;
 import com.jumbo.trus.mapper.MatchMapper;
 import com.jumbo.trus.service.participation.MatchParticipationService;
@@ -58,7 +56,6 @@ public class HomeService {
     private final MatchService matchService;
     private final PlannedMatchService plannedMatchService;
     private final PlannedMatchParticipationService plannedParticipation;
-    private final PlannedMatchRepository plannedMatchRepository;
     private final MatchRepository matchRepository;
     private final MatchMapper matchMapper;
     private final ReceivedFineService receivedFineService;
@@ -112,8 +109,7 @@ public class HomeService {
         // training/teambuilding planned match has no FootballMatchDetail.
         boolean legacyClient = AppVersionComparator.isWithinRange(
                 headerManager.getAppVersionHeader(), "0", "11.999.999");
-        var upcoming = plannedMatchRepository.findTop2ByAppTeamIdAndStatusAndDateAfterOrderByDateAsc(
-                appTeamEntity.getId(), PlannedMatchStatus.SCHEDULED, new java.util.Date());
+        var upcoming = plannedMatchService.upcoming(appTeamEntity);
         DashboardMatch nextMatch = legacyClient
                 ? getLegacyNextMatch(homeSetup.getNextAndLastFootballMatch())
                 : upcoming.isEmpty() ? null : getNextMatch(appTeamEntity, upcoming.get(0));
@@ -221,6 +217,11 @@ public class HomeService {
                 : footballMatchService.getFootballMatchDetail(plannedDto.getFootballMatchId(), appTeamEntity, false);
         DashboardMatch dashboardMatch = new DashboardMatch();
         dashboardMatch.setPlannedMatch(plannedDto);
+        // An in-progress event already has its match; the client shows its live score.
+        if (plannedDto.getMatchId() != null) {
+            matchRepository.findById(plannedDto.getMatchId())
+                    .ifPresent(match -> dashboardMatch.setRecordedMatch(matchMapper.toDTO(match)));
+        }
         if (footballMatchDetail == null) {
             dashboardMatch.setMatchInfoList(List.of());
             return dashboardMatch;

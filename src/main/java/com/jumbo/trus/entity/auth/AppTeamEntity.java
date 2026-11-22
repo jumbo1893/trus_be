@@ -28,6 +28,12 @@ public class AppTeamEntity {
     private MatchParticipationPromptAudience matchParticipationPromptAudience =
             MatchParticipationPromptAudience.ALL_PAIRED;
 
+    @Column(nullable = false, columnDefinition = "integer default 30")
+    private int matchHalfMinutes = 30;
+
+    @Column(nullable = false, columnDefinition = "integer default 5")
+    private int matchBreakMinutes = 5;
+
     @ManyToOne
     private UserEntity owner;
 

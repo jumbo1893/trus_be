@@ -71,6 +71,14 @@ public class AppTeamController {
         return teamAccessService.updateMemberRole(userTeamRoleId, request);
     }
 
+    @PutMapping("/administration/match-duration")
+    @RoleRequired("ADMIN")
+    public TeamAdministrationDTO updateMatchDuration(@RequestBody UpdateMatchDurationRequest request) {
+        return teamAccessService.updateMatchDuration(request.halfMinutes(), request.breakMinutes());
+    }
+
+    public record UpdateMatchDurationRequest(int halfMinutes, int breakMinutes) {}
+
     @PutMapping("/administration/members/{userTeamRoleId}/visibility")
     @RoleRequired("ADMIN")
     public TeamAdministrationDTO updateMemberVisibility(

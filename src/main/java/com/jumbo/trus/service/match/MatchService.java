@@ -48,6 +48,11 @@ public class MatchService {
         return matchCommandService.clearMatchScore(matchId, appTeam);
     }
 
+    public MatchDTO updateMatchScore(Long matchId, Integer homeGoals, Integer awayGoals, AppTeamEntity appTeam)
+            throws NotFoundException {
+        return matchCommandService.updateMatchScore(matchId, homeGoals, awayGoals, appTeam);
+    }
+
     public List<MatchDTO> getAll(MatchFilter matchFilter) {
         return matchQueryService.getAll(matchFilter);
     }

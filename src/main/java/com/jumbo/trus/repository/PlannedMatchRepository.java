@@ -37,6 +37,15 @@ public interface PlannedMatchRepository extends JpaRepository<PlannedMatchEntity
     List<PlannedMatchEntity> findUpcomingForTeam(@Param("teamId") Long teamId,
             @Param("status") PlannedMatchStatus status, @Param("now") Date now);
 
+    @Query("""
+            select p.id from PlannedMatchEntity p
+            where p.appTeam.id = :teamId
+              and p.status in :statuses and p.date > :since and p.date <= :now
+            order by p.date asc
+            """)
+    List<Long> findStartedIds(@Param("teamId") Long teamId, @Param("statuses") List<PlannedMatchStatus> statuses,
+            @Param("since") Date since, @Param("now") Date now);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select p from PlannedMatchEntity p where p.id = :id and p.appTeam.id = :teamId")
     Optional<PlannedMatchEntity> lockForTeam(@Param("id") Long id, @Param("teamId") Long teamId);

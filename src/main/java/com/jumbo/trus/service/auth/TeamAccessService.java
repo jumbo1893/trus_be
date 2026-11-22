@@ -189,6 +189,17 @@ public class TeamAccessService {
                 .orElseThrow(() -> new NotFoundException("Tým s id " + appTeamId + " nenalezen."));
     }
 
+    @Transactional
+    public TeamAdministrationDTO updateMatchDuration(int halfMinutes, int breakMinutes) {
+        if (halfMinutes < 1 || halfMinutes > 90 || breakMinutes < 0 || breakMinutes > 60) {
+            throw new IllegalArgumentException("Poločas musí mít 1–90 minut a přestávka 0–60 minut.");
+        }
+        AppTeamEntity appTeam = getCurrentAppTeam();
+        appTeam.setMatchHalfMinutes(halfMinutes);
+        appTeam.setMatchBreakMinutes(breakMinutes);
+        return toAdministrationDTO(appTeam);
+    }
+
     private TeamAdministrationDTO toAdministrationDTO(AppTeamEntity appTeam) {
         TeamJoinCodeEntity readerCode = ensureJoinCode(appTeam, TeamRole.READER);
         TeamJoinCodeEntity editorCode = ensureJoinCode(appTeam, TeamRole.EDITOR);
@@ -232,7 +243,9 @@ public class TeamAccessService {
                 userService.getCurrentUserEntity().getId(),
                 readerCode.getCode(),
                 editorCode.getCode(),
-                members
+                members,
+                appTeam.getMatchHalfMinutes(),
+                appTeam.getMatchBreakMinutes()
         );
     }
 

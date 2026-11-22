@@ -27,4 +27,6 @@ public class PlannedMatchDTO {
     private Long matchId;
     private String description;
     private boolean hasPhoto;
+    private int halfMinutes;
+    private int breakMinutes;
 }

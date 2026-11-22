@@ -22,7 +22,6 @@ public class ChatSystemEventService {
     private final ChatMessageRepository messages;
     private final UserService users;
     private final SimpMessagingTemplate websocket;
-    private final ChatPushService push;
 
     @Transactional
     public void postParticipationEvent(Long teamId, Long userId, Long plannedMatchId, String text) {
@@ -45,8 +44,6 @@ public class ChatSystemEventService {
             @Override public void afterCommit() {
                 try { websocket.convertAndSend("/topic/chat/" + teamId + "/" + kind, dto); }
                 catch (Exception e) { log.warn("Chat event websocket delivery failed for message {}", dto.id(), e); }
-                try { push.notifyMembers(teamId, userId, kind, dto); }
-                catch (Exception e) { log.warn("Chat event push delivery failed for message {}", dto.id(), e); }
             }
         });
     }

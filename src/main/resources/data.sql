@@ -212,6 +212,8 @@ CREATE INDEX IF NOT EXISTS idx_planned_match_team_status_date
     ON planned_match (app_team_id, status, date);
 
 ALTER TABLE planned_match ADD COLUMN IF NOT EXISTS has_photo boolean NOT NULL DEFAULT false;
+ALTER TABLE app_team ADD COLUMN IF NOT EXISTS match_half_minutes integer NOT NULL DEFAULT 30;
+ALTER TABLE app_team ADD COLUMN IF NOT EXISTS match_break_minutes integer NOT NULL DEFAULT 5;
 CREATE TABLE IF NOT EXISTS planned_match_photo (
     planned_match_id bigint PRIMARY KEY REFERENCES planned_match(id) ON DELETE CASCADE,
     image bytea NOT NULL

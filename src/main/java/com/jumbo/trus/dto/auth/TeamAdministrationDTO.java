@@ -26,4 +26,8 @@ public class TeamAdministrationDTO {
     private String editorCode;
 
     private List<TeamMemberDTO> members;
+
+    private int matchHalfMinutes;
+
+    private int matchBreakMinutes;
 }

@@ -1,5 +1,6 @@
 package com.jumbo.trus.service.match;
 
+import com.jumbo.trus.entity.PlannedMatchStatus;
 import com.jumbo.trus.dto.football.FootballMatchDTO;
 import com.jumbo.trus.dto.match.MatchDTO;
 import com.jumbo.trus.dto.match.MatchHelper;
@@ -109,6 +110,8 @@ public class MatchCommandService {
         MatchEntity match = findMatchForTeamOrThrow(matchId, appTeam.getId());
         validateFootballMatchNotUsed(matchDTO, appTeam, matchId);
         Set<Long> originalPlayerIds = getPlayerIds(match);
+        // Clients that do not send the event type must not erase it.
+        if (matchDTO.getType() == null) matchDTO.setType(match.getType());
 
         matchMapper.updateEntity(matchDTO, match);
         applyEditableFields(match, matchDTO, appTeam);
@@ -134,6 +137,9 @@ public class MatchCommandService {
 
         for (var planned : plannedMatchRepository.findAllByAppTeamIdAndMatchId(appTeam.getId(), matchId)) {
             planned.setMatch(null);
+            // Without its match the event would stay "completed" and vanish from every list;
+            // cancelled events can be restored (status button or team administration).
+            planned.setStatus(PlannedMatchStatus.CANCELLED);
         }
         plannedMatchRepository.flush();
         matchRepository.delete(match);
@@ -153,9 +159,18 @@ public class MatchCommandService {
 
     @Transactional
     public MatchDTO clearMatchScore(Long matchId, AppTeamEntity appTeam) throws NotFoundException {
+        return updateMatchScore(matchId, null, null, appTeam);
+    }
+
+    @Transactional
+    public MatchDTO updateMatchScore(Long matchId, Integer homeGoals, Integer awayGoals, AppTeamEntity appTeam)
+            throws NotFoundException {
+        if ((homeGoals != null && homeGoals < 0) || (awayGoals != null && awayGoals < 0)) {
+            throw new IllegalArgumentException("Skóre nemůže být záporné.");
+        }
         MatchEntity match = findMatchForTeamOrThrow(matchId, appTeam.getId());
-        match.setHomeGoalNumber(null);
-        match.setAwayGoalNumber(null);
+        match.setHomeGoalNumber(homeGoals);
+        match.setAwayGoalNumber(awayGoals);
         matchResultFineService.rewriteAutomaticFines(match, appTeam);
         MatchDTO result = matchMapper.toDTO(match);
         publishMatchUpdated(match, result, new PlayerChanges(Set.of(), Set.of()));
