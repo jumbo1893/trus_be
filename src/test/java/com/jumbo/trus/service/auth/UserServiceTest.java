@@ -12,7 +12,10 @@ import com.jumbo.trus.service.exceptions.DuplicateEmailException;
 import com.jumbo.trus.service.football.team.TeamProcessor;
 import com.jumbo.trus.service.membership.MembershipService;
 import com.jumbo.trus.service.notification.push.DeviceTokenCollector;
+import com.jumbo.trus.service.exceptions.AuthException;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.mockito.ArgumentCaptor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,6 +23,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -120,5 +124,40 @@ class UserServiceTest {
         assertEquals("Player", savedUser.getValue().getName());
         assertEquals(0, savedUser.getValue().getOnboardingCompleted());
         verify(membershipService).initializeBaselineForNewUser(savedUser.getValue());
+    }
+
+    @Test
+    void editUserIgnoresGlobalAdminFlagFromRequest() {
+        UserEntity user = new UserEntity();
+        user.setId(7L);
+        user.setAdmin(false);
+        when(userRepository.findById(7L)).thenReturn(Optional.of(user));
+        when(userRepository.save(any(UserEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        UserDTO request = new UserDTO();
+        request.setAdmin(true);
+        request.setName("Nový");
+
+        UserDTO edited = service.editUser(7L, request);
+
+        assertFalse(user.isAdmin());
+        assertFalse(edited.getAdmin());
+        assertEquals("Nový", user.getName());
+    }
+
+    @Test
+    void editUserAsGlobalAdminRejectsNonAdmin() {
+        UserEntity current = new UserEntity();
+        current.setId(1L);
+        current.setAdmin(false);
+        SecurityContextHolder.getContext().setAuthentication(
+                UsernamePasswordAuthenticationToken.authenticated(current, null, java.util.List.of()));
+        try {
+            UserDTO request = new UserDTO();
+            request.setAdmin(true);
+            assertThrows(AuthException.class, () -> service.editUserAsGlobalAdmin(2L, request));
+            verify(userRepository, never()).save(any(UserEntity.class));
+        } finally {
+            SecurityContextHolder.clearContext();
+        }
     }
 }

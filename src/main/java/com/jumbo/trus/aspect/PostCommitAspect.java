@@ -44,7 +44,8 @@ public class PostCommitAspect {
             return;
         }
 
-        log.warn("Transaction is not active; running post-commit fact update immediately. appTeamId={}", appTeam.getId());
+        // Controllery transakci nemají, služba už commitla – běžná cesta.
+        log.debug("Running post-commit fact update. appTeamId={}", appTeam.getId());
         taskExecutor.execute(task);
     }
 }

@@ -50,6 +50,7 @@ class ReceivedFineUpdaterCleanSheetTest {
         MatchEntity match = match(2, 0, List.of(player(1, true, false),
                 player(4, false, false), player(5, false, true)));
         when(matches.findById(10L)).thenReturn(Optional.of(match));
+        when(matches.findByIdAndAppTeamId(10L, 7L)).thenReturn(Optional.of(match));
         when(fines.findByMatchIdAndAppTeamIdAndAutomaticSource(10L, 7L, "CLEAN_SHEET"))
                 .thenReturn(List.of());
         when(goals.findByMatchIdAndGoalkeepingMinutesGreaterThan(10L, 0))
@@ -61,6 +62,8 @@ class ReceivedFineUpdaterCleanSheetTest {
         when(fineService.getFineEntityForAssignment(20L, 7L)).thenReturn(mock(FineEntity.class));
         when(mapper.toEntity(any())).thenAnswer(invocation -> new ReceivedFineEntity());
         when(players.getPlayerEntity(anyLong())).thenAnswer(invocation ->
+                player(invocation.getArgument(0), true, false));
+        when(players.getPlayerEntityForTeam(anyLong(), any())).thenAnswer(invocation ->
                 player(invocation.getArgument(0), true, false));
         AtomicLong id = new AtomicLong();
         when(fines.save(any())).thenAnswer(invocation -> {
@@ -94,6 +97,7 @@ class ReceivedFineUpdaterCleanSheetTest {
                 .thenReturn(List.of(goalFor(player(1, true, false))));
         MatchEntity match = match(null, 0, List.of());
         when(matches.findById(10L)).thenReturn(Optional.of(match));
+        when(matches.findByIdAndAppTeamId(10L, 7L)).thenReturn(Optional.of(match));
 
         updater.syncCleanSheetFines(10L, team);
         verify(fines).delete(automatic);
@@ -111,6 +115,7 @@ class ReceivedFineUpdaterCleanSheetTest {
         when(team.getId()).thenReturn(7L);
         MatchEntity match = match(2, 0, List.of(player(1, true, false), player(2, true, false)));
         when(matches.findById(10L)).thenReturn(Optional.of(match));
+        when(matches.findByIdAndAppTeamId(10L, 7L)).thenReturn(Optional.of(match));
         when(goals.findByMatchIdAndGoalkeepingMinutesGreaterThan(10L, 0))
                 .thenReturn(List.of(goalFor(player(2, true, false))));
         when(players.getAllActive(true, 7L)).thenReturn(List.of(dto(1), dto(2)));
@@ -128,6 +133,7 @@ class ReceivedFineUpdaterCleanSheetTest {
         when(fineService.getFineEntityForAssignment(20L, 7L)).thenReturn(fineEntity);
         when(mapper.toEntity(any())).thenReturn(new ReceivedFineEntity());
         when(players.getPlayerEntity(1L)).thenReturn(player(1, true, false));
+        when(players.getPlayerEntityForTeam(1L, team)).thenReturn(player(1, true, false));
         when(fines.save(any())).thenAnswer(invocation -> {
             ReceivedFineEntity entity = invocation.getArgument(0);
             entity.setId(31L);

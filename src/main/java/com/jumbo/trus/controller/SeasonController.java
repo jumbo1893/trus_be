@@ -50,6 +50,6 @@ public class SeasonController {
     @PostCommitTask
     @StoreAppTeam
     public void deleteSeason(@PathVariable Long seasonId) throws NotFoundException {
-        seasonService.deleteSeason(seasonId);
+        seasonService.deleteSeason(seasonId, appTeamService.getCurrentAppTeamOrThrow());
     }
 }

@@ -17,6 +17,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 @Service
@@ -32,6 +34,9 @@ public class RandomFactService {
     private final PlatformTransactionManager transactionManager;
 
     private static final String randomFactName = "RANDOM_FACT";
+
+    /** Týmy, pro které už čeká přepočet. Další požadavky se k němu přidají místo nového přepočtu. */
+    private final Set<Long> pendingTeamIds = ConcurrentHashMap.newKeySet();
 
 
     public List<String> getRandomFacts(AppTeamEntity appTeam) {
@@ -49,10 +54,17 @@ public class RandomFactService {
     }
 
     public void saveOrUpdateRandomFacts(AppTeamEntity appTeam) {
-        ReentrantLock lock = lockManager.getLock(appTeam.getId());
+        Long appTeamId = appTeam.getId();
+        if (!pendingTeamIds.add(appTeamId)) {
+            log.debug("Random facts recalculation already queued. appTeamId={}", appTeamId);
+            return;
+        }
+        ReentrantLock lock = lockManager.getLock(appTeamId);
         // Na zámek čekáme bez transakce, aby čekající úlohy nedržely spojení z poolu.
         lock.lock();
         try {
+            // Odebrat až po získání zámku: změny zapsané během přepočtu naplánují další běh.
+            pendingTeamIds.remove(appTeamId);
             new TransactionTemplate(transactionManager)
                     .executeWithoutResult(status -> calculateRandomFacts(appTeam));
         } finally {

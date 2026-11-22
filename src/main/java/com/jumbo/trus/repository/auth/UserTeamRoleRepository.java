@@ -12,6 +12,9 @@ public interface UserTeamRoleRepository extends JpaRepository<UserTeamRole, Long
 
     Optional<UserTeamRole> findByUserIdAndAppTeamId(Long userId, Long appTeamId);
 
+    @Query("SELECT r FROM UserTeamRole r JOIN FETCH r.user LEFT JOIN FETCH r.player WHERE r.appTeam.id = :appTeamId")
+    List<UserTeamRole> findAllWithUserAndPlayerByAppTeamId(@Param("appTeamId") Long appTeamId);
+
     List<UserTeamRole> findAllByAppTeamId(Long appTeamId);
 
     List<UserTeamRole> findAllByPlayerId(Long playerId);

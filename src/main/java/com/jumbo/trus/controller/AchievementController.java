@@ -57,8 +57,9 @@ public class AchievementController {
         achievementService.updatePlayerAchievements(playerId, appTeamService.getCurrentAppTeamOrThrow());
     }
 
-    @RoleRequired("EDITOR")
-    @GetMapping("/test")
+    // Plný přepočet je drahá mutace: jen POST a jen admin týmu.
+    @RoleRequired("ADMIN")
+    @PostMapping("/test")
     public void testAllPlayers() {
         achievementService.updateAllPlayerAchievements(appTeamService.getCurrentAppTeamOrThrow(), AchievementType.ALL);
     }

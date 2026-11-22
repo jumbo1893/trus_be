@@ -88,6 +88,14 @@ public class MatchService {
         return matchQueryService.getMatchEntity(matchId);
     }
 
+    public MatchDTO getMatch(long matchId, long appTeamId) {
+        return matchQueryService.getMatch(matchId, appTeamId);
+    }
+
+    public MatchEntity getMatchEntity(long matchId, long appTeamId) {
+        return matchQueryService.getMatchEntity(matchId, appTeamId);
+    }
+
     public MatchDTO getFirstMatchWherePlayerAttends(PlayerDTO player) {
         return matchQueryService.getFirstMatchWherePlayerAttends(player);
     }

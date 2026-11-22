@@ -246,3 +246,31 @@ UPDATE match_participation mp SET planned_match_id = p.id
 FROM planned_match p WHERE mp.app_team_id = p.app_team_id
   AND mp.football_match_id = p.football_match_id
   AND mp.planned_match_id IS NULL;
+-- Indexy pro nejčastější dotazy podle zápasu, hráče, sezony a členství.
+-- Postgres neindexuje cizí klíče automaticky.
+CREATE INDEX IF NOT EXISTS idx_goal_app_team_player_match
+    ON goal (app_team_id, player_id, match_id);
+
+CREATE INDEX IF NOT EXISTS idx_goal_match_player
+    ON goal (match_id, player_id);
+
+CREATE INDEX IF NOT EXISTS idx_beer_match_player
+    ON beer (match_id, player_id);
+
+CREATE INDEX IF NOT EXISTS idx_received_fine_match_player
+    ON received_fine (match_id, player_id);
+
+CREATE INDEX IF NOT EXISTS idx_match_players_match
+    ON match_players (match_id);
+
+CREATE INDEX IF NOT EXISTS idx_match_players_player
+    ON match_players (player_id);
+
+CREATE INDEX IF NOT EXISTS idx_match_season
+    ON match (season_id);
+
+CREATE INDEX IF NOT EXISTS idx_user_team_role_user_team
+    ON user_team_role (user_id, app_team_id);
+
+CREATE INDEX IF NOT EXISTS idx_user_team_role_team
+    ON user_team_role (app_team_id);

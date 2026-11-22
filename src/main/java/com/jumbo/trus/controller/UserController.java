@@ -101,9 +101,9 @@ public class UserController {
     }
 
     @PutMapping("/{userId}")
-    @RoleRequired("ADMIN")
-    public UserDTO editCurrentUser(@PathVariable Long userId, @RequestBody UserDTO userDTO) {
-        return userService.editUser(userId, userDTO);
+    @RoleRequired("NONE")
+    public UserDTO editUser(@PathVariable Long userId, @RequestBody UserDTO userDTO) {
+        return userService.editUserAsGlobalAdmin(userId, userDTO);
     }
 
     @GetMapping("/auth")

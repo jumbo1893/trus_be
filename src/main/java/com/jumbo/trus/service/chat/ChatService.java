@@ -210,17 +210,13 @@ public class ChatService {
         List<ChatMessage> page = before == null
                 ? messages.findByAppTeamIdAndRoomOrderByIdDesc(teamId, kind, PageRequest.of(0, 50))
                 : messages.findByAppTeamIdAndRoomAndIdLessThanOrderByIdDesc(teamId, kind, before, PageRequest.of(0, 50));
+        Map<Long, UserTeamRole> teamRoles = teamRolesByUser(teamId);
         Map<Long, List<Reaction>> byMessage = page.isEmpty() ? Map.of() : reactions.findByMessageIdIn(
                 page.stream().map(ChatMessage::getId).toList()).stream().collect(Collectors.groupingBy(
                 reaction -> reaction.getMessage().getId(),
-                Collectors.mapping(reaction -> toReaction(reaction, teamId, kind), Collectors.toList())));
+                Collectors.mapping(reaction -> toReaction(reaction, teamRoles), Collectors.toList())));
         List<Message> result = page.stream().map(message -> toMessage(message, byMessage.getOrDefault(message.getId(), List.of()))).toList();
-        List<Receipt> receipts = reads.findByAppTeamIdAndRoom(teamId, kind).stream()
-                .filter(read -> roles.findByUserIdAndAppTeamId(read.getUser().getId(), teamId)
-                        .filter(r -> !"players".equals(kind) || playerRole(r)).isPresent())
-                .map(read -> new Receipt(read.getUser().getId(), name(read.getUser().getId(), teamId, kind), read.getLastMessageId()))
-                .toList();
-        return new Detail(result, receipts);
+        return new Detail(result, receipts(teamId, kind, teamRoles));
     }
 
     @Transactional(readOnly = true)
@@ -237,18 +233,14 @@ public class ChatService {
         page.add(target);
         page.addAll(messages.findByAppTeamIdAndRoomAndIdLessThanOrderByIdDesc(
                 teamId, kind, messageId, PageRequest.of(0, 24)));
+        Map<Long, UserTeamRole> teamRoles = teamRolesByUser(teamId);
         Map<Long, List<Reaction>> byMessage = reactions.findByMessageIdIn(
                 page.stream().map(ChatMessage::getId).toList()).stream().collect(Collectors.groupingBy(
                 reaction -> reaction.getMessage().getId(),
-                Collectors.mapping(reaction -> toReaction(reaction, teamId, kind), Collectors.toList())));
+                Collectors.mapping(reaction -> toReaction(reaction, teamRoles), Collectors.toList())));
         List<Message> result = page.stream()
                 .map(message -> toMessage(message, byMessage.getOrDefault(message.getId(), List.of()))).toList();
-        List<Receipt> receipts = reads.findByAppTeamIdAndRoom(teamId, kind).stream()
-                .filter(read -> roles.findByUserIdAndAppTeamId(read.getUser().getId(), teamId)
-                        .filter(r -> !"players".equals(kind) || playerRole(r)).isPresent())
-                .map(read -> new Receipt(read.getUser().getId(), name(read.getUser().getId(), teamId, kind), read.getLastMessageId()))
-                .toList();
-        return new Detail(result, receipts);
+        return new Detail(result, receipts(teamId, kind, teamRoles));
     }
 
     @Transactional
@@ -416,10 +408,35 @@ public class ChatService {
         return new Reaction(userId, name(userId, teamId, kind), reaction.getEmoji());
     }
 
+    private Reaction toReaction(ChatReaction reaction, Map<Long, UserTeamRole> teamRoles) {
+        Long userId = reaction.getUser().getId();
+        UserTeamRole role = teamRoles.get(userId);
+        return new Reaction(userId, role == null ? "Uživatel" : displayName(role), reaction.getEmoji());
+    }
+
     private String name(Long userId, Long teamId, String kind) {
-        return roles.findByUserIdAndAppTeamId(userId, teamId).map(role -> {
-            String name = role.getUser().getName();
-            return name == null || name.isBlank() ? role.getUser().getMail() : name;
-        }).orElse("Uživatel");
+        return roles.findByUserIdAndAppTeamId(userId, teamId).map(this::displayName).orElse("Uživatel");
+    }
+
+    private String displayName(UserTeamRole role) {
+        String name = role.getUser().getName();
+        return name == null || name.isBlank() ? role.getUser().getMail() : name;
+    }
+
+    /** Role týmu jedním dotazem (místo dotazu na každé read receipt / reakci). */
+    private Map<Long, UserTeamRole> teamRolesByUser(Long teamId) {
+        return roles.findAllWithUserAndPlayerByAppTeamId(teamId).stream()
+                .collect(Collectors.toMap(role -> role.getUser().getId(), role -> role, (first, second) -> first));
+    }
+
+    private List<Receipt> receipts(Long teamId, String kind, Map<Long, UserTeamRole> teamRoles) {
+        return reads.findByAppTeamIdAndRoom(teamId, kind).stream()
+                .filter(read -> {
+                    UserTeamRole role = teamRoles.get(read.getUser().getId());
+                    return role != null && (!"players".equals(kind) || playerRole(role));
+                })
+                .map(read -> new Receipt(read.getUser().getId(),
+                        displayName(teamRoles.get(read.getUser().getId())), read.getLastMessageId()))
+                .toList();
     }
 }

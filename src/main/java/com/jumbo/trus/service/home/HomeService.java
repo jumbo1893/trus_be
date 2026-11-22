@@ -82,7 +82,7 @@ public class HomeService {
         boolean viewer = currentRole.map(role -> "VIEWER".equalsIgnoreCase(role.getRole()))
                 .orElse(false);
         if (admin) {
-            homeSetup.setPendingTeamMembers(teamRoles.findAllByAppTeamId(appTeamEntity.getId())
+            homeSetup.setPendingTeamMembers(teamRoles.findAllWithUserAndPlayerByAppTeamId(appTeamEntity.getId())
                     .stream()
                     .filter(role -> !role.isRoleApproved() && (!role.getUser().isHidden()
                             || appTeamEntity.getOwner() != null

@@ -61,7 +61,7 @@ public class PlayerController {
     @RoleRequired("READER")
     @GetMapping("/{playerId}")
     public PlayerDTO getPlayer(@PathVariable Long playerId) {
-        return playerService.getPlayer(playerId);
+        return playerService.getPlayer(playerId, appTeamService.getCurrentAppTeamOrThrow());
     }
 
     @RoleRequired("EDITOR")
@@ -69,6 +69,7 @@ public class PlayerController {
     @PostCommitTask
     @StoreAppTeam
     public PlayerDTO editPlayer(@PathVariable Long playerId, @RequestBody PlayerDTO playerDTO) throws NotFoundException {
+        playerService.getPlayerEntityForTeam(playerId, appTeamService.getCurrentAppTeamOrThrow());
         return playerService.editPlayer(playerId, playerDTO);
     }
 
@@ -77,6 +78,7 @@ public class PlayerController {
     @PostCommitTask
     @StoreAppTeam
     public void deletePlayer(@PathVariable Long playerId) throws NotFoundException {
+        playerService.getPlayerEntityForTeam(playerId, appTeamService.getCurrentAppTeamOrThrow());
         playerService.deletePlayer(playerId);
     }
 

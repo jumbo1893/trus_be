@@ -68,6 +68,6 @@ public class GoalController {
     @PostCommitTask
     @StoreAppTeam
     public void deleteGoal(@PathVariable Long goalId) throws NotFoundException {
-        goalService.deleteGoal(goalId);
+        goalService.deleteGoal(goalId, appTeamService.getCurrentAppTeamOrThrow());
     }
 }

@@ -149,8 +149,9 @@ public class SeasonService {
     }
 
     @Transactional
-    public void deleteSeason(Long seasonId) {
-        SeasonEntity seasonEntity = seasonRepository.getReferenceById(seasonId);
+    public void deleteSeason(Long seasonId, AppTeamEntity appTeam) {
+        SeasonEntity seasonEntity = seasonRepository.findByIdAndAppTeamId(seasonId, appTeam.getId())
+                .orElseThrow(() -> new NotFoundException("Sezona s id " + seasonId + " nenalezena v db"));
         Set<Long> affectedMatchIds = matchRepository.findMatchIdsBySeason(seasonId);
         matchRepository.updateSeasonId(seasonId);
         notificationService.addNotification("Smazána sezona", seasonEntity.getName() + " se začátkem " + seasonEntity.getFromDate() + " a koncem " + seasonEntity.getToDate());

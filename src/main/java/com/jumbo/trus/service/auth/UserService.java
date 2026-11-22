@@ -236,8 +236,27 @@ public class UserService implements UserDetailsService {
         return userRepository.findById(id).orElseThrow(() -> new UsernameNotFoundException("Uživatel id " + id + " nenalezen"));
     }
 
+    /**
+     * Úprava vlastního profilu. Příznak globálního admina se z požadavku záměrně nečte.
+     */
     @Transactional
     public UserDTO editUser(Long userId, UserDTO user) throws NotFoundException {
+        UserEntity userEntity = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Uživatel s id " + userId + " nenalezen v db"));
+        if (user.getName() != null) {
+            userEntity.setName(user.getName());
+        }
+        return saveEditedUser(userEntity);
+    }
+
+    /**
+     * Úprava libovolného uživatele včetně příznaku globálního admina. Smí pouze globální admin.
+     */
+    @Transactional
+    public UserDTO editUserAsGlobalAdmin(Long userId, UserDTO user) throws NotFoundException {
+        if (!getCurrentUserEntity().isAdmin()) {
+            throw new AuthException("Upravovat jiné uživatele může pouze administrátor aplikace.",
+                    AuthException.INSUFFICIENT_RIGHTS);
+        }
         UserEntity userEntity = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Uživatel s id " + userId + " nenalezen v db"));
         if (user.getAdmin() != null) {
             userEntity.setAdmin(user.getAdmin());
@@ -245,18 +264,12 @@ public class UserService implements UserDetailsService {
         if (user.getName() != null) {
             userEntity.setName(user.getName());
         }
-        UserDTO saved = returnUserWithoutSensitiveData(userRepository.save(userEntity));
-        outboxEventService.createAuditEvent(OutboxEventType.USER_UPDATED, userId, null, null);
-        return saved;
+        return saveEditedUser(userEntity);
     }
 
-    @Transactional
-    public UserDTO editUserById(Long userId, UserDTO user) throws NotFoundException {
-        UserEntity userEntity = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Uživatel s id " + userId + " nenalezen v db"));
-        userEntity.setAdmin(user.getAdmin());
-        userEntity.setName(user.getName());
+    private UserDTO saveEditedUser(UserEntity userEntity) {
         UserDTO saved = returnUserWithoutSensitiveData(userRepository.save(userEntity));
-        outboxEventService.createAuditEvent(OutboxEventType.USER_UPDATED, userId, null, null);
+        outboxEventService.createAuditEvent(OutboxEventType.USER_UPDATED, userEntity.getId(), null, null);
         return saved;
     }
 

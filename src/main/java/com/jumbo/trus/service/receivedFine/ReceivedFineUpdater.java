@@ -392,8 +392,9 @@ public class ReceivedFineUpdater {
             ReceivedFineDTO receivedFineDTO,
             AppTeamEntity appTeam
     ) {
-        receivedFine.setMatch(getMatchEntity(receivedFineDTO.getMatchId()));
-        receivedFine.setPlayer(playerService.getPlayerEntity(receivedFineDTO.getPlayerId()));
+        receivedFine.setMatch(matchRepository.findByIdAndAppTeamId(receivedFineDTO.getMatchId(), appTeam.getId())
+                .orElseThrow(() -> new EntityNotFoundException(String.valueOf(receivedFineDTO.getMatchId()))));
+        receivedFine.setPlayer(playerService.getPlayerEntityForTeam(receivedFineDTO.getPlayerId(), appTeam));
         receivedFine.setFine(fineService.getFineEntityForAssignment(
                 receivedFineDTO.getFine().getId(), appTeam.getId()));
     }

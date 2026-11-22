@@ -9,6 +9,7 @@ import com.jumbo.trus.dto.receivedfine.response.get.setup.ReceivedFineSetupRespo
 import com.jumbo.trus.dto.receivedfine.response.stats.match.ReceivedFinePlayerDetailResponse;
 import com.jumbo.trus.dto.receivedfine.response.stats.player.ReceivedFineMatchDetailResponse;
 import com.jumbo.trus.entity.auth.AppTeamEntity;
+import org.webjars.NotFoundException;
 import com.jumbo.trus.entity.ReceivedFineEntity;
 import com.jumbo.trus.entity.outbox.OutboxAggregateType;
 import com.jumbo.trus.entity.outbox.OutboxEventType;
@@ -84,9 +85,10 @@ public class ReceivedFineService {
     }
 
     @Transactional
-    public void deleteFine(Long fineId) {
-        ReceivedFineEntity fine = receivedFineRepository.findById(fineId).orElseThrow();
-        receivedFineRepository.deleteById(fineId);
+    public void deleteFine(Long fineId, AppTeamEntity appTeam) {
+        ReceivedFineEntity fine = receivedFineRepository.findByIdAndAppTeamId(fineId, appTeam.getId())
+                .orElseThrow(() -> new NotFoundException("Pokuta s id " + fineId + " nenalezena v týmu"));
+        receivedFineRepository.delete(fine);
         outboxEventService.createEvent(OutboxEventType.RECEIVED_FINE_DELETED,
                 OutboxAggregateType.RECEIVED_FINE, fineId,
                 OutboxEventPayloadFactory.receivedFinesChanged(fine.getMatch().getId(),

@@ -76,7 +76,7 @@ public class BeerController {
     @PostCommitTask
     @StoreAppTeam
     public void deleteMatch(@PathVariable Long beerId) throws NotFoundException {
-        beerService.deleteBeer(beerId);
+        beerService.deleteBeer(beerId, appTeamService.getCurrentAppTeamOrThrow());
     }
 
     @RoleRequired("READER")

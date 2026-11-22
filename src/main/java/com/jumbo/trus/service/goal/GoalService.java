@@ -76,7 +76,7 @@ public class GoalService {
         StringBuilder newGoalNotification = new StringBuilder();
         StringBuilder newAssistNotification = new StringBuilder();
         GoalMultiAddResponse goalMultiAddResponse = new GoalMultiAddResponse();
-        MatchDTO matchDTO = matchService.getMatch(goalListDTO.getMatchId());
+        MatchDTO matchDTO = matchService.getMatch(goalListDTO.getMatchId(), appTeam.getId());
         goalMultiAddResponse.setMatch(matchDTO.getName());
         Set<Long> goalIds = new HashSet<>();
         Set<Long> playerIds = new HashSet<>();
@@ -213,8 +213,8 @@ public class GoalService {
     }
 
     @Transactional
-    public void deleteGoal(Long goalId) {
-        GoalEntity goal = goalRepository.findById(goalId)
+    public void deleteGoal(Long goalId, AppTeamEntity appTeam) {
+        GoalEntity goal = goalRepository.findByIdAndAppTeamId(goalId, appTeam.getId())
                 .orElseThrow(() -> new NotFoundException("Statistika hráče s id " + goalId + " nenalezena"));
         goalRepository.delete(goal);
         goalRepository.flush();
@@ -230,15 +230,15 @@ public class GoalService {
                 .orElse(null);
     }
 
-    private void mapPlayerAndMatch(GoalEntity goal, GoalDTO goalDTO) {
-        goal.setMatch(matchService.getMatchEntity(goalDTO.getMatchId()));
-        goal.setPlayer(playerService.getPlayerEntity(goalDTO.getPlayerId()));
+    private void mapPlayerAndMatch(GoalEntity goal, GoalDTO goalDTO, AppTeamEntity appTeam) {
+        goal.setMatch(matchService.getMatchEntity(goalDTO.getMatchId(), appTeam.getId()));
+        goal.setPlayer(playerService.getPlayerEntityForTeam(goalDTO.getPlayerId(), appTeam));
     }
 
     private GoalEntity saveGoalToRepository(GoalDTO goalDTO, AppTeamEntity appTeamEntity) {
         GoalEntity entity = goalMapper.toEntity(goalDTO);
         entity.setAppTeam(appTeamEntity);
-        mapPlayerAndMatch(entity, goalDTO);
+        mapPlayerAndMatch(entity, goalDTO, appTeamEntity);
         return goalRepository.save(entity);
     }
 

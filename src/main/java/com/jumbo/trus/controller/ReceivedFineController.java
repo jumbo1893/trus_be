@@ -71,7 +71,7 @@ public class ReceivedFineController {
     @PostCommitTask
     @StoreAppTeam
     public void deleteMatch(@PathVariable Long fineId) throws NotFoundException {
-        receivedFineService.deleteFine(fineId);
+        receivedFineService.deleteFine(fineId, appTeamService.getCurrentAppTeamOrThrow());
     }
 
     @RoleRequired("READER")

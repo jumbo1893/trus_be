@@ -34,8 +34,12 @@ import com.jumbo.trus.service.outbox.OutboxEventService;
 import com.jumbo.trus.service.membership.MembershipService;
 import com.jumbo.trus.service.websocket.WebSocketSender;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.webjars.NotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
@@ -47,6 +51,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BeerService {
@@ -90,7 +95,7 @@ public class BeerService {
         StringBuilder newBeerNotification = new StringBuilder();
         StringBuilder newLiquorNotification = new StringBuilder();
         BeerMultiAddResponse beerMultiAddResponse = new BeerMultiAddResponse();
-        MatchDTO matchDTO = matchService.getMatch(beerListDTO.getMatchId());
+        MatchDTO matchDTO = matchService.getMatch(beerListDTO.getMatchId(), appTeam.getId());
         beerMultiAddResponse.setMatch(matchDTO.getName());
         Set<Long> beerIds = new HashSet<>();
         Set<Long> playerIds = new HashSet<>();
@@ -129,7 +134,7 @@ public class BeerService {
             beerMultiAddResponse.addBeersLiquorsAndPlayer(beerDTO.getBeerNumber() - oldBeer.getBeerNumber(), beerDTO.getLiquorNumber() - oldBeer.getLiquorNumber(), false);
             beerDTO.setId(oldBeer.getId());
             BeerEntity beerEntity = saveBeerToRepository(beerDTO, oldBeer, appTeam);
-            webSocketSender.sendPlayerStatsUpdate(beerDTO.getPlayerId(), appTeam);
+            sendPlayerStatsUpdateAfterCommit(beerDTO.getPlayerId(), appTeam);
             setMultiBeerNotification(newBeerNotification, newLiquorNotification, beerDTO, oldBeer);
             return beerEntity.getId();
         } else if (isNeededToAddNewBeer(oldBeer, beerDTO)) {
@@ -140,7 +145,7 @@ public class BeerService {
             );
             beerMultiAddResponse.addBeersLiquorsAndPlayer(beerDTO.getBeerNumber(), beerDTO.getLiquorNumber(), true);
             BeerEntity beerEntity = saveBeerToRepository(beerDTO, null, appTeam);
-            webSocketSender.sendPlayerStatsUpdate(beerDTO.getPlayerId(), appTeam);
+            sendPlayerStatsUpdateAfterCommit(beerDTO.getPlayerId(), appTeam);
             setMultiBeerNotification(newBeerNotification, newLiquorNotification, beerDTO, null);
             return beerEntity.getId();
         }
@@ -206,16 +211,19 @@ public class BeerService {
             matchBeerFilter.setAppTeam(beerFilter.getAppTeam());
             List<BeerDTO> beerList = getAll(matchBeerFilter);
             List<PlayerDTO> playersInMatch = matchService.getPlayerListByMatchId(matchDTO.getId());
-            List<PlayerDTO> addedPlayers = new ArrayList<>();
+            // Hráče bereme ze seznamu zápasu místo dotazu do DB pro každé pivo.
+            Map<Long, PlayerDTO> playersInMatchById = new HashMap<>();
+            playersInMatch.forEach(player -> playersInMatchById.putIfAbsent(player.getId(), player));
+            Set<Long> addedPlayerIds = new HashSet<>();
             for (BeerDTO beerDTO : beerList) {
-                PlayerDTO playerDTO = playerMapper.toDTO(getPlayerEntity(beerDTO.getPlayerId()));
-                if (playersInMatch.contains(playerDTO)) {
+                PlayerDTO playerDTO = playersInMatchById.get(beerDTO.getPlayerId());
+                if (playerDTO != null) {
                     beerNoMatchWithPlayerDTOS.add(new BeerNoMatchWithPlayerDTO(beerDTO.getId(), beerDTO.getBeerNumber(), beerDTO.getLiquorNumber(), playerDTO));
-                    addedPlayers.add(playerDTO);
+                    addedPlayerIds.add(playerDTO.getId());
                 }
             }
             for (PlayerDTO playerDTO : playersInMatch) {
-                if (!addedPlayers.contains(playerDTO)) {
+                if (!addedPlayerIds.contains(playerDTO.getId())) {
                     beerNoMatchWithPlayerDTOS.add(new BeerNoMatchWithPlayerDTO(0, 0, playerDTO));
                 }
             }
@@ -226,10 +234,11 @@ public class BeerService {
     }
 
     @Transactional
-    public void deleteBeer(Long beerId) {
-        BeerEntity beer = beerRepository.findById(beerId).orElse(null);
-        beerRepository.deleteById(beerId);
-        if (beer != null && beer.getPlayer() != null) {
+    public void deleteBeer(Long beerId, AppTeamEntity appTeam) {
+        BeerEntity beer = beerRepository.findByIdAndAppTeamId(beerId, appTeam.getId())
+                .orElseThrow(() -> new NotFoundException("Pivo s id " + beerId + " nenalezeno v týmu"));
+        beerRepository.delete(beer);
+        if (beer.getPlayer() != null) {
             membershipService.recordDrinkChanges(Map.of(
                     beer.getPlayer().getId(),
                     -(beer.getBeerNumber() + beer.getLiquorNumber())
@@ -260,18 +269,45 @@ public class BeerService {
     }
 
 
-    private void mapPlayerAndMatch(BeerEntity beer, BeerDTO beerDTO) {
-        beer.setMatch(matchService.getMatchEntity(beerDTO.getMatchId()));
-        beer.setPlayer(getPlayerEntity(beerDTO.getPlayerId()));
+    private void mapPlayerAndMatch(BeerEntity beer, BeerDTO beerDTO, AppTeamEntity appTeam) {
+        beer.setMatch(matchService.getMatchEntity(beerDTO.getMatchId(), appTeam.getId()));
+        beer.setPlayer(playerRepository.findByIdAndAppTeamId(beerDTO.getPlayerId(), appTeam.getId())
+                .orElseThrow(() -> new EntityNotFoundException(String.valueOf(beerDTO.getPlayerId()))));
     }
 
     private BeerEntity saveBeerToRepository(BeerDTO beerDTO, BeerDTO oldBeer, AppTeamEntity appTeam) {
         BeerEntity entity = beerMapper.toEntity(beerDTO);
         entity.setAppTeam(appTeam);
-        mapPlayerAndMatch(entity, beerDTO);
+        mapPlayerAndMatch(entity, beerDTO, appTeam);
         BeerEntity returnEntity = beerRepository.save(entity);
-        beerNotificationMaker.sendBeerNotify(entity, oldBeer);
+        // Push (síťové volání FCM) až po commitu, aby nedržel DB transakci a neodešel při rollbacku.
+        runAfterCommit(() -> beerNotificationMaker.sendBeerNotify(entity, oldBeer));
         return returnEntity;
+    }
+
+    private void sendPlayerStatsUpdateAfterCommit(Long playerId, AppTeamEntity appTeam) {
+        runAfterCommit(() -> webSocketSender.sendPlayerStatsUpdate(playerId, appTeam));
+    }
+
+    /**
+     * Spustí úlohu ve stejném vlákně po commitu (zachová security context i OSIV session).
+     * Chyba úlohy už neovlivní uložená data ani odpověď klientovi.
+     */
+    private void runAfterCommit(Runnable task) {
+        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+            task.run();
+            return;
+        }
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                try {
+                    task.run();
+                } catch (RuntimeException e) {
+                    log.error("Post-commit beer task failed", e);
+                }
+            }
+        });
     }
 
 

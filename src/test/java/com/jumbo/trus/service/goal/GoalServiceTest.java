@@ -49,9 +49,9 @@ class GoalServiceTest {
         MatchDTO match = new MatchDTO();
         match.setName("Test");
         match.setSeasonId(5L);
-        when(matchService.getMatch(10L)).thenReturn(match);
-
         AppTeamEntity team = mock(AppTeamEntity.class);
+        when(team.getId()).thenReturn(7L);
+        when(matchService.getMatch(10L, 7L)).thenReturn(match);
         goalService.addMultipleGoal(new GoalListDTO(10L, false, List.of()), team);
 
         verifyNoInteractions(outboxEventService);

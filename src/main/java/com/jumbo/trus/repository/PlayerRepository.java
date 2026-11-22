@@ -15,6 +15,8 @@ import java.util.Set;
 
 public interface PlayerRepository extends JpaRepository<PlayerEntity, Long> {
 
+    Optional<PlayerEntity> findByIdAndAppTeamId(Long id, Long appTeamId);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT p FROM PlayerEntity p WHERE p.id = :playerId")
     Optional<PlayerEntity> findByIdForUpdate(@Param("playerId") Long playerId);

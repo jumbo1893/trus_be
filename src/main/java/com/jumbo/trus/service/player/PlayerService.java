@@ -81,6 +81,15 @@ public class PlayerService {
         return playerMapper.toDTO(getPlayerEntity(playerId));
     }
 
+    public PlayerDTO getPlayer(long playerId, AppTeamEntity appTeam) {
+        return playerMapper.toDTO(getPlayerEntityForTeam(playerId, appTeam));
+    }
+
+    public PlayerEntity getPlayerEntityForTeam(long playerId, AppTeamEntity appTeam) {
+        return playerRepository.findByIdAndAppTeamId(playerId, appTeam.getId())
+                .orElseThrow(() -> new NotFoundException("Hráč s id " + playerId + " nenalezen v týmu"));
+    }
+
     public PlayerEntity getPlayerEntity(long playerId) {
         return playerRepository.findById(playerId).orElseThrow(() -> new EntityNotFoundException(String.valueOf(playerId)));
     }
