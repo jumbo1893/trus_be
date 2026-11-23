@@ -26,6 +26,9 @@ public class PlannedMatchEntity {
     @Column(nullable = false)
     private Date date;
 
+    /** Actual kick-off when the event was started manually; the clock runs from it. */
+    private Date kickoffAt;
+
     private String opponent;
 
     @Enumerated(EnumType.STRING)

@@ -27,6 +27,8 @@ public class PlannedMatchDTO {
     private Long matchId;
     private String description;
     private boolean hasPhoto;
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "Europe/Prague")
+    private Date kickoffAt;
     private int halfMinutes;
     private int breakMinutes;
 }

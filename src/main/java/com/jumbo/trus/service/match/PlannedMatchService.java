@@ -125,7 +125,13 @@ public class PlannedMatchService {
         if (matchId != null) {
             matchCommands.deleteMatch(matchId, team);
         }
+        planned.setKickoffAt(null);
+        if (planned.getFootballMatch() != null && planned.getFootballMatch().getDate() != null) {
+            planned.setDate(planned.getFootballMatch().getDate());
+        }
         planned.setStatus(PlannedMatchStatus.SCHEDULED);
+        // A restored event in the past moves on at once; a future one stays scheduled.
+        refreshStatus(planned, team);
         return toDto(planned);
     }
 
@@ -157,6 +163,7 @@ public class PlannedMatchService {
                 if (current != PlannedMatchStatus.CANCELLED) {
                     throw new IllegalStateException("Obnovit lze jen zrušenou událost.");
                 }
+                planned.setKickoffAt(null);
                 planned.setStatus(PlannedMatchStatus.SCHEDULED);
                 refreshStatus(planned, team);
             }
@@ -164,7 +171,7 @@ public class PlannedMatchService {
                 if (current != PlannedMatchStatus.SCHEDULED) {
                     throw new IllegalStateException("Zahájit lze jen naplánovanou událost.");
                 }
-                planned.setDate(new Date());
+                planned.setKickoffAt(new Date());
                 start(planned, team);
             }
             case COMPLETED -> {
@@ -278,7 +285,8 @@ public class PlannedMatchService {
 
     private static Date endOf(PlannedMatchEntity planned, AppTeamEntity team) {
         long minutes = 2L * team.getMatchHalfMinutes() + team.getMatchBreakMinutes();
-        return new Date(planned.getDate().getTime() + minutes * 60_000);
+        Date start = planned.getKickoffAt() != null ? planned.getKickoffAt() : planned.getDate();
+        return new Date(start.getTime() + minutes * 60_000);
     }
 
     private void ensureMatch(PlannedMatchEntity planned, AppTeamEntity team) {
@@ -343,6 +351,7 @@ public class PlannedMatchService {
         boolean legacyClient = AppVersionComparator.isWithinRange(headers.getAppVersionHeader(), "0", "12.0.999");
         dto.setStatus(legacyClient && planned.getStatus() == PlannedMatchStatus.IN_PROGRESS
                 ? PlannedMatchStatus.COMPLETED : planned.getStatus());
+        dto.setKickoffAt(planned.getKickoffAt());
         dto.setHalfMinutes(planned.getAppTeam().getMatchHalfMinutes());
         dto.setBreakMinutes(planned.getAppTeam().getMatchBreakMinutes());
         dto.setMatchId(planned.getMatch() == null ? null : planned.getMatch().getId());
