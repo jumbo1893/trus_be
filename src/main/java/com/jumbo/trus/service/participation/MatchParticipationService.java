@@ -137,7 +137,7 @@ public class MatchParticipationService {
         PlayerEntity currentPlayer = isTeamParticipant(role.getPlayer(), appTeam)
                 ? role.getPlayer()
                 : null;
-        return buildDetail(footballMatch, appTeam, currentPlayer);
+        return buildDetail(footballMatch, appTeam, currentPlayer, isAdmin(role));
     }
 
     @Transactional
@@ -197,7 +197,7 @@ public class MatchParticipationService {
                         : Boolean.TRUE.equals(participation.getPlaying()) ? " (hrající)" : " (nehrající)"),
                 request.getComment());
 
-        return buildDetail(footballMatch, appTeam, author);
+        return buildDetail(footballMatch, appTeam, author, isAdmin(userId, appTeam));
     }
 
     @Transactional
@@ -270,7 +270,7 @@ public class MatchParticipationService {
                 Map.of("footballMatchId", footballMatch.getId().toString()));
         participationNotifications.notifyChange(userId, appTeam.getId(), footballMatch.getId(),
                 author.getName() + ": přidal komentář", request.getText());
-        return buildDetail(footballMatch, appTeam, author);
+        return buildDetail(footballMatch, appTeam, author, isAdmin(userId, appTeam));
     }
 
     @Transactional
@@ -321,7 +321,7 @@ public class MatchParticipationService {
         outboxEventService.createAuditEvent(OutboxEventType.PARTICIPATION_COMMENT_DELETED,
                 commentId, appTeam.getId(), userId,
                 Map.of("footballMatchId", comment.getParticipation().getFootballMatch().getId().toString()));
-        return buildDetail(comment.getParticipation().getFootballMatch(), appTeam, player);
+        return buildDetail(comment.getParticipation().getFootballMatch(), appTeam, player, isAdmin(userId, appTeam));
     }
 
     public MatchParticipationPromptAudienceConfig getPromptAudience(AppTeamEntity appTeam) {
@@ -332,12 +332,16 @@ public class MatchParticipationService {
     public MatchParticipationDetail deleteResponse(Long userId, AppTeamEntity appTeam,
                                                    Long footballMatchId, Long playerId) {
         FootballMatchEntity match = getFootballMatchForTeam(footballMatchId, appTeam);
-        PlayerEntity actor = requireCurrentParticipant(userId, appTeam);
+        UserTeamRole role = getCurrentRole(userId, appTeam.getId());
+        boolean admin = isAdmin(role);
+        PlayerEntity actor = admin && !isTeamParticipant(role.getPlayer(), appTeam)
+                ? null
+                : requireCurrentParticipant(userId, appTeam);
         MatchParticipationEntity participation = participationRepository
                 .findByFootballMatchIdAndAppTeamIdAndPlayerId(footballMatchId, appTeam.getId(), playerId)
                 .orElseThrow(() -> new NotFoundException("Účast nebyla nalezena."));
-        // Only the represented participant or the author may remove a proxy response.
-        if (!canDeleteResponse(participation, actor)) {
+        // Only the represented participant, the author of a proxy response or a team admin may remove it.
+        if (!admin && !canDeleteResponse(participation, actor)) {
             throw validationError("playerId", "Účast může smazat jen její autor nebo dotčený hráč.");
         }
         List<Long> ids = commentRepository.findAllByParticipationIdOrderByCreatedAtAsc(participation.getId())
@@ -349,11 +353,25 @@ public class MatchParticipationService {
         participationRepository.delete(participation);
         if (participation.getPlannedMatch() != null) chatService.postParticipationEvent(
                 appTeam.getId(), userId, participation.getPlannedMatch().getId(),
-                participation.getPlayer().getName() + " zrušil odpověď o účasti");
+                removedByAdmin(participation, actor, admin)
+                        ? participation.getPlayer().getName() + " – účast odebrána administrátorem"
+                        : participation.getPlayer().getName() + " zrušil odpověď o účasti");
         outboxEventService.createAuditEvent(OutboxEventType.PARTICIPATION_DELETED,
                 participation.getId(), appTeam.getId(), userId,
                 Map.of("footballMatchId", footballMatchId.toString(), "playerId", playerId.toString()));
-        return buildDetail(match, appTeam, actor);
+        return buildDetail(match, appTeam, actor, admin);
+    }
+
+    private boolean removedByAdmin(MatchParticipationEntity participation, PlayerEntity actor, boolean admin) {
+        return admin && !canDeleteResponse(participation, actor);
+    }
+
+    private boolean isAdmin(Long userId, AppTeamEntity appTeam) {
+        return isAdmin(getCurrentRole(userId, appTeam.getId()));
+    }
+
+    private boolean isAdmin(UserTeamRole role) {
+        return role.isRoleApproved() && "ADMIN".equalsIgnoreCase(role.getRole());
     }
 
     private boolean canDeleteResponse(MatchParticipationEntity participation, PlayerEntity actor) {
@@ -383,7 +401,8 @@ public class MatchParticipationService {
     private MatchParticipationDetail buildDetail(
             FootballMatchEntity footballMatch,
             AppTeamEntity appTeam,
-            PlayerEntity currentPlayer
+            PlayerEntity currentPlayer,
+            boolean admin
     ) {
         List<MatchParticipationMemberDTO> attendingPlayers = new ArrayList<>();
         List<MatchParticipationMemberDTO> attendingFans = new ArrayList<>();
@@ -447,7 +466,7 @@ public class MatchParticipationService {
                     : playerMapper.toDTO(participation.getRespondedBy()));
             member.setNote(participation.getNote());
             member.setAvatarUserId(avatarUserIds.get(participation.getPlayer().getId()));
-            member.setCanDelete(canDeleteResponse(participation, currentPlayer));
+            member.setCanDelete(admin || canDeleteResponse(participation, currentPlayer));
             switch (participation.getStatus()) {
                 case ATTENDING -> (fan ? attendingFans : attendingPlayers).add(member);
                 case MAYBE -> (fan ? maybeFans : maybePlayers).add(member);
